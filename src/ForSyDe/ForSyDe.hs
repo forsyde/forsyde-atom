@@ -13,8 +13,8 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Shallow (
        -- * Signal type class
-       module ForSyDe.Shallow.Core,
-       module ForSyDe.Shallow.MoC.SY,
+       module ForSyDe.Core,
+       module ForSyDe.MoC.SY,
 ) where
 
 import ForSyDe.Shallow.Core
