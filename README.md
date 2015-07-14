@@ -5,4 +5,4 @@ Reimplementation of the ForSyDe-Haskell modelling library in an applicative mann
 
 
 ----
-Ideas based on the projects `forsyde-patterns` (George Ungureanu), `forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe.Shallow` library (KTH-SAM group)
+Ideas based on the projects `forsyde-patterns` (George Ungureanu), `forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe. library (KTH-SAM group)

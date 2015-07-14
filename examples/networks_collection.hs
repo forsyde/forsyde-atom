@@ -1,5 +1,5 @@
 import ForSyDe.Shallow
-import ForSyDe.Shallow.Patterns
+import ForSyDe.Patterns
 
 -- One basic principe may stand as this work's manifesto: there is no "cleverness" in designing a ForSyDe
 -- system. One should not employ fancy tricks, rather express the functionality in terms of a structured

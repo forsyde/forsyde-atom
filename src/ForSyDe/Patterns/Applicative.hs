@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Patterns.Applicative
+-- Module      :  ForSyDe.Patterns.Applicative
 -- Copyright   :  ...
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -10,11 +10,11 @@
 --
 -- ...
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow.Patterns.Applicative where
+module ForSyDe.Patterns.Applicative where
 
-import ForSyDe.Shallow.Core
-import ForSyDe.Shallow.Patterns.Vector
-import ForSyDe.Shallow.Patterns.Transition
+import ForSyDe.Core
+import ForSyDe.Patterns.Vector
+import ForSyDe.Patterns.Transition
 
 -- $staticdoc
 -- Static process networks do not change their structure throughout the execution, 
@@ -28,52 +28,52 @@ import ForSyDe.Shallow.Patterns.Transition
 -- STATIC PROCESS NETWORK PATTERNS
 
 -- map patterns
-farmPN  :: (VSig vsa, VSig vsb) => 
+farmPN  :: (VecSig vsa, VecSig vsb) => 
          (vsa -> vsb) -- ^ process
          -> Vector vsa   -- ^ input vector of signals
          -> Vector vsb   -- ^ output vector of signals 
-farm1PN :: (VSig vsa, VSig vsb) => 
+farm1PN :: (VecSig vsa, VecSig vsb) => 
          (c -> vsa -> vsb) -- ^ process constructor with one function parameter 
          -> Vector c       -- ^ vector of function parameters
          -> Vector vsa   -- ^ input vector of signals
          -> Vector vsb   -- ^ output vector of signals 
-farm2PN :: (VSig vsa, VSig vsb) => (c -> d -> vsa -> vsb) -> Vector c -> Vector d -> Vector vsa -> Vector vsb 
-farm3PN :: (VSig vsa, VSig vsb) => (c -> d -> e -> vsa -> vsb) -> Vector c -> Vector d -> Vector e -> Vector vsa -> Vector vsb
+farm2PN :: (VecSig vsa, VecSig vsb) => (c -> d -> vsa -> vsb) -> Vector c -> Vector d -> Vector vsa -> Vector vsb 
+farm3PN :: (VecSig vsa, VecSig vsb) => (c -> d -> e -> vsa -> vsb) -> Vector c -> Vector d -> Vector e -> Vector vsa -> Vector vsb
 
 -- pipeV/serial composition patterns
-pipePN  :: (VSig vsa) => Int                    -- ^ number of repeated compositions
+pipePN  :: (VecSig vsa) => Int                    -- ^ number of repeated compositions
         -> (vsa -> vsa) -- ^ process
         -> vsa               -- ^ input signal
         -> vsa               -- ^ output signal
-pipe1PN :: (VSig vsa) => (a -> vsa -> vsa) -- ^ process constructor with one function parameter
+pipe1PN :: (VecSig vsa) => (a -> vsa -> vsa) -- ^ process constructor with one function parameter
         -> Vector a                    -- ^ vector of function parameters
         -> vsa                    -- ^ input signal
         -> vsa                    -- ^ output signal
-pipe2PN :: (VSig vsa) => (a -> c -> vsa -> vsa) -> Vector a -> Vector c -> vsa -> vsa
-pipe3PN :: (VSig vsa) => (a -> c -> d -> vsa -> vsa) -> Vector a -> Vector c -> Vector d -> vsa -> vsa
+pipe2PN :: (VecSig vsa) => (a -> c -> vsa -> vsa) -> Vector a -> Vector c -> vsa -> vsa
+pipe3PN :: (VecSig vsa) => (a -> c -> d -> vsa -> vsa) -> Vector a -> Vector c -> Vector d -> vsa -> vsa
 
 -- scanV/parallel prefix patterns
-dim1SystolicPN  :: (VSig vsa) => Int                    -- ^ number of repeated compositions
+dim1SystolicPN  :: (VecSig vsa) => Int                    -- ^ number of repeated compositions
         -> (vsa -> vsa) -- ^ process
         -> vsa               -- ^ input signal 
         -> Vector vsa      -- ^ output vector of signals
-dim1Systolic1PN :: (VSig vsa) => (a -> vsa -> vsa) -- ^ process constructor with one function parameter
+dim1Systolic1PN :: (VecSig vsa) => (a -> vsa -> vsa) -- ^ process constructor with one function parameter
         -> Vector a                    -- ^ vector of function parameters
         -> vsa                    -- ^ input signal 
         -> Vector vsa           -- ^ output vector of signals
-dim1Systolic2PN :: (VSig vsa) => (a -> c -> vsa -> vsa) -> Vector a -> Vector c -> vsa -> Vector vsa 
-dim1Systolic3PN :: (VSig vsa) => (a -> c -> d -> vsa -> vsa) -> Vector a -> Vector c -> Vector d -> vsa -> Vector vsa 
+dim1Systolic2PN :: (VecSig vsa) => (a -> c -> vsa -> vsa) -> Vector a -> Vector c -> vsa -> Vector vsa 
+dim1Systolic3PN :: (VecSig vsa) => (a -> c -> d -> vsa -> vsa) -> Vector a -> Vector c -> Vector d -> vsa -> Vector vsa 
 
 -- reduce/fold patterns
-reducePN  :: (VSig vsa) => (vsa -> vsa -> vsa) -- ^ commutative process with two inputs
+reducePN  :: (VecSig vsa) => (vsa -> vsa -> vsa) -- ^ commutative process with two inputs
         -> Vector vsa                  -- ^ input vector
         -> vsa                           -- ^ output signal
-reduce1PN :: (VSig vsa) => (b -> vsa -> vsa -> vsa)  -- ^ commutative process constructor with one function parameter and two inputs 
+reduce1PN :: (VecSig vsa) => (b -> vsa -> vsa -> vsa)  -- ^ commutative process constructor with one function parameter and two inputs 
         -> Vector b                                 -- ^ vector of function parameters
         -> Vector vsa                        -- ^ input vector of signals
         -> vsa                                 -- ^ output signal
-reduce2PN :: (VSig vsa) => (b -> c -> vsa -> vsa -> vsa) -> Vector b -> Vector c -> Vector vsa -> vsa 
-reduce3PN :: (VSig vsa) => (b -> c -> d -> vsa -> vsa -> vsa) -> Vector b -> Vector c -> Vector d -> Vector vsa -> vsa 
+reduce2PN :: (VecSig vsa) => (b -> c -> vsa -> vsa -> vsa) -> Vector b -> Vector c -> Vector vsa -> vsa 
+reduce3PN :: (VecSig vsa) => (b -> c -> d -> vsa -> vsa -> vsa) -> Vector b -> Vector c -> Vector d -> Vector vsa -> vsa 
 
 -- filter patterns
 -- | the 'maskv' pattern filters out signal valuevsbased on a boolean condition. It ivsa static process network, thus the output vector length will be fixed and equal to the input vector length.

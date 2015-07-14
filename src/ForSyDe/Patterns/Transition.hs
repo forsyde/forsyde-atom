@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Communication
+-- Module      :  ForSyDe.Communication
 -- Copyright   :  ...
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,10 +11,10 @@
 --
 -- ...
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow.Patterns.Transition where
+module ForSyDe.Patterns.Transition where
 
-import ForSyDe.Shallow.Core
-import ForSyDe.Shallow.Patterns.Vector
+import ForSyDe.Core
+import ForSyDe.Patterns.Vector
 
 indexes :: Vector Int
 indexes = vector [1..]
@@ -34,77 +34,77 @@ indexes = vector [1..]
 --  * a physical copy in case of a distributed PNstem
 --
 --  * etc. The point is that one should not be stuck in the apparent \"copy\" behavior
-fanoutPN   :: VSig vsa => vsa -> Vector vsa
+fanoutPN   :: VecSig vsa => vsa -> Vector vsa
 
 -- | it is the same as 'fanoutPN' with an additional length parameter
-fanoutnPN     :: (VSig vsb, Num a, Eq a, Ord a) => a -> vsb -> Vector vsb
+fanoutnPN     :: (VecSig vsb, Num a, Eq a, Ord a) => a -> vsb -> Vector vsb
 
 
 -- |  The function 'replacePN' replaces an element in a vector.
-replacePN :: VSig vsa => Vector vsa -> Int -> vsa -> Vector vsa
+replacePN :: VecSig vsa => Vector vsa -> Int -> vsa -> Vector vsa
 
 -- | The functions 'headPN' returns the first element of a vector.
-headPN :: VSig vsa => Vector vsa -> vsa
+headPN :: VecSig vsa => Vector vsa -> vsa
 
 -- | The function 'lastV' returns the last element of a vector.
-lastPN :: VSig vsa => Vector vsa -> vsa
+lastPN :: VecSig vsa => Vector vsa -> vsa
 
 -- | The function 'groupPN' groups a vector into a vector of vectors of size n.
-groupPN :: VSig vsa => Int -> Vector vsa -> Vector (Vector vsa)
+groupPN :: VecSig vsa => Int -> Vector vsa -> Vector (Vector vsa)
 
 -- | The operator attachPN attaches a signal at the end of a vector.
-attachPN :: VSig vsa => Vector vsa -> vsa -> Vector vsa
+attachPN :: VecSig vsa => Vector vsa -> vsa -> Vector vsa
 
 -- | The operator 'catPN' concatinates two vectors.
-catPN :: VSig vsa => Vector vsa -> Vector vsa -> Vector vsa
+catPN :: VecSig vsa => Vector vsa -> Vector vsa -> Vector vsa
 
 -- | The function 'concatV' transforms a vector of vectors to a single vector. 
-concatPN :: VSig vsa => Vector (Vector vsa) -> Vector vsa
+concatPN :: VecSig vsa => Vector (Vector vsa) -> Vector vsa
 
 -- | The function 'reversePN' reverses the order of elements in a vector. 
-reversePN  :: VSig vsa => Vector vsa -> Vector vsa
+reversePN  :: VecSig vsa => Vector vsa -> Vector vsa
 
 -- | The function 'shiftlV' shifts a value from the left into a vector. 
-shiftlPN :: VSig vsa => Vector vsa -> vsa -> Vector vsa 
+shiftlPN :: VecSig vsa => Vector vsa -> vsa -> Vector vsa 
 
 -- | The function 'shiftrV' shifts a value from the right into a vector. 
-shiftrPN :: VSig vsa => Vector vsa -> vsa -> Vector vsa
+shiftrPN :: VecSig vsa => Vector vsa -> vsa -> Vector vsa
 
 -- | The function 'rotlV' rotates a vector to the left. Note that this fuctions does not change the size of a vector.
-rotlPN   :: VSig vsa => Vector vsa -> Vector vsa
+rotlPN   :: VecSig vsa => Vector vsa -> Vector vsa
 
 -- | The function 'rotrV' rotates a vector to the right. Note that this fuction does not change the size of a vector.
-rotrPN :: VSig vsa => Vector vsa -> Vector vsa
+rotrPN :: VecSig vsa => Vector vsa -> Vector vsa
 
-stridedSelPN  :: VSig vsa => Int -> Int -> Int -> Vector vsa -> Vector vsa
+stridedSelPN  :: VecSig vsa => Int -> Int -> Int -> Vector vsa -> Vector vsa
 
 -- | 'gatherIdxPN' selects an element based on a function of indexes in a vector of signals
-gatherIdxPN :: VSig vsa => (Int -> Bool) -> Vector vsa -> Vector vsa
+gatherIdxPN :: VecSig vsa => (Int -> Bool) -> Vector vsa -> Vector vsa
 
 -- | 'selectIdx1PN' selects signals based on a vector of indexes in a vector of signals
-gatherVecPN  :: VSig vsa => Vector Int -> Vector vsa -> Vector vsa
-gatherVec2PN :: VSig vsa => Vector (Vector Int) -> Vector vsa -> Vector (Vector vsa)
-gatherVec3PN :: VSig vsa => Vector (Vector (Vector Int)) -> Vector vsa -> Vector (Vector (Vector vsa))
-gatherVec4PN :: VSig vsa => Vector (Vector (Vector (Vector Int))) -> Vector vsa -> Vector (Vector (Vector (Vector vsa)))
-gatherVec5PN :: VSig vsa => Vector (Vector (Vector (Vector (Vector Int)))) -> Vector vsa -> Vector (Vector (Vector (Vector (Vector vsa))))
+gatherVecPN  :: VecSig vsa => Vector Int -> Vector vsa -> Vector vsa
+gatherVec2PN :: VecSig vsa => Vector (Vector Int) -> Vector vsa -> Vector (Vector vsa)
+gatherVec3PN :: VecSig vsa => Vector (Vector (Vector Int)) -> Vector vsa -> Vector (Vector (Vector vsa))
+gatherVec4PN :: VecSig vsa => Vector (Vector (Vector (Vector Int))) -> Vector vsa -> Vector (Vector (Vector (Vector vsa)))
+gatherVec5PN :: VecSig vsa => Vector (Vector (Vector (Vector (Vector Int)))) -> Vector vsa -> Vector (Vector (Vector (Vector (Vector vsa))))
 
 -- | 'selectIdx1AdpPN' selects signals based on signal of  vector of indexes in a vector of signals
-gatherAdpPN  :: UnzippableS s => s (Vector Int) -> Vector (s a) -> Vector (s a)
-gatherAdp2PN :: UnzippableS s => s (Vector (Vector Int)) -> Vector (s a) -> Vector (s (Vector a))
-gatherAdp3PN :: UnzippableS s => s (Vector (Vector (Vector Int))) -> Vector (s a) -> Vector (s (Vector (Vector a)))
-gatherAdp4PN :: UnzippableS s => s (Vector (Vector (Vector (Vector Int)))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector a))))
-gatherAdp5PN :: UnzippableS s => s (Vector (Vector (Vector (Vector (Vector Int))))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector (Vector a)))))
+gatherAdpPN  :: Signals s => s (Vector Int) -> Vector (s a) -> Vector (s a)
+gatherAdp2PN :: Signals s => s (Vector (Vector Int)) -> Vector (s a) -> Vector (s (Vector a))
+gatherAdp3PN :: Signals s => s (Vector (Vector (Vector Int))) -> Vector (s a) -> Vector (s (Vector (Vector a)))
+gatherAdp4PN :: Signals s => s (Vector (Vector (Vector (Vector Int)))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector a))))
+gatherAdp5PN :: Signals s => s (Vector (Vector (Vector (Vector (Vector Int))))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector (Vector a)))))
 
 -- | special cases of 'filteridxPN'
-tailPN        :: VSig vsa => Vector vsa -> Vector vsa
-initPN        :: VSig vsa => Vector vsa -> Vector vsa
-takePN        :: VSig vsa => Int ->  Vector vsa -> Vector vsa
-dropPN        :: VSig vsa => Int -> Vector vsa -> Vector vsa
-oddsPN        :: VSig vsa => Vector vsa -> Vector vsa
-evensPN       :: VSig vsa => Vector vsa -> Vector vsa
+tailPN        :: VecSig vsa => Vector vsa -> Vector vsa
+initPN        :: VecSig vsa => Vector vsa -> Vector vsa
+takePN        :: VecSig vsa => Int ->  Vector vsa -> Vector vsa
+dropPN        :: VecSig vsa => Int -> Vector vsa -> Vector vsa
+oddsPN        :: VecSig vsa => Vector vsa -> Vector vsa
+evensPN       :: VecSig vsa => Vector vsa -> Vector vsa
 
-splitatPN     :: VSig vsa => Int ->  Vector vsa -> Vector vsa
-bitrevPN      :: VSig vsa => Vector vsa -> Vector vsa
+splitatPN     :: VecSig vsa => Int ->  Vector vsa -> Vector vsa
+bitrevPN      :: VecSig vsa => Vector vsa -> Vector vsa
 
 -- | The pattern 'zipPN' \"zips\" two incoming signals into one signal of tuples.
 zipPN  :: Vector a -> Vector b -> Vector (a,b)
@@ -136,6 +136,15 @@ unzip5PN :: Vector (a,b,c,d,e)  -> (Vector a,Vector b,Vector c,Vector d,Vector e
 -- | Works as 'unzipPN', but has four output signals.
 unzip6PN :: Vector (a,b,c,d,e,f) -> (Vector a,Vector b,Vector c,Vector d,Vector e,Vector f)
 
+-- | 'zipxPN' transforms a vector of signals into a signal of vectors.
+zipxPN :: (Signals s) => Vector (s a) -> s (Vector a)
+zipxPN NullV = fromS $ signal $ repeat NullV
+zipxPN (x:>xs) =  (:>) §- x -§- zipxPN xs
+
+unzipxPN :: (Signals s) => s (Vector a) -> Vector (s a)
+unzipxPN = (§>) fromS . unzipx . toS
+  where unzipx NullS     = vector $ repeat NullS
+        unzipx (x :- xs) = (:-) §> x <§> unzipx xs
 
 fanoutPN a    = a :> fanoutPN a
 fanoutnPN n a | n > 0     = a :> fanoutnPN (n-1) a

@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.MoC
+-- Module      :  ForSyDe.MoC
 -- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -10,11 +10,11 @@
 -- 
 -----------------------------------------------------------------------------
 
-module ForSyDe.Shallow.MoC(  
-         module ForSyDe.Shallow.MoC.SY,
+module ForSyDe.MoC(  
+         module ForSyDe.MoC.SY,
        ) where
 
-import ForSyDe.Shallow.MoC.SY
+import ForSyDe.MoC.SY
 
 
 

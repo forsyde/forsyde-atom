@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.MoC.SY
+-- Module      :  ForSyDe.MoC.SY
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,7 +12,7 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.Shallow.MoC.SY (
+module ForSyDe.MoC.SY (
          -- * Signals
          SignalSY(..),
          -- * Process constructors
@@ -28,7 +28,7 @@ module ForSyDe.Shallow.MoC.SY (
          filterSY, fillSY, holdSY,
        ) where
 
-import ForSyDe.Shallow.Core
-import ForSyDe.Shallow.MoC.SY.Signal
-import ForSyDe.Shallow.MoC.SY.Process
+import ForSyDe.Core
+import ForSyDe.MoC.SY.Signal
+import ForSyDe.MoC.SY.Process
 

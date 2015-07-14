@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Core.AbsentExt
+-- Module      :  ForSyDe.Core.AbsentExt
 -- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -13,7 +13,7 @@
 --  \'absent\', which models the absence of a value.
 -- 
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow.Core.AbsentExt( 
+module ForSyDe.Core.AbsentExt( 
          AbstExt (Abst, Prst), fromAbstExt, abstExt, psi, 
          isAbsent, isPresent, abstExtFunc
        ) where

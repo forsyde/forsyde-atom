@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Vector
+-- Module      :  ForSyDe.Vector
 -- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -17,7 +17,7 @@
 -- in Haskells type system. Still most operations are defined for
 -- vectors with the same size.
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow.Core.Vector ( 
+module ForSyDe.Core.Vector ( 
               Vector (..), vector, fromVector, unitV, nullV, lengthV,
               atV, getV, replaceV, headV, tailV, lastV, initV, takeV, dropV, 
       selectV, groupV, (<+>), (<:), mapV, foldlV, foldrV, 
@@ -220,9 +220,9 @@ instance (Show a) => Show (Vector a) where
 
 -- | The vector 1 :> 2 >- NullV is read using the string \"\<1,2\>\".
 instance (Read a) => Read (Vector a) where
-  readsPrec d = readParen (d>1) readVectorStart
+  readsPrec d = readParen (d>1) readVecSigtart
     where
-      readVectorStart = (\ a -> [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b])
+      readVecSigtart = (\ a -> [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b])
       readVector r    = readEvent r ++ readNull r
       readEvent a     = [(x :> xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readVector c]
       readNull a      = [(NullV,b) | (">",b) <- lex a]

@@ -15,19 +15,19 @@ build-type:          Simple
 cabal-version:       >=1.22
 
 library
-  exposed-modules:     ForSyDe.Shallow,
-                       ForSyDe.Shallow.Core,
-                       ForSyDe.Shallow.Core.Signal,
-                       ForSyDe.Shallow.Core.Vector,
-                       ForSyDe.Shallow.Core.AbsentExt,
-                       ForSyDe.Shallow.MoC,
-                       ForSyDe.Shallow.MoC.SY,
-                       ForSyDe.Shallow.MoC.SY.Signal,
-                       ForSyDe.Shallow.MoC.SY.Process,
-                       ForSyDe.Shallow.Patterns,
-                       ForSyDe.Shallow.Patterns.Vector,
-                       ForSyDe.Shallow.Patterns.Transition,
-                       ForSyDe.Shallow.Patterns.Applicative
+  exposed-modules:     ForSyDe
+                       ForSyDe.Core,
+                       ForSyDe.Core.Signal,
+                       ForSyDe.Core.Vector,
+                       ForSyDe.Core.AbsentExt,
+                       ForSyDe.MoC,
+                       ForSyDe.MoC.SY,
+                       ForSyDe.MoC.SY.Signal,
+                       ForSyDe.MoC.SY.Process,
+                       ForSyDe.Patterns,
+                       ForSyDe.Patterns.Vector,
+                       ForSyDe.Patterns.Transition,
+                       ForSyDe.Patterns.Applicative
   -- other-modules:       
   build-depends:       base>=4.7.10
   hs-source-dirs:      src

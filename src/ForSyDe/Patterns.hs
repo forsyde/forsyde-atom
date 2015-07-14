@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Patterns
+-- Module      :  ForSyDe.Patterns
 -- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -9,21 +9,21 @@
 -- Portability :  portable 
 -- 
 -- 
--- * "ForSyDe.Shallow.Patterns.Communication"
+-- * "ForSyDe.Patterns.Communication"
 -- 
--- * "ForSyDe.Shallow.Patterns.Computation" 
+-- * "ForSyDe.Patterns.Computation" 
 -----------------------------------------------------------------------------
 
-module ForSyDe.Shallow.Patterns(  
-       module ForSyDe.Shallow.Patterns.Vector, 
-       module ForSyDe.Shallow.Patterns.Transition,
-       module ForSyDe.Shallow.Patterns.Applicative,
+module ForSyDe.Patterns(  
+       module ForSyDe.Patterns.Vector, 
+       module ForSyDe.Patterns.Transition,
+       module ForSyDe.Patterns.Applicative,
         ) where
 
 
-import ForSyDe.Shallow.Patterns.Vector
-import ForSyDe.Shallow.Patterns.Transition
-import ForSyDe.Shallow.Patterns.Applicative
+import ForSyDe.Patterns.Vector
+import ForSyDe.Patterns.Transition
+import ForSyDe.Patterns.Applicative
 
 
 

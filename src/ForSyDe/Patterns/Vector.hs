@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances, TypeFamilies,MultiParamTypeClasses #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Core.Vector
+-- Module      :  ForSyDe.Core.Vector
 -- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -19,11 +19,9 @@
 -- in Haskells type system. Still most operations are defined for
 -- vectors with the same size.
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow.Patterns.Vector where
+module ForSyDe.Patterns.Vector where
 
-import ForSyDe.Shallow.Core
-
-import qualified ForSyDe.Shallow.MoC.SY as SY
+import ForSyDe.Core
 
 infixl 4 §>, <§>
 
@@ -59,26 +57,15 @@ scanV         :: Vector (b -> b) -> b -> Vector b
 scanV NullV   = pure NullV  
 scanV (x:>xs) = (:>) <$> x . pipeV xs <*> scanV xs
 
--- | 'zipxPN' transforms a vector of signals into a signal of vectors.
-zipxPN :: (Signals s) => Vector (s a) -> s (Vector a)
-zipxPN NullV = signal $ repeat NullV
-zipxPN (x:>xs) =  (:>) §- x -§- zipxPN xs
 
-class Signals s => UnzippableS s where
-  unzipxPN :: s (Vector a) -> Vector (s a)
-
-instance UnzippableS SY.SignalSY where
-  unzipxPN SY.NullS     = vector $ repeat SY.NullS
-  unzipxPN (x SY.:- xs) = (SY.:-) §> x <§> unzipxPN xs
-
-class VSig a
-instance {-# OVERLAPS #-} UnzippableS s => VSig (s a)
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (s a))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (s a)))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (Vector (s a))))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (Vector (Vector (s a)))))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (Vector (Vector (Vector (s a))))))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a))))))))
-instance {-# OVERLAPS #-} UnzippableS s => VSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))))
+class VecSig a
+instance {-# OVERLAPS #-} Signals s => VecSig (s a)
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (s a))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (s a)))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (Vector (s a))))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (Vector (Vector (s a)))))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (Vector (Vector (Vector (s a))))))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a))))))))
+instance {-# OVERLAPS #-} Signals s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))))
 

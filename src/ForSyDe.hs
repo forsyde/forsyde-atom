@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Core
+-- Module      :  ForSyDe.Core
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,13 +11,13 @@
 -- This module defines the shallow-embedded 'Signal' datatype and
 -- functions operating on it.
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow (
+module ForSyDe(
        -- * Signal type class
        module ForSyDe.Core,
        module ForSyDe.MoC.SY,
 ) where
 
-import ForSyDe.Shallow.Core
-import ForSyDe.Shallow.MoC.SY
+import ForSyDe.Core
+import ForSyDe.MoC.SY
 
 

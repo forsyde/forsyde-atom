@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.MoC.SY.Process
+-- Module      :  ForSyDe.MoC.SY.Process
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,10 +12,10 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.Shallow.MoC.SY.Process where
+module ForSyDe.MoC.SY.Process where
 
-import ForSyDe.Shallow.Core
-import ForSyDe.Shallow.MoC.SY.Signal
+import ForSyDe.Core
+import ForSyDe.MoC.SY.Signal
 import Prelude hiding (filter, zip, zip3, unzipSY, unzip3)
 
 -- | The `combSY` take a combinatorial function as argument and returns a process with one input signals and one output signal.
@@ -124,30 +124,30 @@ comb2SY f x y     = f §- x -§- y
 comb3SY f x y z   = f §- x -§- y -§- z
 comb4SY f x y z q = f §- x -§- y -§- z -§- q
 
-delaySY x xs = xs -+> x
+delaySY x xs = xs ->- x
 delaynSY x n xs | n <= 0    = xs
-                | otherwise = delaynSY x (n-1) xs -+> x
+                | otherwise = delaynSY x (n-1) xs ->- x
 
 mooreSY ns od mem xs = od §- s
-  where s = ns §- s -§- xs -+> mem
+  where s = ns §- s -§- xs ->- mem
 moore2SY ns od mem xs ys = od §- s
-  where s = ns §- s -§- xs -§- ys -+> mem
+  where s = ns §- s -§- xs -§- ys ->- mem
 moore3SY ns od mem xs ys zs = od §- s
-  where s = ns §- s -§- xs -§- ys -§- zs -+> mem
+  where s = ns §- s -§- xs -§- ys -§- zs ->- mem
 
 mealySY ns od mem xs = od §- s -§- xs
-  where s = ns §- s -§- xs -+> mem
+  where s = ns §- s -§- xs ->- mem
 mealy2SY ns od mem xs ys = od §- s -§- xs -§- ys
-  where s = ns §- s -§- xs -§- ys -+> mem
+  where s = ns §- s -§- xs -§- ys ->- mem
 mealy3SY ns od mem xs ys zs = od §- s -§- xs -§- ys -§- zs
-  where s = ns §- s -§- xs -§- ys -§- zs -+> mem
+  where s = ns §- s -§- xs -§- ys -§- zs ->- mem
 
 filterSY p xs = xs -#- p
 fillSY   a xs = fmap (replaceAbst a) xs
   where replaceAbst a' Abst     = a'
         replaceAbst _  (Prst x) = x
 holdSY   a xs = s
-  where s = hold §- (s -+> a) -§- xs
+  where s = hold §- (s ->- a) -§- xs
         hold a' Abst     = a'
         hold _  (Prst x) = x
 

@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.MoC.
+-- Module      :  ForSyDe.MoC.
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -13,67 +13,41 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.Shallow.MoC.SY.Signal (
-         SignalSY(..),
-       ) where
+module ForSyDe.MoC.SY.Signal  where
 
-import ForSyDe.Shallow.Core
+import ForSyDe.Core
 
--- | A synchronous (SY) signal is defined as a list of events. An event has a tag and a value. 
---   The tag of an event is defined by the position in the list.  
-data SignalSY a = a :- SignalSY a | NullS
 
-infixr 3 :-
-  
--- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
+newtype SignalSY a = SignalSY { fromSY :: Signal a }
+
 instance (Show a) => Show (SignalSY a) where
-  showsPrec p = showParen (p>1) . showSignal
-    where
-      showSignal (x :- xs)  = showChar '{' . showEvent x . showSignal' xs
-      showSignal (NullS)     = showChar '{' . showChar '}'
-      showSignal' (x :- xs) = showChar ',' . showEvent x . showSignal' xs
-      showSignal' (NullS)    = showChar '}'
-      showEvent x           = shows x
-
--- | 'Read' instance for a SY signal. The signal 1 :- 2 :- NullS is read using the string \"\{1,2\}\".
-instance (Read a) => Read (SignalSY a) where
-  readsPrec d = readParen (d>1) readSignalStart
-    where
-      readSignalStart = (\ a -> [(xs,c) | ("{",b) <- lex a , (xs,c) <- readSignal (',' : b) ++ readNull b])
-      readSignal r    = readEvent r ++ readNull r
-      readEvent a     = [(x :- xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readSignal c]
-      readNull a      = [(NullS,b) | ("}",b) <- lex a]
+  showsPrec p = showsPrec p . fromSY
 
 -- | provides 'fmap'
 instance Functor SignalSY where
-  fmap _ NullS    = NullS
-  fmap f (x:-xs) = f x :- fmap f xs
+  fmap f = SignalSY . fmapSY f . fromSY
+    where fmapSY _ NullS    = NullS
+          fmapSY f (x:-xs) = f x :- fmapSY f xs
 
 -- | provides 'pure', '<*>', '<$>'
 instance Applicative SignalSY where
-  pure a = a :- NullS
-  _         <*> NullS      = NullS
-  NullS      <*> _         = NullS
-  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
+  pure a  = SignalSY (a :- NullS)
+  a <*> b = SignalSY $ starSY (fromSY a) (fromSY b)
+    where starSY _         NullS     = NullS
+          starSY NullS     _         = NullS
+          starSY (f :- fs) (x :- xs) = f x :- starSY fs xs
 
 -- | 'Signals' instance for a  signal
 instance Signals SignalSY where
   type Filtered SignalSY a = AbstExt a 
-  --------
-  signal []     = NullS
-  signal (x:xs) = x :- signal xs 
-  --------
-  fromSignal NullS  =  []
-  fromSignal (x:-xs) =  x : fromSignal xs
-  --------
-  nullS = NullS
-  (-:-) = (:-) 
-  --------
-  NullS    -++- ys = ys
-  (x:-xs) -++- ys = x :- (xs -++- ys)
+  toS   = fromSY
+  fromS = SignalSY
   --------
   xs -#- p = fmap (\x -> if p x then Prst x else Abst) xs
-  --------
-  applyPattern NullS a _ = a
-  applyPattern _ _ b = b
+
+signalSY :: [a] -> SignalSY a 
+signalSY = SignalSY . signal 
+
+fromSignalSY :: SignalSY a -> [a]
+fromSignalSY = fromSignal . fromSY
 

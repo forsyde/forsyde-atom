@@ -1,5 +1,5 @@
-import ForSyDe.Shallow hiding (fft)
-import ForSyDe.Shallow.Patterns
+import ForSyDe.hiding (fft)
+import ForSyDe.Patterns
 
 import Data.Complex
 

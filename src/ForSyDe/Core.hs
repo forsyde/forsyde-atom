@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Shallow.Core
+-- Module      :  ForSyDe.Core
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,18 +11,18 @@
 -- This module defines the shallow-embedded 'Signal' datatype and
 -- functions operating on it.
 -----------------------------------------------------------------------------
-module ForSyDe.Shallow.Core (
+module ForSyDe.Core (
        -- * Signal type class
-       module ForSyDe.Shallow.Core.Signal,
+       module ForSyDe.Core.Signal,
        -- * Absent extended type
        AbstExt (Abst, Prst), fromAbstExt, abstExt, psi, 
        isAbsent, isPresent, abstExtFunc,
-       module ForSyDe.Shallow.Core.Vector,
+       module ForSyDe.Core.Vector,
 ) where
 
-import ForSyDe.Shallow.Core.Signal
-import ForSyDe.Shallow.Core.AbsentExt
-import ForSyDe.Shallow.Core.Vector
+import ForSyDe.Core.Signal
+import ForSyDe.Core.AbsentExt
+import ForSyDe.Core.Vector
 
 
 
