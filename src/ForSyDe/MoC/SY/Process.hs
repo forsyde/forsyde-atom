@@ -12,9 +12,21 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SY.Process where
+module ForSyDe.MoC.SY.Process (
+  -- ** Combinatorial process constructors
+  combSY, comb2SY, comb3SY, comb4SY,
+  zipSY, zip3SY, zip4SY, zip5SY, zip6SY,
+  unzipSY, unzip3SY, unzip4SY, unzip5SY, unzip6SY,
+  -- ** Sequential process constructors
+  delaySY, delaynSY,
+  mooreSY, moore2SY, moore3SY,
+  mealySY, mealy2SY, mealy3SY,
+  -- ** SY specific processes
+  filterSY, fillSY, holdSY,
+) where
 
 import ForSyDe.Core
+import ForSyDe.MoC.Signal
 import ForSyDe.MoC.SY.Signal
 import Prelude hiding (filter, zip, zip3, unzipSY, unzip3)
 

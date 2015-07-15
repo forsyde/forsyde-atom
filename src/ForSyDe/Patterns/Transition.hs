@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Communication
@@ -14,6 +14,7 @@
 module ForSyDe.Patterns.Transition where
 
 import ForSyDe.Core
+import ForSyDe.MoC.Signal
 import ForSyDe.Patterns.Vector
 
 indexes :: Vector Int
@@ -89,11 +90,11 @@ gatherVec4PN :: VecSig vsa => Vector (Vector (Vector (Vector Int))) -> Vector vs
 gatherVec5PN :: VecSig vsa => Vector (Vector (Vector (Vector (Vector Int)))) -> Vector vsa -> Vector (Vector (Vector (Vector (Vector vsa))))
 
 -- | 'selectIdx1AdpPN' selects signals based on signal of  vector of indexes in a vector of signals
-gatherAdpPN  :: Signals s => s (Vector Int) -> Vector (s a) -> Vector (s a)
-gatherAdp2PN :: Signals s => s (Vector (Vector Int)) -> Vector (s a) -> Vector (s (Vector a))
-gatherAdp3PN :: Signals s => s (Vector (Vector (Vector Int))) -> Vector (s a) -> Vector (s (Vector (Vector a)))
-gatherAdp4PN :: Signals s => s (Vector (Vector (Vector (Vector Int)))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector a))))
-gatherAdp5PN :: Signals s => s (Vector (Vector (Vector (Vector (Vector Int))))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector (Vector a)))))
+gatherAdpPN  :: Signal s => s (Vector Int) -> Vector (s a) -> Vector (s a)
+gatherAdp2PN :: Signal s => s (Vector (Vector Int)) -> Vector (s a) -> Vector (s (Vector a))
+gatherAdp3PN :: Signal s => s (Vector (Vector (Vector Int))) -> Vector (s a) -> Vector (s (Vector (Vector a)))
+gatherAdp4PN :: Signal s => s (Vector (Vector (Vector (Vector Int)))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector a))))
+gatherAdp5PN :: Signal s => s (Vector (Vector (Vector (Vector (Vector Int))))) -> Vector (s a) -> Vector (s (Vector (Vector (Vector (Vector a)))))
 
 -- | special cases of 'filteridxPN'
 tailPN        :: VecSig vsa => Vector vsa -> Vector vsa
@@ -137,11 +138,11 @@ unzip5PN :: Vector (a,b,c,d,e)  -> (Vector a,Vector b,Vector c,Vector d,Vector e
 unzip6PN :: Vector (a,b,c,d,e,f) -> (Vector a,Vector b,Vector c,Vector d,Vector e,Vector f)
 
 -- | 'zipxPN' transforms a vector of signals into a signal of vectors.
-zipxPN :: (Signals s) => Vector (s a) -> s (Vector a)
-zipxPN NullV = fromS $ signal $ repeat NullV
+zipxPN :: (Signal s) => Vector (s a) -> s (Vector a)
+zipxPN NullV = fromS $ stream $ repeat NullV
 zipxPN (x:>xs) =  (:>) §- x -§- zipxPN xs
 
-unzipxPN :: (Signals s) => s (Vector a) -> Vector (s a)
+unzipxPN :: (Signal s) => s (Vector a) -> Vector (s a)
 unzipxPN = (§>) fromS . unzipx . toS
   where unzipx NullS     = vector $ repeat NullS
         unzipx (x :- xs) = (:-) §> x <§> unzipx xs
@@ -229,7 +230,7 @@ unzip6PN xs = ((\(x,_,_,_,_,_) -> x) §> xs,
 gatherPN :: (Int -> Vector a -> b) 
          -> Vector Int 
          -> Vector a 
-         -> Vector (Signal b)
+         -> Vector (Stream b)
 gatherPN r ix v = mapV (\i -> mapS (r i) (zipxPN v)) ix
     where mapS _ NullS   = NullS
           mapS f (x:-xs) = f x :- mapS f xs
@@ -238,16 +239,16 @@ gatherPN r ix v = mapV (\i -> mapS (r i) (zipxPN v)) ix
 gather1PN :: Vector (Int -> Vector a -> b) 
           -> Vector Int 
           -> Vector a 
-          -> Vector (Signal b)
+          -> Vector (Stream b)
 gather1PN vr ix v = zipWithV (\r i -> mapS (r i) (zipxPN v)) vr ix
     where mapS _ NullS   = NullS
           mapS f (x:-xs) = f x :- mapS f xs
 
 -- | 'gatherAdpPN' is the adaptive version of 'gather'. It inputs the indexes through a signal of vectors
 gatherAdpPN :: (Int -> Vector a -> b) 
-            -> Signal (Vector Int) 
+            -> Stream (Vector Int) 
             -> Vector a 
-            -> Vector (Signal b)
+            -> Vector (Stream b)
 gatherAdpPN r ixs v = unzipxPN $ zipWithS (\i tok -> mapV (\x -> (r x tok)) i) ixs (zipxPN v)
     where zipWithS f (x:-xs) (y:-ys) = f x y :- (zipWithS f xs ys)
           zipWithS _ _       _       = NullS
@@ -259,14 +260,14 @@ gatherAdpPN r ixs v = unzipxPN $ zipWithS (\i tok -> mapV (\x -> (r x tok)) i) i
 
 
 -- | 'unzipPN'  unzips a vector of signals of tuples into a tuple of vectors of signals
-unzipPN :: (Signals s) => Vector (s (a, b)) -> (Vector (s a), Vector (s b))
+unzipPN :: (Signal s) => Vector (s (a, b)) -> (Vector (s a), Vector (s b))
 unzipPN = foldrV f (NullV, NullV) . mapV unzipPN
     where f x tp = (fst x:>fst tp, snd x:>snd tp)
 
 
 
-dualsPN :: Vector a -> Vector (Signal (a,a))
-undualsPN :: Vector (Signal (a,a)) -> Vector a
+dualsPN :: Vector a -> Vector (Stream (a,a))
+undualsPN :: Vector (Stream (a,a)) -> Vector a
 dualsPN v = zipPN (takeV k v) (dropV k v)
 	where k = lengthV v `div` 2
 undualsPN v = x <+> y

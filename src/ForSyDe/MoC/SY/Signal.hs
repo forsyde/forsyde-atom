@@ -2,8 +2,8 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.MoC.
--- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; SAM Group, KTH/ICT/ECS 2007-2008
+-- Module      :  ForSyDe.MoC.SY.Signal
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; 
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -13,23 +13,27 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SY.Signal  where
+module ForSyDe.MoC.SY.Signal (
+  SignalSY (..),
+  -- ** Interface functions
+  signalSY, fromSignalSY,
+) where
 
 import ForSyDe.Core
+import ForSyDe.MoC.Signal
 
+-- | The type 'SignalSY' denotes a 'Stream' that behaves according to the Sychronous MoC. 
+newtype SignalSY a = SignalSY { fromSY :: Stream a }
 
-newtype SignalSY a = SignalSY { fromSY :: Signal a }
-
+-- | Only 'Show' instance. To 'Read' it, use the 'Stream' instance.
 instance (Show a) => Show (SignalSY a) where
   showsPrec p = showsPrec p . fromSY
 
--- | provides 'fmap'
 instance Functor SignalSY where
   fmap f = SignalSY . fmapSY f . fromSY
     where fmapSY _ NullS    = NullS
           fmapSY f (x:-xs) = f x :- fmapSY f xs
 
--- | provides 'pure', '<*>', '<$>'
 instance Applicative SignalSY where
   pure a  = SignalSY (a :- NullS)
   a <*> b = SignalSY $ starSY (fromSY a) (fromSY b)
@@ -37,17 +41,24 @@ instance Applicative SignalSY where
           starSY NullS     _         = NullS
           starSY (f :- fs) (x :- xs) = f x :- starSY fs xs
 
--- | 'Signals' instance for a  signal
-instance Signals SignalSY where
+-- | instance defining the Synchronous MoC behavior
+instance Signal SignalSY where
+  -- | To abide the synchronicicy law, a data-filtered signal must replace missing tokens with 
+  --   absent values, thus the filtered type is 'AbstExt'
   type Filtered SignalSY a = AbstExt a 
+  --------
   toS   = fromSY
   fromS = SignalSY
   --------
   xs -#- p = fmap (\x -> if p x then Prst x else Abst) xs
+  --------
 
+-- | converts a list directly to a SY signal.
 signalSY :: [a] -> SignalSY a 
-signalSY = SignalSY . signal 
+signalSY = SignalSY . stream 
 
+
+-- | converts a SY signal into a list.
 fromSignalSY :: SignalSY a -> [a]
-fromSignalSY = fromSignal . fromSY
+fromSignalSY = fromStream . fromSY
 

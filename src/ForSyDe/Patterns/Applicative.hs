@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Patterns.Applicative
@@ -10,9 +11,21 @@
 --
 -- ...
 -----------------------------------------------------------------------------
-module ForSyDe.Patterns.Applicative where
+module ForSyDe.Patterns.Applicative (
+  -- ** map patterns
+  farmPN, farm1PN, farm2PN, farm3PN,
+  -- ** pipe patterns
+  pipePN, pipe1PN, pipe2PN, pipe3PN,
+  -- ** systolic array patterns
+  dim1SystolicPN, dim1Systolic1PN, dim1Systolic2PN, dim1Systolic3PN,
+  -- ** reduce patterns
+  reducePN, reduce1PN, reduce2PN, reduce3PN,
+  -- ** filter patterns
+  maskPN, mask1PN,
+) where
 
 import ForSyDe.Core
+import ForSyDe.MoC.Signal
 import ForSyDe.Patterns.Vector
 import ForSyDe.Patterns.Transition
 
@@ -25,22 +38,25 @@ import ForSyDe.Patterns.Transition
 -- In order to implement dynamic process networks, transformations towards static 
 -- process networks need to be defined. 
 
--- STATIC PROCESS NETWORK PATTERNS
+-- | The pattern constructor 'farmPN' takes a process and applies it on a vector of 'VecSig's
+farmPN  :: (VecSig vsa, VecSig vsb) 
+         => (vsa -> vsb) -- ^ process
+         -> Vector vsa   -- ^ input vector of signals
+         -> Vector vsb   -- ^ output vector of signals 
 
--- map patterns
-farmPN  :: (VecSig vsa, VecSig vsb) => 
-         (vsa -> vsb) -- ^ process
-         -> Vector vsa   -- ^ input vector of signals
-         -> Vector vsb   -- ^ output vector of signals 
-farm1PN :: (VecSig vsa, VecSig vsb) => 
-         (c -> vsa -> vsb) -- ^ process constructor with one function parameter 
-         -> Vector c       -- ^ vector of function parameters
-         -> Vector vsa   -- ^ input vector of signals
-         -> Vector vsb   -- ^ output vector of signals 
-farm2PN :: (VecSig vsa, VecSig vsb) => (c -> d -> vsa -> vsb) -> Vector c -> Vector d -> Vector vsa -> Vector vsb 
+-- | The pattern constructor 'farm1PN' takes a process constructors which takes one parameter and applies it on a vector of 'VecSig's
+farm1PN :: (VecSig vsa, VecSig vsb) 
+         => (c -> vsa -> vsb) -- ^ process constructor with one function parameter 
+         -> Vector c          -- ^ vector of function parameters
+         -> Vector vsa        -- ^ input vector of signals
+         -> Vector vsb        -- ^ output vector of signals 
+
+-- | The pattern constructor 'farm2PN' is similar to 'farm1PN', but the process constructor takes two parameters
+farm2PN :: (VecSig vsa, VecSig vsb) => (c -> d -> vsa -> vsb) -> Vector c -> Vector d -> Vector vsa -> Vector vsb
+
+-- | The pattern constructor 'farm3PN' is similar to 'farm1PN', but the process constructor takes three parameters 
 farm3PN :: (VecSig vsa, VecSig vsb) => (c -> d -> e -> vsa -> vsb) -> Vector c -> Vector d -> Vector e -> Vector vsa -> Vector vsb
 
--- pipeV/serial composition patterns
 pipePN  :: (VecSig vsa) => Int                    -- ^ number of repeated compositions
         -> (vsa -> vsa) -- ^ process
         -> vsa               -- ^ input signal
@@ -79,11 +95,11 @@ reduce3PN :: (VecSig vsa) => (b -> c -> d -> vsa -> vsa -> vsa) -> Vector b -> V
 -- | the 'maskv' pattern filters out signal valuevsbased on a boolean condition. It ivsa static process network, thus the output vector length will be fixed and equal to the input vector length.
 --
 -- /OBS/: this pattern disregardvsany MoC bound to the signals, and forces the boolean function avsa functor on the token values. This is desirable since a mask should always (statically) work on the input streams regardless of their production and consumption rates.
-maskPN  :: (Signals s) => (a -> Bool)                 -- ^ condition (function)
+maskPN  :: (Signal s) => (a -> Bool)                 -- ^ condition (function)
         -> Vector (s a)           -- ^ input vector of signals
         -> Vector (s (Filtered s a)) -- ^ output vector of absent extended signals
 
-mask1PN :: (Signals s) => Vector (a -> Bool)         -- ^ vector of conditions function
+mask1PN :: (Signal s) => Vector (a -> Bool)         -- ^ vector of conditions function
         -> Vector (s a)           -- ^ input vector of signals
         -> Vector (s (Filtered s a)) -- ^ output vector of absent extended signals
 

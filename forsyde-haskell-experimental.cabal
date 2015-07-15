@@ -17,7 +17,7 @@ cabal-version:       >=1.22
 library
   exposed-modules:     ForSyDe
                        ForSyDe.Core,
-                       ForSyDe.Core.Signal,
+                       ForSyDe.Core.Stream,
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.AbsentExt,
                        ForSyDe.MoC,

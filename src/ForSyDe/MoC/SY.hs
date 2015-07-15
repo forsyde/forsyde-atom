@@ -1,34 +1,27 @@
-{-# LANGUAGE TypeFamilies #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.MoC.SY
--- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; SAM Group, KTH/ICT/ECS 2007-2008
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; 
+--                    SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- ...
+-- The synchronuous library defines process constructors, processes and a signal conduit
+-- for the synchronous computational model. A process constructor is a
+-- higher order function which together with combinational function(s)
+-- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
 
 module ForSyDe.MoC.SY (
-         -- * Signals
-         SignalSY(..),
+         -- * Synchronous signal
+         module ForSyDe.MoC.SY.Signal,
          -- * Process constructors
-         -- ** Combinatorial process constructors
-         combSY, comb2SY, comb3SY, comb4SY,
-         zipSY, zip3SY, zip4SY, zip5SY, zip6SY,
-         unzipSY, unzip3SY, unzip4SY, unzip5SY, unzip6SY,
-         -- ** Sequential process constructors
-         delaySY, delaynSY,
-         mooreSY, moore2SY, moore3SY,
-         mealySY, mealy2SY, mealy3SY,
-         -- ** SY specific processes
-         filterSY, fillSY, holdSY,
+         module ForSyDe.MoC.SY.Process
        ) where
 
-import ForSyDe.Core
 import ForSyDe.MoC.SY.Signal
 import ForSyDe.MoC.SY.Process
 

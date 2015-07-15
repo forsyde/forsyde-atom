@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core
+-- Module      :  ForSyDe
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -8,13 +8,22 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module defines the shallow-embedded 'Signal' datatype and
--- functions operating on it.
+-- The ForSyDe module is an experimental shallow-embedded DSL implmenenting
+-- the ForSyDe methodology. It loads the default libraries:
+--
+-- * 'ForSyDe.Core'
+--
+-- * 'ForSyDe.MoC.SY'
+--
+-- It does not load 'ForSyDe.Patterns', since patterns are not yet part of 
+--  the ForSyDe language. In order to model using process network patterns
+-- you need to import the module manually.
+--
 -----------------------------------------------------------------------------
+
 module ForSyDe(
-       -- * Signal type class
-       module ForSyDe.Core,
-       module ForSyDe.MoC.SY,
+  module ForSyDe.Core,
+  module ForSyDe.MoC.SY,
 ) where
 
 import ForSyDe.Core

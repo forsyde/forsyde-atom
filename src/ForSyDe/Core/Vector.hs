@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Vector
@@ -10,31 +11,28 @@
 --
 -- This module defines the data type 'Vector' and the
 -- corresponding functions. It is a development of the module
--- defined by Reekie.  Though the vector is modeled as a list, it
--- should be viewed as an array, i.e. a vector has a fixed
--- size. Unfortunately, it is not possible to have the size of the
--- vector as a parameter of the vector data type, due to restrictions
--- in Haskells type system. Still most operations are defined for
--- vectors with the same size.
+-- defined by Reekie.
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Vector ( 
-              Vector (..), vector, fromVector, unitV, nullV, lengthV,
-              atV, getV, replaceV, headV, tailV, lastV, initV, takeV, dropV, 
-      selectV, groupV, (<+>), (<:), mapV, foldlV, foldrV, 
-      -- scanlV, scanrV, meshlV, meshrV, 
-      zipWithV, filterV, zipV, unzipV, 
-      concatV, reverseV, shiftlV, shiftrV, rotrV, rotlV, 
-      generateV, iterateV, copyV --, serialV, parallelV 
-      )
-       where
+  Vector (..), vector, fromVector, unitV, nullV, lengthV,
+  atV, getV, replaceV, headV, tailV, lastV, initV, takeV, dropV, 
+  selectV, groupV, (<+>), (<:), mapV, foldlV, foldrV, 
+  zipWithV, filterV, zipV, unzipV, 
+  concatV, reverseV, shiftlV, shiftrV, rotrV, rotlV, 
+  generateV, iterateV, copyV 
+) where
 
 infixr 3 :>
 infixl 5 <:
 infixr 5 <+>
 
--- | The data type 'Vector' is modeled similar to a list. It has two data type constructors. 'NullV' constructs the empty vector, while ':>' constructsa vector by adding an value to an existing vector. Using the inheritance mechanism of Haskell we have declared 'Vector' as an instance of the classes 'Read' and 'Show'.
+-- | The data type 'Vector' is modeled similar to a list. As described in the core library,
+--   it is only a data container used in functions.
 --
--- | This means that the vector 1:>2:>3:>NullV is shown as <1,2,3>.
+--   It may only be carried as token of signals, and __MUST NOT__ enclose signals as such,  
+--   unless the 'ForSyDe.Patterns.Patterns' module is explicitly loaded. Only then 'Vector' enables 
+--   signals to be bundled in arbitrary forms and has methods for exploiting process network
+--   patterns.
 data Vector a = NullV
               | a :> (Vector a) deriving (Eq)
 
@@ -164,49 +162,6 @@ generateV :: (Num a, Eq a) => a -> (b -> b) -> b -> Vector b
 -- > <5,5,5,5,5,5,5> :: Vector Integer
 copyV     :: (Num a, Eq a) => a -> b -> Vector b
 
-
-{-
--- | The function 'serialV' can be used to construct a serial network of processes.
-
---|The function \haskell{serialV} and \haskell{parallelV} can be used to construct serial and parallel networks of processes.
-\begin{code}
-serialV:: Vector (a -> a) -> a -> a
-parallelV:: Vector (a -> b) -> Vector a -> Vector b
-\end{code}
-
-The functions \haskell{scanlV} and \haskell{scanrV} "scan" a function through a vector. The functions take an initial element apply a functions recursively first on the element and then on the result of the function application.
-%
-\begin{code}
-scanlV    :: (a -> b -> a) -> a -> Vector b -> Vector a 
-scanrV    :: (b -> a -> a) -> a -> Vector b -> Vector a
-\end{code}
-
-\index{scanlV@\haskell{scanlV}}
-\index{scanrV@\haskell{scanrV}}
-
-Reekie also proposed the \haskell{meshlV} and \haskell{meshrV} iterators. They are like a combination of \haskell{mapV} and \haskell{scanlV} or \haskell{scanrV}. The argument function supplies a pair of values: the first is input into the next application of this function, and the second is the output value. As an example consider the expression:
-%
-\begin{code}
-f x y = (x+y, x+y)
-
-s1 = vector [1,2,3,4,5]
-\end{code}
-%
-Here \haskell{meshlV} can be used to calculate the running sum. 
-%
-\begin{verbatim}
-Vector> meshlV f 0 s1
-(15,<1,3,6,10,15>)
-\end{verbatim}
-
-\begin{code}
-meshlV    :: (a -> b -> (a, c)) -> a -> Vector b -> (a, Vector c)
-meshrV    :: (a -> b -> (c, b)) -> b -> Vector a -> (Vector c, b)
-\end{code}
-
-\index{meshlV@\haskell{meshlV}}
-\index{meshrV@\haskell{meshrV}}
--}
 
 -- | The vector 1 :> 2 :> NullV is represented as \<1,2\>.
 instance (Show a) => Show (Vector a) where
@@ -341,43 +296,4 @@ iterateV 0 _ _ = NullV
 iterateV n f a = a :> iterateV (n-1) f (f a)
 
 copyV k x = iterateV k id x 
-
-{-
-serialV  fs      x = serialV' (reverseV fs ) x
-  where
-    serialV' NullV   x = x
-    serialV' (f:>fs) x = serialV fs (f x)
-
-
-parallelV NullV   NullV   = NullV
-parallelV _  NullV   
-   = error "parallelV: Vectors have not the same size!"
-parallelV NullV  _       
-   = error "parallelV: Vectors have not the same size!"
-parallelV (f:>fs) (x:>xs) = f x :> parallelV fs xs
-
-scanlV _ _ NullV   = NullV
-scanlV f a (x:>xs) = q :> scanlV f q xs 
-                   where q = f a x
-
-scanrV _ _ NullV      = NullV
-scanrV f a (x:>NullV) = f x a :> NullV
-scanrV f a (x:>xs)    = f x y :> ys 
-                      where ys@(y:>_) = scanrV f a xs
-
-meshlV _ a NullV   = (a, NullV)
-meshlV f a (x:>xs) = (a'', y:>ys) 
-                   where (a', y)   = f a x
-                         (a'', ys) = meshlV f a' xs
-
-meshrV _ a NullV    = (NullV, a)
-meshrV f a (x:>xs)  = (y:>ys, a'') 
-                    where (y, a'') = f x a'
-                          (ys, a') = meshrV f a xs
--}
-
-
-
-
-
 
