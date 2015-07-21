@@ -14,7 +14,11 @@
 -- defined by Reekie.
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Vector ( 
-  Vector (..), vector, fromVector, unitV, nullV, lengthV,
+  Vector (..), 
+  -- ** Basic operators
+  (§>), (<§>), pipeV, scanV,
+  -- ** functions
+  vector, fromVector, unitV, nullV, lengthV,
   atV, getV, replaceV, headV, tailV, lastV, initV, takeV, dropV, 
   selectV, groupV, (<+>), (<:), mapV, foldlV, foldrV, 
   zipWithV, filterV, zipV, unzipV, 
@@ -22,19 +26,57 @@ module ForSyDe.Core.Vector (
   generateV, iterateV, copyV 
 ) where
 
+
 infixr 3 :>
 infixl 5 <:
 infixr 5 <+>
+infixl 4 §>, <§>
 
 -- | The data type 'Vector' is modeled similar to a list. As described in the core library,
 --   it is only a data container used in functions.
 --
---   It may only be carried as token of signals, and __MUST NOT__ enclose signals as such,  
+--   NOT TRUE: It may only be carried as token of signals, and __MUST NOT__ enclose signals as such,  
 --   unless the 'ForSyDe.Patterns.Patterns' module is explicitly loaded. Only then 'Vector' enables 
 --   signals to be bundled in arbitrary forms and has methods for exploiting process network
 --   patterns.
 data Vector a = NullV
               | a :> (Vector a) deriving (Eq)
+
+
+instance Functor Vector where
+  fmap _ NullV   = NullV
+  fmap f (x:>xs) = f x :> fmap f xs
+
+instance Applicative Vector where
+  pure x = x :> pure x
+  _         <*> NullV     = NullV
+  NullV     <*> _         = NullV
+  (f :> fs) <*> (x :> xs) = f x :> fs <*> xs
+
+
+-- | operator for functional application on vectors
+(§>) :: (a -> b) -> Vector a -> Vector b 
+(§>) = (<$>)
+
+-- | operator for zip-applying (zapp) two vectors
+(<§>) :: Vector (a -> b) -> Vector a -> Vector b 
+(<§>) = (<*>)
+
+
+-- | The 'pipe' function constructs a serial composition from a vector of functions.
+--
+-- __OBS__: composition is right associative thus the input vector should contain functions from right to left
+pipeV         :: Vector (b -> b) -> b -> b
+pipeV NullV   = id
+pipeV (v:>vs) = v . pipeV vs 
+
+-- | The 'scan' function constructs a parallel prefix vector from a vector of functions.
+--
+-- __OBS__: composition is right associative thus the input vector should contain functions from right to left
+scanV         :: Vector (b -> b) -> b -> Vector b
+scanV NullV   = pure NullV  
+scanV (x:>xs) = (:>) <$> x . pipeV xs <*> scanV xs
+
 
 -- | The function 'vector' converts a list into a vector.
 vector     :: [a] -> Vector a

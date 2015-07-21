@@ -24,9 +24,10 @@
 module ForSyDe(
   module ForSyDe.Core,
   module ForSyDe.MoC.SY,
+  module ForSyDe.MoC.SDF,
 ) where
 
 import ForSyDe.Core
 import ForSyDe.MoC.SY
-
+import ForSyDe.MoC.SDF
 

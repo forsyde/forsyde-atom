@@ -31,8 +31,6 @@ module ForSyDe.Patterns.Transition (
 ) where
 
 import ForSyDe.Core
-import ForSyDe.MoC.Signal
-import ForSyDe.Patterns.Vector
 
 
 -- | Returns a vector with indexes, i.e. @\<0,1,2,...\>@

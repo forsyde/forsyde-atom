@@ -20,7 +20,6 @@ module ForSyDe.MoC.SY.Signal (
 ) where
 
 import ForSyDe.Core
-import ForSyDe.MoC.Signal
 
 -- | The type 'SignalSY' denotes a 'Stream' that behaves according to the Sychronous MoC. 
 newtype SignalSY a = SignalSY { fromSY :: Stream a }
@@ -35,7 +34,7 @@ instance Functor SignalSY where
           fmapSY f (x:-xs) = f x :- fmapSY f xs
 
 instance Applicative SignalSY where
-  pure a  = SignalSY (a :- NullS)
+  pure a  = SignalSY (repeatS a)
   a <*> b = SignalSY $ starSY (fromSY a) (fromSY b)
     where starSY _         NullS     = NullS
           starSY NullS     _         = NullS
@@ -46,11 +45,24 @@ instance Signal SignalSY where
   -- | To abide the synchronicicy law, a data-filtered signal must replace missing tokens with 
   --   absent values, thus the filtered type is 'AbstExt'
   type Filtered SignalSY a = AbstExt a 
+  type Padded SignalSY a = a 
   --------
   toS   = fromSY
   fromS = SignalSY
   --------
+  (§-)  = (<$>)
+  (-§-) = (<*>)
+  --------
   xs -#- p = fmap (\x -> if p x then Prst x else Abst) xs
+  --------
+  safe xs = xs
+  --------
+  zipx NullV = pure NullV
+  zipx (x:>xs) =  (:>) §- x -§- zipx xs
+  --------
+  unzipx = (§>) fromS . unzx . toS
+    where unzx NullS     = pure NullS
+          unzx (x :- xs) = (:-) §> x <§> unzx xs
   --------
 
 -- | converts a list directly to a SY signal.

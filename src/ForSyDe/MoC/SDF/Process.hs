@@ -12,7 +12,7 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SY.Process (
+module ForSyDe.MoC.SDF.Process (
   -- ** Combinatorial process constructors
   combSY, comb2SY, comb3SY, comb4SY,
   zipSY, zip3SY, zip4SY, zip5SY, zip6SY,
@@ -26,7 +26,9 @@ module ForSyDe.MoC.SY.Process (
 ) where
 
 import ForSyDe.Core
+import ForSyDe.MoC.Signal
 import ForSyDe.MoC.SY.Signal
+import Prelude hiding (filter, zip, zip3, unzipSY, unzip3)
 
 -- | The `combSY` take a combinatorial function as argument and returns a process with one input signals and one output signal.
 combSY :: (a -> b) -- ^ combinatorial function

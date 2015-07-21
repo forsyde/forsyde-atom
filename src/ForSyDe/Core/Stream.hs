@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Stream (
   Stream (..),
-  stream, fromStream,
+  stream, fromStream, repeatS, takeWhileS, padS,
 ) where
 
 -- | A  stream is defined as a list of events. An event has a tag and a value. 
@@ -55,3 +55,15 @@ fromStream :: Stream a -> [a]
 fromStream NullS   = []
 fromStream (x:-xs) = x : fromStream xs
 
+repeatS :: a -> Stream a
+repeatS a = a :- repeatS a
+
+takeWhileS               :: (a -> Bool) -> Stream a -> Stream a
+takeWhileS _ NullS      =  NullS
+takeWhileS p (x:-xs)
+            | p x       =  x :- takeWhileS p xs
+            | otherwise =  NullS
+
+padS :: a -> Stream a -> Stream a
+padS y NullS   = repeatS y
+padS y (x:-xs) = x :- (padS y xs)

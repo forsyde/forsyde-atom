@@ -26,15 +26,12 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.Patterns(  
-  -- * Vector extensions
-  module ForSyDe.Patterns.Vector,
   -- * Applicative process network constructors
   module ForSyDe.Patterns.Applicative,
   -- * Transition process network constructors 
   module ForSyDe.Patterns.Transition,
 ) where
 
-import ForSyDe.Patterns.Vector
 import ForSyDe.Patterns.Transition
 import ForSyDe.Patterns.Applicative
 

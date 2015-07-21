@@ -15,6 +15,8 @@
 module ForSyDe.Core (
        -- * Stream type
        module ForSyDe.Core.Stream,
+       -- * Signal class
+       module ForSyDe.Core.Signal,
        -- * Vector type
        module ForSyDe.Core.Vector,
        -- * Absent extended type
@@ -22,6 +24,7 @@ module ForSyDe.Core (
 ) where
 
 import ForSyDe.Core.Stream
+import ForSyDe.Core.Signal
 import ForSyDe.Core.AbsentExt
 import ForSyDe.Core.Vector
 

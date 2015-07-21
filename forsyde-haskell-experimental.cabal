@@ -18,14 +18,15 @@ library
   exposed-modules:     ForSyDe
                        ForSyDe.Core,
                        ForSyDe.Core.Stream,
+                       ForSyDe.Core.Signal,
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.AbsentExt,
-                       ForSyDe.MoC,
                        ForSyDe.MoC.SY,
                        ForSyDe.MoC.SY.Signal,
                        ForSyDe.MoC.SY.Process,
+                       ForSyDe.MoC.SDF,
+                       ForSyDe.MoC.SDF.Signal,
                        ForSyDe.Patterns,
-                       ForSyDe.Patterns.Vector,
                        ForSyDe.Patterns.Transition,
                        ForSyDe.Patterns.Applicative
   -- other-modules:       

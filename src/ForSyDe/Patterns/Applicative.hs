@@ -25,8 +25,6 @@ module ForSyDe.Patterns.Applicative (
 ) where
 
 import ForSyDe.Core
-import ForSyDe.MoC.Signal
-import ForSyDe.Patterns.Vector
 
 -- $staticdoc
 -- Static process networks do not change their structure throughout the execution, 
