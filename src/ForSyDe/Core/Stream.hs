@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Stream (
   Stream (..),
-  stream, fromStream, repeatS, takeWhileS, padS,
+  stream, fromStream, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+),
 ) where
 
 -- | A  stream is defined as a list of events. An event has a tag and a value. 
@@ -22,7 +22,7 @@ module ForSyDe.Core.Stream (
 --
 --   This is the base data type for the 'ForSyDe.MoC.MoC'-bound signals, which are further described
 --   by becoming instances of the 'Signal' type class.
-data Stream a = a :- Stream a | NullS
+data Stream a = a :- Stream a | NullS deriving (Eq)
 
 infixr 3 :-
   
@@ -55,14 +55,36 @@ fromStream :: Stream a -> [a]
 fromStream NullS   = []
 fromStream (x:-xs) = x : fromStream xs
 
+headS :: Stream a -> a
+headS (x :- _) = x
+
+tailS NullS  = NullS
+tailS (_ :- a) = a
+
+isNull NullS = True
+isNull _ = False
+
 repeatS :: a -> Stream a
 repeatS a = a :- repeatS a
+
+takeS 0 _			= NullS
+takeS _ NullS			= NullS
+takeS n (x:-xs) | n <= 0	= NullS
+		| otherwise	= x :- takeS (n-1) xs
+
+dropS 0 NullS			= NullS
+dropS _ NullS			= NullS 
+dropS n (x:-xs) | n <= 0	= x:-xs
+       	  | otherwise		= dropS (n-1) xs
 
 takeWhileS               :: (a -> Bool) -> Stream a -> Stream a
 takeWhileS _ NullS      =  NullS
 takeWhileS p (x:-xs)
             | p x       =  x :- takeWhileS p xs
             | otherwise =  NullS
+
+(+-+) NullS   ys		= ys
+(+-+) (x:-xs) ys		= x :- (xs +-+ ys)
 
 padS :: a -> Stream a -> Stream a
 padS y NullS   = repeatS y

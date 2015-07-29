@@ -26,7 +26,6 @@ import ForSyDe.Core.Vector
 
 infixl 4 ->-
 infixl 4 -#-
-infixl 4 §-, -§-
 
 
 -- | The 'Signal' type class describes the characteristics and behavior of 
@@ -47,12 +46,6 @@ class (Applicative s) => Signal s where
 
   liftS :: (Stream a -> Stream b) -> s a -> s b
 
-  -- | operator for functional application on signals
-  (§-) :: (a -> b) -> s a -> s b
-
-  -- | operator for zipping signals
-  (-§-) :: s (a -> b) -> s a -> s b
-
   -- | operator for the default delay function
   (->-) :: s a -> a -> s a 
 
@@ -68,8 +61,6 @@ class (Applicative s) => Signal s where
   ----------------------------------------
   liftS f = fromS . f . toS
   xs ->- x  = liftS (x :-) xs
-  (§-)  = (<$>)
-  (-§-) = (<*>)
 
 -- | Due to Haskell's type system, a generic class for describing nested (composed) types is 
 --   not possible. Thus in order to force the designer into using only signals as base,

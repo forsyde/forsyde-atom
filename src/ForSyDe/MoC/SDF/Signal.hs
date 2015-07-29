@@ -16,7 +16,7 @@
 module ForSyDe.MoC.SDF.Signal (
   SignalSDF (..),
   -- ** Interface functions
-  signalSDF, fromSignalSDF,
+  signalSDF, fromSignalSDF, (§-), (-§-),
 ) where
 
 import ForSyDe.Core
@@ -57,13 +57,13 @@ instance Signal SignalSDF where
   --------
   xs -#- p = foldr (\a as -> if p a then liftS (a :-) as else as) (fromS NullS) xs
   --------
-  safe xv = ((§-) . (§>)) Prst xv
+  safe = ((<$>) . (§>)) Prst
   --------
   zipx = liftS (takeWhileS padded) . zippx
     where zippx NullV         = pure NullV
-          zippx (x:>xs)       = (:>) §- (liftS (padS Abst) (fmap Prst x)) -§- zippx xs
+          zippx (x:>xs)       = (:>) <$> liftS (padS Abst) (fmap Prst x) <*> zippx xs
           padded NullV        = False
-          padded (Abst :> vs) = False || (padded vs)
+          padded (Abst :> vs) = padded vs
           padded _            = True
   --------
   unzipx = (§>) fromS . unzx . toS
@@ -81,4 +81,25 @@ signalSDF = SignalSDF . stream
 -- | converts a SDF signal into a list.
 fromSignalSDF :: SignalSDF a -> [a]
 fromSignalSDF = fromStream . fromSDF
+
+
+infixl 4 §-, -§-
+-- | operator for functional application on signals
+(§-) :: ([a] -> b) -> (Int, SignalSDF a) -> SignalSDF b
+f §- (c, xs) = if length x == c then liftS (prod :-) (f §- (c,xs'))
+               else fromS NullS
+               where x    = fromStream $ takeS c $ toS xs
+                     xs'  = liftS (dropS c) xs
+                     prod = f x
+
+(-§-) :: SignalSDF ([a] -> b) -> (Int, SignalSDF a) -> SignalSDF b
+fs -§- (c, xs) 
+    | isNull $ toS fs = fromS NullS
+    | otherwise       = if length x == c then liftS (prod :-) (fs' -§- (c,xs'))
+                        else fromS NullS
+                        where x    = fromStream $ takeS c $ toS xs
+                              xs'  = liftS (dropS c) xs
+                              prod = (headS $ toS fs) x
+                              fs'  = liftS tailS fs
+
 

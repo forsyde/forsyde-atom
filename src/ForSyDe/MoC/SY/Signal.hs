@@ -16,7 +16,7 @@
 module ForSyDe.MoC.SY.Signal (
   SignalSY (..),
   -- ** Interface functions
-  signalSY, fromSignalSY,
+  signalSY, fromSignalSY, (§-), (-§-),
 ) where
 
 import ForSyDe.Core
@@ -50,9 +50,6 @@ instance Signal SignalSY where
   toS   = fromSY
   fromS = SignalSY
   --------
-  (§-)  = (<$>)
-  (-§-) = (<*>)
-  --------
   xs -#- p = fmap (\x -> if p x then Prst x else Abst) xs
   --------
   safe xs = xs
@@ -73,4 +70,15 @@ signalSY = SignalSY . stream
 -- | converts a SY signal into a list.
 fromSignalSY :: SignalSY a -> [a]
 fromSignalSY = fromStream . fromSY
+
+
+
+infixl 4 §-, -§-
+-- | operator for functional application on signals
+(§-) :: (a -> b) -> SignalSY a -> SignalSY b
+(§-) = (<$>)
+
+-- | operator for zipping signals
+(-§-) :: SignalSY (a -> b) -> SignalSY a -> SignalSY b
+(-§-) = (<*>)
 
