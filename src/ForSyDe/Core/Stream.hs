@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Stream (
   Stream (..),
-  stream, fromStream, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+),
+  stream, fromStream, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+), anyS,
 ) where
 
 -- | A  stream is defined as a list of events. An event has a tag and a value. 
@@ -67,25 +67,31 @@ isNull _ = False
 repeatS :: a -> Stream a
 repeatS a = a :- repeatS a
 
-takeS 0 _			= NullS
-takeS _ NullS			= NullS
-takeS n (x:-xs) | n <= 0	= NullS
-		| otherwise	= x :- takeS (n-1) xs
+takeS 0 _      = NullS
+takeS _ NullS  = NullS
+takeS n (x:-xs) 
+  | n <= 0    = NullS
+  | otherwise = x :- takeS (n-1) xs
 
-dropS 0 NullS			= NullS
-dropS _ NullS			= NullS 
-dropS n (x:-xs) | n <= 0	= x:-xs
-       	  | otherwise		= dropS (n-1) xs
+dropS 0 NullS = NullS
+dropS _ NullS = NullS 
+dropS n (x:-xs) 
+  | n <= 0    = x:-xs
+  | otherwise = dropS (n-1) xs
 
 takeWhileS               :: (a -> Bool) -> Stream a -> Stream a
 takeWhileS _ NullS      =  NullS
 takeWhileS p (x:-xs)
-            | p x       =  x :- takeWhileS p xs
-            | otherwise =  NullS
+  | p x       =  x :- takeWhileS p xs
+  | otherwise =  NullS
 
-(+-+) NullS   ys		= ys
-(+-+) (x:-xs) ys		= x :- (xs +-+ ys)
+(+-+) NullS   ys = ys
+(+-+) (x:-xs) ys = x :- (xs +-+ ys)
 
 padS :: a -> Stream a -> Stream a
 padS y NullS   = repeatS y
 padS y (x:-xs) = x :- (padS y xs)
+
+anyS :: (a -> Bool) -> Stream a -> Bool
+anyS _ NullS = False
+anyS c (x :- xs) = c x || anyS c xs

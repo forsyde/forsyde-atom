@@ -16,7 +16,7 @@
 module ForSyDe.MoC.SDF.Signal (
   SignalSDF (..),
   -- ** Interface functions
-  signalSDF, fromSignalSDF, (§-), (-§-),
+  signalSDF, fromSignalSDF, (§-), (-§-), tokenize
 ) where
 
 import ForSyDe.Core
@@ -55,21 +55,21 @@ instance Signal SignalSDF where
   toS   = fromSDF
   fromS = SignalSDF
   --------
-  xs -#- p = foldr (\a as -> if p a then liftS (a :-) as else as) (fromS NullS) xs
+  xs -#- p = foldr (\a as -> if p a then (a :-) `liftS` as else as) (fromS NullS) xs
   --------
   safe = ((<$>) . (§>)) Prst
   --------
   zipx = liftS (takeWhileS padded) . zippx
     where zippx NullV         = pure NullV
-          zippx (x:>xs)       = (:>) <$> liftS (padS Abst) (fmap Prst x) <*> zippx xs
+          zippx (x:>xs)       = (:>) <$> (padS Abst) `liftS` (fmap Prst x) <*> zippx xs
           padded NullV        = False
           padded (Abst :> vs) = padded vs
           padded _            = True
   --------
   unzipx = (§>) fromS . unzx . toS
-    where unzx NullS     = pure NullS
-          unzx (x :- xs) = fromPadded §> x <§> unzx xs
-          fromPadded Abst as = as
+    where unzx NullS             = pure NullS
+          unzx (x :- xs)         = fromPadded §> x <§> unzx xs
+          fromPadded Abst as     = as
           fromPadded (Prst a) as = a :- as    
   --------
 
@@ -86,20 +86,19 @@ fromSignalSDF = fromStream . fromSDF
 infixl 4 §-, -§-
 -- | operator for functional application on signals
 (§-) :: ([a] -> b) -> (Int, SignalSDF a) -> SignalSDF b
-f §- (c, xs) = if length x == c then liftS (prod :-) (f §- (c,xs'))
-               else fromS NullS
+f §- (c, xs) = if length x == c then (prod :-) `liftS` (f §- (c,xs')) else fromS NullS
                where x    = fromStream $ takeS c $ toS xs
-                     xs'  = liftS (dropS c) xs
+                     xs'  = (dropS c) `liftS` xs
                      prod = f x
 
 (-§-) :: SignalSDF ([a] -> b) -> (Int, SignalSDF a) -> SignalSDF b
 fs -§- (c, xs) 
     | isNull $ toS fs = fromS NullS
-    | otherwise       = if length x == c then liftS (prod :-) (fs' -§- (c,xs'))
-                        else fromS NullS
+    | otherwise       = if length x == c then (prod :-) `liftS` (fs' -§- (c,xs')) else fromS NullS
                         where x    = fromStream $ takeS c $ toS xs
-                              xs'  = liftS (dropS c) xs
+                              xs'  = (dropS c) `liftS` xs
                               prod = (headS $ toS fs) x
-                              fs'  = liftS tailS fs
+                              fs'  = tailS `liftS` fs
 
-
+tokenize :: SignalSDF [a] -> SignalSDF a
+tokenize = signalSDF . concat . fromSignalSDF
