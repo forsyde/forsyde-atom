@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances, AllowAmbiguousTypes #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -15,7 +15,7 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.Core.Signal (
-  Signal (..),
+  MoC (..),
   -- ** Nested vectors of signals
   VecSig(..),
 ) where
@@ -30,37 +30,38 @@ infixl 4 -#-
 
 -- | The 'Signal' type class describes the characteristics and behavior of 
 --   'ForSyDe.MoC'-bound signals. 
-class (Applicative s) => Signal s where
+class (Applicative s) => MoC s where
 
   -- | The data type associated with a filtered output.
-  type Filtered s a
+  type TokenType s a
 
   -- | The data type associated with a filtered output.
   type Padded s a
 
   -- | The function 'toS' converts a MoC-bound signal to a stream of events (its base type)
-  toS :: s a -> Stream a
+  --toS :: s a -> Stream a
 
   -- | The function 'fromS' converts a (base) stream of events to a MoC-bound signal
-  fromS :: Stream a -> s a
+ -- fromS :: Stream a -> s a
 
-  liftS :: (Stream a -> Stream b) -> s a -> s b
+  --liftS :: (Stream a -> Stream b) -> s a -> s b
 
   -- | operator for the default delay function
-  (->-) :: s a -> a -> s a 
+  (->-) :: s (TokenType s a) -> TokenType s a -> s (TokenType s a) 
 
-  -- | operator for filtering signals. The output data type is defined by the 'Filtered' type synonym
-  (-#-) :: s a -> (a -> Bool) -> s (Filtered s a) 
+  -- | operator for filtering signals. The output data type is defined by the 'TokenType' type synonym
+  (-#-) :: s (TokenType s a) -> (a -> Bool) -> s (TokenType s a) 
 
-  zipx :: Vector (s a) -> s (Vector (Padded s a))
+  zipx :: Vector (s (TokenType s a)) -> s (TokenType s (Vector (Padded s a)))
 
-  unzipx :: s (Vector (Padded s a)) -> Vector (s a)
+  unzipx :: s (TokenType s (Vector (Padded s a))) -> Vector (s (TokenType s a))
 
   safe :: s (Vector a) -> s (Vector (Padded s a))
 
   ----------------------------------------
-  liftS f = fromS . f . toS
-  xs ->- x  = liftS (x :-) xs
+  --liftS f = fromS . f . toS
+  --xs ->- x  = liftS (x :-) xs
+
 
 -- | Due to Haskell's type system, a generic class for describing nested (composed) types is 
 --   not possible. Thus in order to force the designer into using only signals as base,
@@ -69,15 +70,15 @@ class (Applicative s) => Signal s where
 --   @VecSig a@ could be translated to: either a 'Signal' or a 'Signal' wrapped inside an 
 --   "arbitrary" number of 'Vector's.
 class VecSig a
-instance {-# OVERLAPS #-} Signal s => VecSig (s a)
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (s a))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (s a)))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (Vector (s a))))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (Vector (Vector (s a)))))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (Vector (Vector (Vector (s a))))))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a))))))))
-instance {-# OVERLAPS #-} Signal s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))))
+instance {-# OVERLAPS #-} MoC s => VecSig (s a)
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (s a))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (s a)))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (Vector (s a))))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (Vector (Vector (s a)))))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (Vector (Vector (Vector (s a))))))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a))))))))
+instance {-# OVERLAPS #-} MoC s => VecSig (Vector (Vector (Vector (Vector (Vector (Vector (Vector (Vector (s a)))))))))
 
 
 

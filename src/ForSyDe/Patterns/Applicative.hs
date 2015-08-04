@@ -122,13 +122,13 @@ reduce3PN :: VecSig vsa => (b -> c -> d -> vsa -> vsa -> vsa) -> Vector b -> Vec
 
 
 -- | The 'maskPN' pattern filters out signal values based on a boolean condition. It is a static process network, thus the output vector length will be fixed and equal to the input vector length.
-maskPN  :: (Signal s) 
+maskPN  :: (MoC s) 
          => (a -> Bool)               -- ^ condition (function)
          -> Vector (s a)              -- ^ input vector of signals
          -> Vector (s (Filtered s a)) -- ^ output vector of absent extended signals
 
 -- | the 'mask1PN' pattern filters out signal values based on a vector of boolean conditions. It is a static process network, thus the output vector length will be fixed and equal to the input vector length.
-mask1PN :: (Signal s) => Vector (a -> Bool)         -- ^ vector of conditions function
+mask1PN :: (MoC s) => Vector (a -> Bool)         -- ^ vector of conditions function
         -> Vector (s a)           -- ^ input vector of signals
         -> Vector (s (Filtered s a)) -- ^ output vector of absent extended signals
 

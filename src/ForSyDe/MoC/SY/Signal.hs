@@ -13,72 +13,102 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SY.Signal (
-  SignalSY (..),
-  -- ** Interface functions
-  signalSY, fromSignalSY, (§-), (-§-),
-) where
+module ForSyDe.MoC.SY.Signal where
 
-import ForSyDe.Core
+import ForSyDe.Core hiding (Stream, NullS, (:-), anyS)
 
--- | The type 'SignalSY' denotes a 'Stream' that behaves according to the Sychronous MoC. 
-newtype SignalSY a = SignalSY { fromSY :: Stream a }
 
--- | Only 'Show' instance. To 'Read' it, use the 'Stream' instance.
-instance (Show a) => Show (SignalSY a) where
-  showsPrec p = showsPrec p . fromSY
+data Stream a = a :- Stream a | NullS deriving (Eq)
 
-instance Functor SignalSY where
-  fmap f = SignalSY . fmapSY f . fromSY
-    where fmapSY _ NullS    = NullS
-          fmapSY f (x:-xs) = f x :- fmapSY f xs
+type Signal a = Stream (AbstExt a)
 
-instance Applicative SignalSY where
-  pure a  = SignalSY (repeatS a)
-  a <*> b = SignalSY $ starSY (fromSY a) (fromSY b)
-    where starSY _         NullS     = NullS
-          starSY NullS     _         = NullS
-          starSY (f :- fs) (x :- xs) = f x :- starSY fs xs
+infixr 3 :-
+
+ssignal :: [a] -> Signal a 
+ssignal = signal . map Prst
+
+signal :: [AbstExt a] -> Signal a 
+signal []     = NullS
+signal (x:xs) = x :- (signal xs)
+
+-- | The function 'fromSignal' converts a signal into a list.
+fromSignal :: Signal a -> [AbstExt a]
+fromSignal NullS   = []
+fromSignal (x:-xs) = x : fromSignal xs
+
+
+instance Functor Stream where
+  fmap _ NullS   = NullS
+  fmap f (x:-xs) = f x :- fmap f xs
+
+instance Applicative Stream where
+  pure a  = a :- pure a
+  _         <*> NullS     = NullS
+  NullS     <*> _         = NullS
+  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
+
+infixl 4 §-, -§-, §§-, -§§-,  §§!-, -§§!-
+-- | operator for functional application on signals
+(§-) :: (AbstExt a -> b) -> Signal a -> Stream b
+(§-) = (<$>)
+
+
+(-§-) :: Stream (AbstExt a -> b) -> Signal a -> Stream b
+(-§-) = (<*>)
+
+-- | operator for functional application on signals
+(§§-) :: (a -> b) -> Signal a -> Signal b
+(§§-) = ((<$>).(<$>))
+
+-- | operator for zipping signals
+(-§§-) :: Signal (a -> b) -> Signal a -> Signal b
+fs -§§- xs = (\f x -> f <*> x) <$> fs <*> xs
+
+(§§!-) :: (a -> b) -> Signal a -> Signal b
+f §§!- xs | anyS isAbsent xs = error "Unexpected absent value in szip"
+          | otherwise         = f §§- xs
+
+-- | operator for zipping signals
+(-§§!-) :: Signal (a -> b) -> Signal a -> Signal b
+fs -§§!- xs | anyS isAbsent xs = error "Unexpected absent value in szip"
+            | otherwise         = fs -§§- xs
 
 -- | instance defining the Synchronous MoC behavior
-instance Signal SignalSY where
+instance MoC Stream where
   -- | To abide the synchronicicy law, a data-filtered signal must replace missing tokens with 
   --   absent values, thus the filtered type is 'AbstExt'
-  type Filtered SignalSY a = AbstExt a 
-  type Padded SignalSY a = a 
+  type Padded Stream a = a 
+  type TokenType Stream a = AbstExt a
   --------
-  toS   = fromSY
-  fromS = SignalSY
-  --------
-  xs -#- p = fmap (\x -> if p x then Prst x else Abst) xs
+  xs -#- p = (\x -> if (p <$> x) == Prst True then x else Abst) §- xs
+  xs ->- i = i :- xs
   --------
   safe xs = xs
   --------
-  zipx NullV = pure NullV
-  zipx (x:>xs) =  (:>) §- x -§- zipx xs
+  zipx NullV = (pure . pure) NullV
+  zipx (x:>xs) =  (:>) §§- x -§§- zipx xs
   --------
-  unzipx = (§>) fromS . unzx . toS
-    where unzx NullS     = pure NullS
-          unzx (x :- xs) = (:-) §> x <§> unzx xs
+  unzipx NullS            = pure NullS
+  unzipx (Abst :- xs)     = (:-) §> pure Abst <§> unzipx xs
+  unzipx ((Prst x) :- xs) = ((:-) . Prst) §> x <§> unzipx xs
   --------
 
--- | converts a list directly to a SY signal.
-signalSY :: [a] -> SignalSY a 
-signalSY = SignalSY . stream 
 
 
--- | converts a SY signal into a list.
-fromSignalSY :: SignalSY a -> [a]
-fromSignalSY = fromStream . fromSY
+anyS :: (a -> Bool) -> Stream a -> Bool
+anyS _ NullS = False
+anyS c (x :- xs) = c x || anyS c xs
 
 
+  
+-- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
+instance (Show a) => Show (Stream a) where
+  showsPrec p = showParen (p>1) . showSignal
+    where
+      showSignal (x :- xs)  = showChar '{' . showEvent x . showSignal' xs
+      showSignal (NullS)     = showChar '{' . showChar '}'
+      showSignal' (x :- xs) = showChar ',' . showEvent x . showSignal' xs
+      showSignal' (NullS)    = showChar '}'
+      showEvent x           = shows x
 
-infixl 4 §-, -§-
--- | operator for functional application on signals
-(§-) :: (a -> b) -> SignalSY a -> SignalSY b
-(§-) = (<$>)
-
--- | operator for zipping signals
-(-§-) :: SignalSY (a -> b) -> SignalSY a -> SignalSY b
-(-§-) = (<*>)
 

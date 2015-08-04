@@ -21,6 +21,8 @@ module ForSyDe.MoC.SDF.Signal (
 
 import ForSyDe.Core
 
+data SignalSDF a = a :- SignalSDF a | NullS deriving (Eq)
+
 -- | The type 'SignalSDF' denotes a 'Stream' that behaves according to the SDFchronous MoC. 
 newtype SignalSDF a = SignalSDF { fromSDF :: Stream a }
 
@@ -52,8 +54,8 @@ instance Signal SignalSDF where
   type Filtered SignalSDF a = a 
   type Padded SignalSDF a = AbstExt a
   --------
-  toS   = fromSDF
-  fromS = SignalSDF
+  --toS   = fromSDF
+  --fromS = SignalSDF
   --------
   xs -#- p = foldr (\a as -> if p a then (a :-) `liftS` as else as) (fromS NullS) xs
   --------
@@ -72,6 +74,7 @@ instance Signal SignalSDF where
           fromPadded Abst as     = as
           fromPadded (Prst a) as = a :- as    
   --------
+  a ->- b = b :- a
 
 -- | converts a list directly to a SDF signal.
 signalSDF :: [a] -> SignalSDF a 
