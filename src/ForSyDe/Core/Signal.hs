@@ -52,12 +52,6 @@ class (Applicative s) => MoC s where
   -- | operator for filtering signals. The output data type is defined by the 'TokenType' type synonym
   (-#-) :: s (TokenType s a) -> (a -> Bool) -> s (TokenType s a) 
 
-  zipx :: Vector (s (TokenType s a)) -> s (TokenType s (Vector (Padded s a)))
-
-  unzipx :: s (TokenType s (Vector (Padded s a))) -> Vector (s (TokenType s a))
-
-  safe :: s (Vector a) -> s (Vector (Padded s a))
-
   ----------------------------------------
   --liftS f = fromS . f . toS
   --xs ->- x  = liftS (x :-) xs

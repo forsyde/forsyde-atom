@@ -13,19 +13,29 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.MoC.SY.Process (
-  -- ** Combinatorial process constructors
+  -- ** Non-strict process constructors
+  -- *** Combinatorial process constructors
   comb, comb2, comb3, comb4,
   zip, zip3, zip4, zip5, zip6,
-  unzip, --unzip3, unzip4, unzip5, unzip6,
-  -- ** Sequential process constructors
+  unzip, unzip3, unzip4, unzip5, unzip6,
+  -- *** Sequential process constructors
   delay, delayn,
   moore, moore2, moore3,
   mealy, mealy2, mealy3,
-  -- **  specific processes
+  -- ***  specific processes
   filter, fill, hold,
+  -- ** Strict process constuctors
+  -- *** Combinatorial process constructors
+  scomb, scomb2, scomb3, scomb4,
+  szip, szip3, szip4, szip5, szip6,
+  sunzip, sunzip3, sunzip4, sunzip5, sunzip6,
+  -- *** Sequential process constructors
+  sdelay, sdelayn,
+  smoore, smoore2, smoore3,
+  smealy, smealy2, smealy3,
 ) where
 
-import Prelude hiding (zip, zip3, filter, unzip)
+import Prelude hiding (zip, zip3, filter, unzip, unzip3)
 import ForSyDe.Core
 import ForSyDe.MoC.SY.Signal
 
@@ -335,5 +345,8 @@ sunzip6 xs = ((\(x,_,_,_,_,_) -> x) §§- xs,
 
 
 -- HELPER FUNCTIONS
-get f x = flattenExt $ f <$> x
+get f x = flatten $ f <$> x
+  where flatten (Prst (Prst x)) = Prst x
+        flatten _               = Abst
+ 
 

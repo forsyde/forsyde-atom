@@ -15,7 +15,7 @@
 
 module ForSyDe.MoC.SY.Signal where
 
-import ForSyDe.Core hiding (Stream, NullS, (:-), anyS)
+import ForSyDe.Core
 
 
 data Stream a = a :- Stream a | NullS deriving (Eq)
@@ -23,19 +23,6 @@ data Stream a = a :- Stream a | NullS deriving (Eq)
 type Signal a = Stream (AbstExt a)
 
 infixr 3 :-
-
-ssignal :: [a] -> Signal a 
-ssignal = signal . map Prst
-
-signal :: [AbstExt a] -> Signal a 
-signal []     = NullS
-signal (x:xs) = x :- (signal xs)
-
--- | The function 'fromSignal' converts a signal into a list.
-fromSignal :: Signal a -> [AbstExt a]
-fromSignal NullS   = []
-fromSignal (x:-xs) = x : fromSignal xs
-
 
 instance Functor Stream where
   fmap _ NullS   = NullS
@@ -83,17 +70,29 @@ instance MoC Stream where
   xs -#- p = (\x -> if (p <$> x) == Prst True then x else Abst) §- xs
   xs ->- i = i :- xs
   --------
-  safe xs = xs
-  --------
-  zipx NullV = (pure . pure) NullV
-  zipx (x:>xs) =  (:>) §§- x -§§- zipx xs
-  --------
-  unzipx NullS            = pure NullS
-  unzipx (Abst :- xs)     = (:-) §> pure Abst <§> unzipx xs
-  unzipx ((Prst x) :- xs) = ((:-) . Prst) §> x <§> unzipx xs
-  --------
 
 
+ssignal :: [a] -> Signal a 
+ssignal = signal . map Prst
+
+signal :: [AbstExt a] -> Signal a 
+signal []     = NullS
+signal (x:xs) = x :- (signal xs)
+
+-- | The function 'fromSignal' converts a signal into a list.
+fromSignal :: Signal a -> [AbstExt a]
+fromSignal NullS   = []
+fromSignal (x:-xs) = x : fromSignal xs
+
+
+zipx :: Vector (Signal a) -> Signal (Vector a)
+zipx NullV   = (pure . pure) NullV
+zipx (x:>xs) = (:>) §§- x -§§- zipx xs
+
+unzipx :: Signal (Vector a) -> Vector (Signal a)
+unzipx NullS            = pure NullS
+unzipx (Abst :- xs)     = (:-) §> pure Abst <§> unzipx xs
+unzipx ((Prst x) :- xs) = ((:-) . Prst) §> x <§> unzipx xs
 
 anyS :: (a -> Bool) -> Stream a -> Bool
 anyS _ NullS = False
