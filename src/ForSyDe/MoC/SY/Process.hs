@@ -70,10 +70,10 @@ scomb3 :: (a -> b -> c -> d) -> Signal a -> Signal b -> Signal c -> Signal d
 -- | Behaves like 'comb', but the process takes 4 input signals.
 scomb4 :: (a -> b -> c -> d -> e) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e
 
-comb  f x        = f §-  x
-comb2 f x y      = f §-  x -§-  y
-comb3 f x y z    = f §-  x -§-  y -§-  z
-comb4 f x y z q  = f §-  x -§-  y -§-  z -§-  q
+comb  f x        = tokenize $ f §-  x
+comb2 f x y      = tokenize $ f §-  x -§-  y
+comb3 f x y z    = tokenize $ f §-  x -§-  y -§-  z
+comb4 f x y z q  = tokenize $ f §-  x -§-  y -§-  z -§-  q
 scomb  f x       = f §§- x
 scomb2 f x y     = f §§- x -§§- y
 scomb3 f x y z   = f §§- x -§§- y -§§- z
@@ -145,12 +145,12 @@ smoore2 :: (a -> b -> c -> a) -> (a -> d) -> a -> Signal b -> Signal c -> Signal
 -- | Behaves like 'moore', but has 3 input signals.
 smoore3 :: (a -> b -> c -> d -> a) -> (a -> e) -> a -> Signal b -> Signal c -> Signal d -> Signal e
 
-moore ns od mem xs = od §- s
-  where s = ns §- s -§- xs ->- mem
-moore2 ns od mem xs ys = od §- s
-  where s = ns §- s -§- xs -§- ys ->- mem
-moore3 ns od mem xs ys zs = od §- s
-  where s = ns §- s -§- xs -§- ys -§- zs ->- mem
+moore ns od mem xs = tokenize $ od §- s
+  where s = tokenize (ns §- s -§- xs) ->- mem
+moore2 ns od mem xs ys = tokenize $ od §- s
+  where s = tokenize (ns §- s -§- xs -§- ys) ->- mem
+moore3 ns od mem xs ys zs = tokenize $ od §- s
+  where s = tokenize (ns §- s -§- xs -§- ys -§- zs) ->- mem
 smoore ns od mem xs = od §§- s
   where s = ns §§- s -§§- xs ->- pure mem
 smoore2 ns od mem xs ys = od §§- s
@@ -190,12 +190,12 @@ smealy2 :: (a -> b -> c -> a) -> (a -> b -> c -> d) -> a -> Signal b -> Signal c
 -- | Behaves like 'mealy', but has three input signals.
 smealy3 :: (a -> b -> c -> d -> a) -> (a -> b -> c -> d -> e) -> a -> Signal b -> Signal c -> Signal d -> Signal e
 
-mealy ns od mem xs = od §- s -§- xs
-  where s = ns §- s -§- xs ->- mem
-mealy2 ns od mem xs ys = od §- s -§- xs -§- ys
-  where s = ns §- s -§- xs -§- ys ->- mem
-mealy3 ns od mem xs ys zs = od §- s -§- xs -§- ys -§- zs
-  where s = ns §- s -§- xs -§- ys -§- zs ->- mem
+mealy ns od mem xs = tokenize $ od §- s -§- xs
+  where s = tokenize (ns §- s -§- xs) ->- mem
+mealy2 ns od mem xs ys = tokenize $ od §- s -§- xs -§- ys
+  where s = tokenize (ns §- s -§- xs -§- ys) ->- mem
+mealy3 ns od mem xs ys zs = tokenize $ od §- s -§- xs -§- ys -§- zs
+  where s = tokenize (ns §- s -§- xs -§- ys -§- zs) ->- mem
 smealy ns od mem xs = od §§- s -§§- xs
   where s = ns §§- s -§§- xs ->- pure mem
 smealy2 ns od mem xs ys = od §§- s -§§- xs -§§- ys
@@ -220,12 +220,12 @@ hold :: a -- ^Default value
        -> Signal a -- ^Absent extended input signal 
        -> Signal a -- ^Output signa
 
-filter p xs = xs -#- p
-fill   a = fmap (replaceAbst a)
+filter = filt
+fill   a = liftS $ fmap (replaceAbst a)
   where replaceAbst a' Abst     = pure a'
         replaceAbst _  (Prst x) = pure x
 hold   a xs = s
-  where s = holdf §- (s ->- pure a) -§- xs
+  where s = tokenize $ holdf §- (s ->- pure a) -§- xs
         holdf (Prst a') Abst     = pure a'
         holdf _         (Prst x) = pure x
 
@@ -261,11 +261,11 @@ szip5 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal (a,b
 -- | Works as 'zip', but takes four input signals.
 szip6 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f -> Signal (a,b,c,d,e,f)
 
-zip xs ys              = (\x y -> pure (x,y))                 §- xs -§- ys
-zip3 xs ys zs          = (\x y z -> pure (x,y,z))             §- xs -§- ys -§- zs
-zip4 xs ys zs as       = (\x y z a -> pure (x,y,z,a))         §- xs -§- ys -§- zs -§- as
-zip5 xs ys zs as bs    = (\x y z a b -> pure (x,y,z,a,b))     §- xs -§- ys -§- zs -§- as -§- bs
-zip6 xs ys zs as bs cs = (\x y z a b c -> pure (x,y,z,a,b,c)) §- xs -§- ys -§- zs -§- as -§- bs -§- cs
+zip xs ys              = tokenize $ (\x y -> pure (x,y))                 §- xs -§- ys
+zip3 xs ys zs          = tokenize $ (\x y z -> pure (x,y,z))             §- xs -§- ys -§- zs
+zip4 xs ys zs as       = tokenize $ (\x y z a -> pure (x,y,z,a))         §- xs -§- ys -§- zs -§- as
+zip5 xs ys zs as bs    = tokenize $ (\x y z a b -> pure (x,y,z,a,b))     §- xs -§- ys -§- zs -§- as -§- bs
+zip6 xs ys zs as bs cs = tokenize $ (\x y z a b c -> pure (x,y,z,a,b,c)) §- xs -§- ys -§- zs -§- as -§- bs -§- cs
 szip xs ys              = (,)     §§!- xs -§§!- ys
 szip3 xs ys zs          = (,,)    §§!- xs -§§!- ys -§§!- zs
 szip4 xs ys zs as       = (,,,)   §§!- xs -§§!- ys -§§!- zs -§§!- as
@@ -304,25 +304,25 @@ sunzip5 :: Signal (a,b,c,d,e)  -> (Signal a,Signal b,Signal c,Signal d,Signal e)
 -- | Works as 'unzip', but has four output signals.
 sunzip6 :: Signal (a,b,c,d,e,f) -> (Signal a,Signal b,Signal c,Signal d,Signal e,Signal f)
 
-unzip xs  = (get fst §- xs, get snd §- xs)
-unzip3 xs = (get (\(x,_,_) -> x) §- xs,
-             get (\(_,x,_) -> x) §- xs,
-             get (\(_,_,x) -> x) §- xs)
-unzip4 xs = (get (\(x,_,_,_) -> x) §- xs,
-             get (\(_,x,_,_) -> x) §- xs,
-             get (\(_,_,x,_) -> x) §- xs,
-             get (\(_,_,_,x) -> x) §- xs)
-unzip5 xs = (get (\(x,_,_,_,_) -> x) §- xs,
-             get (\(_,x,_,_,_) -> x) §- xs,
-             get (\(_,_,x,_,_) -> x) §- xs,
-             get (\(_,_,_,x,_) -> x) §- xs,
-             get (\(_,_,_,_,x) -> x) §- xs)
-unzip6 xs = (get (\(x,_,_,_,_,_) -> x) §- xs,
-             get (\(_,x,_,_,_,_) -> x) §- xs,
-             get (\(_,_,x,_,_,_) -> x) §- xs,
-             get (\(_,_,_,x,_,_) -> x) §- xs,
-             get (\(_,_,_,_,x,_) -> x) §- xs,
-             get (\(_,_,_,_,_,x) -> x) §- xs)
+unzip xs  = (tokenize $ get fst §- xs, tokenize $ get snd §- xs)
+unzip3 xs = (tokenize $ get (\(x,_,_) -> x) §- xs,
+             tokenize $ get (\(_,x,_) -> x) §- xs,
+             tokenize $ get (\(_,_,x) -> x) §- xs)
+unzip4 xs = (tokenize $ get (\(x,_,_,_) -> x) §- xs,
+             tokenize $ get (\(_,x,_,_) -> x) §- xs,
+             tokenize $ get (\(_,_,x,_) -> x) §- xs,
+             tokenize $ get (\(_,_,_,x) -> x) §- xs)
+unzip5 xs = (tokenize $ get (\(x,_,_,_,_) -> x) §- xs,
+             tokenize $ get (\(_,x,_,_,_) -> x) §- xs,
+             tokenize $ get (\(_,_,x,_,_) -> x) §- xs,
+             tokenize $ get (\(_,_,_,x,_) -> x) §- xs,
+             tokenize $ get (\(_,_,_,_,x) -> x) §- xs)
+unzip6 xs = (tokenize $ get (\(x,_,_,_,_,_) -> x) §- xs,
+             tokenize $ get (\(_,x,_,_,_,_) -> x) §- xs,
+             tokenize $ get (\(_,_,x,_,_,_) -> x) §- xs,
+             tokenize $ get (\(_,_,_,x,_,_) -> x) §- xs,
+             tokenize $ get (\(_,_,_,_,x,_) -> x) §- xs,
+             tokenize $ get (\(_,_,_,_,_,x) -> x) §- xs)
 sunzip xs  = (fst §§- xs,snd §§- xs)
 sunzip3 xs = ((\(x,_,_) -> x) §§- xs,
               (\(_,x,_) -> x) §§- xs,

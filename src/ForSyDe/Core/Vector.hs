@@ -53,6 +53,10 @@ instance Applicative Vector where
   NullV     <*> _         = NullV
   (f :> fs) <*> (x :> xs) = f x :> fs <*> xs
 
+instance Foldable Vector where
+  foldr f z NullV     = z
+  foldr f z (x :> xs) = f x (foldr f z xs)
+
 
 -- | operator for functional application on vectors
 (§>) :: (a -> b) -> Vector a -> Vector b 

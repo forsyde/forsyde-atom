@@ -80,65 +80,53 @@ unzip5 :: (Int,Int,Int,Int,Int) -> Signal ([a],[b],[c],[d],[e])  -> (Signal a,Si
 unzip6 :: (Int,Int,Int,Int,Int,Int) -> Signal ([a],[b],[c],[d],[e],[f]) -> (Signal a,Signal b,Signal c,Signal d,Signal e,Signal f)
 
 
-comb c p f x 
-    | c <= 0         = error "Number of consumed tokens must be positive integer"
-    | otherwise      = checkout p $ f §- (c,x)
-
-comb2 (c1,c2) p f x y 
-    | c1 <= 0         = error "Number of consumed tokens must be positive integer"
-    | c2 <= 0         = error "Number of consumed tokens must be positive integer"
-    | otherwise      = checkout p $ f §- (c1,x) -§- (c2,y)
-
-comb3 (c1,c2,c3) p f x y z
-    | c1 <= 0         = error "Number of consumed tokens must be positive integer"
-    | c2 <= 0         = error "Number of consumed tokens must be positive integer"
-    | c3 <= 0         = error "Number of consumed tokens must be positive integer"
-    | otherwise      = checkout p $ f §- (c1,x) -§- (c2,y) -§- (c3,z)
-
-comb4 (c1,c2,c3,c4) p f x y z q
-    | c1 <= 0         = error "Number of consumed tokens must be positive integer"
-    | c2 <= 0         = error "Number of consumed tokens must be positive integer"
-    | c3 <= 0         = error "Number of consumed tokens must be positive integer"
-    | c4 <= 0         = error "Number of consumed tokens must be positive integer"
-    | otherwise      = checkout p $ f §- (c1,x) -§- (c2,y) -§- (c3,z) -§- (c4,q)
+comb c p f x                    = checkout p $ f §!- (c,x)
+comb2 (c1,c2) p f x y           = checkout p $ f §!- (c1,x) -§!- (c2,y)
+comb3 (c1,c2,c3) p f x y z      = checkout p $ f §!- (c1,x) -§!- (c2,y) -§!- (c3,z)
+comb4 (c1,c2,c3,c4) p f x y z q = checkout p $ f §!- (c1,x) -§!- (c2,y) -§!- (c3,z) -§!- (c4,q)
 
 
 delay x xs = xs ->- x
 delayn x n xs | n <= 0    = xs
-                 | otherwise = delayn x (n-1) xs ->- x
+              | otherwise = delayn x (n-1) xs ->- x
 
-filter p xs = xs -#- p
+filter = filt
 
-zip (c1,c2) xs ys                          = (,) §- (c1,xs) -§- (c2,ys)
-zip3 (c1,c2,c3) xs ys zs                   = (,,) §- (c1,xs) -§- (c2,ys) -§- (c3,zs)
-zip4 (c1,c2,c3,c4) xs ys zs as             = (,,,) §- (c1,xs) -§- (c2,ys) -§- (c3,zs) -§- (c4,as)
-zip5 (c1,c2,c3,c4,c5) xs ys zs as bs       = (,,,,) §- (c1,xs) -§- (c2,ys) -§- (c3,zs) -§- (c4,as) -§- (c5,bs)
-zip6 (c1,c2,c3,c4,c5,c6) xs ys zs as bs cs = (,,,,,) §- (c1,xs) -§- (c2,ys) -§- (c3,zs) -§- (c4,as) -§- (c5,bs) -§- (c6,cs)
+zip (c1,c2) xs ys                          = fromS $ (,) §!- (c1,xs) -§!- (c2,ys)
+zip3 (c1,c2,c3) xs ys zs                   = fromS $ (,,) §!- (c1,xs) -§!- (c2,ys) -§!- (c3,zs)
+zip4 (c1,c2,c3,c4) xs ys zs as             = fromS $ (,,,) §!- (c1,xs) -§!- (c2,ys) -§!- (c3,zs) -§!- (c4,as)
+zip5 (c1,c2,c3,c4,c5) xs ys zs as bs       = fromS $ (,,,,) §!- (c1,xs) -§!- (c2,ys) -§!- (c3,zs) -§!- (c4,as) -§!- (c5,bs)
+zip6 (c1,c2,c3,c4,c5,c6) xs ys zs as bs cs = fromS $ (,,,,,) §!- (c1,xs) -§!- (c2,ys) -§!- (c3,zs) -§!- (c4,as) -§!- (c5,bs) -§!- (c6,cs)
 
 
-unzip (p1,p2) xs  =            (checkout p1 $ fst <$> xs, checkout p2 $ snd <$> xs)
-unzip3 (p1,p2,p3) xs =         (checkout p1 $ (\(x,_,_) -> x) <$> xs,
-                                checkout p2 $ (\(_,x,_) -> x) <$> xs,
-                                checkout p3 $ (\(_,_,x) -> x) <$> xs)
-unzip4 (p1,p2,p3,p4) xs =      (checkout p1 $ (\(x,_,_,_) -> x) <$> xs,
-                                checkout p2 $ (\(_,x,_,_) -> x) <$> xs,
-                                checkout p3 $ (\(_,_,x,_) -> x) <$> xs,
-                                checkout p4 $ (\(_,_,_,x) -> x) <$> xs)
-unzip5 (p1,p2,p3,p4,p5) xs =   (checkout p1 $ (\(x,_,_,_,_) -> x) <$> xs,
-                                checkout p2 $ (\(_,x,_,_,_) -> x) <$> xs,
-                                checkout p3 $ (\(_,_,x,_,_) -> x) <$> xs,
-                                checkout p4 $ (\(_,_,_,x,_) -> x) <$> xs,
-                                checkout p5 $ (\(_,_,_,_,x) -> x) <$> xs)
-unzip6 (p1,p2,p3,p4,p5,p6) xs =(checkout p1 $ (\(x,_,_,_,_,_) -> x) <$> xs,
-                                checkout p2 $ (\(_,x,_,_,_,_) -> x) <$> xs,
-                                checkout p3 $ (\(_,_,x,_,_,_) -> x) <$> xs,
-                                checkout p4 $ (\(_,_,_,x,_,_) -> x) <$> xs,
-                                checkout p5 $ (\(_,_,_,_,x,_) -> x) <$> xs,
-                                checkout p6 $ (\(_,_,_,_,_,x) -> x) <$> xs)
+unzip (p1,p2) xs  =            (checkout' p1 $ fst §§- xs, checkout' p2 $ snd §§- xs)
+unzip3 (p1,p2,p3) xs =         (checkout' p1 $ (\(x,_,_) -> x) §§- xs,
+                                checkout' p2 $ (\(_,x,_) -> x) §§- xs,
+                                checkout' p3 $ (\(_,_,x) -> x) §§- xs)
+unzip4 (p1,p2,p3,p4) xs =      (checkout' p1 $ (\(x,_,_,_) -> x) §§- xs,
+                                checkout' p2 $ (\(_,x,_,_) -> x) §§- xs,
+                                checkout' p3 $ (\(_,_,x,_) -> x) §§- xs,
+                                checkout' p4 $ (\(_,_,_,x) -> x) §§- xs)
+unzip5 (p1,p2,p3,p4,p5) xs =   (checkout' p1 $ (\(x,_,_,_,_) -> x) §§- xs,
+                                checkout' p2 $ (\(_,x,_,_,_) -> x) §§- xs,
+                                checkout' p3 $ (\(_,_,x,_,_) -> x) §§- xs,
+                                checkout' p4 $ (\(_,_,_,x,_) -> x) §§- xs,
+                                checkout' p5 $ (\(_,_,_,_,x) -> x) §§- xs)
+unzip6 (p1,p2,p3,p4,p5,p6) xs =(checkout' p1 $ (\(x,_,_,_,_,_) -> x) §§- xs,
+                                checkout' p2 $ (\(_,x,_,_,_,_) -> x) §§- xs,
+                                checkout' p3 $ (\(_,_,x,_,_,_) -> x) §§- xs,
+                                checkout' p4 $ (\(_,_,_,x,_,_) -> x) §§- xs,
+                                checkout' p5 $ (\(_,_,_,_,x,_) -> x) §§- xs,
+                                checkout' p6 $ (\(_,_,_,_,_,x) -> x) §§- xs)
+
 
 --------------- HELPER FUNCTIONS (not exported) -------------------------
 
 checkout p out = if anyS (\x -> not $ length x == p) out then 
                    error "Function does not produce correct number of tokens" 
                  else tokenize out
+
+checkout' p out = if anyS (\x -> not $ length x == p) $ toS out then 
+                    error "Function does not produce correct number of tokens" 
+                  else (signal . concat . fromSignal) out
 

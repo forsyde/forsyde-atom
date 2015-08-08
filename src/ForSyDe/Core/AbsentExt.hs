@@ -42,6 +42,7 @@ instance Applicative AbstExt where
   Abst   <*> _      = Abst
   (Prst x) <*> (Prst y) = Prst (x y)
 
+
 -- |The function 'fromAbstExt' converts a value from a extended value.
 fromAbstExt       :: a -> AbstExt a -> a
 -- |The functions 'isPresent' checks for the presence of a value.

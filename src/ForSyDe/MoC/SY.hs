@@ -24,5 +24,4 @@ module ForSyDe.MoC.SY (
 
 import ForSyDe.MoC.SY.Signal hiding (Stream (..), (§-), (-§-), (§§-), (-§§-), (§§!-), (-§§!-), anyS)
 import ForSyDe.MoC.SY.Process
-import ForSyDe.MoC.SY.Patterns
 

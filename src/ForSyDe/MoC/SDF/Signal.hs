@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -17,105 +17,97 @@ module ForSyDe.MoC.SDF.Signal where
 
 import ForSyDe.Core
 
+newtype Signal a = Signal { toS :: Stream a }
 
-data Stream a = a :- Stream a | NullS deriving (Eq)
 
-type Signal a = Stream a
+fromS = Signal
 
-infixr 3 :-
+liftS :: (Stream a -> Stream b) 
+       -> Signal a -> Signal b
+liftS f = fromS . f . toS
 
-instance Functor Stream where
-  fmap _ NullS   = NullS
-  fmap f (x:-xs) = f x :- fmap f xs
+liftS2 :: (Stream a -> Stream b -> Stream c) 
+       -> Signal a -> Signal b -> Signal c
+liftS2 f xs ys = fromS $ f (toS xs) (toS ys)
 
-instance Applicative Stream where
-  pure a  = a :- pure a
-  _         <*> NullS     = NullS
-  NullS     <*> _         = NullS
-  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
 
 instance Foldable Stream where
   foldr f z NullS     = z
   foldr f z (x :- xs) = f x (foldr f z xs)
 
-infixl 4 §-, -§-
--- | operator for functional application on signals
-(§-) :: ([a] -> b) -> (Int, Signal a) -> Signal b
-f §- (_, NullS) = NullS
-f §- (c, xs)    = let x  = fromSignal $ takeS c xs 
-                      xs'= dropS c xs
-                  in if length x == c then f x :- f §- (c,xs') else NullS
-
-(-§-) :: Signal ([a] -> b) -> (Int, Signal a) -> Signal b
-NullS   -§- _          = NullS
-_       -§- (_, NullS) = NullS
-(f:-fs) -§- (c, xs)    = let x  = fromSignal $ takeS c xs 
-                             xs'= dropS c xs
-                         in if length x == c then f x :- fs -§- (c,xs') else NullS
+-- | Only 'Show' instance. To 'Read' it, use the 'Stream' instance.
+instance (Show a) => Show (Signal a) where
+  showsPrec p = showsPrec p . toS
 
 -- | instance defining the SDFnchronous MoC behavior
-instance MoC Stream where
-  -- | To abide the SDFnchronicicy law, a data-filtered signal must replace missing tokens with 
-  --   absent values, thus the filtered type is 'AbstExt'
-  type TokenType Stream a = a 
-  type Padded Stream a = AbstExt a
-  --------
-  xs -#- p = foldr (\a as -> if p a then a :- as else as)  NullS xs
-  --------
-  --safe = ((<$>) . (§>)) Prst
-  --------
-  a ->- b = b :- a
+instance Signals Signal where
+ -- | To abide the synchronicicy law, a data-filtered signal must replace missing tokens with 
+ --   absent values, thus the filtered type is 'AbstExt'
+    type TokT Signal a = a
+
+ -- (§§-) :: (a -> b) -> Signal a -> Signal b
+    (§§-) f = liftS (f <$>)
+
+ -- (-§§-) :: Signal (a -> b) -> Signal a -> Signal b
+    (-§§-) = liftS2 (<*>)
+
+ -- (->-) :: Signal a -> AbstExt a -> Signal a
+    xs ->- i = liftS (i :-) xs
+
+ -- filt :: (a -> Bool) -> Signal a -> Signal a 
+    filt p = liftS (foldr (\a as -> if p a then a :- as else as) NullS) 
+
+ -- zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
+    zipx = fromS . takeWhileS (anyV isPresent) . zippx . (§>) toS
+
+ -- unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
+    unzipx  = (§>) fromS . unzippx . toS
 
 
+
+-- | converts a list directly to a SDF signal.
 signal :: [a] -> Signal a 
-signal []     = NullS
-signal (x:xs) = x :- (signal xs)
+signal = fromS . stream 
 
--- | The function 'fromSignal' converts a signal into a list.
+
+-- | converts a SDF signal into a list.
 fromSignal :: Signal a -> [a]
-fromSignal NullS   = []
-fromSignal (x:-xs) = x : fromSignal xs
+fromSignal = fromStream . toS
 
-tokenize :: Signal [a] -> Signal a
-tokenize = signal . concat . fromSignal
+infixl 4 §-, -§-
+-- | operator for functional application on signals
+(§-) :: ([a] -> b) -> (Int, Signal a) -> Stream b
+f §- (c, xs) = let x    = fromStream $ takeS c $ toS xs
+                   xs'  = (dropS c) `liftS` xs
+               in if length x == c then f x :- f §- (c,xs') else NullS
+  
+(-§-) :: Stream ([a] -> b) -> (Int, Signal a) -> Stream b
+NullS   -§- _          = NullS
+(f:-fs) -§- (c, xs)    = let x  = fromStream $ takeS c $ toS xs 
+                             xs'= (dropS c) `liftS` xs
+                         in if length x == c then f x :- fs -§- (c,xs') else NullS
+(§!-) :: ([a] -> b) -> (Int, Signal a) -> Stream b
+f §!- (c, xs) | c <= 0    = error "Number of consumed tokens must be positive integer"
+              | otherwise = f §- (c, xs)
 
-zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
-zipx = takeWhileS (allV isAbsent) . zippx
-  where zippx NullV         = pure NullV
-        zippx (x:>xs)       = (:>) <$> padS Abst (fmap pure x) <*> zippx xs
+(-§!-) :: Stream ([a] -> b) -> (Int, Signal a) -> Stream b
+fs -§!- (c, xs) | c <= 0    = error "Number of consumed tokens must be positive integer"
+                | otherwise = fs -§- (c, xs)
 
-unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
-unzipx NullS     = pure NullS
-unzipx (x :- xs) = fromPadded §> x <§> unzipx xs
+
+tokenize :: Stream [a] -> Signal a
+tokenize = signal . concat . fromStream
+
+
+zippx :: Vector (Stream a) -> Stream (Vector (AbstExt a))
+zippx NullV         = pure NullV
+zippx (x:>xs)       = (:>) <$> padS Abst (pure <$> x) <*> zippx xs
+
+unzippx :: Stream (Vector (AbstExt a)) -> Vector (Stream a)
+unzippx NullS     = pure NullS
+unzippx (x :- xs) = fromPadded §> x <§> unzippx xs
   where fromPadded Abst as     = as
         fromPadded (Prst a) as = a :- as  
 
+anyV c = any c . fromVector 
 
-takeS 0 _      = NullS
-takeS _ NullS  = NullS
-takeS n (x:-xs) 
-  | n <= 0    = NullS
-  | otherwise = x :- takeS (n-1) xs
-
-dropS 0 NullS = NullS
-dropS _ NullS = NullS 
-dropS n (x:-xs) 
-  | n <= 0    = x:-xs
-  | otherwise = dropS (n-1) xs
-
-takeWhileS               :: (a -> Bool) -> Stream a -> Stream a
-takeWhileS _ NullS      =  NullS
-takeWhileS p (x:-xs)
-  | p x       =  x :- takeWhileS p xs
-  | otherwise =  NullS
-
-padS :: a -> Stream a -> Stream a
-padS y NullS   = y :- padS y NullS
-padS y (x:-xs) = x :- (padS y xs)
-
-anyS :: (a -> Bool) -> Stream a -> Bool
-anyS _ NullS = False
-anyS c (x :- xs) = c x || anyS c xs
-
-
-allV c = all c . fromVector 

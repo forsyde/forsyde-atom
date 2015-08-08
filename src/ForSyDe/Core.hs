@@ -14,14 +14,16 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core (
        -- * Signal class
-       module ForSyDe.Core.Signal,
+       module ForSyDe.Core.Signals,
+       module ForSyDe.Core.Stream,
        -- * Vector type
        module ForSyDe.Core.Vector,
        -- * Absent extended type
        module ForSyDe.Core.AbsentExt,
 ) where
 
-import ForSyDe.Core.Signal
+import ForSyDe.Core.Signals
+import ForSyDe.Core.Stream
 import ForSyDe.Core.AbsentExt
 import ForSyDe.Core.Vector
 

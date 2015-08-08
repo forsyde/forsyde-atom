@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -122,15 +123,15 @@ reduce3PN :: VecSig vsa => (b -> c -> d -> vsa -> vsa -> vsa) -> Vector b -> Vec
 
 
 -- | The 'maskPN' pattern filters out signal values based on a boolean condition. It is a static process network, thus the output vector length will be fixed and equal to the input vector length.
-maskPN  :: (MoC s) 
+maskPN  :: (Signals s) 
          => (a -> Bool)                -- ^ condition (function)
-         -> Vector (s (TokenType s a)) -- ^ input vector of signals
-         -> Vector (s (TokenType s a)) -- ^ output vector of absent extended signals
+         -> Vector (s a) -- ^ input vector of signals
+         -> Vector (s a) -- ^ output vector of absent extended signals
 
 -- | the 'mask1PN' pattern filters out signal values based on a vector of boolean conditions. It is a static process network, thus the output vector length will be fixed and equal to the input vector length.
-mask1PN :: (MoC s) => Vector (a -> Bool)-- ^ vector of conditions function
-        -> Vector (s (TokenType s a))   -- ^ input vector of signals
-        -> Vector (s (TokenType s a))   -- ^ output vector of absent extended signals
+mask1PN :: (Signals s) => Vector (a -> Bool)-- ^ vector of conditions function
+        -> Vector (s a)   -- ^ input vector of signals
+        -> Vector (s a)   -- ^ output vector of absent extended signals
 
 
 farmPN                = (§>)
@@ -154,6 +155,6 @@ reduce1PN p v1 vs       = pipeV (p §> v1 <§> tailV vs) (headV vs)
 reduce2PN p v1 v2 vs    = pipeV (p §> v1 <§> v2 <§> tailV vs) (headV vs)
 reduce3PN p v1 v2 v3 vs = pipeV (p §> v1 <§> v2 <§> v3 <§> tailV vs) (headV vs)
 
-maskPN c vs   = (-#- c) §> vs
-mask1PN vc vs = (-#-) §> vs <§> vc
+maskPN c vs   = (filt c) §> vs
+mask1PN vc vs = (filt) §> vc <§> vs
 

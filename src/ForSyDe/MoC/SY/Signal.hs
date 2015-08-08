@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -17,97 +17,85 @@ module ForSyDe.MoC.SY.Signal where
 
 import ForSyDe.Core
 
+newtype Signal a = Signal { toS :: Stream (AbstExt a) }
 
-data Stream a = a :- Stream a | NullS deriving (Eq)
+fromS = Signal
 
-type Signal a = Stream (AbstExt a)
+liftS :: (Stream (AbstExt a) -> Stream (AbstExt b)) 
+       -> Signal a -> Signal b
+liftS f = fromS . f . toS
 
-infixr 3 :-
-
-instance Functor Stream where
-  fmap _ NullS   = NullS
-  fmap f (x:-xs) = f x :- fmap f xs
-
-instance Applicative Stream where
-  pure a  = a :- pure a
-  _         <*> NullS     = NullS
-  NullS     <*> _         = NullS
-  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
-
-infixl 4 §-, -§-, §§-, -§§-,  §§!-, -§§!-
--- | operator for functional application on signals
-(§-) :: (AbstExt a -> b) -> Signal a -> Stream b
-(§-) = (<$>)
+liftS2 :: (Stream (AbstExt a) -> Stream (AbstExt b) -> Stream (AbstExt c)) 
+       -> Signal a -> Signal b -> Signal c
+liftS2 f xs ys = fromS $ f (toS xs) (toS ys)
 
 
-(-§-) :: Stream (AbstExt a -> b) -> Signal a -> Stream b
-(-§-) = (<*>)
+-- | Only 'Show' instance. To 'Read' it, use the 'Stream' instance.
+instance (Show a) => Show (Signal a) where
+  showsPrec p = showsPrec p . toS
 
--- | operator for functional application on signals
-(§§-) :: (a -> b) -> Signal a -> Signal b
-(§§-) = ((<$>).(<$>))
-
--- | operator for zipping signals
-(-§§-) :: Signal (a -> b) -> Signal a -> Signal b
-fs -§§- xs = (\f x -> f <*> x) <$> fs <*> xs
-
-(§§!-) :: (a -> b) -> Signal a -> Signal b
-f §§!- xs | anyS isAbsent xs = error "Unexpected absent value in szip"
-          | otherwise         = f §§- xs
-
--- | operator for zipping signals
-(-§§!-) :: Signal (a -> b) -> Signal a -> Signal b
-fs -§§!- xs | anyS isAbsent xs = error "Unexpected absent value in szip"
-            | otherwise         = fs -§§- xs
 
 -- | instance defining the Synchronous MoC behavior
-instance MoC Stream where
-  -- | To abide the synchronicicy law, a data-filtered signal must replace missing tokens with 
-  --   absent values, thus the filtered type is 'AbstExt'
-  type Padded Stream a = a 
-  type TokenType Stream a = AbstExt a
-  --------
-  xs -#- p = (\x -> if (p <$> x) == Prst True then x else Abst) §- xs
-  xs ->- i = i :- xs
-  --------
+instance Signals Signal where
+ -- | To abide the synchronicicy law, a data-filtered signal must replace missing tokens with 
+ --   absent values, thus the filtered type is 'AbstExt'
+    type TokT Signal a = AbstExt a
+
+ -- (§§-) :: (a -> b) -> Signal a -> Signal b
+    (§§-) f = liftS (((<$>).(<$>)) f)
+
+ -- (-§§-) :: Signal (a -> b) -> Signal a -> Signal b
+    (-§§-) = liftS2 (\f x -> (<*>) <$> f <*> x)
+
+ -- (->-) :: Signal a -> AbstExt a -> Signal a
+    xs ->- i = liftS (i :-) xs
+
+ -- filt :: (a -> Bool) -> Signal a -> Signal a 
+    filt p = liftS ((\x -> if (p <$> x) == Prst True then x else Abst) <$>) 
+
+ -- zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
+    zipx = zippx
+
+ -- unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
+    unzipx  = (§>) fromS . unzippx . toS
 
 
 ssignal :: [a] -> Signal a 
 ssignal = signal . map Prst
 
 signal :: [AbstExt a] -> Signal a 
-signal []     = NullS
-signal (x:xs) = x :- (signal xs)
+signal = fromS . stream 
 
 -- | The function 'fromSignal' converts a signal into a list.
 fromSignal :: Signal a -> [AbstExt a]
-fromSignal NullS   = []
-fromSignal (x:-xs) = x : fromSignal xs
+fromSignal = fromStream . toS
+
+zippx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
+zippx NullV   = (fromS . pure . pure) NullV
+zippx (x:>xs) = tokenize $ ((<$>).(:>)) §- x -§- zippx xs
+
+unzippx :: Stream (AbstExt (Vector (AbstExt a))) -> Vector (Stream (AbstExt a))
+unzippx NullS            = pure NullS
+unzippx (Abst :- xs)     = (:-) §> pure Abst <§> unzippx xs
+unzippx ((Prst x) :- xs) = (:-) §> x <§> unzippx xs
 
 
-zipx :: Vector (Signal a) -> Signal (Vector a)
-zipx NullV   = (pure . pure) NullV
-zipx (x:>xs) = (:>) §§- x -§§- zipx xs
+infixl 4 §-, -§-,  §§!-, -§§!-
+-- | operator for functional application on signals
+(§-) :: (AbstExt a -> b) -> Signal a -> Stream b
+(§-) f = (<$>) f . toS
 
-unzipx :: Signal (Vector a) -> Vector (Signal a)
-unzipx NullS            = pure NullS
-unzipx (Abst :- xs)     = (:-) §> pure Abst <§> unzipx xs
-unzipx ((Prst x) :- xs) = ((:-) . Prst) §> x <§> unzipx xs
+(-§-) :: Stream (AbstExt a -> b) -> Signal a -> Stream b
+(-§-) fs = (<*>) fs . toS
 
-anyS :: (a -> Bool) -> Stream a -> Bool
-anyS _ NullS = False
-anyS c (x :- xs) = c x || anyS c xs
+(§§!-) :: (a -> b) -> Signal a -> Signal b
+f §§!- xs | anyS isAbsent $ toS xs = error "Unexpected absent value in szip"
+          | otherwise         = f §§- xs
+
+(-§§!-) :: Signal (a -> b) -> Signal a -> Signal b
+fs -§§!- xs | anyS isAbsent $ toS xs = error "Unexpected absent value in szip"
+            | otherwise         = fs -§§- xs
 
 
-  
--- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
-instance (Show a) => Show (Stream a) where
-  showsPrec p = showParen (p>1) . showSignal
-    where
-      showSignal (x :- xs)  = showChar '{' . showEvent x . showSignal' xs
-      showSignal (NullS)     = showChar '{' . showChar '}'
-      showSignal' (x :- xs) = showChar ',' . showEvent x . showSignal' xs
-      showSignal' (NullS)    = showChar '}'
-      showEvent x           = shows x
-
+tokenize = fromS
 
