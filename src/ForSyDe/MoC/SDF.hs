@@ -22,6 +22,6 @@ module ForSyDe.MoC.SDF (
          --module ForSyDe.MoC.SDF.Process
        ) where
 
-import ForSyDe.MoC.SDF.Signal
---import ForSyDe.MoC.SDF.Process
+import ForSyDe.MoC.SDF.Signal hiding (Stream (..), (§-), (-§-), anyS)
+import ForSyDe.MoC.SDF.Process
 

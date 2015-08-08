@@ -25,6 +25,17 @@ module ForSyDe.Core.Stream (
 data Stream a = a :- Stream a | NullS deriving (Eq)
 
 infixr 3 :-
+
+instance Functor Stream where
+  fmap _ NullS   = NullS
+  fmap f (x:-xs) = f x :- fmap f xs
+
+instance Applicative Stream where
+  pure a  = a :- pure a
+  _         <*> NullS     = NullS
+  NullS     <*> _         = NullS
+  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
+
   
 -- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (Stream a) where
@@ -89,9 +100,10 @@ takeWhileS p (x:-xs)
 (+-+) (x:-xs) ys = x :- (xs +-+ ys)
 
 padS :: a -> Stream a -> Stream a
-padS y NullS   = repeatS y
+padS y NullS   = y :- padS y NullS
 padS y (x:-xs) = x :- (padS y xs)
 
 anyS :: (a -> Bool) -> Stream a -> Bool
 anyS _ NullS = False
 anyS c (x :- xs) = c x || anyS c xs
+

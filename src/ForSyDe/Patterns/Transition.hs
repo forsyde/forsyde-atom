@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -11,23 +12,7 @@
 --
 -- ...
 -----------------------------------------------------------------------------
-module ForSyDe.Patterns.Transition (
-  -- ** generators
-  fanoutPN, fanoutnPN,
-  -- ** selectors
-  headPN, lastPN, initPN, tailPN, takePN, dropPN, evensPN, oddsPN, 
-  stridedSelPN, gatherIdxPN, 
-  gatherVecPN, gatherVec2PN, gatherVec3PN, gatherVec4PN, gatherVec5PN,
-  -- ** arrangers
-  replacePN, attachPN, catPN, concatPN, splitatPN, groupPN, 
-  shiftlPN, shiftrPN, rotlPN, rotrPN, reversePN, bitrevPN,
-  -- ** zip \/ unzip
---  zipxPN, unzipxPN,
-  zipPN, zip3PN, zip4PN, zip5PN, zip6PN,
-  unzipPN, unzip3PN, unzip4PN, unzip5PN, unzip6PN,
-  -- ** utility vectors
-  indexes,
-) where
+module ForSyDe.Patterns.Transition where
 
 import ForSyDe.Core
 
@@ -200,6 +185,19 @@ gatherVec3PN ix v = ((§>).(§>).(§>)) (atV v) ix
 gatherVec4PN ix v = ((§>).(§>).(§>).(§>)) (atV v) ix
 gatherVec5PN ix v = ((§>).(§>).(§>).(§>).(§>)) (atV v) ix
 
+
+-- atV vec = a -> AbstExt a
+-- (<$>) (atV vec) = AbstExt a -> AbstExt (AbstExt a)
+-- (flat.(<$>)) (atV vec) = AbstExt (AbstExt a) -> AbstExt a
+-- ((§>).(<$>)) (atV vec) = Vector (AbstExt a) -> Vector (AbstExt a) 
+--
+-- flat :: (a -> AbstExt a)) -> Vector (AbstExt (AbstExt a)) -> Vector (AbstExt a)
+
+-- | 'gatherAdpPN' is the adaptive version of 'gatherVecPN' where the vector of indexes for each event is carried by a signal.
+gatherAdpPN  :: Signals s => Vector (s Int) -> Vector (s a) -> Vector (s a)
+gatherAdpPN ixs v  = unzipx $ (\ixv vec -> (§>) (atVA vec) ixv) §§- zipx ixs -§§- zipx v
+
+
 tailPN        = gatherIdxPN (>1)
 initPN v      = gatherIdxPN (< lengthV v) v
 takePN n      = gatherIdxPN (<=n)
@@ -242,6 +240,14 @@ unzip6PN xs = ((\(x,_,_,_,_,_) -> x) §> xs,
 
 
 
+----------HELPER FUNCTIONS--------------
+
+atVA :: Vector (AbstExt a) -> AbstExt Int -> AbstExt a
+NullV   `atVA` _ = error "atVA: Vector has not enough elements"
+_       `atVA` Abst     = Abst
+(x:>_)  `atVA` (Prst 0) = x
+(_:>xs) `atVA` (Prst n) = xs `atVA` (Prst (n-1))
+
 
 {-
 
@@ -275,7 +281,7 @@ gatherAdpPN r ixs v = unzipxPN $ zipWithS (\i tok -> mapV (\x -> (r x tok)) i) i
           zipWithS _ _       _       = NullS
 
 
--- * MoC-specific patterns
+-- * Signals-specific patterns
 
 
 

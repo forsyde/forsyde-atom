@@ -15,7 +15,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.AbsentExt( 
          AbstExt (Abst, Prst), fromAbstExt, abstExt, psi, 
-         isAbsent, isPresent, abstExtFunc
+         isAbsent, isPresent, abstExtFunc, 
        ) where
 
 -- |The data type 'AbstExt' has two constructors. The constructor 'Abst' is used to model the absence of a value, while the constructor 'Prst' is used to model present values.
@@ -32,6 +32,16 @@ instance Read a => Read (AbstExt a) where
   readsPrec _ x       =  readsAbstExt x 
    where readsAbstExt s =  [(Abst, r1) | ("_", r1) <- lex s] ++ [(Prst x, r2) | (x, r2) <- reads s]
 
+instance Functor AbstExt where
+  fmap _ Abst     = Abst
+  fmap f (Prst x) = Prst (f x)
+
+instance Applicative AbstExt where
+  pure a  = Prst a
+  _      <*> Abst   = Abst
+  Abst   <*> _      = Abst
+  (Prst x) <*> (Prst y) = Prst (x y)
+
 
 -- |The function 'fromAbstExt' converts a value from a extended value.
 fromAbstExt       :: a -> AbstExt a -> a
@@ -45,7 +55,7 @@ abstExtFunc       :: (a -> b) -> AbstExt a -> AbstExt b
 psi :: (a -> b) -> AbstExt a -> AbstExt b
 -- | The function 'abstExt' converts a usual value to a present value. 
 abstExt :: a -> AbstExt a
-
+   
 
 abstExt v              =  Prst v
 fromAbstExt x Abst     =  x   
