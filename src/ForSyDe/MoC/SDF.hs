@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.MoC.SY
+-- Module      :  ForSyDe.MoC.SDF
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; 
 --                    SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
@@ -15,12 +15,13 @@
 -- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SY (
-         -- * Synchronous signal
-         Signal, signal, ssignal, fromSignal,
+module ForSyDe.MoC.SDF (
+         -- * SDF signal
+         Signal, signal, fromSignal,
          -- * Process constructors
-         module ForSyDe.MoC.SY.Process,
+         module ForSyDe.MoC.SDF.Process
        ) where
 
-import ForSyDe.MoC.SY.Signal (Signal, ssignal, signal, fromSignal)
-import ForSyDe.MoC.SY.Process
+import ForSyDe.MoC.SDF.Signal
+import ForSyDe.MoC.SDF.Process
+

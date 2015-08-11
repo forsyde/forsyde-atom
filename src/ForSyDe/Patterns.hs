@@ -2,7 +2,6 @@
 -- |
 -- Module      :  ForSyDe.Patterns
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015;
---                    SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -26,15 +25,12 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.Patterns(  
-  -- * Vector extensions
-  module ForSyDe.Patterns.Vector,
   -- * Applicative process network constructors
   module ForSyDe.Patterns.Applicative,
   -- * Transition process network constructors 
   module ForSyDe.Patterns.Transition,
 ) where
 
-import ForSyDe.Patterns.Vector
 import ForSyDe.Patterns.Transition
 import ForSyDe.Patterns.Applicative
 

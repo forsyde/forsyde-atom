@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Stream (
   Stream (..),
-  stream, fromStream,
+  stream, fromStream, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+), anyS,
 ) where
 
 -- | A  stream is defined as a list of events. An event has a tag and a value. 
@@ -22,9 +22,20 @@ module ForSyDe.Core.Stream (
 --
 --   This is the base data type for the 'ForSyDe.MoC.MoC'-bound signals, which are further described
 --   by becoming instances of the 'Signal' type class.
-data Stream a = a :- Stream a | NullS
+data Stream a = a :- Stream a | NullS deriving (Eq)
 
 infixr 3 :-
+
+instance Functor Stream where
+  fmap _ NullS   = NullS
+  fmap f (x:-xs) = f x :- fmap f xs
+
+instance Applicative Stream where
+  pure a  = a :- pure a
+  _         <*> NullS     = NullS
+  NullS     <*> _         = NullS
+  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
+
   
 -- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (Stream a) where
@@ -54,4 +65,45 @@ stream (x:xs) = x :- (stream xs)
 fromStream :: Stream a -> [a]
 fromStream NullS   = []
 fromStream (x:-xs) = x : fromStream xs
+
+headS :: Stream a -> a
+headS (x :- _) = x
+
+tailS NullS  = NullS
+tailS (_ :- a) = a
+
+isNull NullS = True
+isNull _ = False
+
+repeatS :: a -> Stream a
+repeatS a = a :- repeatS a
+
+takeS 0 _      = NullS
+takeS _ NullS  = NullS
+takeS n (x:-xs) 
+  | n <= 0    = NullS
+  | otherwise = x :- takeS (n-1) xs
+
+dropS 0 NullS = NullS
+dropS _ NullS = NullS 
+dropS n (x:-xs) 
+  | n <= 0    = x:-xs
+  | otherwise = dropS (n-1) xs
+
+takeWhileS               :: (a -> Bool) -> Stream a -> Stream a
+takeWhileS _ NullS      =  NullS
+takeWhileS p (x:-xs)
+  | p x       =  x :- takeWhileS p xs
+  | otherwise =  NullS
+
+(+-+) NullS   ys = ys
+(+-+) (x:-xs) ys = x :- (xs +-+ ys)
+
+padS :: a -> Stream a -> Stream a
+padS y NullS   = y :- padS y NullS
+padS y (x:-xs) = x :- (padS y xs)
+
+anyS :: (a -> Bool) -> Stream a -> Bool
+anyS _ NullS = False
+anyS c (x :- xs) = c x || anyS c xs
 

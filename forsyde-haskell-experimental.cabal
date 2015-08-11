@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                forsyde-haskell-experimental
-version:             0.1.0.0
+version:             0.1.1.0
 -- synopsis:            
 -- description:         
 -- license:             
@@ -18,16 +18,20 @@ library
   exposed-modules:     ForSyDe
                        ForSyDe.Core,
                        ForSyDe.Core.Stream,
+                       ForSyDe.Core.Signals,
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.AbsentExt,
-                       ForSyDe.MoC,
                        ForSyDe.MoC.SY,
                        ForSyDe.MoC.SY.Signal,
                        ForSyDe.MoC.SY.Process,
+                       ForSyDe.MoC.SDF,
+                       ForSyDe.MoC.SDF.Signal,
+                       ForSyDe.MoC.SDF.Process,
+                       ForSyDe.MoC.Interface,
                        ForSyDe.Patterns,
-                       ForSyDe.Patterns.Vector,
                        ForSyDe.Patterns.Transition,
                        ForSyDe.Patterns.Applicative
+  Default-Language:    Haskell2010
   -- other-modules:       
   build-depends:       base>=4.7.10
   hs-source-dirs:      src
