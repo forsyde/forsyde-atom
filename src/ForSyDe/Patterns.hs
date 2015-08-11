@@ -2,7 +2,6 @@
 -- |
 -- Module      :  ForSyDe.Patterns
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015;
---                    SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se

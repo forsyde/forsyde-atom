@@ -27,6 +27,7 @@ library
                        ForSyDe.MoC.SDF,
                        ForSyDe.MoC.SDF.Signal,
                        ForSyDe.MoC.SDF.Process,
+                       ForSyDe.MoC.Interface,
                        ForSyDe.Patterns,
                        ForSyDe.Patterns.Transition,
                        ForSyDe.Patterns.Applicative

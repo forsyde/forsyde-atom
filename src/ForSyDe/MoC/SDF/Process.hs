@@ -12,24 +12,37 @@
 -- ...
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SDF.Process  where
+module ForSyDe.MoC.SDF.Process (
+  -- ** combinatorial process constructors
+  comb, comb2, comb3, comb4,
+  -- ** sequential process constructors
+  delay, delayn,
+  -- ** specific process constructors
+  filter,
+  -- ** zip\/unzip
+  zip, zip3, zip4, zip5, zip6,
+  unzip, unzip3, unzip4, unzip5, unzip6,
+) where
 
+import Prelude hiding (zip, zip3, filter, unzip, unzip3)
 import ForSyDe.Core
 import ForSyDe.MoC.SDF.Signal
 
--- | The `comb` take a combinatorial function as argument and returns a process with one input signals and one output signal.
-comb :: Int -> Int -> ([a] -> [b]) -- ^ combinatorial function
-       -> Signal a -- ^ input signal
-       -> Signal b -- ^ output signal
+-- | The `comb` take a combinatorial function and production and consumption rates as arguments and returns a process with one input signals and one output signal.
+comb :: Int -- ^ production rate, 
+     -> Int -- ^ consumption rate, 
+     -> ([a] -> [b]) -- ^ combinatorial function on lists 
+     -> Signal a -- ^ input signal
+     -> Signal b -- ^ output signal
 
 
--- | Behaves like 'comb', but the process takes 2 input signals.
+-- | Behaves like 'comb', but the process takes 2 input signals, and the production rate is presented as a tuple.
 comb2 :: (Int, Int) -> Int -> ([a] -> [b] -> [c]) -> Signal a -> Signal b -> Signal c
 
--- | Behaves like 'comb', but the process takes 3 input signals.
+-- | Behaves like 'comb', but the process takes 3 input signals, and the production rate is presented as a 3-tuple.
 comb3 :: (Int, Int, Int) -> Int -> ([a] -> [b] -> [c] -> [d]) -> Signal a -> Signal b -> Signal c -> Signal d
 
--- | Behaves like 'comb', but the process takes 4 input signals.
+-- | Behaves like 'comb', but the process takes 4 input signals, and the production rate is presented as a 4-tuple.
 comb4 :: (Int, Int, Int, Int) -> Int -> ([a] -> [b] -> [c] -> [d] -> [e]) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e
 
 -- | The process constructor 'delay' delays the signal one event cycle by introducing an initial value at the beginning of the output signal. It is necessary to initialize feed-back loops.
@@ -44,13 +57,16 @@ delayn :: a -- ^Initial state
           -> Signal a -- ^Output signal
 
 
--- | The process constructor 'filter' discards the values who do not fulfill a predicate given by a predicate function and replaces them with absent events.
+-- | The process constructor 'filter' discards the /tokens/ whose values do not fulfill a predicate given by a predicate function.
 filter :: (a -> Bool) -- Predicate function
          -> Signal a -- Input signal
          -> Signal a -- Output signal
 
 -- | The process 'zip' \"zips\" two incoming signals into one signal of tuples.
-zip  :: (Int,Int) -> Signal a -> Signal b -> Signal ([a],[b])
+zip  :: (Int,Int) -- ^ prodution rates
+     -> Signal a -- ^ first signal
+     -> Signal b -- ^ second signal
+     -> Signal ([a],[b]) -- ^ output signal of tuples
 
 -- | Works as 'zip', but takes three input signals.
 zip3 :: (Int,Int,Int) -> Signal a -> Signal b -> Signal c -> Signal ([a],[b],[c])
@@ -65,7 +81,9 @@ zip5 :: (Int,Int,Int,Int,Int) -> Signal a -> Signal b -> Signal c -> Signal d ->
 zip6 :: (Int,Int,Int,Int,Int,Int) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f -> Signal ([a],[b],[c],[d],[e],[f])
 
 -- | The process 'unzip' \"unzips\" a signal of tuples into two signals.
-unzip  :: (Int,Int) -> Signal ([a],[b]) -> (Signal a, Signal b)
+unzip  :: (Int,Int) -- ^ consumption rates 
+       -> Signal ([a],[b]) -- ^ signal of tuples
+       -> (Signal a, Signal b) -- ^ the two output signals
 
 -- | Works as 'unzip', but has three output signals.
 unzip3 :: (Int,Int,Int) -> Signal ([a],[b],[c]) -> (Signal a, Signal b, Signal c)

@@ -17,11 +17,11 @@
 
 module ForSyDe.MoC.SDF (
          -- * SDF signal
-         module ForSyDe.MoC.SDF.Signal,
+         Signal, signal, fromSignal,
          -- * Process constructors
-         --module ForSyDe.MoC.SDF.Process
+         module ForSyDe.MoC.SDF.Process
        ) where
 
-import ForSyDe.MoC.SDF.Signal hiding (Stream (..), (§-), (-§-), anyS)
+import ForSyDe.MoC.SDF.Signal
 import ForSyDe.MoC.SDF.Process
 

@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleInstances #-}
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK hide, prune, show-extensions #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core.Signal
@@ -26,25 +26,28 @@ infixl 4 §§-, -§§-, ->-
 --   'ForSyDe.Signals'-bound signals. 
 class Signals (s :: * -> *) where
 
-  -- | The data type associated with a filtered output.
+  -- | The type of the token carried by a signal
   type TokT s a
 
-  -- | operator for functional application on signals
+  -- | functor operator for signals. It bypasses the token wrapper, if any.
   (§§-) :: (a -> b) -> s a -> s b
 
-  -- | operator for zipping signals
+  -- | lift operator for signals. It bypasses the token wrapper, if any.
   (-§§-) :: s (a -> b) -> s a -> s b
 
   -- | operator for the default delay function
   (->-) :: s a -> TokT s a -> s a
 
-  -- | operator for filtering signals. The output data type is defined by the 'TokenType' type synonym
+  -- | function for filtering signals. The output data type is defined by the 'TokenType' type synonym
   filt :: (a -> Bool) -> s a -> s a 
  
+  -- | transpose function which has to respect the semantics and the form of each MoC-bound signal.
   zipx :: Vector (s a) -> s (Vector (AbstExt a))
 
+  -- | inverse transpose function which has to respect the semantics and the form of each MoC-bound signal.
   unzipx :: s (Vector (AbstExt a)) -> Vector (s a)
 
+  -- | helper function for safely turning a signal into the type adopted by the transposed form. Used for convenience.
   safe :: s (Vector a) -> s (Vector (AbstExt a)) 
   safe = ((§§-) . (§>)) Prst 
   

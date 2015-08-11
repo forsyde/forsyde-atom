@@ -33,10 +33,7 @@ infixr 5 <+>
 infixl 4 §>, <§>
 
 -- | The data type 'Vector' is modeled similar to a list. As described in the core library,
---   it is only a data container used in functions.
---
---   NOT TRUE: It may only be carried as token of signals, and __MUST NOT__ enclose signals as such,  
---   unless the 'ForSyDe.Patterns.Patterns' module is explicitly loaded. Only then 'Vector' enables 
+--   it is only a data container. When 'ForSyDe.Patterns.Patterns' is loaded, it enables 
 --   signals to be bundled in arbitrary forms and has methods for exploiting process network
 --   patterns.
 data Vector a = NullV
@@ -52,11 +49,6 @@ instance Applicative Vector where
   _         <*> NullV     = NullV
   NullV     <*> _         = NullV
   (f :> fs) <*> (x :> xs) = f x :> fs <*> xs
-
-instance Foldable Vector where
-  foldr f z NullV     = z
-  foldr f z (x :> xs) = f x (foldr f z xs)
-
 
 -- | operator for functional application on vectors
 (§>) :: (a -> b) -> Vector a -> Vector b 

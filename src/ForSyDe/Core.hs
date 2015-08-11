@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK not-home, prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core
@@ -13,9 +14,10 @@
 -- interface functions for using them
 -----------------------------------------------------------------------------
 module ForSyDe.Core (
+       -- * Stream type
+       module ForSyDe.Core.Stream,
        -- * Signal class
        module ForSyDe.Core.Signals,
-       module ForSyDe.Core.Stream,
        -- * Vector type
        module ForSyDe.Core.Vector,
        -- * Absent extended type

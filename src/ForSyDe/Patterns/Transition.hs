@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -12,16 +11,39 @@
 --
 -- ...
 -----------------------------------------------------------------------------
-module ForSyDe.Patterns.Transition where
+module ForSyDe.Patterns.Transition (
+  -- ** generators
+  fanout, fanoutn,
+  -- ** selectors
+  head, last, init, tail, take, drop, evens, odds, 
+  stridedSel, gatherIdx, 
+  gatherVec, gatherVec2, gatherVec3, gatherVec4, gatherVec5,
+  gatherAdp, gatherAdp2, gatherAdp3, gatherAdp4, gatherAdp5,
+  -- ** arrangers
+  replace, attach, cat, concat, splitat, group, 
+  shiftl, shiftr, rotl, rotr, reverse, bitrev, 
+  duals, unduals,
+  -- ** zip \/ unzip
+  zipx, unzipx,
+  zip, zip3, zip4, zip5, zip6,
+  unzip, unzip3, unzip4, unzip5, unzip6,
+  -- ** utility functions
+  indexes, length
+) where
 
 import ForSyDe.Core
 
-import Prelude hiding (zip,zip3, unzip, unzip3, take, drop, head, tail, init, last, odds, evens)
+import Prelude hiding (zip,zip3, unzip, unzip3, take, drop, head, tail, init, last, odds, evens, length, concat, reverse)
 
 
--- | Returns a vector with indexes, i.e. @\<0,1,2,...\>@
+-- | the function 'indexes' generates a vector with indexes, i.e. @\<0,1,2,...\>@
 indexes :: Vector Int
+
+-- | The function 'length' returns the length of a vector.
+length :: VecSig vsa => Vector vsa -> Int
+
 indexes = vector [0..]
+length  = lengthV
 
 
 -- | 'fanout' is the equivalent of repeat on lists. It is given a new name because instead of a 
@@ -43,10 +65,9 @@ fanout   :: VecSig vsa => vsa -> Vector vsa
 -- | it is the same as 'fanout' with an additional length parameter
 fanoutn     :: (VecSig vsb, Num a, Eq a, Ord a) => a -> vsb -> Vector vsb
 
-fanout a    = a :> fanout a
+fanout a                = a :> fanout a
 fanoutn n a | n > 0     = a :> fanoutn (n-1) a
-              | otherwise = NullV
-
+            | otherwise = NullV
 
 
 -- | The pattern 'head' returns the first element of a vector.
@@ -75,42 +96,47 @@ evens       :: VecSig vsa => Vector vsa -> Vector vsa
 
 -- | The pattern 'stridedSel' returns the elements in a vector based on a defined stride: the first element, the step size and the number of elements.
 stridedSel  :: VecSig vsa => Int -> Int -> Int -> Vector vsa -> Vector vsa
--- |  The function 'replace' replaces an element in a vector.
+-- |  The pattern 'replace' replaces an element in a vector.
 replace :: VecSig vsa => Vector vsa -> Int -> vsa -> Vector vsa
 
--- | The operator attach attaches a signal at the end of a vector.
+-- | The pattern 'attach' attaches a signal at the end of a vector.
 attach :: VecSig vsa => Vector vsa -> vsa -> Vector vsa
 
--- | The operator 'cat' concatinates two vectors.
+-- | The pattern 'cat' concatinates two vectors.
 cat :: VecSig vsa => Vector vsa -> Vector vsa -> Vector vsa
 
--- | The function 'concat' transforms a vector of vectors to a single vector. 
+-- | The pattern 'concat' transforms a vector of vectors to a single vector. 
 concat :: VecSig vsa => Vector (Vector vsa) -> Vector vsa
 
--- | The function 'splitat' splits a vector into two at a determined position. 
+-- | The pattern 'splitat' splits a vector into two at a determined position. 
 splitat :: VecSig vsa => Int ->  Vector vsa -> (Vector vsa, Vector vsa)
 
--- | The function 'group' groups a vector into a vector of vectors of size n.
+-- | The pattern 'group' groups a vector into a vector of vectors of size n.
 group :: VecSig vsa => Int -> Vector vsa -> Vector (Vector vsa)
 
--- | The function 'shiftl' shifts a value from the left into a vector. 
+-- | The pattern 'shiftl' shifts a value from the left into a vector. 
 shiftl :: VecSig vsa => Vector vsa -> vsa -> Vector vsa 
 
--- | The function 'shiftr' shifts a value from the right into a vector. 
+-- | The pattern 'shiftr' shifts a value from the right into a vector. 
 shiftr :: VecSig vsa => Vector vsa -> vsa -> Vector vsa
 
--- | The function 'rotl' rotates a vector to the left. Note that this fuctions does not change the size of a vector.
+-- | The pattern 'rotl' rotates a vector to the left. Note that this fuctions does not change the size of a vector.
 rotl   :: VecSig vsa => Vector vsa -> Vector vsa
 
--- | The function 'rotr' rotates a vector to the right. Note that this fuction does not change the size of a vector.
+-- | The pattern 'rotr' rotates a vector to the right. Note that this fuction does not change the size of a vector.
 rotr :: VecSig vsa => Vector vsa -> Vector vsa
 
--- | The function 'reverse' reverses the order of elements in a vector. 
+-- | The pattern 'reverse' reverses the order of elements in a vector. 
 reverse :: VecSig vsa => Vector vsa -> Vector vsa
 
--- | The function 'bitrev' rearranges a vector in a bit-reverse pattern. An example of a bit-reverse pattern is the butterfly interconnection in a FFT network. 
+-- | The pattern 'bitrev' rearranges a vector in a bit-reverse pattern. An example of a bit-reverse pattern is the butterfly interconnection in a FFT network. 
 bitrev :: VecSig vsa => Vector vsa -> Vector vsa
 
+-- | The pattern 'duals' groups the first and the last half of a vector into a vector of tuples. See FFT example for usage. 
+duals :: VecSig vsa => Vector (vsa) -> Vector (vsa,vsa)
+
+-- | The pattern 'unduals' groups the first and the last half of a vector into a vector of tuples. See FFT example for usage.
+unduals :: VecSig vsa => Vector (vsa,vsa) -> Vector (vsa)
 
 
 tail        = gatherIdx (>1)
@@ -138,6 +164,10 @@ rotl       = rotlV
 rotr       = rotrV
 stridedSel = selectV
 
+duals v   = let k     = lengthV v `div` 2
+            in  zip (take k v) (drop k v)
+unduals v = let (x,y) = unzip v 
+            in  cat x y
 
 -- | 'gatherIdx' returns the elements based on a boolean function on indexes in a vector of 'VecSig's
 gatherIdx :: VecSig vsa => (Int -> Bool) -> Vector vsa -> Vector vsa
@@ -179,7 +209,7 @@ gatherVec2 ix vs  = ((§>).(§>))                (atV vs) ix
 gatherVec3 ix vs  = ((§>).(§>).(§>))           (atV vs) ix
 gatherVec4 ix vs  = ((§>).(§>).(§>).(§>))      (atV vs) ix
 gatherVec5 ix vs  = ((§>).(§>).(§>).(§>).(§>)) (atV vs) ix
-gatherAdp vsix vs = unzipx $ (\v -> (§>) (flat . (<$>) (atV v))) §§- zipx vs -§§- zipx vsix
+gatherAdp vsix vs = unzipx $ (\v -> (§>) (flat . psi (atV v))) §§- zipx vs -§§- zipx vsix
 gatherAdp2 ixs vs = (§>)                  (\ix -> gatherAdp ix vs) ixs
 gatherAdp3 ixs vs = ((§>).(§>))           (\ix -> gatherAdp ix vs) ixs
 gatherAdp4 ixs vs = ((§>).(§>).(§>))      (\ix -> gatherAdp ix vs) ixs
@@ -243,13 +273,4 @@ unzip6 xs = ((\(x,_,_,_,_,_) -> x) §> xs,
                (\(_,_,_,_,x,_) -> x) §> xs,
                (\(_,_,_,_,_,x) -> x) §> xs)
 
-duals :: VecSig vsa => Vector (vsa) -> Vector (vsa,vsa)
-
-unduals :: VecSig vsa => Vector (vsa,vsa) -> Vector (vsa)
-
-duals v = let k = lengthV v `div` 2
-          in  zip (take k v) (drop k v)
-
-unduals v = let (x,y) = unzip v 
-            in  x <+> y
 

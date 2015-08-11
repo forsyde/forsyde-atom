@@ -13,7 +13,9 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.MoC.SY.Process (
-  -- ** Non-strict process constructors
+  -- ** Non-strict process constructors 
+  -- | Non-strict process constructor build processes based on functions on 'AbstExt' values.
+
   -- *** Combinatorial process constructors
   comb, comb2, comb3, comb4,
   zip, zip3, zip4, zip5, zip6,
@@ -25,6 +27,8 @@ module ForSyDe.MoC.SY.Process (
   -- ***  specific processes
   filter, fill, hold,
   -- ** Strict process constuctors
+  -- | Strict process constructor are bypassing the 'AbstExt' wrapper and apply functions on values directly. 'Abst' values are simply passed on.
+
   -- *** Combinatorial process constructors
   scomb, scomb2, scomb3, scomb4,
   szip, szip3, szip4, szip5, szip6,
@@ -56,18 +60,18 @@ comb3 :: (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d) -> Signal a -> Signa
 -- | Behaves like 'comb', but the process takes 4 input signals.
 comb4 :: (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt e) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e
 
--- | The `comb` take a combinatorial function as argument and returns a process with one input signals and one output signal.
+-- | The `scomb` take a combinatorial function as argument and returns a process with one input signals and one output signal.
 scomb :: (a -> b) -- ^ combinatorial function
        -> Signal a -- ^ input signal
        -> Signal b -- ^ output signal
 
--- | Behaves like 'comb', but the process takes 2 input signals.
+-- | Behaves like 'scomb', but the process takes 2 input signals.
 scomb2 :: (a -> b -> c) -> Signal a -> Signal b -> Signal c
 
--- | Behaves like 'comb', but the process takes 3 input signals.
+-- | Behaves like 'scomb', but the process takes 3 input signals.
 scomb3 :: (a -> b -> c -> d) -> Signal a -> Signal b -> Signal c -> Signal d
 
--- | Behaves like 'comb', but the process takes 4 input signals.
+-- | Behaves like 'scomb', but the process takes 4 input signals.
 scomb4 :: (a -> b -> c -> d -> e) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e
 
 comb  f x        = tokenize $ f §-  x
@@ -93,12 +97,12 @@ delayn :: AbstExt a -- ^Initial state
          -> Signal a -- ^Input signal
          -> Signal a -- ^Output signal
 
--- | The process constructor 'delay' delays the signal one event cycle by introducing an initial value at the beginning of the output signal. It is necessary to initialize feed-back loops.
+-- | The process constructor 'sdelay' delays the signal one event cycle by introducing an initial value at the beginning of the output signal. It is necessary to initialize feed-back loops.
 sdelay :: a -- ^Initial state 
         -> Signal a -- ^Input signal
         -> Signal a -- ^Output signal
 
--- | The process constructor 'delayn' delays the signal n events by introducing n identical default values.   
+-- | The process constructor 'sdelayn' delays the signal n events by introducing n identical default values.   
 sdelayn :: a -- ^Initial state
          -> Int -- ^ Delay cycles 
          -> Signal a -- ^Input signal
@@ -130,19 +134,17 @@ moore2 :: (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt a) -> (AbstExt a -> Ab
 -- | Behaves like 'moore', but has 3 input signals.
 moore3 :: (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt a) -> (AbstExt a -> AbstExt e) -> AbstExt a -> Signal b -> Signal c -> Signal d -> Signal e
 
--- | The process constructor 'moore' is used to model state machines of \"Moore\" type, where the output only depends on the current state. The process constructors takes a function to calculate the next state, another function to calculate the output and a value for the initial state. 
---
--- In contrast the output of a process created by the process constructor 'mealy' depends not only on the state, but also on the input values.
+-- | The strict version of 'moore'
 smoore :: (a -> b -> a) -- ^ Combinational function for next state decoder 
         -> (a -> c) -- ^ Combinational function for od decoder
         -> a -- ^ Initial state
         -> Signal b -- ^ Input signal
         -> Signal c -- ^ Output signal
 
--- | Behaves like 'moore', but has 2 input signals.
+-- | Behaves like 'smoore', but has 2 input signals.
 smoore2 :: (a -> b -> c -> a) -> (a -> d) -> a -> Signal b -> Signal c -> Signal d
 
--- | Behaves like 'moore', but has 3 input signals.
+-- | Behaves like 'smoore', but has 3 input signals.
 smoore3 :: (a -> b -> c -> d -> a) -> (a -> e) -> a -> Signal b -> Signal c -> Signal d -> Signal e
 
 moore ns od mem xs = tokenize $ od §- s
@@ -175,19 +177,17 @@ mealy2 :: (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt a) -> (AbstExt a -> Ab
 -- | Behaves like 'mealy', but has three input signals.
 mealy3 :: (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt a) -> (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt e) -> AbstExt a -> Signal b -> Signal c -> Signal d -> Signal e
 
--- | The process constructor 'mealy' is used to model state machines of \"Mealy\" type, where the od only depends on the current state and the input values. The process constructor is based on the process constructor The process constructors takes a function to calculate the next state, another function to calculate the od and a value for the initial state. 
---
--- In contrast the od of a process created by the process constructor 'moore' depends only on the state, but not on the input values.
+-- | The strict version of 'mealy'
 smealy :: (a -> b -> a) -- ^Combinational function for next state decoder  
         -> (a -> b -> c) -- ^Combinational function for od decoder
         -> a -- ^Initial state
         -> Signal b -- ^Input signal 
         -> Signal c -- ^Output signal
 
--- | Behaves like 'mealy', but has two input signals.
+-- | Behaves like 'smealy', but has two input signals.
 smealy2 :: (a -> b -> c -> a) -> (a -> b -> c -> d) -> a -> Signal b -> Signal c -> Signal d
 
--- | Behaves like 'mealy', but has three input signals.
+-- | Behaves like 'smealy', but has three input signals.
 smealy3 :: (a -> b -> c -> d -> a) -> (a -> b -> c -> d -> e) -> a -> Signal b -> Signal c -> Signal d -> Signal e
 
 mealy ns od mem xs = tokenize $ od §- s -§- xs
@@ -246,19 +246,19 @@ zip5 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal (Abst
 -- | Works as 'zip', but takes four input signals.
 zip6 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f -> Signal (AbstExt a,AbstExt b,AbstExt c,AbstExt d,AbstExt e,AbstExt f)
 
--- | The process 'zip' \"zips\" two incoming signals into one signal of tuples.
+-- | The process 'szip' \"zips\" two incoming signals into one signal of tuples.
 szip  :: Signal a -> Signal b -> Signal (a,b)
 
--- | Works as 'zip', but takes three input signals.
+-- | Works as 'szip', but takes three input signals.
 szip3 :: Signal a -> Signal b -> Signal c -> Signal (a,b,c)
 
--- | Works as 'zip', but takes four input signals.
+-- | Works as 'szip', but takes four input signals.
 szip4 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal (a,b,c,d)
 
--- | Works as 'zip', but takes four input signals.
+-- | Works as 'szip', but takes four input signals.
 szip5 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal (a,b,c,d,e)
 
--- | Works as 'zip', but takes four input signals.
+-- | Works as 'szip', but takes four input signals.
 szip6 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f -> Signal (a,b,c,d,e,f)
 
 zip xs ys              = tokenize $ (\x y -> pure (x,y))                 §- xs -§- ys
@@ -266,11 +266,11 @@ zip3 xs ys zs          = tokenize $ (\x y z -> pure (x,y,z))             §- xs 
 zip4 xs ys zs as       = tokenize $ (\x y z a -> pure (x,y,z,a))         §- xs -§- ys -§- zs -§- as
 zip5 xs ys zs as bs    = tokenize $ (\x y z a b -> pure (x,y,z,a,b))     §- xs -§- ys -§- zs -§- as -§- bs
 zip6 xs ys zs as bs cs = tokenize $ (\x y z a b c -> pure (x,y,z,a,b,c)) §- xs -§- ys -§- zs -§- as -§- bs -§- cs
-szip xs ys              = (,)     §§!- xs -§§!- ys
-szip3 xs ys zs          = (,,)    §§!- xs -§§!- ys -§§!- zs
-szip4 xs ys zs as       = (,,,)   §§!- xs -§§!- ys -§§!- zs -§§!- as
-szip5 xs ys zs as bs    = (,,,,)  §§!- xs -§§!- ys -§§!- zs -§§!- as -§§!- bs
-szip6 xs ys zs as bs cs = (,,,,,) §§!- xs -§§!- ys -§§!- zs -§§!- as -§§!- bs -§§!- cs
+szip xs ys              = (,)     §§- xs -§§- ys
+szip3 xs ys zs          = (,,)    §§- xs -§§- ys -§§- zs
+szip4 xs ys zs as       = (,,,)   §§- xs -§§- ys -§§- zs -§§- as
+szip5 xs ys zs as bs    = (,,,,)  §§- xs -§§- ys -§§- zs -§§- as -§§- bs
+szip6 xs ys zs as bs cs = (,,,,,) §§- xs -§§- ys -§§- zs -§§- as -§§- bs -§§- cs
 
 --UNZIP
 
@@ -289,19 +289,19 @@ unzip5 :: Signal (AbstExt a,AbstExt b,AbstExt c,AbstExt d,AbstExt e)  -> (Signal
 -- | Works as 'unzip', but has four output signals.
 unzip6 :: Signal (AbstExt a,AbstExt b,AbstExt c,AbstExt d,AbstExt e,AbstExt f) -> (Signal a,Signal b,Signal c,Signal d,Signal e,Signal f)
 
--- | The process 'unzip' \"unzips\" a signal of tuples into two signals.
+-- | The process 'sunzip' \"unzips\" a signal of tuples into two signals.
 sunzip  :: Signal (a,b) -> (Signal a,Signal b)
 
--- | Works as 'unzip', but has three output signals.
+-- | Works as 'sunzip', but has three output signals.
 sunzip3 :: Signal (a, b, c) -> (Signal a, Signal b, Signal c)
 
--- | Works as 'unzip', but has four output signals.
+-- | Works as 'sunzip', but has four output signals.
 sunzip4 :: Signal (a,b,c,d) -> (Signal a,Signal b,Signal c,Signal d)
 
--- | Works as 'unzip', but has four output signals.
+-- | Works as 'sunzip', but has four output signals.
 sunzip5 :: Signal (a,b,c,d,e)  -> (Signal a,Signal b,Signal c,Signal d,Signal e)
 
--- | Works as 'unzip', but has four output signals.
+-- | Works as 'sunzip', but has four output signals.
 sunzip6 :: Signal (a,b,c,d,e,f) -> (Signal a,Signal b,Signal c,Signal d,Signal e,Signal f)
 
 unzip xs  = (tokenize $ get fst §- xs, tokenize $ get snd §- xs)

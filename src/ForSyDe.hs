@@ -8,22 +8,51 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The ForSyDe module is an experimental shallow-embedded DSL implmenenting
--- the ForSyDe methodology. It loads the default libraries:
+-- This ForSyDe module is an experimental shallow-embedded DSL implmenenting
+-- the ForSyDe methodology. It loads a small part of the core libraries
+-- (documented below) in order to provide the necessary functions to the 
+-- standard modeling framework.
 --
--- * 'ForSyDe.Core'
+-- Additional features must be included manually by importing the following
+-- standard framework-compatible modules:
 --
--- * 'ForSyDe.MoC.SY'
+-- * @ForSyDe.MoC.@'ForSyDe.MoC.SY.SY' for using signals or process 
+--   constructors in the syncronous MoC library
 --
--- It does not load 'ForSyDe.Patterns', since patterns are not yet part of 
---  the ForSyDe language. In order to model using process network patterns
--- you need to import the module manually.
+-- * @ForSyDe.MoC.@'ForSyDe.MoC.SDF.SDF' for using signals or process 
+--   constructors in the SDF MoC library
+--
+-- * @ForSyDe.MoC.@'ForSyDe.MoC.Interface.Interface' for using interfaces
+--   between MoCs
+--
+-- * @ForSyDe.@'ForSyDe.Patterns.Patterns' for using process network pattern
+--   constructors
+--
+-- Due to possible name clashes between namespaces it is advised to import the 
+-- mentioned modules as /qualified/. An example:
+--
+-- >    import ForSyDe
+-- >    import qualified ForSyDe.MoC.SY as SY
+-- >    import qualified ForSyDe.Patterns as PN
+-- >
+-- >    a = SY.ssignal [1,2,3,4] :: SY.Signal Int
+-- >    p1 = SY.comb (+1)
+-- >
+-- >    v1 = vector [a,a,a,a]
+-- >    pn = PN.farm p1 v1
 --
 -----------------------------------------------------------------------------
 
 module ForSyDe(
-  module ForSyDe.Core,
+  -- * The Vector
+  Vector, vector, fromVector,
+  -- * the VecSig class
+  VecSig,
+  -- * The absent-extended type
+  AbstExt (..), fromAbstExt, abstExt, psi, isAbsent, isPresent, 
 ) where
 
-import ForSyDe.Core
+import ForSyDe.Core.Signals
+import ForSyDe.Core.AbsentExt
+import ForSyDe.Core.Vector
 

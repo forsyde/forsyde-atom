@@ -17,11 +17,10 @@
 
 module ForSyDe.MoC.SY (
          -- * Synchronous signal
-         module ForSyDe.MoC.SY.Signal,
+         Signal, signal, ssignal, fromSignal,
          -- * Process constructors
-         module ForSyDe.MoC.SY.Process
+         module ForSyDe.MoC.SY.Process,
        ) where
 
-import ForSyDe.MoC.SY.Signal hiding (Stream (..), (§-), (-§-), (§§-), (-§§-), (§§!-), (-§§!-), anyS)
+import ForSyDe.MoC.SY.Signal (Signal, ssignal, signal, fromSignal)
 import ForSyDe.MoC.SY.Process
-
