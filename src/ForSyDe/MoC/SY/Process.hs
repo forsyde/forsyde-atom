@@ -345,8 +345,5 @@ sunzip6 xs = ((\(x,_,_,_,_,_) -> x) §§- xs,
 
 
 -- HELPER FUNCTIONS
-get f x = flatten $ f <$> x
-  where flatten (Prst (Prst x)) = Prst x
-        flatten _               = Abst
- 
+get f x = flat $ f <$> x
 

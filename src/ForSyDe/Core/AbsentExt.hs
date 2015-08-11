@@ -15,7 +15,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.AbsentExt( 
          AbstExt (Abst, Prst), fromAbstExt, abstExt, psi, 
-         isAbsent, isPresent, abstExtFunc, 
+         isAbsent, isPresent, abstExtFunc, flat
        ) where
 
 -- |The data type 'AbstExt' has two constructors. The constructor 'Abst' is used to model the absence of a value, while the constructor 'Prst' is used to model present values.
@@ -67,4 +67,8 @@ psi                    = abstExtFunc
 abstExtFunc f          = f' 
   where f' Abst     = Abst
         f' (Prst x) = Prst (f x)
+
+flat :: AbstExt (AbstExt b) -> AbstExt b
+flat Abst = Abst
+flat (Prst x) = x
 
