@@ -22,26 +22,6 @@ module ForSyDe.MoC.SDF.Signal where
 
 import ForSyDe.Core
 
--- | The 'Signal' type denotes a 'Stream' that behaves according to the SDF MoC. Its tokens ('TokT') are plain values.
-newtype Signal a = Signal { 
-  -- | Function to unwrap a SDF signal to its base 'Stream'. This way one can operate directly on the tokens.
-  toS :: Stream a 
-}
-
--- | the function 'fromS' replaces the 'Signal' constructor for convenience. Wraps a 'Stream' of 'AbstExt' values into a SY 'Signal'.
-fromS = Signal
-
--- | converts a list directly to a SDF signal.
-signal :: [a] -> Signal a 
-signal = fromS . stream 
-
-
--- | converts a SDF signal into a list.
-fromSignal :: Signal a -> [a]
-fromSignal = fromStream . toS
-
---- THE FOLLOWING IS NOT EXPORTED TO THE STANDARD DESIGN FRAMEWORK
-
 -- | 'liftS' applies a function of streams on a 'Signal', and returns a 'Signal'
 liftS :: (Stream a -> Stream b) -> Signal a -> Signal b
 liftS f = fromS . f . toS
