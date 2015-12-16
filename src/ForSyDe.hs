@@ -44,15 +44,15 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe(
+  -- * The Signal
+  Signal, signal, fromSignal,
   -- * The Vector
   Vector, vector, fromVector,
-  -- * the VecSig class
-  VecSig,
   -- * The absent-extended type
   AbstExt (..), fromAbstExt, abstExt, psi, isAbsent, isPresent, 
 ) where
 
-import ForSyDe.Core.Signals
+import ForSyDe.Core.Signal
 import ForSyDe.Core.AbsentExt
 import ForSyDe.Core.Vector
 

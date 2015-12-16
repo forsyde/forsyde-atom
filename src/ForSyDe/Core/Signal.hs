@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Signal (
   Signal (..),
-  Signal, fromSignal, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+), anyS,
+  signal, fromSignal, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+), anyS,
 ) where
 
 -- | A  Signal is defined as a list of events. An event has a tag and a value. 
@@ -57,9 +57,9 @@ instance (Read a) => Read (Signal a) where
       readNull a      = [(NullS,b) | ("}",b) <- lex a]
 
 -- | The function 'signal' converts a list into a signal.
-Signal :: [a] -> Signal a 
-Signal []     = NullS
-Signal (x:xs) = x :- (Signal xs)
+signal :: [a] -> Signal a 
+signal []     = NullS
+signal (x:xs) = x :- (signal xs)
 
 -- | The function 'fromSignal' converts a signal into a list.
 fromSignal :: Signal a -> [a]

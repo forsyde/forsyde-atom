@@ -17,20 +17,10 @@ cabal-version:       >=1.22
 library
   exposed-modules:     ForSyDe
                        ForSyDe.Core,
-                       ForSyDe.Core.Stream,
-                       ForSyDe.Core.Signals,
+                       ForSyDe.Core.Signal,
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.AbsentExt,
-                       ForSyDe.MoC.SY,
-                       ForSyDe.MoC.SY.Signal,
-                       ForSyDe.MoC.SY.Process,
-                       ForSyDe.MoC.SDF,
-                       ForSyDe.MoC.SDF.Signal,
-                       ForSyDe.MoC.SDF.Process,
-                       ForSyDe.MoC.Interface,
-                       ForSyDe.Patterns,
-                       ForSyDe.Patterns.Transition,
-                       ForSyDe.Patterns.Applicative
+                       ForSyDe.MoC.SY
   Default-Language:    Haskell2010
   -- other-modules:       
   build-depends:       base>=4.7.10

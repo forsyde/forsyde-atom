@@ -14,18 +14,15 @@
 -- interface functions for using them
 -----------------------------------------------------------------------------
 module ForSyDe.Core (
-       -- * Stream type
-       module ForSyDe.Core.Stream,
        -- * Signal class
-       module ForSyDe.Core.Signals,
+       module ForSyDe.Core.Signal,
        -- * Vector type
        module ForSyDe.Core.Vector,
        -- * Absent extended type
        module ForSyDe.Core.AbsentExt,
 ) where
 
-import ForSyDe.Core.Signals
-import ForSyDe.Core.Stream
+import ForSyDe.Core.Signal
 import ForSyDe.Core.AbsentExt
 import ForSyDe.Core.Vector
 
