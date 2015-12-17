@@ -36,15 +36,18 @@ instance Applicative Signal where
   NullS     <*> _         = NullS
   (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
 
+instance Foldable Signal where
+  foldr f z NullS     = z
+  foldr f z (x :- xs) = f x (foldr f z xs)
   
 -- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (Signal a) where
   showsPrec p = showParen (p>1) . showSignal
     where
       showSignal (x :- xs)  = showChar '{' . showEvent x . showSignal' xs
-      showSignal (NullS)     = showChar '{' . showChar '}'
+      showSignal (NullS)    = showChar '{' . showChar '}'
       showSignal' (x :- xs) = showChar ',' . showEvent x . showSignal' xs
-      showSignal' (NullS)    = showChar '}'
+      showSignal' (NullS)   = showChar '}'
       showEvent x           = shows x
 
 -- | 'Read' instance for a SY signal. The signal 1 :- 2 :- NullS is read using the string \"\{1,2\}\".

@@ -21,7 +21,7 @@ library
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.AbsentExt,
                        ForSyDe.MoC.SY,
-                       ForSyDe.MoC.SDF.Signal
+                       ForSyDe.MoC.SDF
   Default-Language:    Haskell2010
   -- other-modules:       
   build-depends:       base>=4.7.10, parameterized-data>=0.1.6, type-level>=0.2.4
