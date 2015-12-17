@@ -13,7 +13,7 @@
 -- functions operating on it.
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Signal (
-  Signal (..),
+  Signal (..), lengthS,
   signal, fromSignal, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+), anyS,
 ) where
 
@@ -65,6 +65,10 @@ signal (x:xs) = x :- (signal xs)
 fromSignal :: Signal a -> [a]
 fromSignal NullS   = []
 fromSignal (x:-xs) = x : fromSignal xs
+
+lengthS :: Signal a -> Int
+lengthS NullS     = 0
+lengthS (x :- xs) = 1 + lengthS xs
 
 headS :: Signal a -> a
 headS (x :- _) = x

@@ -21,29 +21,25 @@
 module ForSyDe.MoC.SDF.Signal where
 
 import ForSyDe.Core
+import qualified Data.Param.FSVec as V
+import Data.TypeLevel.Num hiding ((-),(+),(*),(>),(<),(>=),(<=),(==))
 
--- | 'liftS' applies a function of streams on a 'Signal', and returns a 'Signal'
-liftS :: (Stream a -> Stream b) -> Signal a -> Signal b
-liftS f = fromS . f . toS
-
--- | 'liftS2' applies a function of 2 streams on two 'Signal's, and returns a 'Signal'
-liftS2 :: (Stream a -> Stream b -> Stream c) -> Signal a -> Signal b -> Signal c
-liftS2 f xs ys = fromS $ f (toS xs) (toS ys)
-
-infixl 4 §-, -§-, §!-, -§!-
+infixl 4 §-
 -- | this is the basic functor operator used in process constructors. It takes a function on a list and applies it on a tuple of form ('consumption_rate', 'Signal'). It returns a 'Stream' (the key for applying functions on multiple parameters), thus it needs to be further 'tokenize'd in order to get the corresponding result 'Signal'
-(§-) :: ([a] -> b) -> (Int, Signal a) -> Stream b
-f §- (c, xs) = let x    = fromStream $ takeS c $ toS xs
-                   xs'  = (dropS c) `liftS` xs
-               in if length x == c then f x :- f §- (c,xs') else NullS
+(§-) :: (Nat cons) => (V.FSVec cons a -> b) -> Signal a -> Signal b
+f §- sig = let x  = (V.unsafeVector c . take (toInt c) . fromSignal) sig
+               xs = dropS (toInt c) sig
+               c  = V.lengthT x
+           in if toInt c <= lengthS xs then f x :- (f §- xs) else pure (f x)
 
 -- | this is the basic lifting operator used in process constructors. It takes a stream of functions on lists and applies it on a tuple of form ('consumption_rate', 'Signal'). It returns a 'Stream' (the key for applying functions on multiple parameters), thus it needs to be further 'tokenize'd in order to get the corresponding result 'Signal'
-(-§-) :: Stream ([a] -> b) -> (Int, Signal a) -> Stream b
-NullS   -§- _          = NullS
-(f:-fs) -§- (c, xs)    = let x  = fromStream $ takeS c $ toS xs 
-                             xs'= (dropS c) `liftS` xs
-                         in if length x == c then f x :- fs -§- (c,xs') else NullS
-
+(-§-) :: (Nat cons) => Signal (V.FSVec cons a -> b) -> Signal a -> Signal b
+NullS   -§- _   = NullS
+(f:-fs) -§- sig = let x  = (V.unsafeVector c . take (toInt c) . fromSignal) sig
+                      xs = dropS (toInt c) sig
+                      c  = V.lengthT x
+                  in if toInt c <= lengthS xs then f x :- (fs -§- xs) else pure (f x)
+{-
 -- | guarded functor operator. It adds a guard to §- to verify if the consumption rate is a positive integer.
 (§!-) :: ([a] -> b) -> (Int, Signal a) -> Stream b
 f §!- (c, xs) | c <= 0    = error "Number of consumed tokens must be positive integer"
@@ -100,5 +96,6 @@ unzippx (x :- xs) = fromPadded §> x <§> unzippx xs
   where fromPadded Abst as     = as
         fromPadded (Prst a) as = a :- as  
 
-anyV c = any c . fromVector 
+anyV c = any c . fromVector
+-}
 
