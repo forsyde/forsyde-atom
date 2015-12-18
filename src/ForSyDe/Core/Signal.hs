@@ -74,6 +74,7 @@ lengthS NullS     = 0
 lengthS (x :- xs) = 1 + lengthS xs
 
 headS :: Signal a -> a
+headS NullS    = error "Empty signal"
 headS (x :- _) = x
 
 tailS NullS  = NullS

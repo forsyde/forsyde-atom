@@ -37,20 +37,21 @@ import qualified Data.Param.FSVec as V
 import Data.TypeLevel.Num hiding ((-),(+),(*),(>),(<),(>=),(<=),(==))
 
 funnyVector :: Nat s => s -> [a] -> V.FSVec s a
-funnyVector l xs = V.FSVec xs
+funnyVector l xs = V.reallyUnsafeVector xs
 
 
 infixl 5 §-, -§-
--- | this is the basic functor operator used in process constructors. It takes a function on a list and applies it on a tuple of form ('consumption_rate', 'Signal'). It returns a 'Stream' (the key for applying functions on multiple parameters), thus it needs to be further 'tokenize'd in order to get the corresponding result 'Signal'
+-- | this is the basic functor operator used in process constructors. It takes a function on a list and applies it on a tuple of form ('consumption_rate', 'Signal'). It returns a 'Stream' (the key sfor applying functions on multiple parameters), thus it needs to be further 'tokenize'd in order to get the corresponding result 'Signal'
 (§-) :: (Nat consumption) => (V.FSVec consumption a -> b) -> Signal a -> Signal b
-f §- sig = let x  = (funnyVector c . take (toInt c) . fromSignal) sig
-               xs = dropS (toInt c) sig
-               c  = V.lengthT x
-           in if toInt c == length (V.fromVector x) then f x :- (f §- xs) else NullS
+_ §- NullS = NullS
+f §- sig   = let x  = (funnyVector c . take (toInt c) . fromSignal) sig
+                 xs = dropS (toInt c) sig 
+                 c  = V.lengthT x
+             in if toInt c == length (V.fromVector x) then f x :- (f §- xs) else NullS
 
 -- | this is the basic lifting operator used in process constructors. It takes a stream of functions on lists and applies it on a tuple of form ('consumption_rate', 'Signal'). It returns a 'Stream' (the key for applying functions on multiple parameters), thus it needs to be further 'tokenize'd in order to get the corresponding result 'Signal'
 (-§-) :: (Nat consumption) => Signal (V.FSVec consumption a -> b) -> Signal a -> Signal b
-NullS   -§- _   = NullS
+NullS -§- _     = NullS
 _   -§- NullS   = NullS
 (f:-fs) -§- sig = let x  = (funnyVector c . take (toInt c) . fromSignal) sig
                       xs = dropS (toInt c) sig
@@ -62,7 +63,8 @@ _   -§- NullS   = NullS
 xs ->- i = i :- xs
 
 tok :: (Nat production) => Signal (V.FSVec production a) -> Signal a
-tok (x:-xs) = foldr ((+-+) . signal . V.fromVector) (signal $ V.fromVector $ x) xs
+tok NullS   = NullS
+tok (x:-xs) = (signal $ V.fromVector $ x) +-+ (tok xs)
 
 ----------------------
 ---- CONSTRUCTORS ----
