@@ -1,8 +1,10 @@
 module Test where
 
 import ForSyDe
+import ForSyDe.Core.Signal
 import qualified ForSyDe.MoC.SY as SY
 import qualified ForSyDe.MoC.SDF as SDF
+import qualified ForSyDe.MoC.CT as CT
 import qualified Data.Param.FSVec as V
 import qualified Data.TypeLevel as T
 
@@ -24,4 +26,15 @@ sdfComb = SDF.comb2 f2sdf (SDF.delay 0 s) s
 sdfOsc  = SDF.comb  f1sdf (SDF.delay 0 sdfOsc)
 
 -- CT
+s1 = signal [CT.Subsig (1.0, (\_ -> 1)), CT.Subsig (2.0, (\_ -> 0.5))]
+i1 = CT.Subsig (0.5, (\_ -> 0.5))
+ctComb  = CT.comb2 (+) (CT.delay i1 s1) s1
+ctOsc   = CT.comb (+1) (CT.delay i1 ctOsc)
+
+
+plot :: (Num a, Show a) => Rational -> Signal (CT.Subsig a) -> Signal a
+plot step = plot' 0.0
+  where 
+    plot' _    NullS                   = NullS
+    plot' prev (CT.Subsig (tag, f) :- ss) = (f <$> (signal [prev, prev + step .. tag - step])) +-+ (plot' tag ss)
 
