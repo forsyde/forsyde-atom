@@ -14,12 +14,14 @@ syComb  = SY.comb2 (+) (SY.delay 0 s) s
 syOsc   = SY.comb (+1) (SY.delay 0 syOsc)
 
 -- SDF
-f1SDF :: V.FSVec T.D1 Int -> V.FSVec T.D1 Int
-f1SDF = V.map (+1)
+f1sdf :: V.FSVec T.D1 Int -> V.FSVec T.D1 Int
+f1sdf = V.map (+1)
 
-f2SDF :: V.FSVec T.D1 Int -> V.FSVec T.D3 Int -> V.FSVec T.D1 Int
-f2SDF x y = V.singleton $ V.foldl (+) (V.head x) y
+f2sdf :: V.FSVec T.D1 Int -> V.FSVec T.D3 Int -> V.FSVec T.D1 Int
+f2sdf x y = V.singleton $ V.foldl (+) (V.head x) y
 
-sdfComb = SDF.comb2 f2SDF (SDF.delay 0 s) s
-sdfOsc  = SDF.comb f1SDF  (SDF.delay 0 sdfOsc)
+sdfComb = SDF.comb2 f2sdf (SDF.delay 0 s) s
+sdfOsc  = SDF.comb  f1sdf (SDF.delay 0 sdfOsc)
+
+-- CT
 
