@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.MoC.CT
+-- Module      :  ForSyDe.MoC.DE
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; 
 --                    SAM Group, KTH/ICT/ECS 2007-2008
 -- License     :  BSD-style (see the file LICENSE)
@@ -15,32 +15,31 @@
 -- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.CT where
+module ForSyDe.MoC.DE where
 
 import ForSyDe.Core
 
-
-data Subsig a = Subsig (Rational,(Rational -> a))
-
+data Subsig a = Subsig (Rational,a) deriving (Show)
 
 infixl 5 §-
-(§-) :: (t -> a) -> Signal (Subsig t) -> Signal (Subsig a)
+(§-) :: (a -> b) -> Signal (Subsig a) -> Signal (Subsig b)
 _ §- NullS                 = NullS
-g §- (Subsig (t, f) :- fs) = Subsig (t, g . f) :- g §- fs
+f §- (Subsig (t, x) :- xs) = Subsig (t, f x) :- f §- xs
 
 
 infixl 5 -§-
 (-§-) :: Signal (Subsig (a -> b)) -> Signal (Subsig a) -> Signal (Subsig b)
 NullS -§- _     = NullS
 _     -§- NullS = NullS
-s1@(Subsig (t1, g) :- gs) -§- s2@(Subsig (t2, f) :- fs) 
-    | t1 == t2 = Subsig (t1, \x -> (g x) (f x)) :- (gs -§- fs)
-    | t1 <  t2 = Subsig (t1, \x -> (g x) (f x)) :- (gs -§- s2)
-    | t1 >  t2 = Subsig (t2, \x -> (g x) (f x)) :- (s1 -§- fs)
+s1@(Subsig (t1, f) :- fs) -§- s2@(Subsig (t2, x) :- xs) 
+    | t1 == t2 = Subsig (t1, f x) :- (fs -§- xs)
+    | t1 <  t2 = Subsig (t1, f x) :- (fs -§- s2)
+    | t1 >  t2 = Subsig (t2, f x) :- (s1 -§- xs)
 
 infixl 5 ->-
 (->-) :: Signal (Subsig a) -> Subsig a -> Signal (Subsig a)
 xs ->- i@(Subsig (t, _)) = i :- (\(Subsig (t1, g)) -> Subsig (t1+t, g)) <$> xs
+
 
 
 ----------------------

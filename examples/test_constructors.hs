@@ -4,6 +4,7 @@ import ForSyDe
 import ForSyDe.Core.Signal
 import qualified ForSyDe.MoC.SY as SY
 import qualified ForSyDe.MoC.SDF as SDF
+import qualified ForSyDe.MoC.DE as DE
 import qualified ForSyDe.MoC.CT as CT
 import qualified Data.Param.FSVec as V
 import qualified Data.TypeLevel as T
@@ -24,6 +25,12 @@ f2sdf x y = V.singleton $ V.foldl (+) (V.head x) y
 
 sdfComb = SDF.comb2 f2sdf (SDF.delay 0 s) s
 sdfOsc  = SDF.comb  f1sdf (SDF.delay 0 sdfOsc)
+
+-- DE
+s2 = signal [DE.Subsig (1.0, 1), DE.Subsig (2.0, 0.5)]
+i2 = DE.Subsig (0.5, 0.5)
+deComb  = DE.comb2 (+) (DE.delay i2 s2) s2
+deOsc   = DE.comb (+1) (DE.delay i2 deOsc)
 
 -- CT
 s1 = signal [CT.Subsig (1.0, (\_ -> 1)), CT.Subsig (2.0, (\_ -> 0.5))]
