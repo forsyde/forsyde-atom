@@ -1,3 +1,4 @@
+{-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.MoC.SDF
@@ -37,7 +38,7 @@ import qualified Data.Param.FSVec as V
 import Data.TypeLevel.Num hiding ((-),(+),(*),(>),(<),(>=),(<=),(==))
 
 funnyVector :: Nat s => s -> [a] -> V.FSVec s a
-funnyVector l xs = V.reallyUnsafeVector xs
+funnyVector l = V.reallyUnsafeVector
 
 
 infixl 5 §-, -§-
@@ -58,13 +59,16 @@ _   -§- NullS   = NullS
                       c  = V.lengthT x
                   in if toInt c == length (V.fromVector x) then f x :- (fs -§- xs) else NullS
 
+
+
 -- | operator for the default delay function
 (->-) :: Signal a -> a -> Signal a
 xs ->- i = i :- xs
 
-tok :: (Nat production) => Signal (V.FSVec production a) -> Signal a
-tok NullS   = NullS
-tok (x:-xs) = (signal $ V.fromVector $ x) +-+ (tok xs)
+infixl 3 ¤
+(¤) :: (Nat production) => Signal (V.FSVec production a) -> Signal a
+(¤) NullS   = NullS
+(¤) (x:-xs) = signal (V.fromVector $ x) +-+ (xs ¤)
 
 ----------------------
 ---- CONSTRUCTORS ----
@@ -91,10 +95,10 @@ comb4 :: (Nat c1, Nat c2, Nat c3, Nat c4, Nat p) =>
       (V.FSVec c1 a -> V.FSVec c2 b -> V.FSVec c3 c -> V.FSVec c4 d -> V.FSVec p e)
       -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e
 
-comb  f x       = tok $ f §- x
-comb2 f x y     = tok $ f §- x -§- y
-comb3 f x y z   = tok $ f §- x -§- y -§- z
-comb4 f x y z q = tok $ f §- x -§- y -§- z -§- q
+comb  f x       = (f §- x ¤)
+comb2 f x y     = (f §- x -§- y ¤)
+comb3 f x y z   = (f §- x -§- y -§- z ¤)
+comb4 f x y z q = (f §- x -§- y -§- z -§- q ¤)
 
 
 -- | The process constructor 'delay' delays the signal one event cycle by introducing an initial value at the beginning of the output signal. It is necessary to initialize feed-back loops.
@@ -279,42 +283,41 @@ actor21 = comb2
 actor31 = comb3
 actor41 = comb4
 
-actor12 f x       = (tok $ fst <$> f §- x, 
-                     tok $ snd <$> f §- x)  
-actor22 f x y     = (tok $ fst <$> f §- x -§- y, 
-                     tok $ snd <$> f §- x -§- y)  
-actor32 f x y z   = (tok $ fst <$> f §- x -§- y -§- z, 
-                     tok $ snd <$> f §- x -§- y -§- z)  
-actor42 f x y z q = (tok $ fst <$> f §- x -§- y -§- z -§- q, 
-                     tok $ snd <$> f §- x -§- y -§- z -§- q)  
+actor12 f x       = ((fst <$> f §- x ¤), 
+                     (snd <$> f §- x ¤))  
+actor22 f x y     = ((fst <$> f §- x -§- y ¤), 
+                     (snd <$> f §- x -§- y ¤))  
+actor32 f x y z   = ((fst <$> f §- x -§- y -§- z ¤), 
+                     (snd <$> f §- x -§- y -§- z ¤))  
+actor42 f x y z q = ((fst <$> f §- x -§- y -§- z -§- q ¤), 
+                     (snd <$> f §- x -§- y -§- z -§- q ¤))  
 
-actor13 f x       = (tok $ (\(x,_,_) -> x) <$> f §- x, 
-                     tok $ (\(_,x,_) -> x) <$> f §- x,
-                     tok $ (\(_,_,x) -> x) <$> f §- x)  
-actor23 f x y     = (tok $ (\(x,_,_) -> x) <$> f §- x -§- y, 
-                     tok $ (\(_,x,_) -> x) <$> f §- x -§- y,
-                     tok $ (\(_,_,x) -> x) <$> f §- x -§- y)  
-actor33 f x y z   = (tok $ (\(x,_,_) -> x) <$> f §- x -§- y -§- z, 
-                     tok $ (\(_,x,_) -> x) <$> f §- x -§- y -§- z,
-                     tok $ (\(_,_,x) -> x) <$> f §- x -§- y -§- z)  
-actor43 f x y z q = (tok $ (\(x,_,_) -> x) <$> f §- x -§- y -§- z -§- q, 
-                     tok $ (\(_,x,_) -> x) <$> f §- x -§- y -§- z -§- q,
-                     tok $ (\(_,_,x) -> x) <$> f §- x -§- y -§- z -§- q)  
+actor13 f x       = (((\(x,_,_) -> x) <$> f §- x ¤), 
+                     ((\(_,x,_) -> x) <$> f §- x ¤),
+                     ((\(_,_,x) -> x) <$> f §- x ¤))  
+actor23 f x y     = (((\(x,_,_) -> x) <$> f §- x -§- y ¤), 
+                     ((\(_,x,_) -> x) <$> f §- x -§- y ¤),
+                     ((\(_,_,x) -> x) <$> f §- x -§- y ¤))  
+actor33 f x y z   = (((\(x,_,_) -> x) <$> f §- x -§- y -§- z ¤), 
+                     ((\(_,x,_) -> x) <$> f §- x -§- y -§- z ¤),
+                     ((\(_,_,x) -> x) <$> f §- x -§- y -§- z ¤))  
+actor43 f x y z q = (((\(x,_,_) -> x) <$> f §- x -§- y -§- z -§- q ¤), 
+                     ((\(_,x,_) -> x) <$> f §- x -§- y -§- z -§- q ¤),
+                     ((\(_,_,x) -> x) <$> f §- x -§- y -§- z -§- q ¤))  
 
-actor14 f x       = (tok $ (\(x,_,_,_) -> x) <$> f §- x, 
-                     tok $ (\(_,x,_,_) -> x) <$> f §- x,
-                     tok $ (\(_,_,x,_) -> x) <$> f §- x,
-                     tok $ (\(_,_,_,x) -> x) <$> f §- x)  
-actor24 f x y     = (tok $ (\(x,_,_,_) -> x) <$> f §- x -§- y, 
-                     tok $ (\(_,x,_,_) -> x) <$> f §- x -§- y,
-                     tok $ (\(_,_,x,_) -> x) <$> f §- x -§- y,
-                     tok $ (\(_,_,_,x) -> x) <$> f §- x -§- y)  
-actor34 f x y z   = (tok $ (\(x,_,_,_) -> x) <$> f §- x -§- y -§- z, 
-                     tok $ (\(_,x,_,_) -> x) <$> f §- x -§- y -§- z ,
-                     tok $ (\(_,_,x,_) -> x) <$> f §- x -§- y -§- z,
-                     tok $ (\(_,_,_,x) -> x) <$> f §- x -§- y -§- z)  
-actor44 f x y z q = (tok $ (\(x,_,_,_) -> x) <$> f §- x -§- y -§- z -§- q, 
-                     tok $ (\(_,x,_,_) -> x) <$> f §- x -§- y -§- z -§- q,
-                     tok $ (\(_,_,x,_) -> x) <$> f §- x -§- y -§- z -§- q,
-                     tok $ (\(_,_,_,x) -> x) <$> f §- x -§- y -§- z -§- q)  
-
+actor14 f x       = (((\(x,_,_,_) -> x) <$> f §- x ¤), 
+                     ((\(_,x,_,_) -> x) <$> f §- x ¤),
+                     ((\(_,_,x,_) -> x) <$> f §- x ¤),
+                     ((\(_,_,_,x) -> x) <$> f §- x ¤))  
+actor24 f x y     = (((\(x,_,_,_) -> x) <$> f §- x -§- y ¤), 
+                     ((\(_,x,_,_) -> x) <$> f §- x -§- y ¤),
+                     ((\(_,_,x,_) -> x) <$> f §- x -§- y ¤),
+                     ((\(_,_,_,x) -> x) <$> f §- x -§- y ¤))  
+actor34 f x y z   = (((\(x,_,_,_) -> x) <$> f §- x -§- y -§- z ¤), 
+                     ((\(_,x,_,_) -> x) <$> f §- x -§- y -§- z ¤),
+                     ((\(_,_,x,_) -> x) <$> f §- x -§- y -§- z ¤),
+                     ((\(_,_,_,x) -> x) <$> f §- x -§- y -§- z ¤))  
+actor44 f x y z q = (((\(x,_,_,_) -> x) <$> f §- x -§- y -§- z -§- q ¤), 
+                     ((\(_,x,_,_) -> x) <$> f §- x -§- y -§- z -§- q ¤),
+                     ((\(_,_,x,_) -> x) <$> f §- x -§- y -§- z -§- q ¤),
+                     ((\(_,_,_,x) -> x) <$> f §- x -§- y -§- z -§- q ¤))  
