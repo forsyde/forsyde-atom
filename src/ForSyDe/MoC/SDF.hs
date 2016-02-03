@@ -16,29 +16,11 @@
 -- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SDF (
-  -- ** combinatorial process constructors
-  comb, comb2, comb3, comb4,
-  -- ** sequential process constructors
-  delay, delayn,
-  -- ** zip\/unzip
-  zip, zip3, zip4, zip5, zip6,
-  unzip, unzip3, unzip4, unzip5, unzip6,
-  -- ** actors
-  actor11, actor12, actor13, actor14,
-  actor21, actor22, actor23, actor24,
-  actor31, actor32, actor33, actor34,
-  actor41, actor42, actor43, actor44,
-) where
+module ForSyDe.MoC.SDF where
 
 import Prelude hiding (zip, zip3, filter, unzip, unzip3)
 import ForSyDe.Core
 
-import qualified Data.Param.FSVec as V
-import Data.TypeLevel.Num hiding ((-),(+),(*),(>),(<),(>=),(<=),(==))
-
-funnyVector :: Nat s => s -> [a] -> V.FSVec s a
-funnyVector l = V.reallyUnsafeVector
 
 
 infixl 5 §-, -§-
