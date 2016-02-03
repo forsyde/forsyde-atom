@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeOperators, TypeSynonymInstances, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -32,9 +33,13 @@ instance Read a => Read (AbstExt a) where
   readsPrec _ x       =  readsAbstExt x 
    where readsAbstExt s =  [(Abst, r1) | ("_", r1) <- lex s] ++ [(Prst x, r2) | (x, r2) <- reads s]
 
+
+
+
 instance Functor AbstExt where
   fmap _ Abst     = Abst
   fmap f (Prst x) = Prst (f x)
+
 
 instance Applicative AbstExt where
   pure a  = Prst a

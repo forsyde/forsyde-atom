@@ -19,7 +19,15 @@
 module ForSyDe.MoC.SY where
 
 import ForSyDe.Core
-import Prelude               hiding (filter, unzip, unzip3, zip, zip3)
+import Prelude hiding (filter, unzip, unzip3, zip, zip3)
+
+-----------------------------------------------------------------------------
+-- TYPE ALIAS
+-----------------------------------------------------------------------------
+
+type Sig a = Signal (AbstExt a)
+type Arg a = AbstExt a
+type Tok a = AbstExt a
 
 
 -----------------------------------------------------------------------------
@@ -29,85 +37,105 @@ import Prelude               hiding (filter, unzip, unzip3, zip, zip3)
 infixl 5 -§, §§, ->-
 infixl 3 §-
 
-(-§)  :: (a -> b) -> Signal a -> Signal b
-(§§)  :: Signal (a -> b) -> Signal a -> Signal b
-(§-)  :: Signal a -> Signal a
-(->-) :: Signal a -> a -> Signal a
+(-§)  :: (Arg a -> b) -> Sig a -> Sig b
+(§§)  :: Sig (Arg a -> b) -> Sig a -> Sig b
+(§-)  :: Sig (Arg a) -> Sig a
+(->-) :: Sig a -> Tok a -> Sig a
 -----------------------------------------------------------------------------
-(-§) = (<$>) 
-(§§) = (<*>)
+f -§ NullS         = NullS
+f -§ (x:-xs)       = Prst (f x) :- f -§ xs
+
+_       §§ NullS   = NullS
+NullS   §§ _       = NullS
+(f:-fs) §§ (Abst:-xs) = Abst :- fs §§ xs
+
+
 (§-) = id 
 xs ->- i = i :- xs
 
 -----------------------------------------------------------------------------
 -- FUNCTION WRAPPERS
 -----------------------------------------------------------------------------
-psi  :: (a -> b)
-     -> (AbstExt a -> AbstExt b)
-psi2 :: (a -> b -> c)
-     -> (AbstExt a -> AbstExt b -> AbstExt c)     
-psi3 :: (a -> b -> c -> d)
-     -> (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d)
-psi4 :: (a -> b -> c -> d -> e)
-     -> (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt e)
-psi5 :: (a -> b -> c -> d -> e -> f)
-     -> (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt e -> AbstExt f)
-psi6 :: (a -> b -> c -> d -> e -> f -> g)
-     -> (AbstExt a -> AbstExt b -> AbstExt c -> AbstExt d -> AbstExt e -> AbstExt f -> AbstExt f)
------------------------------------------------------------------------------
-psi 
 
---- GO HOME AT 15.00 !!!!
+infixl 5 $> --, $$
+($>)  :: (a -> b) -> Arg a -> Arg b
+_ $> Abst      = Abst
+_ $> (Prst Abst) = Abst 
+f $> (Prst x)   = Prst (f x)  
+f $> (Prst (Prst x))   = Prst (f x) 
+--(<_>) :: Arg (a -> b) -> Arg a -> Arg b
+
+{-
+
+psi  :: (a -> b)
+     -> (Arg a -> Arg b)
+psi2 :: (a -> b -> c)
+     -> (Arg a -> Arg b -> Arg c)     
+psi3 :: (a -> b -> c -> d)
+     -> (Arg a -> Arg b -> Arg c -> Arg d)
+psi4 :: (a -> b -> c -> d -> e)
+     -> (Arg a -> Arg b -> Arg c -> Arg d -> Arg e)
+psi5 :: (a -> b -> c -> d -> e -> f)
+     -> (Arg a -> Arg b -> Arg c -> Arg d -> Arg e -> Arg f)
+psi6 :: (a -> b -> c -> d -> e -> f -> g)
+     -> (Arg a -> Arg b -> Arg c -> Arg d -> Arg e -> Arg f -> Arg f)
+-----------------------------------------------------------------------------
+psi  f a           = f <$> (Arg a) 
+psi2 f a b         = f <$> (Arg a) <*> (Arg b)
+psi3 f a b c       = f <$> (Arg a) <*> (Arg b) <*> (Arg c)
+psi4 f a b c d     = f <$> (Arg a) <*> (Arg b) <*> (Arg c) <*> (Arg d)
+psi5 f a b c d e   = f <$> (Arg a) <*> (Arg b) <*> (Arg c) <*> (Arg d) <*> (Arg e)
+psi6 f a b c d e f = f <$> (Arg a) <*> (Arg b) <*> (Arg c) <*> (Arg d) <*> (Arg e) <*> (Arg f)
 
 -----------------------------------------------------------------------------
 -- PROCESS CONSTRUCTORS / PATTERNS
 -----------------------------------------------------------------------------
 
 comb  :: (a -> b) 
-      -> Signal a -> Signal b 
+      -> Sig a -> Sig b 
 comb2 :: (a -> b -> c)
-      -> Signal a -> Signal b -> Signal c
+      -> Sig a -> Sig b -> Sig c
 comb3 :: (a -> b -> c -> d)
-      -> Signal a -> Signal b -> Signal c -> Signal d
+      -> Sig a -> Sig b -> Sig c -> Sig d
 comb4 :: (a -> b -> c -> d -> e)
-      -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e
+      -> Sig a -> Sig b -> Sig c -> Sig d -> Sig e
 delay :: a
-      -> Signal a -> Signal a
+      -> Sig a -> Sig a
 
-zip  :: Signal a -> Signal b
-     -> Signal (a,b)
-zip3 :: Signal a -> Signal b -> Signal c
-     -> Signal (a,b,c)
-zip4 :: Signal a -> Signal b -> Signal c -> Signal d
-     -> Signal (a,b,c,d)
-zip5 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e
-     -> Signal (a,b,c,d,e)
-zip6 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f
-     -> Signal (a,b,c,d,e,f)
+zip  :: Sig a -> Sig b
+     -> Sig (a, b)
+zip3 :: Sig a -> Sig b -> Sig c
+     -> Sig (a, b, c)
+zip4 :: Sig a -> Sig b -> Sig c -> Sig d
+     -> Sig (a, b, c, d)
+zip5 :: Sig a -> Sig b -> Sig c -> Sig d -> Sig e
+     -> Sig (a, b, c, d, e)
+zip6 :: Sig a -> Sig b -> Sig c -> Sig d -> Sig e -> Sig f
+     -> Sig (a, b, c, d, e, f)
      
-unzip  :: Signal (a,b)
-       -> (Signal a,Signal b)
-unzip3 :: Signal (a, b, c)
-       -> (Signal a, Signal b, Signal c)
-unzip4 :: Signal (a,b,c,d)
-       -> (Signal a,Signal b,Signal c,Signal d)
-unzip5 :: Signal (a,b,c,d,e)
-       -> (Signal a,Signal b,Signal c,Signal d,Signal e)
-unzip6 :: Signal (a,b,c,d,e,f)
-       -> (Signal a,Signal b,Signal c,Signal d,Signal e,Signal f)
+unzip  :: Sig (a, b)
+       -> (Sig a, Sig b)
+unzip3 :: Sig (a, b, c)
+       -> (Sig a, Sig b, Sig c)
+unzip4 :: Sig (a, b, c, d)
+       -> (Sig a, Sig b, Sig c, Sig d)
+unzip5 :: Sig (a, b, c, d, e)
+       -> (Sig a, Sig b, Sig c, Sig d, Sig e)
+unzip6 :: Sig (a, b, c, d, e, f)
+       -> (Sig a, Sig b, Sig c, Sig d, Sig e, Sig f)
 
 moore  :: (a -> b -> a) -> (a -> c) -> a
-       -> Signal b -> Signal c
+       -> Sig b -> Sig c
 moore2 :: (a -> b -> c -> a) -> (a -> d) -> a
-       -> Signal b -> Signal c -> Signal d
+       -> Sig b -> Sig c -> Sig d
 moore3 :: (a -> b -> c -> d -> a) -> (a -> e) -> a
-       -> Signal b -> Signal c -> Signal d -> Signal e
+       -> Sig b -> Sig c -> Sig d -> Sig e
 mealy  :: (a -> b -> a) -> (a -> b -> c) -> a
-       -> Signal b -> Signal c 
+       -> Sig b -> Sig c 
 mealy2 :: (a -> b -> c -> a) -> (a -> b -> c -> d) -> a
-       -> Signal b -> Signal c -> Signal d
+       -> Sig b -> Sig c -> Sig d
 mealy3 :: (a -> b -> c -> d -> a) -> (a -> b -> c -> d -> e) -> a
-       -> Signal b -> Signal c -> Signal d -> Signal e
+       -> Sig b -> Sig c -> Sig d -> Sig e
 -----------------------------------------------------------------------------
 
 
@@ -124,9 +152,8 @@ zip4 s1 s2 s3 s4       = (,,,)   -§ xs §§ ys §§ zs §§ as
 zip5 s1 s2 s3 s4 s5    = (,,,,)  -§ xs §§ ys §§ zs §§ as §§ bs
 zip6 s1 s2 s3 s4 s5 s6 = (,,,,,) -§ xs §§ ys §§ zs §§ as §§ bs §§ cs
 
-unzip s1 
-  = ((\(x,_) -> x) <$> s1 ¤ c1,
-     (\(_,x) -> x) <$> s1 ¤ c2)
+unzip s1 = ((\(x,_) -> x) <$> s1,
+            (\(_,x) -> x) <$> s1)
 unzip3 c1 c2 c3 s1
   = ((\(x,_,_) -> x) <$> s1 ¤ c1,
      (\(_,x,_) -> x) <$> s1 ¤ c2,
@@ -172,18 +199,18 @@ mealy3 ns od mem xs ys zs = od -§ s §§ xs §§ ys §§ zs
 
 -- | The process constructor 'filter' discards the values who do not fulfill a predicate given by a predicate function and replaces them with absent events.
 filter :: (a -> Bool) -- Predicate function
-         -> Signal a -- Input signal
-         -> Signal (AbstExt a) -- Output signal
+         -> Sig a -- Input signal
+         -> Sig (Arg a) -- Output signal
 
--- | The process constructor 'fill' creates a process that 'fills' a signal with present values by replacing absent values with a given value. The output signal is not any more of the type 'AbstExt'.
+-- | The process constructor 'fill' creates a process that 'fills' a signal with present values by replacing absent values with a given value. The output signal is not any more of the type 'Arg'.
 fill :: a -- ^Default value
-       -> Signal (AbstExt a) -- ^Absent extended input signal
-       -> Signal a -- ^Output signal
+       -> Sig (Arg a) -- ^Absent extended input signal
+       -> Sig a -- ^Output signal
 
--- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing absent values by the preceding present value. Only in cases, where no preceding value exists, the absent value is replaced by a default value. The output signal is not any more of the type 'AbstExt'.
+-- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing absent values by the preceding present value. Only in cases, where no preceding value exists, the absent value is replaced by a default value. The output signal is not any more of the type 'Arg'.
 hold :: a -- ^Default value
-       -> Signal (AbstExt a) -- ^Absent extended input signal
-       -> Signal a -- ^Output signa
+       -> Sig (Arg a) -- ^Absent extended input signal
+       -> Sig a -- ^Output signa
 
 filter p = (-§) (\x -> if p x == True then Prst x else Abst)
 fill   a = (-§) (replaceAbst a)
@@ -194,3 +221,4 @@ hold   a xs = s
         holdf a' Abst     = a'
         holdf _  (Prst x) = x
 
+-}
