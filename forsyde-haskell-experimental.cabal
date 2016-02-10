@@ -19,6 +19,7 @@ library
                        ForSyDe.Core,
                        ForSyDe.Core.Signal,
                        ForSyDe.Core.Vector,
+                       ForSyDe.Core.Utilities,
                        ForSyDe.MoC.SY,
                        ForSyDe.MoC.DE,
                        ForSyDe.MoC.CT

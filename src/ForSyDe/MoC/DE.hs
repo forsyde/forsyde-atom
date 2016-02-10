@@ -27,12 +27,6 @@ instance Show Tag where
     where showsTag Infty   = (++) "\8734"       
           showsTag (Tag x) = (++) (show x)
 
-instance Enum Tag where
-  fromEnum (Tag a) = a
-  fromEnum Infty = maxBound
-  toEnum 9223372036854775807 = Infty
-  toEnum a = Tag a
-
 tagPlus :: Tag -> Tag -> Tag
 tagPlus Infty _ = Infty
 tagPlus _ Infty = Infty
@@ -51,9 +45,9 @@ infixl 5 -§-
 NullS -§- _     = NullS
 _     -§- NullS = NullS
 s1@(Tok t1 f :- fs) -§- s2@(Tok t2 x :- xs) 
-    | t1 == t2 = Tok t1 (f x) :- (fs -§- xs)
     | t1 <  t2 = Tok t1 (f x) :- (fs -§- s2)
     | t1 >  t2 = Tok t2 (f x) :- (s1 -§- xs)
+    | t1 == t2 = Tok t1 (f x) :- (fs -§- xs)
 
 infixl 5 ->-
 (->-) :: Signal (Tok a) -> Tok a -> Signal (Tok a)
@@ -61,8 +55,9 @@ xs ->- i@(Tok t _) = i :- (\(Tok t1 g) -> Tok (t1 `tagPlus` t) g) <$> xs
 
 infixl 4 ¤
 (¤) :: Eq a => Signal (Tok a) -> Signal (Tok a)
+(¤) NullS   = NullS
 (¤) (x:-xs) = clean x xs
-  where clean _ NullS = NullS
+  where clean (Tok t v) NullS = Tok t v :- NullS 
         clean (Tok t1 v1) (Tok t2 v2 :- vs)
           | t2 <  t1  = error "Tags not ordered"
           | v1 == v2  = clean (Tok t2 v2) vs
@@ -125,4 +120,6 @@ delay :: (Tok a) -- ^Initial state
         -> Signal (Tok a) -- ^Output signal
 
 delay x xs = xs ->- x
+
+---------------------------------------------------------
 

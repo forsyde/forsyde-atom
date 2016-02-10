@@ -19,7 +19,7 @@
 module ForSyDe.MoC.SY where
 
 import ForSyDe.Core
-import ForSyDe.Core.Wrappers
+import ForSyDe.Core.Utilities
 import Prelude hiding (filter, unzip, unzip3, zip, zip3, (<$))
 
 -----------------------------------------------------------------------------
@@ -102,19 +102,19 @@ mealy3 :: (a -> b -> c -> d -> a) -> (a -> b -> c -> d -> e) -> a
 -----------------------------------------------------------------------------
 --comb12 :: (AbstExt a -> (AbstExt t, AbstExt b)) -> Sig a -> (Sig t, Sig b)
 comb11 f s1          =        (f -§ s1)
-comb12 f s1          = unzip  (f -§ s1)
+comb12 f s1          = unzip2 (f -§ s1)
 comb13 f s1          = unzip3 (f -§ s1)
 comb14 f s1          = unzip4 (f -§ s1)
 comb21 f s1 s2       =        (f -§ s1 §§ s2)
-comb22 f s1 s2       = unzip  (f -§ s1 §§ s2)
+comb22 f s1 s2       = unzip2 (f -§ s1 §§ s2)
 comb23 f s1 s2       = unzip3 (f -§ s1 §§ s2)
 comb24 f s1 s2       = unzip4 (f -§ s1 §§ s2)
 comb31 f s1 s2 s3    =        (f -§ s1 §§ s2 §§ s3)
-comb32 f s1 s2 s3    = unzip  (f -§ s1 §§ s2 §§ s3)
+comb32 f s1 s2 s3    = unzip2 (f -§ s1 §§ s2 §§ s3)
 comb33 f s1 s2 s3    = unzip3 (f -§ s1 §§ s2 §§ s3)
 comb34 f s1 s2 s3    = unzip4 (f -§ s1 §§ s2 §§ s3)
 comb41 f s1 s2 s3 s4 =        (f -§ s1 §§ s2 §§ s3 §§ s4)
-comb42 f s1 s2 s3 s4 = unzip  (f -§ s1 §§ s2 §§ s3 §§ s4)
+comb42 f s1 s2 s3 s4 = unzip2 (f -§ s1 §§ s2 §§ s3 §§ s4)
 comb43 f s1 s2 s3 s4 = unzip3 (f -§ s1 §§ s2 §§ s3 §§ s4)
 comb44 f s1 s2 s3 s4 = unzip4 (f -§ s1 §§ s2 §§ s3 §§ s4)
                       

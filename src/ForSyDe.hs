@@ -49,7 +49,7 @@ module ForSyDe(
   -- * The Vector
   Vector, vector, fromVector,
   -- * The absent-extended type
-  AbstExt (..), fromAbstExt, abstExt, psi, isAbsent, isPresent, 
+  AbstExt (..), fromAbstExt, abstExt, isAbsent, isPresent, 
 ) where
 
 import ForSyDe.Core.Signal
