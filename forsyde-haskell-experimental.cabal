@@ -19,9 +19,7 @@ library
                        ForSyDe.Core,
                        ForSyDe.Core.Signal,
                        ForSyDe.Core.Vector,
-                       ForSyDe.Core.AbsentExt,
                        ForSyDe.MoC.SY,
-                       ForSyDe.MoC.SDF,
                        ForSyDe.MoC.DE,
                        ForSyDe.MoC.CT
   Default-Language:    Haskell2010

@@ -18,12 +18,9 @@ module ForSyDe.Core (
        module ForSyDe.Core.Signal,
        -- * Vector type
        module ForSyDe.Core.Vector,
-       -- * Absent extended type
-       module ForSyDe.Core.AbsentExt,
 ) where
 
 import ForSyDe.Core.Signal
-import ForSyDe.Core.AbsentExt
 import ForSyDe.Core.Vector
 
 

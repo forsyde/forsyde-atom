@@ -19,110 +19,73 @@
 module ForSyDe.MoC.SY where
 
 import ForSyDe.Core
-import Prelude hiding (filter, unzip, unzip3, zip, zip3)
+import ForSyDe.Core.Wrappers
+import Prelude hiding (filter, unzip, unzip3, zip, zip3, (<$))
 
 -----------------------------------------------------------------------------
 -- TYPE ALIAS
 -----------------------------------------------------------------------------
-
-type Sig a = Signal (AbstExt a)
-type Arg a = AbstExt a
+-- WRONG!!!!
+--type SignalSY = Signal (AbstExt a) -- dumbass!!!!! this leads to Signal (AbstExt (tag, value))
+--type Tok a = AbstExt a             -- ULTRA WRONG!!!!
 type Tok a = AbstExt a
+type Sig a = Signal (AbstExt a)
 
 
 -----------------------------------------------------------------------------
--- PRIMITIVE CONSTRUCTORS
+-- PRIMITIVE CONSTRUCTORS -- TIMED MOC TEMPLATE
 -----------------------------------------------------------------------------
 
-infixl 5 -§, §§, ->-
-infixl 3 §-
+infixl 5 -§, §§
+infixl 4 ->-
 
-(-§)  :: (Arg a -> b) -> Sig a -> Sig b
-(§§)  :: Sig (Arg a -> b) -> Sig a -> Sig b
-(§-)  :: Sig (Arg a) -> Sig a
-(->-) :: Sig a -> Tok a -> Sig a
+(-§)  :: (AbstExt a -> b) -> Sig a -> Signal b
+(§§)  :: Signal (AbstExt a -> b) -> Sig a -> Signal b
+(->-) :: AbstExt a -> Sig a -> Sig a
 -----------------------------------------------------------------------------
-f -§ NullS         = NullS
-f -§ (x:-xs)       = Prst (f x) :- f -§ xs
-
-_       §§ NullS   = NullS
-NullS   §§ _       = NullS
-(f:-fs) §§ (Abst:-xs) = Abst :- fs §§ xs
-
-
-(§-) = id 
-xs ->- i = i :- xs
+(-§)  = (<$>)
+(§§)  = (<*>)
+(->-) = (:-)
 
 -----------------------------------------------------------------------------
--- FUNCTION WRAPPERS
+-- ARGUMENT DATA TYPE - ABSENT EXTENDED
 -----------------------------------------------------------------------------
 
-infixl 5 $> --, $$
-($>)  :: (a -> b) -> Arg a -> Arg b
-_ $> Abst      = Abst
-_ $> (Prst Abst) = Abst 
-f $> (Prst x)   = Prst (f x)  
-f $> (Prst (Prst x))   = Prst (f x) 
---(<_>) :: Arg (a -> b) -> Arg a -> Arg b
+data AbstExt a =  Abst | Prst a deriving (Eq)
 
-{-
+instance Show a => Show (AbstExt a) where
+  showsPrec _ x = showsAE x
+    where showsAE Abst     = (++) "_"       
+          showsAE (Prst x) = (++) (show x)
 
-psi  :: (a -> b)
-     -> (Arg a -> Arg b)
-psi2 :: (a -> b -> c)
-     -> (Arg a -> Arg b -> Arg c)     
-psi3 :: (a -> b -> c -> d)
-     -> (Arg a -> Arg b -> Arg c -> Arg d)
-psi4 :: (a -> b -> c -> d -> e)
-     -> (Arg a -> Arg b -> Arg c -> Arg d -> Arg e)
-psi5 :: (a -> b -> c -> d -> e -> f)
-     -> (Arg a -> Arg b -> Arg c -> Arg d -> Arg e -> Arg f)
-psi6 :: (a -> b -> c -> d -> e -> f -> g)
-     -> (Arg a -> Arg b -> Arg c -> Arg d -> Arg e -> Arg f -> Arg f)
------------------------------------------------------------------------------
-psi  f a           = f <$> (Arg a) 
-psi2 f a b         = f <$> (Arg a) <*> (Arg b)
-psi3 f a b c       = f <$> (Arg a) <*> (Arg b) <*> (Arg c)
-psi4 f a b c d     = f <$> (Arg a) <*> (Arg b) <*> (Arg c) <*> (Arg d)
-psi5 f a b c d e   = f <$> (Arg a) <*> (Arg b) <*> (Arg c) <*> (Arg d) <*> (Arg e)
-psi6 f a b c d e f = f <$> (Arg a) <*> (Arg b) <*> (Arg c) <*> (Arg d) <*> (Arg e) <*> (Arg f)
+instance Read a => Read (AbstExt a) where
+  readsPrec _ x       =  readsAE x 
+    where readsAE s = [(Abst, r1) | ("_", r1) <- lex s] ++ [(Prst x, r2) | (x, r2) <- reads s]
+
+instance Functor AbstExt where
+  fmap _ Abst     = Abst
+  fmap f (Prst x) = Prst (f x)
+
+instance Applicative AbstExt where
+  pure a  = Prst a
+  _      <*> Abst   = Abst
+  Abst   <*> _      = Abst
+  (Prst x) <*> (Prst y) = Prst (x y)
 
 -----------------------------------------------------------------------------
 -- PROCESS CONSTRUCTORS / PATTERNS
 -----------------------------------------------------------------------------
-
-comb  :: (a -> b) 
+{-
+comb  :: (Arg a -> Arg b) 
       -> Sig a -> Sig b 
-comb2 :: (a -> b -> c)
+comb2 :: (Arg a -> Arg b -> Arg c)
       -> Sig a -> Sig b -> Sig c
-comb3 :: (a -> b -> c -> d)
+comb3 :: (Arg a -> Arg b -> Arg c -> Arg d)
       -> Sig a -> Sig b -> Sig c -> Sig d
-comb4 :: (a -> b -> c -> d -> e)
+comb4 :: (Arg a -> Arg b -> Arg c -> Arg d -> Arg e)
       -> Sig a -> Sig b -> Sig c -> Sig d -> Sig e
-delay :: a
+delay :: Tok a
       -> Sig a -> Sig a
-
-zip  :: Sig a -> Sig b
-     -> Sig (a, b)
-zip3 :: Sig a -> Sig b -> Sig c
-     -> Sig (a, b, c)
-zip4 :: Sig a -> Sig b -> Sig c -> Sig d
-     -> Sig (a, b, c, d)
-zip5 :: Sig a -> Sig b -> Sig c -> Sig d -> Sig e
-     -> Sig (a, b, c, d, e)
-zip6 :: Sig a -> Sig b -> Sig c -> Sig d -> Sig e -> Sig f
-     -> Sig (a, b, c, d, e, f)
-     
-unzip  :: Sig (a, b)
-       -> (Sig a, Sig b)
-unzip3 :: Sig (a, b, c)
-       -> (Sig a, Sig b, Sig c)
-unzip4 :: Sig (a, b, c, d)
-       -> (Sig a, Sig b, Sig c, Sig d)
-unzip5 :: Sig (a, b, c, d, e)
-       -> (Sig a, Sig b, Sig c, Sig d, Sig e)
-unzip6 :: Sig (a, b, c, d, e, f)
-       -> (Sig a, Sig b, Sig c, Sig d, Sig e, Sig f)
 
 moore  :: (a -> b -> a) -> (a -> c) -> a
        -> Sig b -> Sig c
@@ -135,90 +98,70 @@ mealy  :: (a -> b -> a) -> (a -> b -> c) -> a
 mealy2 :: (a -> b -> c -> a) -> (a -> b -> c -> d) -> a
        -> Sig b -> Sig c -> Sig d
 mealy3 :: (a -> b -> c -> d -> a) -> (a -> b -> c -> d -> e) -> a
-       -> Sig b -> Sig c -> Sig d -> Sig e
+       -> Sig b -> Sig c -> Sig d -> Sig e-}
 -----------------------------------------------------------------------------
-
-
-comb  f s1          = (f -§ s1 §-)
-comb2 f s1 s2       = (f -§ s1 §§ s2 §-)
-comb3 f s1 s2 s3    = (f -§ s1 §§ s2 §§ s3 §-)
-comb4 f s1 s2 s3 s4 = (f -§ s1 §§ s2 §§ s3 §§ s4 §-)
-
+--comb12 :: (AbstExt a -> (AbstExt t, AbstExt b)) -> Sig a -> (Sig t, Sig b)
+comb11 f s1          =        (f -§ s1)
+comb12 f s1          = unzip  (f -§ s1)
+comb13 f s1          = unzip3 (f -§ s1)
+comb14 f s1          = unzip4 (f -§ s1)
+comb21 f s1 s2       =        (f -§ s1 §§ s2)
+comb22 f s1 s2       = unzip  (f -§ s1 §§ s2)
+comb23 f s1 s2       = unzip3 (f -§ s1 §§ s2)
+comb24 f s1 s2       = unzip4 (f -§ s1 §§ s2)
+comb31 f s1 s2 s3    =        (f -§ s1 §§ s2 §§ s3)
+comb32 f s1 s2 s3    = unzip  (f -§ s1 §§ s2 §§ s3)
+comb33 f s1 s2 s3    = unzip3 (f -§ s1 §§ s2 §§ s3)
+comb34 f s1 s2 s3    = unzip4 (f -§ s1 §§ s2 §§ s3)
+comb41 f s1 s2 s3 s4 =        (f -§ s1 §§ s2 §§ s3 §§ s4)
+comb42 f s1 s2 s3 s4 = unzip  (f -§ s1 §§ s2 §§ s3 §§ s4)
+comb43 f s1 s2 s3 s4 = unzip3 (f -§ s1 §§ s2 §§ s3 §§ s4)
+comb44 f s1 s2 s3 s4 = unzip4 (f -§ s1 §§ s2 §§ s3 §§ s4)
+                      
 delay e s1 = s1 ->- e
 
-zip  s1 s2             = (,)     -§ xs §§ ys
-zip3 s1 s2 s3          = (,,)    -§ xs §§ ys §§ zs
-zip4 s1 s2 s3 s4       = (,,,)   -§ xs §§ ys §§ zs §§ as
-zip5 s1 s2 s3 s4 s5    = (,,,,)  -§ xs §§ ys §§ zs §§ as §§ bs
-zip6 s1 s2 s3 s4 s5 s6 = (,,,,,) -§ xs §§ ys §§ zs §§ as §§ bs §§ cs
 
-unzip s1 = ((\(x,_) -> x) <$> s1,
-            (\(_,x) -> x) <$> s1)
-unzip3 c1 c2 c3 s1
-  = ((\(x,_,_) -> x) <$> s1 ¤ c1,
-     (\(_,x,_) -> x) <$> s1 ¤ c2,
-     (\(_,_,x) -> x) <$> s1 ¤ c3)
-unzip4 c1 c2 c3 c4 s1
-  = ((\(x,_,_,_) -> x) <$> s1 ¤ c1,
-     (\(_,x,_,_) -> x) <$> s1 ¤ c2,
-     (\(_,_,x,_) -> x) <$> s1 ¤ c3,
-     (\(_,_,_,x) -> x) <$> s1 ¤ c4)
-unzip5 c1 c2 c3 c4 c5 s1
-  = ((\(x,_,_,_,_) -> x) <$> s1 ¤ c1,
-     (\(_,x,_,_,_) -> x) <$> s1 ¤ c2,
-     (\(_,_,x,_,_) -> x) <$> s1 ¤ c3,
-     (\(_,_,_,x,_) -> x) <$> s1 ¤ c4,
-     (\(_,_,_,_,x) -> x) <$> s1 ¤ c5)  
-unzip6 c1 c2 c3 c4 c5 c6 s1
-  = ((\(x,_,_,_,_,_) -> x) <$> s1 ¤ c1,
-     (\(_,x,_,_,_,_) -> x) <$> s1 ¤ c2,
-     (\(_,_,x,_,_,_) -> x) <$> s1 ¤ c3,
-     (\(_,_,_,x,_,_) -> x) <$> s1 ¤ c4,
-     (\(_,_,_,_,x,_) -> x) <$> s1 ¤ c5,
-     (\(_,_,_,_,_,x) -> x) <$> s1 ¤ c6)  
+moore ns od mem s1 = od -§ s
+  where s = mem ->- ns -§ s §§ s1
+moore2 ns od mem s1 s2 = od -§ s
+  where s = mem ->- ns -§ s §§ s1 §§ s2
+moore3 ns od mem s1 s2 s3 = od -§ s
+  where s = mem ->- ns -§ s §§ s1 §§ s2 §§ s3
 
+mealy ns od mem s1 = od -§ s §§ s1
+  where s = mem ->- ns -§ s §§ s1
+mealy2 ns od mem s1 s2 = od -§ s §§ s1 §§ s2
+  where s = mem ->- ns -§ s §§ s1 §§ s2
+mealy3 ns od mem s1 s2 s3 = od -§ s §§ s1 §§ s2 §§ s3
+  where s = mem ->- ns -§ s §§ s1 §§ s2 §§ s3
 
-moore ns od mem xs = od -§ s
-  where s = ns -§ s §§ xs ->- mem
-moore2 ns od mem xs ys = od -§ s
-  where s = ns -§ s §§ xs §§ ys ->- mem
-moore3 ns od mem xs ys zs = od -§ s
-  where s = ns -§ s §§ xs §§ ys §§ zs ->- mem
-
-mealy ns od mem xs = od -§ s §§ xs
-  where s = ns -§ s §§ xs ->- mem
-mealy2 ns od mem xs ys = od -§ s §§ xs §§ ys
-  where s = ns -§ s §§ xs §§ ys ->- mem
-mealy3 ns od mem xs ys zs = od -§ s §§ xs §§ ys §§ zs
-  where s = ns -§ s §§ xs §§ ys §§ zs ->- mem
-
-
+{- 
 
 
 -- FILTER, FILL, HOLD
 
--- | The process constructor 'filter' discards the values who do not fulfill a predicate given by a predicate function and replaces them with absent events.
+-- | The process constructor 'filter' discards the values who do not fulfill a predicate given by a predicate function and replaces them with as5ent events.
 filter :: (a -> Bool) -- Predicate function
          -> Sig a -- Input signal
          -> Sig (Arg a) -- Output signal
 
--- | The process constructor 'fill' creates a process that 'fills' a signal with present values by replacing absent values with a given value. The output signal is not any more of the type 'Arg'.
+-- | The process constructor 'fill' creates a process that 'fills' a signal with present values by replacing as5ent values with a given value. The output signal is not any more of the type 'Arg'.
 fill :: a -- ^Default value
-       -> Sig (Arg a) -- ^Absent extended input signal
+       -> Sig (Arg a) -- ^As5ent extended input signal
        -> Sig a -- ^Output signal
 
--- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing absent values by the preceding present value. Only in cases, where no preceding value exists, the absent value is replaced by a default value. The output signal is not any more of the type 'Arg'.
+-- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing as5ent values by the preceding present value. Only in s64es, where no preceding value exists, the as5ent value is replaced by a default value. The output signal is not any more of the type 'Arg'.
 hold :: a -- ^Default value
-       -> Sig (Arg a) -- ^Absent extended input signal
+       -> Sig (Arg a) -- ^As5ent extended input signal
        -> Sig a -- ^Output signa
 
-filter p = (-§) (\x -> if p x == True then Prst x else Abst)
-fill   a = (-§) (replaceAbst a)
-  where replaceAbst a' Abst     = a'
-        replaceAbst _  (Prst x) = x
-hold   a xs = s
-  where s = holdf -§ (s ->- a) §§ xs
-        holdf a' Abst     = a'
+filter p = (-§) (\x -> if p x == True then Prst x else As5t)
+fill   a = (-§) (replaceAs5t a)
+  where replaceAs5t a' As5t     = a'
+        replaceAs5t _  (Prst x) = x
+hold   a s1 = s
+  where s = holdf -§ (s ->- a) §§ s1
+        holdf a' As5t     = a'
         holdf _  (Prst x) = x
 
 -}

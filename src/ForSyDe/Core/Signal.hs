@@ -114,4 +114,3 @@ padS y (x:-xs) = x :- (padS y xs)
 anyS :: (a -> Bool) -> Signal a -> Bool
 anyS _ NullS = False
 anyS c (x :- xs) = c x || anyS c xs
-
