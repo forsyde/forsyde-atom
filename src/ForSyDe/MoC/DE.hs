@@ -19,6 +19,7 @@
 module ForSyDe.MoC.DE where
 
 import ForSyDe.Core
+import ForSyDe.Core.Utilities
 
 data Tok a = Tok Tag a       deriving (Show)
 data Tag   = Tag Int | Infty deriving (Eq, Ord)
@@ -31,6 +32,9 @@ tagPlus :: Tag -> Tag -> Tag
 tagPlus Infty _ = Infty
 tagPlus _ Infty = Infty
 tagPlus (Tag a) (Tag b) = Tag (a + b)
+
+instance Functor Tok where
+  fmap f (Tok t a) = Tok t (f a)
           
 -----------------------------------------------------------------------------
 
@@ -38,30 +42,55 @@ infixl 5 §-
 (§-) :: (a -> b) -> Signal (Tok a) -> Signal (Tok b)
 _ §- NullS           = NullS
 f §- (Tok t x :- xs) = Tok t (f x) :- f §- xs
-
-
+{-f §- (Tok t x :- xs) = clean (Tok t (f x)) (f §- xs)
+  where clean   (Tok t v) NullS = Tok t v :- NullS 
+        clean e@(Tok t v) es@(Tok t1 v1 :- vs)
+          | t >  t1   = error "Tags not ordered"
+          | v == v1   = es
+          | otherwise = e :- es
+-}  
 infixl 5 -§-
 (-§-) :: Signal (Tok (a -> b)) -> Signal (Tok a) -> Signal (Tok b)
 NullS -§- _     = NullS
 _     -§- NullS = NullS
-s1@(Tok t1 f :- fs) -§- s2@(Tok t2 x :- xs) 
+s1@(Tok t1 f :- fs) -§- s2@(Tok t2 x :- xs)
+    | t1 == t2 = Tok t1 (f x) :- (fs -§- xs)
     | t1 <  t2 = Tok t1 (f x) :- (fs -§- s2)
     | t1 >  t2 = Tok t2 (f x) :- (s1 -§- xs)
-    | t1 == t2 = Tok t1 (f x) :- (fs -§- xs)
+
+infixl 5 §
+(§) :: Eq b => (a -> b) -> Signal (Tok a) -> Signal (Tok b)
+_ § NullS           = NullS
+f § (Tok t x :- xs) = clean (Tok t (f x)) (f § xs)
+  where clean   (Tok t v) NullS = Tok t v :- NullS 
+        clean e@(Tok t v) es@(Tok t1 v1 :- vs)
+          | t >  t1   = error "Tags not ordered"
+          | v == v1   = es
+          | otherwise = e :- es
+             
+
 
 infixl 5 ->-
 (->-) :: Signal (Tok a) -> Tok a -> Signal (Tok a)
 xs ->- i@(Tok t _) = i :- (\(Tok t1 g) -> Tok (t1 `tagPlus` t) g) <$> xs
 
-infixl 4 ¤
+infixl 3 ¤
 (¤) :: Eq a => Signal (Tok a) -> Signal (Tok a)
+{-
 (¤) NullS   = NullS
 (¤) (x:-xs) = clean x xs
   where clean (Tok t v) NullS = Tok t v :- NullS 
-        clean (Tok t1 v1) (Tok t2 v2 :- vs)
-          | t2 <  t1  = error "Tags not ordered"
-          | v1 == v2  = clean (Tok t2 v2) vs
-          | otherwise = (Tok t1 v1) :- clean (Tok t2 v2) vs
+        clean (Tok t v) (Tok t1 v1 :- vs)
+          | t >  t1   = error "Tags not ordered"
+          | v == v1   = clean (Tok t1 v1) vs
+          | otherwise = (Tok t v) :- clean (Tok t1 v1) vs
+-}
+(¤) = foldr clean NullS
+  where clean   (Tok t v)     NullS          = Tok t v :- NullS
+        clean x@(Tok t v) xs@(Tok t1 v1 :- vs)
+          | t <  t1   = error "Tags not ordered"
+          | v == v1   = xs
+          | otherwise = x :- xs
 
 -----------------------------------------------------------------------------
 -- ARGUMENT DATA TYPE - ABSENT EXTENDED
@@ -106,10 +135,10 @@ comb3 :: (a -> b -> c -> d) -> Signal (Subsig a) -> Signal (Subsig b) -> Signal 
 -- | Behaves like 'comb', but the process takes 4 input signals.
 comb4 :: (a -> b -> c -> d -> e) -> Signal (Subsig a) -> Signal (Subsig b) -> Signal (Subsig c) -> Signal (Subsig d) -> Signal (Subsig e)-}
 
-comb  f x       = (f §- x ¤)
-comb2 f x y     = (f §- x -§- y ¤)
-comb3 f x y z   = (f §- x -§- y -§- z ¤)
-comb4 f x y z q = (f §- x -§- y -§- z -§- q ¤)
+comb  f x       = (f §- x )
+comb2 f x y     = (f §- x -§- y )
+comb3 f x y z   = (f §- x -§- y -§- z )
+comb4 f x y z q = (f §- x -§- y -§- z -§- q )
 
 
 -- DELAY
@@ -123,3 +152,70 @@ delay x xs = xs ->- x
 
 ---------------------------------------------------------
 
+
+
+--comb12 :: (a -> (b,b)) -> Signal(Tok a) -> (Signal (Tok b), Signal(Tok b))
+--comb12 f x = uzf2 (unzip2 <$> (f §- x)) (¤)
+
+comb12 f x = ((fat21 funzip2<$>s ),(fat22 funzip2<$>s ))
+  where s = f §- x
+
+comb22 f x y = ((fat21 funzip2<$>s ),(fat22 funzip2<$>s ))
+  where s = f §- x -§- y
+
+comb32 f x y z = ((fat21 funzip2<$>s ),(fat22 funzip2<$>s ))
+  where s = f §- x -§- y -§- z
+
+mealy ns od mem s1 = comb2 od s s1
+  where s = (comb2 ns s s1) ->- mem
+
+mealy' ns od mem s1 = (od §- s -§- s1 ¤)
+  where s = (ns §- s -§- s1 ¤) ->- mem
+
+mealy22 ns od mem s1 s2 = comb32 od s s1 s2
+  where s = (comb3 ns s s1 s2) ->- mem
+
+------------------------------------------------------------------
+
+data State = V | F deriving (Eq, Show)
+
+nsSplit F _ _ = F
+nsSplit _ F _ = F
+nsSplit _ _ _ = V
+
+odSplit F _ _    = (Abst, Abst)
+odSplit _ _ Abst = (Abst, Abst)
+odSplit V _ (Prst b) | b `mod` 2 == 0 = (Prst b, Abst)
+                | otherwise      = (Abst, Prst b)
+
+pv (Prst b) | b >= 0    = Prst V
+            | otherwise = Prst F
+pv Abst = Abst
+
+merge (Prst F) _ = F
+merge _ (Prst F) = F
+merge _ _        = V
+
+split = mealy22 nsSplit odSplit (Tok (Tag 2) V)
+
+so b = comb2 merge (comb pv $ s1 b) (comb pv $ s2 b)
+s1 b = fst $ split (sf b) b
+s2 b = snd $ split (sf b) b
+sf b = delay (Tok (Tag 15) V) $ so b
+
+a = signal [Tok (Tag 10) Abst, Tok (Tag 40) (Prst 4), Tok (Tag 60) (Prst 8), Tok Infty (Prst (-3))]
+dummy = signal [Tok Infty V]
+
+q = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok (Tag 100) 1.5]
+q' = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok Infty 1.5]
+q'' = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok (Tag 3) 0.5, Tok (Tag 4) 0.5, Tok (Tag 100) 1.5]
+
+i = Tok (Tag 1) 0.5
+deComb  = comb2 (+) (delay i q) q
+deOsc   = comb (+1) (delay i deOsc)
+
+deOsc'  = (+1) §- (delay i deOsc') 
+deOsc''  = (+1) § (delay i deOsc'') 
+
+        
+--comb22 f x y = (f §- x -§- y) `uzf2` (¤)

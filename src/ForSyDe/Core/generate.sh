@@ -9,11 +9,22 @@ for i in {2..8}; do
    done
 done
 
+for i in {2..8}; do
+   for ((j=1; j<=$i; j++)); do 
+       v=""
+       for ((k=1; k<=$i; k++)); do 
+	   v="$v, a$k"
+       done
+       echo "at$i$j' :: Functor f => f (${v:2}) -> f a$j"
+       echo "at$i$j' = (<$>) at$i$j"
+   done
+done
+
 
 for i in {2..8}; do    
     v=""
     for ((j=1; j<=$i; j++)); do 
-	v="$v, at$i$j<$>x"
+	v="$v, at$i$j' x"
     done
     echo "unzip$i x = (${v:2})"
 done
@@ -24,6 +35,14 @@ for i in {2..8}; do
 	v="$v, f (at$i$j<$>x)"
     done
     echo "unzipf$i f x = (${v:2})"
+done
+
+for i in {2..8}; do    
+    v=""
+    for ((j=1; j<=$i; j++)); do 
+	v="$v, at$i$j' x"
+    done
+    echo "unzip$i x = (${v:2})"
 done
 
 
