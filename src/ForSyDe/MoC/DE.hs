@@ -33,6 +33,9 @@ tagPlus Infty _ = Infty
 tagPlus _ Infty = Infty
 tagPlus (Tag a) (Tag b) = Tag (a + b)
 
+tag (Tok a _) = a
+val (Tok _ b) = b
+
 instance Functor Tok where
   fmap f (Tok t a) = Tok t (f a)
           
@@ -54,25 +57,44 @@ infixl 5 -§-
 NullS -§- _     = NullS
 _     -§- NullS = NullS
 s1@(Tok t1 f :- fs) -§- s2@(Tok t2 x :- xs)
-    | t1 == t2 = Tok t1 (f x) :- (fs -§- xs)
-    | t1 <  t2 = Tok t1 (f x) :- (fs -§- s2)
-    | t1 >  t2 = Tok t2 (f x) :- (s1 -§- xs)
+  | t1 == t2 = Tok t1 (f x) :- (fs -§- xs)
+  | t1 <  t2 = Tok t1 (f x) :- (fs -§- s2)
+  | t1 >  t2 = Tok t2 (f x) :- (s1 -§- xs)
+
 
 infixl 5 §
-(§) :: Eq b => (a -> b) -> Signal (Tok a) -> Signal (Tok b)
-_ § NullS           = NullS
-f § (Tok t x :- xs) = clean (Tok t (f x)) (f § xs)
-  where clean   (Tok t v) NullS = Tok t v :- NullS 
-        clean e@(Tok t v) es@(Tok t1 v1 :- vs)
-          | t >  t1   = error "Tags not ordered"
-          | v == v1   = es
-          | otherwise = e :- es
-             
+(§) :: (Eq a, Eq b) => (a -> b) -> Signal (Tok a) -> Signal (Tok b)
+(§) = map' (Tag 0) Abst Abst
+  where
+    map' _ _ _ _ NullS  = NullS
+    map' _ Abst Abst f (Tok t v:-xs) = Tok t (f v) :- map' t (Prst v) (Prst (f v)) f xs
+    map' ti (Prst i) (Prst o) f (Tok t v:-xs)
+      | ti > t    = error "Tags not ordered"
+      | i == v    = map' t (Prst i) (Prst o) f xs
+      | o == f v  = map' t (Prst i) (Prst o) f xs
+      | otherwise = Tok t (f v) :- map' t (Prst v) (Prst (f v)) f xs
 
+infixl 5 -§
+(-§) :: (Eq a, Eq b) => Signal (Tok (a -> b)) -> Signal (Tok a) -> Signal (Tok b)
+(-§)  = zpw' (Tag 0) Abst Abst
+  where
+    advance i o s1@(Tok t1 f :- fs) s2@(Tok t2 x :- xs)
+      | t1 == t2 = Tok t1 (f x) :- zpw' t1 i o fs xs
+      | t1 <  t2 = Tok t1 (f x) :- zpw' t1 i o fs s2
+      | t1 >  t2 = Tok t2 (f x) :- zpw' t2 i o s1 xs
+    zpw' _ _ _ NullS _ = NullS
+    zpw' _ _ _ _ NullS = NullS
+    zpw' _ Abst Abst sf@(Tok tf f:-fs) sx@(Tok tx x:-xs) = advance (Prst x) (Prst (f x)) sf sx
+    zpw' ti (Prst vi) (Prst vo) sf@(Tok tf f:-fs) sx@(Tok tx x:-xs)
+          | ti >  tx  = error "Tags not ordered"                         
+          | vi == x   = zpw' tx (Prst vi) (Prst vo) sf xs
+          | vo == f x = zpw' tx (Prst vi) (Prst vo) sf xs
+          | otherwise = advance (Prst x) (Prst (f x)) sf sx
 
+                   
 infixl 5 ->-
 (->-) :: Signal (Tok a) -> Tok a -> Signal (Tok a)
-xs ->- i@(Tok t _) = i :- (\(Tok t1 g) -> Tok (t1 `tagPlus` t) g) <$> xs
+xs ->- i@(Tok t v) = (Tok (Tag 0) v) :- (\(Tok t1 g) -> Tok (t1 `tagPlus` t) g) <$> xs
 
 infixl 3 ¤
 (¤) :: Eq a => Signal (Tok a) -> Signal (Tok a)
@@ -215,7 +237,10 @@ deComb  = comb2 (+) (delay i q) q
 deOsc   = comb (+1) (delay i deOsc)
 
 deOsc'  = (+1) §- (delay i deOsc') 
-deOsc''  = (+1) § (delay i deOsc'') 
+deOsc''  = (+1) § (delay i deOsc'')
+
+deOsc''' = (+1) § (delay i deOsc''') 
+deComb''' z = (+) §- (delay i z) -§ z
 
         
 --comb22 f x y = (f §- x -§- y) `uzf2` (¤)
