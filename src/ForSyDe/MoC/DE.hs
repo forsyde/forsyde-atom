@@ -22,9 +22,39 @@ import ForSyDe.Core
 import ForSyDe.Core.Utilities
 
 data Tok a = Tok Int (AbstExt a)       deriving (Show)
+{-
+data Tag   = Tag Int | Infty deriving (Eq, Ord)
 
+instance Show Tag where
+  showsPrec _ x = showsTag x
+    where showsTag Infty   = (++) "\8734"       
+          showsTag (Tag x) = (++) (show x)
+
+instance Num Tag where
+  Infty + _ = Infty
+  _ + Infty = Infty
+  (Tag a) + (Tag b) = a + b
+  -------------------
+  Infty * _ = Infty
+  _ * Infty = Infty
+  (Tag a) * (Tag b) = a * b
+  -------------------
+  abs Infty = Infty
+  abs (Tag a) = Tag a
+  -------------------
+  signum (Tag a) = signum a
+  signum Infty   = 1
+  -------------------
+  fromInteger a = Tag a
+  -------------------
+  negate Infty = -1 * Infty
+  negate (Tag a) = negate a
+-}
+  
 tag (Tok a _) = a
 val (Tok _ b) = b
+
+
 
 instance Functor Tok where
   fmap f (Tok t a) = Tok t (f <$> a)
@@ -55,33 +85,29 @@ s1@(Tok t1 f :- fs) -§- s2@(Tok t2 x :- xs)
 infixl 5 -§
 (-§) :: (Eq a) => (a -> b) -> Signal (Tok a) -> Signal (Tok b)
 _ -§ NullS = NullS
-f -§ s@(Tok t x:-xs) | t == 0    = Tok 0 (f <$> x) :- map' 0 x    f xs
-                     | otherwise = Tok 0 Abst      :- map' 0 Abst f s
-  where
-    map' _  _  _ NullS = NullS
-    map' pt px f (Tok t x:-xs)
-      | pt >  t   = error "Tags not ordered"
-      | px == x   = map' pt px f xs
-      | otherwise = Tok t (f <$> x) :- map' t x f xs
+f -§ s@(Tok t x:-xs) = Tok t (f <$> x) :- map' t x f xs
+  where map' _  _  _ NullS = NullS
+        map' pt px f (Tok t x:-xs)
+          | pt >  t   = error "Tags not ordered"
+          | px == x   = map' pt px f xs
+          | otherwise = Tok t (f <$> x) :- map' t x f xs
 
         
 infixl 5 §§
 (§§) :: (Eq a) => Signal (Tok (a -> b)) -> Signal (Tok a) -> Signal (Tok b)
 _ §§ NullS  = NullS
 NullS §§ _  = NullS
-sf §§ sx@(Tok t x:-_) | t /= 0    = advance Abst sf (Tok 0 Abst :- sx)
-                      | otherwise = advance x    sf sx
-  where
-    advance i s1@(Tok t1 f :- fs) s2@(Tok t2 x :- xs)
-      | t1 == t2 = Tok t1 (f <*> x) :- zpw' t1 i fs xs
-      | t1 <  t2 = Tok t1 (f <*> x) :- zpw' t1 i fs s2
-      | t1 >  t2 = Tok t2 (f <*> x) :- zpw' t2 i s1 xs
-    zpw' _  _  NullS _ = NullS
-    zpw' _  _  _ NullS = NullS
-    zpw' pt px sf@(Tok tf f:-fs) sx@(Tok tx x:-xs)
-      | pt >  tx  = error "Tags not ordered"                         
-      | px == x   = zpw' pt px sf xs
-      | otherwise = advance x sf sx
+sf §§ sx@(Tok _ x:-_) = advance x sf sx
+  where advance i s1@(Tok t1 f :- fs) s2@(Tok t2 x :- xs)
+          | t1 == t2 = Tok t1 (f <*> x) :- zpw' t1 i fs xs
+          | t1 <  t2 = Tok t1 (f <*> x) :- zpw' t1 i fs s2
+          | t1 >  t2 = Tok t2 (f <*> x) :- zpw' t2 i s1 xs
+        zpw' _  _  NullS _ = NullS
+        zpw' _  _  _ NullS = NullS
+        zpw' pt px sf@(Tok tf f:-fs) sx@(Tok tx x:-xs)
+          | pt >  tx  = error "Tags not ordered"                         
+          | px == x   = zpw' pt px sf xs
+          | otherwise = advance x sf sx
 
 infixl 3 §-
 (§-) :: Eq a => Signal (Tok a) -> Signal (Tok a)
@@ -95,13 +121,14 @@ infixl 3 §-
            
 infixl 5 ->-
 (->-) :: Signal (Tok a) -> Tok a -> Signal (Tok a)
-xs ->- i@(Tok t v) = (Tok 0 v) :- (\(Tok t1 g) -> Tok (t1 + t) g) <$> fil xs
+xs ->- i@(Tok t v) = (Tok 0 v) :- (\(Tok t1 g) -> Tok (t1 + t) g) <$> xs
 
-
-fil s@(Tok t _:-_) | t == 0    = s
-                   | otherwise = (Tok 0 Abst) :- s
-
-
+sig2de :: Signal (Int, a) -> Signal (Tok a)
+sig2de NullS = NullS
+sig2de s@((t, x):-xs) | t == 0    = period (Prst x) xs
+                      | otherwise = period Abst     s
+  where period px NullS        = Tok Infty px :- NullS
+        period px ((t, x):-xs) = Tok (Tag t) px :- period (Prst x) xs
 -----------------------------------------------------------------------------
 -- ARGUMENT DATA TYPE - ABSENT EXTENDED
 -----------------------------------------------------------------------------
