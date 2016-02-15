@@ -23,7 +23,7 @@ import ForSyDe.Core.Utilities
 
 data Tok a = Tok Tag (AbstExt a)       deriving (Show)
 
-data Tag   = Tag Int | Infty deriving (Eq, Ord)
+data Tag   = Tag Integer | Infty deriving (Eq, Ord)
 
 instance Show Tag where
   showsPrec _ x = showsTag x
@@ -92,7 +92,6 @@ f -§ s@(Tok t x:-xs) = Tok t (f <$> x) :- map' t x f xs
           | px == x   = map' pt px f xs
           | otherwise = Tok t (f <$> x) :- map' t x f xs
 
-        
 infixl 5 §§
 (§§) :: (Eq a) => Signal (Tok (a -> b)) -> Signal (Tok a) -> Signal (Tok b)
 _ §§ NullS  = NullS
@@ -105,25 +104,24 @@ sf §§ sx@(Tok _ x:-_) = advance x sf sx
         zpw' _  _  NullS _ = NullS
         zpw' _  _  _ NullS = NullS
         zpw' pt px sf@(Tok tf f:-fs) sx@(Tok tx x:-xs)
-          | pt >  tx  = error "Tags not ordered"                         
-          | px == x   = zpw' pt px sf xs
+          | pt >  tx  = error "Tags not ordered" 
           | otherwise = advance x sf sx
 
 infixl 3 §-
 (§-) :: Eq a => Signal (Tok a) -> Signal (Tok a)
 (§-) NullS = NullS
-(§-) (Tok t x:-xs)  =  Tok t x :- clean t x xs 
-  where clean _  _  NullS = NullS
-        clean pt px (Tok t x :- xs)
+(§-) s@(Tok t x:-xs)  = clean 0 Abst xs
+  where clean pt px NullS = Tok pt px :- NullS
+        clean pt px (Tok t x :- xs) 
           | pt >  t   = error "Tags not ordered"
-          | px == x   = clean pt px xs
-          | otherwise = Tok t x :- clean t x xs
+          | px == x   = clean t px xs
+          | otherwise = Tok pt px :- clean t x xs
            
 infixl 5 ->-
 (->-) :: Signal (Tok a) -> Tok a -> Signal (Tok a)
-xs ->- i@(Tok t v) = (Tok 0 v) :- (\(Tok t1 g) -> Tok (t1 + t) g) <$> xs
+xs ->- i@(Tok t v) = (Tok t v) :- (\(Tok t1 g) -> Tok (t1 + t) g) <$> xs
 
-sig2de :: Signal (Int, a) -> Signal (Tok a)
+sig2de :: Signal (Integer, a) -> Signal (Tok a)
 sig2de NullS = NullS
 sig2de s@((t, x):-xs) | t == 0    = period (Prst x) xs
                       | otherwise = period Abst     s
