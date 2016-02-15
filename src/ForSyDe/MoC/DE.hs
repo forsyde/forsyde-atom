@@ -21,8 +21,8 @@ module ForSyDe.MoC.DE where
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
 
-data Tok a = Tok Int (AbstExt a)       deriving (Show)
-{-
+data Tok a = Tok Tag (AbstExt a)       deriving (Show)
+
 data Tag   = Tag Int | Infty deriving (Eq, Ord)
 
 instance Show Tag where
@@ -33,23 +33,23 @@ instance Show Tag where
 instance Num Tag where
   Infty + _ = Infty
   _ + Infty = Infty
-  (Tag a) + (Tag b) = a + b
+  (Tag a) + (Tag b) = Tag (a + b)
   -------------------
   Infty * _ = Infty
   _ * Infty = Infty
-  (Tag a) * (Tag b) = a * b
+  (Tag a) * (Tag b) = Tag (a * b)
   -------------------
   abs Infty = Infty
   abs (Tag a) = Tag a
   -------------------
-  signum (Tag a) = signum a
-  signum Infty   = 1
+  signum (Tag a) = Tag (signum a)
+  signum Infty   = Tag 1
   -------------------
-  fromInteger a = Tag a
+  fromInteger a = Tag (fromIntegral a)
   -------------------
   negate Infty = -1 * Infty
-  negate (Tag a) = negate a
--}
+  negate (Tag a) = Tag (negate a)
+
   
 tag (Tok a _) = a
 val (Tok _ b) = b
@@ -244,16 +244,16 @@ merge _ _        = V
 --a = signal [Tok 10 Abst, Tok (Tag 40) (Prst 4), Tok (Tag 60) (Prst 8), Tok Infty (Prst (-3))]
 --dummy = signal [Tok Infty V]
 
-q = signal [Tok 3 (Prst 2), Tok 5 (Prst 3), Tok 20 (Prst 4)]
+q = signal [(3,2), (5,3), (20, 4)]
 q' = signal [Tok 1 (Prst 2), Tok 2 (Prst 1), Tok 3 (Prst 1), Tok 4 (Prst 1), Tok 5 (Prst 1), Tok 20 (Prst 3)]
-w = signal [Tok 2 (Prst 2), Tok 5 (Prst 1), Tok 12 (Prst 3)]
+w = signal [(2,2), (5,1), (12,3)]
 
 --q' = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok Infty 1.5]
 --q'' = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok (Tag 3) 0.5, Tok (Tag 4) 0.5, Tok (Tag 100) 1.5]
 
 i = Tok 1 (Prst 1)
-qi = delay i q
+qi = delay i $ sig2de q
 
-deComb  = comb2 (+) (delay i q) q
+deComb  = comb2 (+) qi $ sig2de q
 deOsc   = comb (+1) (delay i deOsc)
 
