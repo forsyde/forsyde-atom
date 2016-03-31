@@ -85,27 +85,21 @@ s1@(Tok t1 f :- fs) -§- s2@(Tok t2 x :- xs)
 infixl 5 -§
 (-§) :: (Eq a) => (a -> b) -> Signal (Tok a) -> Signal (Tok b)
 _ -§ NullS = NullS
-f -§ s@(Tok t x:-xs) = Tok t (f <$> x) :- map' t x f xs
-  where map' _  _  _ NullS = NullS
-        map' pt px f (Tok t x:-xs)
-          | pt >  t   = error "Tags not ordered"
-          | px == x   = map' pt px f xs
-          | otherwise = Tok t (f <$> x) :- map' t x f xs
+f -§ (Tok t x:-xs) = Tok t (f <$> x) :- f -§ xs
 
 infixl 5 §§
 (§§) :: (Eq a) => Signal (Tok (a -> b)) -> Signal (Tok a) -> Signal (Tok b)
-_ §§ NullS  = NullS
-NullS §§ _  = NullS
-sf §§ sx@(Tok _ x:-_) = advance x sf sx
-  where advance i s1@(Tok t1 f :- fs) s2@(Tok t2 x :- xs)
-          | t1 == t2 = Tok t1 (f <*> x) :- zpw' t1 i fs xs
-          | t1 <  t2 = Tok t1 (f <*> x) :- zpw' t1 i fs s2
-          | t1 >  t2 = Tok t2 (f <*> x) :- zpw' t2 i s1 xs
-        zpw' _  _  NullS _ = NullS
-        zpw' _  _  _ NullS = NullS
-        zpw' pt px sf@(Tok tf f:-fs) sx@(Tok tx x:-xs)
-          | pt >  tx  = error "Tags not ordered" 
-          | otherwise = advance x sf sx
+sf §§ sx = zpw (Tok 0 Abst) (Tok 0 Abst) sf sx
+  where zpw (Tok ptf pf) (Tok ptx px) s1@(Tok tf f :- fs) s2@(Tok tx x :- xs)
+          | tf == tx = Tok tf (f <*> x)  :- zpw (Tok tf f)   (Tok tx x)   fs xs
+          | tf <  tx = Tok tf (f <*> px) :- zpw (Tok tf f)   (Tok ptx px) fs s2
+          | tf >  tx = Tok tx (pf <*> x) :- zpw (Tok ptf pf) (Tok tx x)   s1 xs
+        zpw _ (Tok ptx px) (Tok tf f :- fs) NullS
+          = Tok tf (f <*> px) :- zpw (Tok tf f) (Tok ptx px) fs NullS
+        zpw (Tok ptf pf) _ NullS (Tok tx x :- xs)
+          = Tok tx (pf <*> x) :- zpw (Tok ptf pf) (Tok tx x) NullS xs
+        zpw _ _ NullS NullS = NullS
+
 
 infixl 3 §-
 (§-) :: Eq a => Signal (Tok a) -> Signal (Tok a)
@@ -119,7 +113,7 @@ infixl 3 §-
            
 infixl 5 ->-
 (->-) :: Signal (Tok a) -> Tok a -> Signal (Tok a)
-xs ->- i@(Tok t v) = (Tok t v) :- (\(Tok t1 g) -> Tok (t1 + t) g) <$> xs
+xs ->- i@(Tok t v) = (Tok 0 v) :- (\(Tok t1 g) -> Tok (t1 + t) g) <$> xs
 
 sig2de :: Signal (Integer, a) -> Signal (Tok a)
 sig2de NullS = NullS
@@ -243,15 +237,17 @@ merge _ _        = V
 --dummy = signal [Tok Infty V]
 
 q = signal [(3,2), (5,3), (20, 4)]
-q' = signal [Tok 1 (Prst 2), Tok 2 (Prst 1), Tok 3 (Prst 1), Tok 4 (Prst 1), Tok 5 (Prst 1), Tok 20 (Prst 3)]
+q' = signal [Tok 1 (Prst 2), Tok 2 (Prst 1), Tok 20 (Prst 3)]
 w = signal [(2,2), (5,1), (12,3)]
 
 --q' = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok Infty 1.5]
 --q'' = signal [Tok (Tag 1) 1, Tok (Tag 2) 0.5, Tok (Tag 3) 0.5, Tok (Tag 4) 0.5, Tok (Tag 100) 1.5]
 
-i = Tok 1 (Prst 1)
-qi = delay i $ sig2de q
+i = Tok 3 (Prst 1)
+qi = delay i q'
 
-deComb  = comb2 (+) qi $ sig2de q
-deOsc   = comb (+1) (delay i deOsc)
+deComb  = (+) -§ qi §§ q'
+deOsc   = (+1) -§ (delay i deOsc)
+
+deCOsc = (+) -§ q' §§ (delay i deCOsc)
 
