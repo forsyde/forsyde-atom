@@ -21,7 +21,7 @@ module ForSyDe.MoC.DE where
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
 
-data Tok a = Tok Integer (AbstExt a) deriving (Show)
+data Tok a = Tok Int (AbstExt a) deriving (Show)
 
 instance Functor Tok where
   fmap f (Tok t a) = Tok t (f <$> a)
@@ -178,18 +178,42 @@ q1 = signal [Tok 0 (Prst 2), Tok 2 (Prst 1), Tok 6 (Prst 3)]
 q2 = signal [Tok 1 (Prst 2), Tok 2 (Prst 1), Tok 6 (Prst 3)]
 i1 = Tok 1 (Prst 1)
 i2 = Tok 3 (Prst 1)
-i3 = Tok 1 Abst
+i3 = Tok 0 (Prst 1)
 
 osc1 = (+1) -§ (i1 ->- osc1)
 osc2 = (+1) -§ (i2 ->- osc2)
+osc3 = (+1) -§ (i3 ->- osc3)
 
 cosc1 = (+) -§ (i1 ->- cosc1) §§ q1
 cosc2 = (+) -§ (i2 ->- cosc2) §§ q1
 cosc3 = (+) -§ (i1 ->- cosc3) §§ q2
 cosc4 = (+) -§ (i2 ->- cosc4) §§ q2
+cosc5 = (+) -§ (i3 ->- cosc5) §§ q2
 
-mealy ns od mem s1 = od -§ s §§ s1
-  where s = mem ->- ( ns -§ s §§ s1)
+
+
+comb22 f x y = ((fat21 funzip2<$>s ),(fat22 funzip2<$>s ))
+  where s = f -§ x §§ y
+
+--   /===< JFK <===\
+--   ||           ||
+--   ||           ||
+--   V             A
+--  ORD >=======> LAX
+
+airport plane1 plane2 = comb22 (\p1 p2->(p1 + p2, p1 - p2)) plane1 plane2 
+
+jfk = airport pOrdJfk pLaxJfk
+ord = airport pJfkOrd pLaxOrd
+lax = airport pOrdLax pJfkLax
+
+pJfkOrd = i1 ->- at21 jfk
+pJfkLax = i2 ->- at22 jfk
+pOrdJfk = i1 ->- at21 ord
+pOrdLax = i3 ->- at22 ord
+pLaxJfk = i1 ->- at21 lax
+pLaxOrd = i2 ->- at22 lax
+
 
 
 -- deComb  = (+) -§ qi §§ q'
