@@ -191,7 +191,11 @@ cosc4 = (+) -§ (i2 ->- cosc4) §§ q2
 cosc5 = (+) -§ (i3 ->- cosc5) §§ q2
 
 
+comb21 f x y = f -§ x §§ y
 
+comb12 f x   = ((fat21 funzip2<$>s ),(fat22 funzip2<$>s ))
+  where s = f -§ x
+        
 comb22 f x y = ((fat21 funzip2<$>s ),(fat22 funzip2<$>s ))
   where s = f -§ x §§ y
 
@@ -214,7 +218,24 @@ pOrdLax = i3 ->- at22 ord
 pLaxJfk = i1 ->- at21 lax
 pLaxOrd = i2 ->- at22 lax
 
+-- Concorde example
+data Plane = Concorde | Boeing deriving (Eq, Show)
 
+selPlane = comb12 selfunc
+  where selfunc Concorde = (Prst Concorde, Abst)
+        selfunc Boeing   = (Abst, Prst Boeing)
+
+mergePlane = comb21 mux
+  where mux (Prst Concorde) _ = Prst Concorde
+        mux _ (Prst Boeing)   = Prst Boeing
+        mux _ _               = Abst
+
+concorde sched = (Tok 1 (Prst Abst)) ->- fat21 selPlane sched
+boeing   sched = (Tok 10 (Prst Abst)) ->- fat22 selPlane sched
+
+planeSched1 = signal [Tok 0 (Prst Boeing), Tok 7 (Prst Concorde), Tok 8 (Prst Boeing)]
+
+scenario1 = mergePlane (concorde planeSched1) (boeing planeSched1)
 
 -- deComb  = (+) -§ qi §§ q'
 -- deOsc   = (+1) -§ (delay i deOsc)
