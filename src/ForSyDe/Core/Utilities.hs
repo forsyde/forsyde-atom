@@ -119,6 +119,15 @@ funzip7 x = (fat71 x, fat72 x, fat73 x, fat74 x, fat75 x, fat76 x, fat77 x)
 funzip8 x = (fat81 x, fat82 x, fat83 x, fat84 x, fat85 x, fat86 x, fat87 x, fat88 x)
 
 
+ffunzip2 f x = (f at21 <$> x, f at22 <$> x)
+ffunzip3 f x = (f at31 <$> x, f at32 <$> x, f at33 <$> x)
+ffunzip4 f x = (f at41 <$> x, f at42 <$> x, f at43 <$> x, f at44 <$> x)
+ffunzip5 f x = (f at51 <$> x, f at52 <$> x, f at53 <$> x, f at54 <$> x, f at55 <$> x)
+ffunzip6 f x = (f at61 <$> x, f at62 <$> x, f at63 <$> x, f at64 <$> x, f at65 <$> x, f at66 <$> x)
+ffunzip7 f x = (f at71 <$> x, f at72 <$> x, f at73 <$> x, f at74 <$> x, f at75 <$> x, f at76 <$> x, f at77 <$> x)
+ffunzip8 f x = (f at81 <$> x, f at82 <$> x, f at83 <$> x, f at84 <$> x, f at85 <$> x, f at86 <$> x, f at87 <$> x, f at88 <$> x)
+
+
 psi11 f a1                      =         (f <$> a1)
 psi12 f a1                      = funzip2 (f <$> a1)
 psi13 f a1                      = funzip3 (f <$> a1)
@@ -183,3 +192,24 @@ psi85 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip5 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 
 psi86 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip6 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
 psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip7 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
 psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip8 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
+
+
+fanout2 x = (x, x)
+fanout3 x = (x, x, x)
+fanout4 x = (x, x, x, x)
+fanout5 x = (x, x, x, x, x)
+fanout6 x = (x, x, x, x, x, x)
+fanout7 x = (x, x, x, x, x, x, x)
+fanout8 x = (x, x, x, x, x, x, x, x)
+
+
+infixl 5 #
+class Filtered c where
+  (#) :: (a -> Bool) -> c a -> c a
+
+
+
+demux2 sel = ffunzip2 (\f -> (f . sel #))
+demux3 sel = ffunzip3 (\f -> (f . sel #))
+demux4 sel = ffunzip4 (\f -> (f . sel #))
+demux5 sel = ffunzip5 (\f -> (f . sel #))
