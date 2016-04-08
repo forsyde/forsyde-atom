@@ -28,12 +28,12 @@ import ForSyDe.Core.Utilities
 infixl 5 -$-, -*-
 infixl 4 ->-
 
-(-$-)  :: (AbstExt a -> b) -> Sig a -> Signal b
-(-*-)  :: Signal (AbstExt a -> b) -> Sig a -> Signal b
-(->-) :: AbstExt a -> Sig a -> Sig a
+-- (-$-)  :: (AbstExt a -> b) -> Sig a -> Signal b
+-- (-*-)  :: Signal (AbstExt a -> b) -> Sig a -> Signal b
+-- (->-) :: AbstExt a -> Sig a -> Sig a
 -----------------------------------------------------------------------------
 (-$-)  = (<$>)
-(-*-)  = (<*>)11
+(-*-)  = (<*>)
 (->-) = (:-)
 
 infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<

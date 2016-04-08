@@ -65,6 +65,7 @@ infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
 (-<<<<<<)  s = funzip7 (funzip7 <$> s)
 (-<<<<<<<) s = funzip8 (funzip8 <$> s)
 
+-----------------------------------------------------------------------------
 
 ----------------------
 ---- CONSTRUCTORS ----
@@ -114,13 +115,13 @@ moore33 ns od i s1 s2 s3    = (od -$- st -<<)
 moore34 ns od i s1 s2 s3    = (od -$- st -<<<)
   where st                  = i ->- comb41 ns st s1 s2 s3
 moore41 ns od i s1 s2 s3 s4 = (od -$- st)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
+  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 moore42 ns od i s1 s2 s3 s4 = (od -$- st -<)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
+  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 moore43 ns od i s1 s2 s3 s4 = (od -$- st -<<)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
+  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 moore44 ns od i s1 s2 s3 s4 = (od -$- st -<<<)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
+  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
 mealy11 ns od i s1          = comb21 od st s1
   where st                  = i ->- comb21 ns st s1
