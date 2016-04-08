@@ -1,6 +1,7 @@
 module ForSyDe.Core.Utilities where
 
-import Prelude hiding (unzip3)
+import Prelude hiding (unzip3, filter)
+import ForSyDe.Core.AbsentExt
 
 at21 (x,_)             = x
 at22 (_,x)             = x
@@ -205,14 +206,20 @@ fanout8 x = (x, x, x, x, x, x, x, x)
 
 infixl 5 #
 class Filter c where
-  (#) :: (a -> Bool) -> c a -> c a
+  (#) :: Bool -> c a -> c a
+-- demux2 sel = ffunzip2 (\f -> (f . sel #))
+-- demux3 sel = ffunzip3 (\f -> (f . sel #))
+-- demux4 sel = ffunzip4 (\f -> (f . sel #))
+-- demux5 sel = ffunzip5 (\f -> (f . sel #))
+-- demux6 sel = ffunzip6 (\f -> (f . sel #))
+-- demux7 sel = ffunzip7 (\f -> (f . sel #))
+-- demux8 sel = ffunzip8 (\f -> (f . sel #))
+-- sel # token = if sel then Prst token else Abst
 
-
-
-demux2 sel = ffunzip2 (\f -> (f . sel #))
-demux3 sel = ffunzip3 (\f -> (f . sel #))
-demux4 sel = ffunzip4 (\f -> (f . sel #))
-demux5 sel = ffunzip5 (\f -> (f . sel #))
-demux6 sel = ffunzip6 (\f -> (f . sel #))
-demux7 sel = ffunzip7 (\f -> (f . sel #))
-demux8 sel = ffunzip8 (\f -> (f . sel #))
+demux2 sel = ffunzip2 (\f -> (f sel #))
+demux3 sel = ffunzip3 (\f -> (f sel #))
+demux4 sel = ffunzip4 (\f -> (f sel #))
+demux5 sel = ffunzip5 (\f -> (f sel #))
+demux6 sel = ffunzip6 (\f -> (f sel #))
+demux7 sel = ffunzip7 (\f -> (f sel #))
+demux8 sel = ffunzip8 (\f -> (f sel #))

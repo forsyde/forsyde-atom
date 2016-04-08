@@ -30,7 +30,7 @@ instance Functor Event where
   fmap f (Event t a) = Event t (f <$> a)
 
 instance Filter Event where
-  c # (Event t a) = if (c <$> a) == (D True) then Event t a else Event t U
+  c # (Event t a) = if c then Event t a else Event t U
           
 -----------------------------------------------------------------------------
 

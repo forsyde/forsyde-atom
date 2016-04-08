@@ -20,6 +20,7 @@ module ForSyDe.MoC.SY where
 
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
+import ForSyDe.Core.AbsentExt
 
 -----------------------------------------------------------------------------
 -- PRIMITIVE CONSTRUCTORS -- TIMED MOC TEMPLATE
@@ -27,6 +28,8 @@ import ForSyDe.Core.Utilities
 
 infixl 5 -$-, -*-
 infixl 4 ->-
+
+type SignalSY a = Signal (AbstExt a)
 
 -- (-$-)  :: (AbstExt a -> b) -> Sig a -> Signal b
 -- (-*-)  :: Signal (AbstExt a -> b) -> Sig a -> Signal b
@@ -44,30 +47,6 @@ infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
 (-<<<<<)   s = funzip6 s
 (-<<<<<<)  s = funzip7 s
 (-<<<<<<<) s = funzip8 s
------------------------------------------------------------------------------
--- ARGUMENT DATA TYPE - ABSENT EXTENDED
------------------------------------------------------------------------------
-
-data AbstExt a =  Abst | Prst a deriving (Eq)
-
-instance Show a => Show (AbstExt a) where
-  showsPrec _ x = showsAE x
-    where showsAE Abst     = (++) "_"       
-          showsAE (Prst x) = (++) (show x)
-
-instance Read a => Read (AbstExt a) where
-  readsPrec _ x       =  readsAE x 
-    where readsAE s = [(Abst, r1) | ("_", r1) <- lex s] ++ [(Prst x, r2) | (x, r2) <- reads s]
-
-instance Functor AbstExt where
-  fmap _ Abst     = Abst
-  fmap f (Prst x) = Prst (f x)
-
-instance Applicative AbstExt where
-  pure a  = Prst a
-  _      <*> Abst   = Abst
-  Abst   <*> _      = Abst
-  (Prst x) <*> (Prst y) = Prst (x y)
 
 -----------------------------------------------------------------------------
 -- PROCESS CONSTRUCTORS / PATTERNS
