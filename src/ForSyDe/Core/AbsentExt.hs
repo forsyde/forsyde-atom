@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeOperators, TypeSynonymInstances, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |

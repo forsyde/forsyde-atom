@@ -110,13 +110,13 @@ fat88 :: Functor f => f (a1, a2, a3, a4, a5, a6, a7, a8) -> f a8
 fat88 = (<$>) at88
 
 
-funzip2 x = (fat21 x, fat22 x)
-funzip3 x = (fat31 x, fat32 x, fat33 x)
-funzip4 x = (fat41 x, fat42 x, fat43 x, fat44 x)
-funzip5 x = (fat51 x, fat52 x, fat53 x, fat54 x, fat55 x)
-funzip6 x = (fat61 x, fat62 x, fat63 x, fat64 x, fat65 x, fat66 x)
-funzip7 x = (fat71 x, fat72 x, fat73 x, fat74 x, fat75 x, fat76 x, fat77 x)
-funzip8 x = (fat81 x, fat82 x, fat83 x, fat84 x, fat85 x, fat86 x, fat87 x, fat88 x)
+funzip2 x = (at21 <$> x, at22 <$> x)
+funzip3 x = (at31 <$> x, at32 <$> x, at33 <$> x)
+funzip4 x = (at41 <$> x, at42 <$> x, at43 <$> x, at44 <$> x)
+funzip5 x = (at51 <$> x, at52 <$> x, at53 <$> x, at54 <$> x, at55 <$> x)
+funzip6 x = (at61 <$> x, at62 <$> x, at63 <$> x, at64 <$> x, at65 <$> x, at66 <$> x)
+funzip7 x = (at71 <$> x, at72 <$> x, at73 <$> x, at74 <$> x, at75 <$> x, at76 <$> x, at77 <$> x)
+funzip8 x = (at81 <$> x, at82 <$> x, at83 <$> x, at84 <$> x, at85 <$> x, at86 <$> x, at87 <$> x, at88 <$> x)
 
 
 ffunzip2 f x = (f at21 <$> x, f at22 <$> x)
@@ -204,7 +204,7 @@ fanout8 x = (x, x, x, x, x, x, x, x)
 
 
 infixl 5 #
-class Filtered c where
+class Filter c where
   (#) :: (a -> Bool) -> c a -> c a
 
 
@@ -213,3 +213,6 @@ demux2 sel = ffunzip2 (\f -> (f . sel #))
 demux3 sel = ffunzip3 (\f -> (f . sel #))
 demux4 sel = ffunzip4 (\f -> (f . sel #))
 demux5 sel = ffunzip5 (\f -> (f . sel #))
+demux6 sel = ffunzip6 (\f -> (f . sel #))
+demux7 sel = ffunzip7 (\f -> (f . sel #))
+demux8 sel = ffunzip8 (\f -> (f . sel #))
