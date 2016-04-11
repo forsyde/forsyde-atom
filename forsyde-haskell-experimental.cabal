@@ -20,10 +20,11 @@ library
                        ForSyDe.Core.Signal,
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.Utilities,
+                       ForSyDe.MoC.SDF,
                        ForSyDe.MoC.SY,
                        ForSyDe.MoC.DE,
                        ForSyDe.MoC.CT
   Default-Language:    Haskell2010
   -- other-modules:       
-  build-depends:       base>=4.7.10
+  build-depends:       base>=4.7.10, parameterized-data, type-level
   hs-source-dirs:      src
