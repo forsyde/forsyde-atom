@@ -21,8 +21,7 @@ library
                        ForSyDe.Core.Vector,
                        ForSyDe.Core.Utilities,
                        ForSyDe.MoC.SY,
-                       ForSyDe.MoC.DE,
-                       ForSyDe.MoC.CT
+                       ForSyDe.MoC.DE
   Default-Language:    Haskell2010
   -- other-modules:       
   build-depends:       base>=4.7.10
