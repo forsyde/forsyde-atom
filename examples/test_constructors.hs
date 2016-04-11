@@ -32,6 +32,22 @@ i2 = DE.Subsig (0.5, 0.5)
 deComb  = DE.comb2 (+) (DE.delay i2 s2) s2
 deOsc   = DE.comb (+1) (DE.delay i2 deOsc)
 
+q1 = signal [Event 0 (D 2), Event 2 (D 1), Event 6 (D 3)]
+q2 = signal [Event 1 (D 2), Event 2 (D 1), Event 6 (D 3)]
+i1 = Event 1 (D 1)
+i2 = Event 3 (D 1)
+i3 = Event 0 (D 1)
+
+osc1 = (+1) -$- (i1 ->- osc1)
+osc2 = (+1) -$- (i2 ->- osc2)
+osc3 = (+1) -$- (i3 ->- osc3)
+
+cosc1 = (+) -$- (i1 ->- cosc1) -*- q1
+cosc2 = (+) -$- (i2 ->- cosc2) -*- q1
+cosc3 = (+) -$- (i1 ->- cosc3) -*- q2
+cosc4 = (+) -$- (i2 ->- cosc4) -*- q2
+cosc5 = (+) -$- (i3 ->- cosc5) -*- q2
+
 -- CT
 s1 = signal [CT.Subsig (1.0, (\_ -> 1)), CT.Subsig (2.0, (\_ -> 0.5))]
 i1 = CT.Subsig (0.5, (\_ -> 0.5))

@@ -155,3 +155,9 @@ mealy43 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<)
   where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
   where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
+
+
+mux2 sel s1       = fmux2 -$- sel -*- s1 
+mux3 sel s1 s2    = fmux3 -$- sel -*- s1 -*- s2 
+mux4 sel s1 s2 s3 = fmux4 -$- sel -*- s1 -*- s2  -*- s3 
+
