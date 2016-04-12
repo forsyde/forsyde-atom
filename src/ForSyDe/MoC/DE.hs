@@ -24,29 +24,29 @@ import ForSyDe.Core.UndefinedExt
 
 -----------------------------------------------------------------------------
 
-data Event a = Event Int (UExt a) deriving (Show)
+data Event a = Event Int a deriving (Show)
 
 instance Functor Event where
-  fmap f (Event t a) = Event t (f <$> a)
+  fmap f (Event t a) = Event t (f a)
 
 -----------------------------------------------------------------------------
 
 infixl 5 -$-
-(-$-) :: (a -> b) -> Signal (Event a) -> Signal (Event b)
+(-$-) :: (UExt a -> b) -> Signal (Event (UExt a)) -> Signal (Event b)
 _ -$- NullS = NullS
-f -$- (Event t x:-xs) = Event t (f <$> x) :- f -$- xs
+f -$- (x:-xs) = fmap f x :- f -$- xs
 
 infixl 5 -*-
-(-*-) :: Signal (Event (a -> b)) -> Signal (Event a) -> Signal (Event b)
+(-*-) :: Signal (Event (UExt a -> b)) -> Signal (Event (UExt a)) -> Signal (Event b)
 sf -*- sx = zpw (Event 0 U) (Event 0 U) sf sx
   where zpw (Event ptf pf) (Event ptx px) s1@(Event tf f :- fs) s2@(Event tx x :- xs)
-          | tf == tx = Event tf ( f <*>  x) :- zpw (Event  tf  f) (Event  tx  x) fs xs
-          | tf <  tx = Event tf ( f <*> px) :- zpw (Event  tf  f) (Event ptx px) fs s2
-          | tf >  tx = Event tx (pf <*>  x) :- zpw (Event ptf pf) (Event  tx  x) s1 xs
+          | tf == tx = Event tf ( f  x) :- zpw (Event  tf  f) (Event  tx  x) fs xs
+          | tf <  tx = Event tf ( f px) :- zpw (Event  tf  f) (Event ptx px) fs s2
+          | tf >  tx = Event tx (pf  x) :- zpw (Event ptf pf) (Event  tx  x) s1 xs
         zpw _ (Event ptx px) (Event tf f :- fs) NullS
-          = Event tf (f <*> px) :- zpw (Event tf f) (Event ptx px) fs NullS
+          = Event tf (f px) :- zpw (Event tf f) (Event ptx px) fs NullS
         zpw (Event ptf pf) _ NullS (Event tx x :- xs)
-          = Event tx (pf <*> x) :- zpw (Event ptf pf) (Event tx x) NullS xs
+          = Event tx (pf x) :- zpw (Event ptf pf) (Event tx x) NullS xs
         zpw _ _ NullS NullS = NullS
 
 infixl 4 ->-
@@ -159,3 +159,10 @@ mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
 
 
 filt sel s = (sel #) -*- s
+
+mkEvent a = Event 0 (D a)
+
+-- zipx :: Vector (Signal Event a)) -> Signal (Vector (UExt a))
+zipx NullV   = (signal . pure . mkEvent) NullV
+zipx (x:>xs) = (:>) -$- x -*- zipx xs
+

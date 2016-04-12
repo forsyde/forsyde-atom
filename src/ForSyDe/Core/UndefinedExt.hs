@@ -40,3 +40,6 @@ instance Applicative UExt where
   _      <*> U   = U
   U   <*> _      = U
   (D x) <*> (D y) = D (x y)
+
+isdefined U = False
+isdefined _ = True  

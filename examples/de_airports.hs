@@ -48,8 +48,8 @@ flight planes = (\dmuxf speed -> speed ->- filt (comb11 dmuxf planes) planes)
 
 
 
-airport vPlanes = moore11 ns od landingDelay
-  where 
+landing vPlanes = moore11 ns id landingDelay
+  where ns queue planes = filterV isdefined planes <+> queue 
 
 -- selPlane planes = demux2 (comb21 dmuxf planes) planes
 --   where
