@@ -4,6 +4,8 @@ import ForSyDe.Core
 import ForSyDe.Core.Utilities
 import ForSyDe.Core.UndefinedExt
 import ForSyDe.MoC.DE
+import ForSyDe.PatternsTemp
+
 
 
 --   /===< JFK <===\
@@ -11,6 +13,7 @@ import ForSyDe.MoC.DE
 --   ||           ||
 --   V             A
 --  ORD >=======> LAX
+
 
 
 -- airport plane1 plane2 = comb22 (\p1 p2->(p1 + p2, p1 - p2)) plane1 plane2 
@@ -29,10 +32,24 @@ import ForSyDe.MoC.DE
 -- Concorde example
 data Plane = Concorde | Boeing deriving (Eq, Show)
 
-selPlane planes = comb12 dmuxf planes
-  where
-    dmuxf Concorde = (True, False)
-    dmuxf Boeing   = (False, True)
+isConcorde Concorde = True
+isConcorde _        = False
+isBoeing   Boeing   = True
+isBoeing   _        = False
+
+concordeSpeed = Event 1 U
+boeingSpeed   = Event 10 U
+landingDelay  = Event 2 (D NullV)
+
+
+flight planes = (\dmuxf speed -> speed ->- filt (comb11 dmuxf planes) planes)
+                 §> vector [isConcorde, isBoeing]
+                <§> vector [concordeSpeed, boeingSpeed]
+
+
+
+airport vPlanes = moore11 ns od landingDelay
+  where 
 
 -- selPlane planes = demux2 (comb21 dmuxf planes) planes
 --   where
@@ -51,3 +68,4 @@ selPlane planes = comb12 dmuxf planes
 
 -- deCOsc = (+) -$- q' -*- (delay i deCOsc)
 
+schedule1 = signal [Event 0 (D Boeing), Event 7 (D Concorde), Event 8 (D Boeing)]

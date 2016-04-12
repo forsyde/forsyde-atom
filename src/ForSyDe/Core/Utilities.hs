@@ -186,57 +186,52 @@ psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip7 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 
 psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip8 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
 
 
+-- fanout2 x = (x, x)
+-- fanout3 x = (x, x, x)
+-- fanout4 x = (x, x, x, x)
+-- fanout5 x = (x, x, x, x, x)
+-- fanout6 x = (x, x, x, x, x, x)
+-- fanout7 x = (x, x, x, x, x, x, x)
+-- fanout8 x = (x, x, x, x, x, x, x, x)
 
-infixl 3 #
-class Filter c where
-  (#) :: Bool -> c a -> c a
+-- ffunzip2 f x = (f at21 <$> x, f at22 <$> x)
+-- ffunzip3 f x = (f at31 x, f at32 x, f at33 x)
+-- ffunzip4 f x = (f at41 x, f at42 x, f at43 x, f at44 x)
+-- ffunzip5 f x = (f at51 x, f at52 x, f at53 x, f at54 x, f at55 x)
+-- ffunzip6 f x = (f at61 x, f at62 x, f at63 x, f at64 x, f at65 x, f at66 x)
+-- ffunzip7 f x = (f at71 x, f at72 x, f at73 x, f at74 x, f at75 x, f at76 x, f at77 x)
+-- ffunzip8 f x = (f at81 x, f at82 x, f at83 x, f at84 x, f at85 x, f at86 x, f at87 x, f at88 x)
 
-fanout2 x = (x, x)
-fanout3 x = (x, x, x)
-fanout4 x = (x, x, x, x)
-fanout5 x = (x, x, x, x, x)
-fanout6 x = (x, x, x, x, x, x)
-fanout7 x = (x, x, x, x, x, x, x)
-fanout8 x = (x, x, x, x, x, x, x, x)
+-- fdemux2 sel = ffunzip2 (\f -> (f sel #))
+-- fdemux3 sel = ffunzip3 (\f -> (f sel #))
+-- fdemux4 sel = ffunzip4 (\f -> (f sel #))
+-- fdemux5 sel = ffunzip5 (\f -> (f sel #))
+-- fdemux6 sel = ffunzip6 (\f -> (f sel #))
+-- fdemux7 sel = ffunzip7 (\f -> (f sel #))
+-- fdemux8 sel = ffunzip8 (\f -> (f sel #))
 
-ffunzip2 f x = (f at21 <$> x, f at22 <$> x)
-ffunzip3 f x = (f at31 x, f at32 x, f at33 x)
-ffunzip4 f x = (f at41 x, f at42 x, f at43 x, f at44 x)
-ffunzip5 f x = (f at51 x, f at52 x, f at53 x, f at54 x, f at55 x)
-ffunzip6 f x = (f at61 x, f at62 x, f at63 x, f at64 x, f at65 x, f at66 x)
-ffunzip7 f x = (f at71 x, f at72 x, f at73 x, f at74 x, f at75 x, f at76 x, f at77 x)
-ffunzip8 f x = (f at81 x, f at82 x, f at83 x, f at84 x, f at85 x, f at86 x, f at87 x, f at88 x)
-
-fdemux2 sel = ffunzip2 (\f -> (f sel #))
-fdemux3 sel = ffunzip3 (\f -> (f sel #))
-fdemux4 sel = ffunzip4 (\f -> (f sel #))
-fdemux5 sel = ffunzip5 (\f -> (f sel #))
-fdemux6 sel = ffunzip6 (\f -> (f sel #))
-fdemux7 sel = ffunzip7 (\f -> (f sel #))
-fdemux8 sel = ffunzip8 (\f -> (f sel #))
-
-demux2 sels a1 = fdemux2 <$> sels <*> a1
-demux3 sels a1 = fdemux3 <$> sels <*> a1
-demux4 sels a1 = fdemux4 <$> sels <*> a1
-demux5 sels a1 = fdemux5 <$> sels <*> a1
-demux6 sels a1 = fdemux6 <$> sels <*> a1
-demux7 sels a1 = fdemux7 <$> sels <*> a1
-demux8 sels a1 = fdemux8 <$> sels <*> a1
+-- demux2 sels a1 = fdemux2 <$> sels <*> a1
+-- demux3 sels a1 = fdemux3 <$> sels <*> a1
+-- demux4 sels a1 = fdemux4 <$> sels <*> a1
+-- demux5 sels a1 = fdemux5 <$> sels <*> a1
+-- demux6 sels a1 = fdemux6 <$> sels <*> a1
+-- demux7 sels a1 = fdemux7 <$> sels <*> a1
+-- demux8 sels a1 = fdemux8 <$> sels <*> a1
 
 
-selChF (1,pv) v = (1,pv)          
-selChF (n,pv) v = (n-1,v)
-chF (1, v) = v
-chF (_, _) = error "Channel address too large"
+-- selChF (1,pv) v = (1,pv)          
+-- selChF (n,pv) v = (n-1,v)
+-- chF (1, v) = v
+-- chF (_, _) = error "Channel address too large"
 
-fmux2 s a1 a2                   = chF $ (s,a1) `selChF` a2
-fmux3 s a1 a2 a3                = chF $ (s,a1) `selChF` a2 `selChF` a3
-fmux4 s a1 a2 a3 a4             = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4
-fmux5 s a1 a2 a3 a4 a5          = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
-fmux6 s a1 a2 a3 a4 a5 a6       = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
-                                               `selChF` a6
-fmux7 s a1 a2 a3 a4 a5 a6 a7    = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
-                                               `selChF` a6 `selChF` a7
-fmux8 s a1 a2 a3 a4 a5 a6 a7 a8 = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
-                                               `selChF` a6 `selChF` a7 `selChF` a8
+-- fmux2 s a1 a2                   = chF $ (s,a1) `selChF` a2
+-- fmux3 s a1 a2 a3                = chF $ (s,a1) `selChF` a2 `selChF` a3
+-- fmux4 s a1 a2 a3 a4             = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4
+-- fmux5 s a1 a2 a3 a4 a5          = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
+-- fmux6 s a1 a2 a3 a4 a5 a6       = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
+--                                                `selChF` a6
+-- fmux7 s a1 a2 a3 a4 a5 a6 a7    = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
+--                                                `selChF` a6 `selChF` a7
+-- fmux8 s a1 a2 a3 a4 a5 a6 a7 a8 = chF $ (s,a1) `selChF` a2 `selChF` a3 `selChF` a4 `selChF` a5
+--                                                `selChF` a6 `selChF` a7 `selChF` a8
 

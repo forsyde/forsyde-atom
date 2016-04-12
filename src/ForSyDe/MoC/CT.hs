@@ -38,9 +38,6 @@ data Event a = Event Time (Time -> UExt a)
 
 instance Functor Event where
   fmap f (Event t a) = Event t (fmap f <$> a)
-
-instance Filter Event where
-  c # (Event t a) = if c then Event t a else Event t (\x -> U)
           
 -----------------------------------------------------------------------------
 

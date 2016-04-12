@@ -29,9 +29,6 @@ data Event a = Event Int (UExt a) deriving (Show)
 instance Functor Event where
   fmap f (Event t a) = Event t (f <$> a)
 
-instance Filter Event where
-  c # (Event t a) = if c then Event t a else Event t U
-          
 -----------------------------------------------------------------------------
 
 infixl 5 -$-
@@ -64,6 +61,10 @@ infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
 (-<<<<<)   s = funzip6 (funzip6 <$> s)
 (-<<<<<<)  s = funzip7 (funzip7 <$> s)
 (-<<<<<<<) s = funzip8 (funzip8 <$> s)
+
+infixl 3 #
+(#) :: Signal (Event Bool) -> Signal (Event (a -> a)) 
+(#) s = fmap (\(Event t x) -> if x == D True then Event t (D id) else Event t U) s
 
 -----------------------------------------------------------------------------
 
@@ -157,7 +158,4 @@ mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
   where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
 
-mux2 sel s1       = fmux2 -$- sel -*- s1 
-mux3 sel s1 s2    = fmux3 -$- sel -*- s1 -*- s2 
-mux4 sel s1 s2 s3 = fmux4 -$- sel -*- s1 -*- s2  -*- s3 
-
+filt sel s = (sel #) -*- s
