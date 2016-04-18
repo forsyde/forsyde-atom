@@ -13,7 +13,16 @@
 --  \'absent\', which models the absence of a value.
 -- 
 -----------------------------------------------------------------------------
-module ForSyDe.Core.AbsentExt where
+module ForSyDe.Core.Tokens where
+
+
+------------------------------------------------------------------
+
+infixl 5 #
+class Filter t where
+  (#) :: t Bool -> t a -> t a
+
+------------------------------------------------------------------
 
 -- |The data type 'AbstExt' has two constructors. The constructor 'Abst' is used to model the absence of a value, while the constructor 'Prst' is used to model present values.
 data AbstExt a =  Abst | Prst a deriving (Eq)
@@ -62,3 +71,35 @@ isPresent Abst             = False
 isPresent (Prst _)         = True
 isAbsent                   = not . isPresent
 
+
+
+--------------------------------------------------------------------------------
+data UExt a =  U | D a deriving (Eq)
+
+
+instance Show a => Show (UExt a) where
+  showsPrec _ = showsAE
+    where showsAE U     = (++) "?"       
+          showsAE (D x) = (++) (show x)
+
+instance Read a => Read (UExt a) where
+  readsPrec _       =  readsAE 
+    where readsAE s = [(U, r1) | ("?", r1) <- lex s] ++ [(D x, r2) | (x, r2) <- reads s]
+
+instance Functor UExt where
+  fmap _ U     = U
+  fmap f (D x) = D (f x)
+
+instance Applicative UExt where
+  pure  = D
+  _      <*> U   = U
+  U   <*> _      = U
+  (D x) <*> (D y) = D (x y)
+
+instance Filter UExt where
+  c # a = if c == D True then a else U
+
+isdefined U = False
+isdefined _ = True  
+
+------------------------------------------------------------------------------

@@ -20,7 +20,6 @@ module ForSyDe.MoC.CT where
 
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
-import ForSyDe.Core.UndefinedExt
 
 plot :: (Num a, Show a) => Time -> SignalCT a -> Signal (Time, UExt a)
 plot step (Event t f :- fs) = plot' t f fs 

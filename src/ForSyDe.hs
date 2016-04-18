@@ -52,7 +52,5 @@ module ForSyDe(
   AbstExt (..), fromAbstExt, abstExt, isAbsent, isPresent, 
 ) where
 
-import ForSyDe.Core.Signal
-import ForSyDe.Core.AbsentExt
-import ForSyDe.Core.Vector
+import ForSyDe.Core
 

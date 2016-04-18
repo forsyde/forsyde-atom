@@ -2,7 +2,6 @@ module Main where
 
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
-import ForSyDe.Core.UndefinedExt
 import ForSyDe.MoC.DE
 import ForSyDe.PatternsTemp
 

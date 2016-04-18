@@ -20,7 +20,6 @@ module ForSyDe.MoC.SY where
 
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
-import ForSyDe.Core.AbsentExt
 
 -----------------------------------------------------------------------------
 -- PRIMITIVE CONSTRUCTORS -- TIMED MOC TEMPLATE
