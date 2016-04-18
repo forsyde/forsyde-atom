@@ -15,12 +15,17 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.Tokens where
 
+import ForSyDe.Core.Vector
 
 ------------------------------------------------------------------
 
 infixl 5 #
 class Filter t where
   (#) :: t Bool -> t a -> t a
+
+infixl 5 >¤
+class Store t where
+  (>¤) ::  t (Vector a) -> t a -> t (Vector a)
 
 ------------------------------------------------------------------
 
@@ -98,6 +103,10 @@ instance Applicative UExt where
 
 instance Filter UExt where
   c # a = if c == D True then a else U
+
+instance Store UExt where
+  buff >¤ U   = buff
+  buff >¤ D a = (:>) <$> D a <*> buff
 
 isdefined U = False
 isdefined _ = True  

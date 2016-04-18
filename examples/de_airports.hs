@@ -45,10 +45,26 @@ flight planes = (\dmuxf speed -> speed ->- filt (comb11 dmuxf planes) planes)
                  §> vector [isConcorde, isBoeing]
                 <§> vector [concordeSpeed, boeingSpeed]
 
+queue s1 = st
+  where st = (Event 1 (D NullV)) ->- store st s1
 
+q1 = signal [Event 0 (D 2), Event 2 (D 1), Event 6 (D 3)] :: Signal (Event (UExt Int))
+q2 = signal [Event 1 (D 2), Event 2 (D 1), Event 6 (D 3)] :: Signal (Event (UExt Int))
+i1 = Event 1 (D 1)
+i2 = Event 3 (D 1)
+i3 = Event 0 (D 1)
 
-landing vPlanes = moore11 ns id landingDelay
-  where ns queue planes = filterV isdefined planes <+> queue 
+osc1 = psi11 (+1) -$- (i1 ->- osc1)
+osc2 = psi11 (+1) -$- (i2 ->- osc2)
+osc3 = psi11 (+1) -$- (i3 ->- osc3)
+
+cosc1 = psi21 (+) -$- (i1 ->- cosc1) -*- q1
+cosc2 = psi21 (+) -$- (i2 ->- cosc2) -*- q1
+cosc3 = psi21 (+) -$- (i1 ->- cosc3) -*- q2
+cosc4 = psi21 (+) -$- (i2 ->- cosc4) -*- q2
+cosc5 = psi21 (+) -$- (i3 ->- cosc5) -*- q2
+                
+
 
 -- selPlane planes = demux2 (comb21 dmuxf planes) planes
 --   where

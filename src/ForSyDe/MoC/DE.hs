@@ -39,9 +39,9 @@ infixl 5 -*-
 (-*-) :: Signal (Event (UExt a -> b)) -> Signal (Event (UExt a)) -> Signal (Event b)
 sf -*- sx = zpwh (Event 0 U) sf sx
   where zpwh (Event ptx px) s1@(Event tf f :- fs) s2@(Event tx x :- xs)
-          | tf == tx = Event tf (f  x) :- zpwt (Event  tf  f) (Event  tx  x) fs xs
-          | tf <  tx = Event tf (f px) :- zpwt (Event  tf  f) (Event ptx px) fs s2
-          | tf >  tx = Event tx (f  U) :- zpwh (Event  tx  x) s1 xs
+          | tf == tx = Event tf (f  x) :- zpwt (Event tf f) (Event  tx  x) fs xs
+          | tf <  tx = Event tf (f px) :- zpwt (Event tf f) (Event ptx px) fs s2
+          | tf >  tx = Event tx (f  U) :- zpwh (Event tx x) s1 xs
         -- zpwh pxe (Event tf f :- fs) NullS = Event tf (f U) :- zpwh pxe fs NullS
         -- zpwh pxe NullS (Event tx x :- xs) = Event tx (id U) :- zpwh pxe NullS xs
         zpwh _ NullS _ = NullS
@@ -68,13 +68,6 @@ infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
 (-<<<<<)   s = funzip6 (funzip6 <$> s)
 (-<<<<<<)  s = funzip7 (funzip7 <$> s)
 (-<<<<<<<) s = funzip8 (funzip8 <$> s)
-
-infixl 4 -|>-
-(-|>-) :: Event a -> Signal (Event a) -> Signal (Event a)
-_ -|>- NullS = NullS 
-(Event t _) -|>- xs = queue t 0 xs
-  where queue dt pt (Event tx x :-  xs) | pt < tx   = Event tx x :- queue dt tx xs
-                                        | otherwise = Event (pt + dt) x :- queue dt (pt + dt) xs
 
 -- infixl 3 #
 -- (#) :: Signal (Event Bool) -> Signal (Event (a -> a)) 
@@ -172,3 +165,5 @@ mealy44 ns od i s1 s2 s3 s4 = (psi54 od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
   where st             = i ->- psi51 ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
 filt sels s = (#) -$- sels -*- s
+
+store buff s1 = (>¤) -$- buff -*- s1

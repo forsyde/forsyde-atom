@@ -26,11 +26,11 @@ f2sdf x y = V.singleton $ V.foldl (+) (V.head x) y
 sdfComb = SDF.comb2 f2sdf (SDF.delay 0 s) s
 sdfOsc  = SDF.comb  f1sdf (SDF.delay 0 sdfOsc)
 
--- DE
-s2 = signal [DE.Subsig (1.0, 1), DE.Subsig (2.0, 0.5)]
-i2 = DE.Subsig (0.5, 0.5)
-deComb  = DE.comb2 (+) (DE.delay i2 s2) s2
-deOsc   = DE.comb (+1) (DE.delay i2 deOsc)
+-- -- DE
+-- s2 = signal [DE.Subsig (1.0, 1), DE.Subsig (2.0, 0.5)]
+-- i2 = DE.Subsig (0.5, 0.5)
+-- deComb  = DE.comb2 (+) (DE.delay i2 s2) s2
+-- deOsc   = DE.comb (+1) (DE.delay i2 deOsc)
 
 q1 = signal [Event 0 (D 2), Event 2 (D 1), Event 6 (D 3)]
 q2 = signal [Event 1 (D 2), Event 2 (D 1), Event 6 (D 3)]
@@ -48,16 +48,16 @@ cosc3 = (+) -$- (i1 ->- cosc3) -*- q2
 cosc4 = (+) -$- (i2 ->- cosc4) -*- q2
 cosc5 = (+) -$- (i3 ->- cosc5) -*- q2
 
--- CT
-s1 = signal [CT.Subsig (1.0, (\_ -> 1)), CT.Subsig (2.0, (\_ -> 0.5))]
-i1 = CT.Subsig (0.5, (\_ -> 0.5))
-ctComb  = CT.comb2 (+) (CT.delay i1 s1) s1
-ctOsc   = CT.comb (+1) (CT.delay i1 ctOsc)
+-- -- CT
+-- s1 = signal [CT.Subsig (1.0, (\_ -> 1)), CT.Subsig (2.0, (\_ -> 0.5))]
+-- i1 = CT.Subsig (0.5, (\_ -> 0.5))
+-- ctComb  = CT.comb2 (+) (CT.delay i1 s1) s1
+-- ctOsc   = CT.comb (+1) (CT.delay i1 ctOsc)
 
 
-plot :: (Num a, Show a) => Rational -> Signal (CT.Subsig a) -> Signal a
-plot step = plot' 0.0
-  where 
-    plot' _    NullS                   = NullS
-    plot' prev (CT.Subsig (tag, f) :- ss) = (f <$> (signal [prev, prev + step .. tag - step])) +-+ (plot' tag ss)
+-- plot :: (Num a, Show a) => Rational -> Signal (CT.Subsig a) -> Signal a
+-- plot step = plot' 0.0
+--   where 
+--     plot' _    NullS                   = NullS
+--     plot' prev (CT.Subsig (tag, f) :- ss) = (f <$> (signal [prev, prev + step .. tag - step])) +-+ (plot' tag ss)
 
