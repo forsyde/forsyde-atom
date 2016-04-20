@@ -135,6 +135,19 @@ mealy43 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<)
 mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
   where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
+
+
+
+controller 0 0 = (1, 1)
+controller 0 1 = (1, 0)
+controller 1 0 = (0, 1)
+controller 1 1 = (0, 1)
+
+
+r = signal [0,1,1,0,1]
+l = signal [1,1,0,0,0,0,1,1,0] 
+
+
 {- 
 
 
