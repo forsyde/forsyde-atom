@@ -45,6 +45,20 @@ flight planes = (\dmuxf speed -> speed ->- filt (comb11 dmuxf planes) planes)
                  §> vector [isConcorde, isBoeing]
                 <§> vector [concordeSpeed, boeingSpeed]
 
+queue p1 p2 = syr2de (0:-tags) (storef in1 in2)
+  where (tags, (in1, in2)) = de2syr2 p1 p2
+        storef = mooreSyr21 ns id (D NullV)
+        ns buff i1 i2 = buff >¤ i1 >¤ i2
+
+p1 = flight schedule1 `atV` 0
+p2 = flight schedule1 `atV` 1
+
+isPlane q = syr2de (0:-tags) (mooreSyr11 ns (at22 <$>) (D (1, False)) vals)
+  where (tags, vals)   = de2syr q
+        ns (D (plength,_)) (D buf) | lengthV buf == plength = D (plength+1, True)
+                                   | otherwise              = D (plength  , False)
+
+landing q = comb11 headV $ filt (isPlane q) q
 
 -- queue sc s1 = syr2de1 (0:-tags) (storefunc ctl inp)
 --   where (tags, (ctl, inp)) = de2syr2 sc s1
@@ -52,8 +66,6 @@ flight planes = (\dmuxf speed -> speed ->- filt (comb11 dmuxf planes) planes)
 --         ns bf c a  | (nullV <$> bf) == D True = bf >¤ a
 --                    | otherwise = if c == D True then (tailV <$> bf) >¤ a else bf >¤ a
 
-
-queue = phi wait 
 
 
   -- storefunc   = mooreSyr21 ns at21 (U, D NullV)

@@ -20,7 +20,7 @@ module ForSyDe.MoC.DE where
 
 import ForSyDe.Core
 import ForSyDe.Core.Utilities
--- import qualified ForSyDe.MoC.SY as SY
+import qualified ForSyDe.MoC.SY as SY
 
 -----------------------------------------------------------------------------
 
@@ -78,10 +78,28 @@ phi _ NullS  = NullS
 phi s1@(Event tp psk:-ss) (Event tx x:-xs)
   | tp <= tx = Event (tx + psk) x :- ss `phi` (phaseshift psk <$> xs)
   | tp >  tx = Event tx x         :- s1 `phi` xs
-  where phaseshift ppsk (Event t g) = Event (t + ppsk) g            
+  where phaseshift ppsk (Event t g) = Event (t + ppsk) g
 
-  -- = Event (t + psh) x :- ss `phi` (phaseshift psh <$> xs)
-  -- where phaseshift ppsk (Event t g) = Event (t + ppsk) g
+
+
+infixl 5 -&-
+(-&-) :: (Int -> Int) -> Signal (Event a) -> Signal (Event a)
+f -&- xs = timef 0 f xs
+  where timef pt f (Event t x:-xs) | pt <= f t = Event (f t) x :- timef (f t) f xs
+                                   | otherwise = error "Time causality broken!"
+        timef _  _ NullS = NullS
+
+
+wait :: (Int -> Int) -> Signal (Event a) -> Signal (Event a)
+wait f xs = timef 0 f xs
+  where timef pt f (Event t x:-xs) | f pt <= f t  = Event (f  t) x :- timef (f  t) f xs
+                                   | otherwise    = Event (f pt) x :- timef (f pt) f xs
+        timef _  _ NullS = NullS
+
+--timeMachine :: (Int -> Int -> Int) -> (Int -> Int) -> Int -> Signal (Event a) -> Signal (Event a)
+timeMachine ns od s1 = syr2de newtags vals
+  where (tags, vals) = de2syr s1
+        newtags = tailS $ SY.moore11 ns od 0 tags
 
 
 -- infixl 3 #
@@ -180,16 +198,15 @@ mealy44 ns od i s1 s2 s3 s4 = (psi54 od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
   where st             = i ->- psi51 ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
 de2syr s1          = funzip2 $ (\(Event t a) -> (t,a)) <$> s1
--- de2syr2 s1 s2       = (tag, funzip2 sigs)
---   where (tag, sigs) = funzip2 $ (\(Event t a) -> (t,a)) <$> ((,)   -$- s1 -*- s2)
+de2syr2 s1 s2       = (tag, funzip2 sigs)
+  where (tag, sigs) = funzip2 $ (\(Event t a) -> (t,a)) <$> ((,)   -$- s1 -*- s2)
 -- de2syr3 s1 s2 s3    = (tag, funzip3 sigs)
 --   where (tag, sigs) = funzip2 $ (\(Event t a) -> (t,a)) <$> ((,,)  -$- s1 -*- s2 -*- s3)
 -- de2syr4 s1 s2 s3 s4 = (tag, funzip4 sigs)
 --   where (tag, sigs) = funzip2 $ (\(Event t a) -> (t,a)) <$> ((,,,) -$- s1 -*- s2 -*- s3 -*- s4)
 
 syr2de tags s1          = (\t a -> (Event t a)) <$> tags <*> s1
--- syr2de2 tags s1 s2       = funzip2 $ (\t a b -> (Event t a, Event t b))
---                            <$> tags <*> s1 <*> s2
+syr2de2 tags s1 s2       = funzip2 $ (\t a b -> (Event t a, Event t b)) <$> tags <*> s1 <*> s2
 -- syr2de3 tags s1 s2 s3    = funzip3 $ (\t a b c -> (Event t a, Event t b, Event t c))
 --                            <$> tags <*> s1 <*> s2 <*> s2
 -- syr2de4 tags s1 s2 s3 s4 = funzip4 $ (\t a b c d -> (Event t a, Event t b, Event t c, Event t d))
