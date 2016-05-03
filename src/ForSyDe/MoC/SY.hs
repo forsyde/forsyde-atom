@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.MoC.SY
@@ -19,134 +19,41 @@
 module ForSyDe.MoC.SY where
 
 import ForSyDe.Core
-import ForSyDe.Core.Utilities
+import ForSyDe.MoC
 
+
+data SY a = SY a
 -----------------------------------------------------------------------------
 -- PRIMITIVE CONSTRUCTORS -- TIMED MOC TEMPLATE
 -----------------------------------------------------------------------------
+instance MoC SY where
+  data Value SY a = Value (AbstExt a)
 
-infixl 5 -$-, -*-
-infixl 4 ->-
+  -- | the pure value still needs to be extracted from its wrapper type, therefore double fmap
+  -- | (-$-)  :: (AExt a -> b) -> Signal (SY (AExt a)) -> Signal (SY b)
+  (-$-) = ((<$>).(<$>))
 
-type SignalSY a = Signal (AbstExt a)
+  -- | the pure value still needs to be extracted from its wrapper type, therefore double appl
+  -- | (-*-) :: Signal (SY (AExt -> b)) -> Signal (SY (AExt a)) -> Signal (SY b)
+  _ -*- NullS = NullS
+  NullS -*- _ = NullS
+  (f:-fs) -*- (x:-xs) = f <*> x :- fs -*- xs
 
--- (-$-)  :: (AbstExt a -> b) -> Sig a -> Signal b
--- (-*-)  :: Signal (AbstExt a -> b) -> Sig a -> Signal b
--- (->-) :: AbstExt a -> Sig a -> Sig a
------------------------------------------------------------------------------
-(-$-)  = (<$>)
-(-*-)  = (<*>)
-(->-) = (:-)
+  -- | (->-)   :: e a -> Signal (e a) -> Signal (e a)
+  (->-) = (:-)
 
-infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
-(-<)       s = funzip2 s
-(-<<)      s = funzip3 s
-(-<<<)     s = funzip4 s
-(-<<<<)    s = funzip5 s
-(-<<<<<)   s = funzip6 s
-(-<<<<<<)  s = funzip7 s
-(-<<<<<<<) s = funzip8 s
+  -- | (-&-) :: Int -> Signal (e a) -> Signal (e a)
+  (-&-) _ a = a
 
------------------------------------------------------------------------------
--- PROCESS CONSTRUCTORS / PATTERNS
------------------------------------------------------------------------------
-comb11 f s1          = (f -$- s1)
-comb12 f s1          = (f -$- s1 -<)
-comb13 f s1          = (f -$- s1 -<<)
-comb14 f s1          = (f -$- s1 -<<<)
-comb21 f s1 s2       = (f -$- s1 -*- s2)
-comb22 f s1 s2       = (f -$- s1 -*- s2 -<)
-comb23 f s1 s2       = (f -$- s1 -*- s2 -<<)
-comb24 f s1 s2       = (f -$- s1 -*- s2 -<<<)
-comb31 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3)
-comb32 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3 -<)
-comb33 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3 -<<)
-comb34 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3 -<<<)
-comb41 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4)
-comb42 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<)
-comb43 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<)
-comb44 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<<)
-                      
-delay s1 xs = s1 ->- xs
+instance Functor SY where
+  fmap f (SY a) = SY (f a)
 
-moore11 ns od i s1          = comb11 od st
-  where st                  = i ->- comb21 ns st s1
-moore12 ns od i s1          = comb12 od st
-  where st                  = i ->- comb21 ns st s1
-moore13 ns od i s1          = (od -$- st -<<)
-  where st                  = i ->- comb21 ns st s1
-moore14 ns od i s1          = (od -$- st -<<<)
-  where st                  = i ->- comb21 ns st s1
-moore21 ns od i s1 s2       = (od -$- st)
-  where st                  = i ->- comb31 ns st s1 s2
-moore22 ns od i s1 s2       = (od -$- st -<)
-  where st                  = i ->- comb31 ns st s1 s2
-moore23 ns od i s1 s2       = (od -$- st -<<)
-  where st                  = i ->- comb31 ns st s1 s2
-moore24 ns od i s1 s2       = (od -$- st -<<<)
-  where st                  = i ->- comb31 ns st s1 s2
-moore31 ns od i s1 s2 s3    = (od -$- st)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore32 ns od i s1 s2 s3    = (od -$- st -<)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore33 ns od i s1 s2 s3    = (od -$- st -<<)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore34 ns od i s1 s2 s3    = (od -$- st -<<<)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore41 ns od i s1 s2 s3 s4 = (od -$- st)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
-moore42 ns od i s1 s2 s3 s4 = (od -$- st -<)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
-moore43 ns od i s1 s2 s3 s4 = (od -$- st -<<)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
-moore44 ns od i s1 s2 s3 s4 = (od -$- st -<<<)
-  where st                  = i ->- (ns -$- st -*- s1 -*- s2 -*- s3 -*- s4)
-
-mealy11 ns od i s1          = comb21 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy12 ns od i s1          = comb22 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy13 ns od i s1          = comb23 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy14 ns od i s1          = comb24 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy21 ns od i s1 s2       = comb31 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy22 ns od i s1 s2       = comb32 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy23 ns od i s1 s2       = comb33 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy24 ns od i s1 s2       = comb34 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy31 ns od i s1 s2 s3    = comb41 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy32 ns od i s1 s2 s3    = comb42 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy33 ns od i s1 s2 s3    = comb43 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy34 ns od i s1 s2 s3    = comb44 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy41 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-mealy42 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-mealy43 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
+instance Applicative SY where
+  pure a = SY a   
+  (SY a) <*> (SY b) = SY (a b)
 
 
-
-
-controller 0 0 = (1, 1)
-controller 0 1 = (1, 0)
-controller 1 0 = (0, 1)
-controller 1 1 = (0, 1)
-
-
-r = signal [0,1,1,0,1]
-l = signal [1,1,0,0,0,0,1,1,0] 
-
+signalSY l = signal ((SY . Value SY) <$> l)
 
 {- 
 

@@ -50,7 +50,9 @@ module ForSyDe(
   Vector, vector, fromVector,
   -- * The absent-extended type
   AbstExt (..), fromAbstExt, abstExt, isAbsent, isPresent, 
+  module ForSyDe.MoC,
+  
 ) where
 
 import ForSyDe.Core
-
+import ForSyDe.MoC

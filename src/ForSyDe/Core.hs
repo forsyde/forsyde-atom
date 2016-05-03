@@ -18,11 +18,11 @@ module ForSyDe.Core (
        module ForSyDe.Core.Signal,
        -- * Vector type
        module ForSyDe.Core.Vector,
-       module ForSyDe.Core.Tokens,
+       module ForSyDe.Core.Utilities,
+       module ForSyDe.Core.ValueExtensions,
 ) where
 
 import ForSyDe.Core.Signal
 import ForSyDe.Core.Vector
-import ForSyDe.Core.Tokens
-
-
+import ForSyDe.Core.Utilities
+import ForSyDe.Core.ValueExtensions

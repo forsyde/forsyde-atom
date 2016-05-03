@@ -13,7 +13,7 @@
 --  \'absent\', which models the absence of a value.
 -- 
 -----------------------------------------------------------------------------
-module ForSyDe.Core.Tokens where
+module ForSyDe.Core.ValueExtensions where
 
 import ForSyDe.Core.Vector
 

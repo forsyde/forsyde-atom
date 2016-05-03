@@ -1,7 +1,7 @@
 module ForSyDe.Core.Utilities where
 
 import Prelude hiding (unzip3, filter)
-import ForSyDe.Core.Tokens
+import ForSyDe.Core.ValueExtensions
 
 at21 (x,_)             = x
 at22 (_,x)             = x
@@ -184,6 +184,26 @@ psi85 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip5 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 
 psi86 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip6 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
 psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip7 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
 psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip8 (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8)
+
+
+infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
+(-<)       s = funzip2 (funzip2 <$> s)
+(-<<)      s = funzip3 (funzip3 <$> s)
+(-<<<)     s = funzip4 (funzip4 <$> s)
+(-<<<<)    s = funzip5 (funzip5 <$> s)
+(-<<<<<)   s = funzip6 (funzip6 <$> s)
+(-<<<<<<)  s = funzip7 (funzip7 <$> s)
+(-<<<<<<<) s = funzip8 (funzip8 <$> s)
+
+store1 buff a1                      = buff >¤ a1
+store2 buff a1 a2                   = buff >¤ a1 >¤ a2
+store3 buff a1 a2 a3                = buff >¤ a1 >¤ a2 >¤ a3
+store4 buff a1 a2 a3 a4             = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4
+store5 buff a1 a2 a3 a4 a5          = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5
+store6 buff a1 a2 a3 a4 a5 a6       = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5 >¤ a6
+store7 buff a1 a2 a3 a4 a5 a6 a7    = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5 >¤ a6 >¤ a7
+store8 buff a1 a2 a3 a4 a5 a6 a7 a8 = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5 >¤ a6 >¤ a7 >¤ a8
+
 
 
 -- fanout2 x = (x, x)
