@@ -48,8 +48,7 @@ module ForSyDe(
   Signal, signal, fromSignal,
   -- * The Vector
   Vector, vector, fromVector,
-  -- * The absent-extended type
-  AbstExt (..), fromAbstExt, abstExt, isAbsent, isPresent, 
+  -- * The value wrapper
   module ForSyDe.MoC,
   
 ) where

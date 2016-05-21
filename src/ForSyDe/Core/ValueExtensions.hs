@@ -19,96 +19,78 @@ import ForSyDe.Core.Vector
 
 ------------------------------------------------------------------
 
-infixl 5 #
-class Filter t where
-  (#) :: t Bool -> t a -> t a
-
-infixl 5 >¤
-class Store t where
-  (>¤) ::  t (Vector a) -> t a -> t (Vector a)
-
-------------------------------------------------------------------
-
--- |The data type 'AbstExt' has two constructors. The constructor 'Abst' is used to model the absence of a value, while the constructor 'Prst' is used to model present values.
-data AbstExt a =  Abst | Prst a deriving (Eq)
+-- |The data type 'Value' has three constructors. The constructor 'Abst' is used to model the absence of a value, while the constructor 'Prst' is used to model present values. The third one 'Undef' is used to model an undefined value, the equivalent of \'anything\' in VHDL.
+data Value a =  Abst | Undef | Prst a deriving (Eq)
 
 -- | Instance of 'Show'. \'_\' represents the value 'Abst' while a present value is represented with its value.
-instance Show a => Show (AbstExt a) where
- showsPrec _ x = showsAbstExt x
-   where showsAbstExt Abst     = (++) "\10178"       
-         showsAbstExt (Prst x) = (++) (show x)
+instance Show a => Show (Value a) where
+ showsPrec _ x = showsValue x
+   where showsValue Abst     = (++) "\10178"       
+         showsValue Undef    = (++) "?"
+         showsValue (Prst x) = (++) (show x)
 
 -- | Instance of 'Read'. \'_\' represents the value 'Abst' while a present value is represented with its value.
-instance Read a => Read (AbstExt a) where
-  readsPrec _ x       =  readsAbstExt x 
-   where readsAbstExt s =  [(Abst, r1) | ("_", r1) <- lex s] ++ [(Prst x, r2) | (x, r2) <- reads s]
+instance Read a => Read (Value a) where
+  readsPrec _ x       = readsValue x 
+   where readsValue s = [(Abst, r1) | ("_", r1) <- lex s]
+           ++ [(Undef, r2) | ("?", r2) <- lex s]
+           ++ [(Prst x, r3) | (x, r3) <- reads s]
 
 
-instance Functor AbstExt where
+instance Functor Value where
   fmap _ Abst     = Abst
+  fmap _ Undef    = Undef
   fmap f (Prst x) = Prst (f x)
 
 
-instance Applicative AbstExt where
-  pure a  = Prst a
-  Abst     <*> Abst     = Abst
+instance Applicative Value where
+  pure   = Prst 
   (Prst x) <*> (Prst y) = Prst (x y)
-  _        <*> _        = error "Undecidable occurrence of an absent and present"
+  Undef    <*> (Prst _) = Undef
+  (Prst _) <*> Undef    = Undef
+  Undef    <*> Undef    = Undef
+  Abst     <*> Abst     = Abst
+  _        <*> _        = error "Undecidable occurrence of an absent and present"  
 
-
--- |The function 'fromAbstExt' converts a value from a extended value.
-fromAbstExt       :: a -> AbstExt a -> a
--- |The function 'fromAbstExt' converts a value from a extended value.
-unsafeFromAbstExt ::  AbstExt a -> a
+-- |The function 'fromValue' converts a value from a extended value.
+fromValue       :: a -> Value a -> a
+-- |The function 'fromValue' converts a value from a extended value.
+unsafeFromValue ::  Value a -> a
 -- |The functions 'isPresent' checks for the presence of a value.
-isPresent         :: AbstExt a -> Bool
+isPresent         :: Value a -> Bool
 -- |The functions 'isAbsent' checks for the absence of a value.
-isAbsent          :: AbstExt a -> Bool
+isAbsent          :: Value a -> Bool
+-- |The functions 'isUndefined' checks if the value is defined.
+isUndefined       :: Value a -> Bool
 -- | The function 'abstExt' converts a usual value to a present value. 
-abstExt           :: a -> AbstExt a  
+value           :: a -> Value a  
 
-abstExt v                  = Prst v
-fromAbstExt x Abst         = x   
-fromAbstExt _ (Prst y)     = y
-unsafeFromAbstExt (Prst y) = y
-unsafeFromAbstExt Abst     = error "Should not be absent"
-isPresent Abst             = False
-isPresent (Prst _)         = True
-isAbsent                   = not . isPresent
+value                    = pure
+fromValue x Abst         = x   
+fromValue _ (Prst y)     = y
+unsafeFromValue (Prst y) = y
+unsafeFromValue Abst     = error "Should not be absent or undefined"
+isAbsent Abst            = True
+isAbsent _               = False
+isUndefined Undef        = True
+isUndefined _            = False
+isPresent (Prst _)       = True
+isPresent _              = False
 
+-- | replaces one wrapped value with another one based on a wrapped boolean predicate 
+predicate :: Value a    -- ^ value to replace with
+          -> Value Bool -- ^ wrapped boolean predicate
+          -> Value a    -- ^ value to replace
+          -> Value a    -- ^ result
+predicate t p x = if p == Prst True then x else t
 
-
---------------------------------------------------------------------------------
-data UExt a =  U | D a deriving (Eq)
-
-
-instance Show a => Show (UExt a) where
-  showsPrec _ = showsAE
-    where showsAE U     = (++) "?"       
-          showsAE (D x) = (++) (show x)
-
-instance Read a => Read (UExt a) where
-  readsPrec _       =  readsAE 
-    where readsAE s = [(U, r1) | ("?", r1) <- lex s] ++ [(D x, r2) | (x, r2) <- reads s]
-
-instance Functor UExt where
-  fmap _ U     = U
-  fmap f (D x) = D (f x)
-
-instance Applicative UExt where
-  pure  = D
-  _      <*> U   = U
-  U   <*> _      = U
-  (D x) <*> (D y) = D (x y)
-
-instance Filter UExt where
-  c # a = if c == D True then a else U
-
-instance Store UExt where
-  buff >¤ U   = buff
-  buff >¤ D a = (:>) <$> D a <*> buff
-
-isdefined U = False
-isdefined _ = True  
+infixl 5 >¤
+-- | serial storage infix operator. Stores only present values
+(>¤) :: Value (Vector a) -- ^ input storing buffer wrapped as value
+     -> Value a          -- ^ value to be storred
+     -> Value (Vector a) -- ^ output buffer
+buff >¤ Abst   = buff
+buff >¤ Undef  = buff
+buff >¤ Prst a = (:>) <$> Prst a <*> buff
 
 ------------------------------------------------------------------------------

@@ -21,14 +21,11 @@ module ForSyDe.MoC.SY where
 import ForSyDe.Core
 import ForSyDe.MoC
 
-
 data SY a = SY a
 -----------------------------------------------------------------------------
 -- PRIMITIVE CONSTRUCTORS -- TIMED MOC TEMPLATE
 -----------------------------------------------------------------------------
 instance MoC SY where
-  data Value SY a = Value (AbstExt a)
-
   -- | the pure value still needs to be extracted from its wrapper type, therefore double fmap
   -- | (-$-)  :: (AExt a -> b) -> Signal (SY (AExt a)) -> Signal (SY b)
   (-$-) = ((<$>).(<$>))
@@ -45,6 +42,12 @@ instance MoC SY where
   -- | (-&-) :: Int -> Signal (e a) -> Signal (e a)
   (-&-) _ a = a
 
+instance Show a => Show (SY a) where
+  showsPrec _ (SY x) = (++) (show x)
+
+instance Read a => Read (SY a) where
+  readsPrec _ s       = [(SY x, r) | (x, r) <- reads s]
+
 instance Functor SY where
   fmap f (SY a) = SY (f a)
 
@@ -53,35 +56,33 @@ instance Applicative SY where
   (SY a) <*> (SY b) = SY (a b)
 
 
-signalSY l = signal ((SY . Value SY) <$> l)
 
-{- 
+
+signalSY l = signal ((SY . value) <$> l)
+valueSY    = SY . value
+
+
+
 
 
 -- FILTER, FILL, HOLD
 
--- | The process constructor 'filter' discards the values who do not fulfill a predicate given by a predicate function and replaces them with as5ent events.
-filter :: (a -> Bool) -- Predicate function
-         -> Sig a -- Input signal
-         -> Sig (Arg a) -- Output signal
 
 -- | The process constructor 'fill' creates a process that 'fills' a signal with present values by replacing as5ent values with a given value. The output signal is not any more of the type 'Arg'.
-fill :: a -- ^Default value
-       -> Sig (Arg a) -- ^As5ent extended input signal
-       -> Sig a -- ^Output signal
+-- fill :: a -- ^Default value
+--        -> Sig (Arg a) -- ^As5ent extended input signal
+--        -> Sig a -- ^Output signal
 
--- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing as5ent values by the preceding present value. Only in s64es, where no preceding value exists, the as5ent value is replaced by a default value. The output signal is not any more of the type 'Arg'.
-hold :: a -- ^Default value
-       -> Sig (Arg a) -- ^As5ent extended input signal
-       -> Sig a -- ^Output signa
+-- -- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing as5ent values by the preceding present value. Only in s64es, where no preceding value exists, the as5ent value is replaced by a default value. The output signal is not any more of the type 'Arg'.
+-- hold :: a -- ^Default value
+--        -> Sig (Arg a) -- ^As5ent extended input signal
+--        -> Sig a -- ^Output signa
 
-filter p = (-$-) (\x -> if p x == True then Prst x else As5t)
-fill   a = (-$-) (replaceAs5t a)
-  where replaceAs5t a' As5t     = a'
-        replaceAs5t _  (Prst x) = x
-hold   a s1 = s
-  where s = holdf -$- (s ->- a) -*- s1
-        holdf a' As5t     = a'
-        holdf _  (Prst x) = x
+-- fill   a = (-$-) (replaceAs5t a)
+--   where replaceAs5t a' As5t     = a'
+--         replaceAs5t _  (Prst x) = x
+-- hold   a s1 = s
+--   where s = holdf -$- (s ->- a) -*- s1
+--         holdf a' As5t     = a'
+--         holdf _  (Prst x) = x
 
--}
