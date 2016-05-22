@@ -23,25 +23,19 @@ import ForSyDe.MoC
 
 data SY a = SY a
 -----------------------------------------------------------------------------
--- PRIMITIVE CONSTRUCTORS -- TIMED MOC TEMPLATE
------------------------------------------------------------------------------
-instance MoC SY where
-  -- | the pure value still needs to be extracted from its wrapper type, therefore double fmap
-  -- | (-$-)  :: (AExt a -> b) -> Signal (SY (AExt a)) -> Signal (SY b)
-  (-$-) = ((<$>).(<$>))
 
-  -- | the pure value still needs to be extracted from its wrapper type, therefore double appl
-  -- | (-*-) :: Signal (SY (AExt -> b)) -> Signal (SY (AExt a)) -> Signal (SY b)
+instance MoC SY where
+  (-$-) = ((<$>).(<$>))
+  ---------------------
   _ -*- NullS = NullS
   NullS -*- _ = NullS
   (f:-fs) -*- (x:-xs) = f <*> x :- fs -*- xs
-
-  -- | (->-)   :: e a -> Signal (e a) -> Signal (e a)
+  ---------------------
   (->-) = (:-)
-
-  -- | (-&-) :: Int -> Signal (e a) -> Signal (e a)
+  ---------------------
   (-&-) _ a = a
-
+  ---------------------
+  
 instance Show a => Show (SY a) where
   showsPrec _ (SY x) = (++) (show x)
 

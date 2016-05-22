@@ -22,7 +22,8 @@ library
                        ForSyDe.Core.ValueExtensions,
                        ForSyDe.Core.Utilities,
                        ForSyDe.MoC,
-                       ForSyDe.MoC.SY
+                       ForSyDe.MoC.SY,
+                       ForSyDe.MoC.DE
   Default-Language:    Haskell2010
   -- other-modules:       
   build-depends:       base>=4.7.10, parameterized-data, type-level
