@@ -16,10 +16,10 @@
 -- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.SY where
+module ForSyDe.MoCLib.SY where
 
 import ForSyDe.Core
-import ForSyDe.MoC
+import ForSyDe.Core.MoC
 
 data SY a = SY a
 -----------------------------------------------------------------------------

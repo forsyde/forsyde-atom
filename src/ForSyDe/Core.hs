@@ -19,10 +19,10 @@ module ForSyDe.Core (
        -- * Vector type
        module ForSyDe.Core.Vector,
        module ForSyDe.Core.Utilities,
-       module ForSyDe.Core.ValueExtensions,
+       module ForSyDe.Core.ValueExt,
 ) where
 
 import ForSyDe.Core.Signal
 import ForSyDe.Core.Vector
 import ForSyDe.Core.Utilities
-import ForSyDe.Core.ValueExtensions
+import ForSyDe.Core.ValueExt

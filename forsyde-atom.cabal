@@ -2,9 +2,17 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                forsyde-atom
-version:             0.1.1.0
--- synopsis:            
--- description:         
+version:             0.2.0.0
+synopsis:            A shallow-embedded DSL for modeling cyber-physical systems 
+description:         
+  ForSyDe is a design methodology for cyber-physical systems rooted in the theory of <http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=736561 Models of Computation (MoCs)>. Based on this model, ForSyDe sees systems as networks of processes communicating through signals. 
+  .
+  This haddock-generated document is mean to serve both as an API documentation and as an extended technical report on key concepts behind the ForSyDe formalism as implemented in the library design. It is organized as follows:
+  .
+  * the 'ForSyDe' module documentation contains a few "Getting Started" examples.
+  * the 'ForSyDe.Core' module documentations goes deep into the theoretical concepts behind this library.
+  * the 
+
 -- license:             
 license-file:        LICENSE
 author:              George Ungureanu
@@ -13,18 +21,20 @@ author:              George Ungureanu
 -- category:            
 build-type:          Simple
 cabal-version:       >=1.22
+extra-doc-files:     includes
 
 library
   exposed-modules:     ForSyDe
                        ForSyDe.Core,
                        ForSyDe.Core.Signal,
                        ForSyDe.Core.Vector,
-                       ForSyDe.Core.ValueExtensions,
+                       ForSyDe.Core.MoC,
+                       ForSyDe.Core.ValueExt,
                        ForSyDe.Core.Utilities,
-                       ForSyDe.MoC,
-                       ForSyDe.MoC.SY,
-                       ForSyDe.MoC.DE
-  Default-Language:    Haskell2010
+                       ForSyDe.MoCLib.SY,
+                       ForSyDe.MoCLib.DE
   -- other-modules:       
+  Default-Language:    Haskell2010
+  other-extensions:    PostfixOperators
   build-depends:       base>=4.7.10, parameterized-data, type-level
   hs-source-dirs:      src

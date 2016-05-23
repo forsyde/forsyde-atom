@@ -1,7 +1,7 @@
 module ForSyDe.Core.Utilities where
 
 import Prelude hiding (unzip3, filter)
-import ForSyDe.Core.ValueExtensions
+import ForSyDe.Core.ValueExt
 
 at21 (x,_)             = x
 at22 (_,x)             = x

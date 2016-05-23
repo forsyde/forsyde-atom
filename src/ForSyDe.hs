@@ -8,10 +8,7 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This ForSyDe module is an experimental shallow-embedded DSL implmenenting
--- the ForSyDe methodology. It loads a small part of the core libraries
--- (documented below) in order to provide the necessary functions to the 
--- standard modeling framework.
+-- ForSyDe is a design methodology for cyber-physical systems rooted in the theory of <http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=736561 Models of Computation (MoCs)>. Based on this model, ForSyDe sees systems as networks of processes communicating through signals. 
 --
 -- Additional features must be included manually by importing the following
 -- standard framework-compatible modules:
@@ -45,13 +42,13 @@
 
 module ForSyDe(
   -- * The Signal
-  Signal, signal, fromSignal,
+  module ForSyDe.Core.Signal,
   -- * The Vector
   Vector, vector, fromVector,
   -- * The value wrapper
-  module ForSyDe.MoC,
-  
+  module ForSyDe.Core.MoC,
 ) where
 
 import ForSyDe.Core
-import ForSyDe.MoC
+import ForSyDe.Core.Signal
+import ForSyDe.Core.MoC

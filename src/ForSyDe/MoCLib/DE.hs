@@ -16,11 +16,11 @@
 -- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.DE where
+module ForSyDe.MoCLib.DE where
 
 import ForSyDe.Core
-import ForSyDe.MoC
-import qualified ForSyDe.MoC.SY as SY
+import ForSyDe.Core.MoC
+import qualified ForSyDe.MoCLib.SY as SY
 
 -----------------------------------------------------------------------------
 data DE a = DE Int a deriving (Show)
