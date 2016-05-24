@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core.Signal
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -11,35 +11,39 @@
 -- This module defines the shallow-embedded 'Signal' datatype and
 -- functions operating on it.
 -----------------------------------------------------------------------------
-module ForSyDe.Core.Signal (
-  Signal (..), lengthS,
-  signal, fromSignal, headS, tailS, isNull, takeS, dropS, repeatS, takeWhileS, padS, (+-+), anyS,
-) where
+module ForSyDe.Core.Signal  where
 
--- | A  Signal is defined as a list of events. An event has a tag and a value. 
---   The tag of an event is defined by the position in the list. 
---
---   This is the base data type for the 'ForSyDe.MoC.MoC'-bound signals, which are further described
---   by becoming instances of the 'Signal' type class.
-data Signal a = a :- Signal a | NullS deriving (Eq)
 
 infixr 3 :-
+-- | As a data type, 'Signal' is defined only as a stream of events,
+-- encapsulating them in a structure similar to an infinite list. By
+-- doing so, we benefit from the
+-- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird-Merteens formalism>,
+-- thus all properties of lists may be applied to 'Signal's also.
+--
+-- A signal's order is determined by the order of application of its
+-- constructors. Thus the finite signal @{e0, e1, e2, e3}@ is created
+-- using the operations
+--
+-- > e0 :- e1 :- e2 :- e3 :- NullS
+--
+-- As can be seen, no further constraints are posed on the type of
+-- @e@ in order to avoid language extensions as much as
+-- possible. This imposes a convention that throughout the library,
+-- @e@ will be of event type.
+data Signal e = NullS         -- ^ terminates a signal
+              | e :- Signal e -- ^ the default constructor appends an
+                              -- event to the head of the stream
+              deriving (Eq)
 
+-- | 'Functor' instance, allows for the mapping of a function @(a ->b)@
+-- upon all the events of a @'Signal' a@. See the Processes section
+-- in "ForSyDe.Core#processes".
 instance Functor Signal where
   fmap _ NullS   = NullS
   fmap f (x:-xs) = f x :- fmap f xs
-
-instance Applicative Signal where
-  pure a  = a :- pure a
-  _         <*> NullS     = NullS
-  NullS     <*> _         = NullS
-  (f :- fs) <*> (x :- xs) = f x :- fs <*> xs
-
-instance Foldable Signal where
-  foldr f z NullS     = z
-  foldr f z (x :- xs) = f x (foldr f z xs)
   
--- | 'Show' instance for a SY signal. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
+-- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (Signal a) where
   showsPrec p = showParen (p>1) . showSignal
     where
@@ -49,7 +53,7 @@ instance (Show a) => Show (Signal a) where
       showSignal' (NullS)   = showChar '}'
       showEvent x           = shows x
 
--- | 'Read' instance for a SY signal. The signal 1 :- 2 :- NullS is read using the string \"\{1,2\}\".
+-- | 'Read' instance. The signal 1 :- 2 :- NullS is read using the string \"\{1,2\}\".
 instance (Read a) => Read (Signal a) where
   readsPrec d = readParen (d>1) readSignalStart
     where

@@ -1,0 +1,47 @@
+% A library with graphical primitives for SDF process networks
+%
+% Author: George Ungureanu, KTH - Royal Institute of Technology, Sweden
+% Version: 0.1
+% Date: 2016/01/12
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage{mathtools}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{stmaryrd}
+\RequirePackage{graphicx}
+
+\ProvidesPackage{forsyde-math}
+              [2016/01/12 v0.1 SDF TikZ Library]
+
+\newcommand\mdoubleplus{\ensuremath{\mathbin{+\mkern-10mu+}}}
+\newcommand\monecirc[3]{\tikz[baseline=(X.base)] 
+  \node (X) [draw, shape=circle, scale=.6, inner sep=0,
+             label={[scale=#3, shift={(#2,0pt)}]center:#1}] {\strut\phantom{#1}};}
+
+\newlength\myheight
+\newcommand*\ccircled[1]{\settowidth{\myheight}{#1}%
+    {\tikz[baseline=(char.base)]{%
+        \node[shape=circle, draw, ultra thin, inner sep=0pt](char){#1};}}}
+
+\newcommand\vect[1]{\langle{#1}\rangle}
+\newcommand\pc[1]{\mathtt{#1}\ }
+
+\newcommand{\ostar}{\ensuremath{\mathbin{\ccircled{$\star$}}}}
+
+\newcommand{\fpre}{\mathbin{pre}}
+\newcommand{\fphi}{\mathbin{\phi}}
+\newcommand{\ffilt}{\mathbin{\#}}
+\newcommand{\fresf}{\mathbin{\rho}}
+
+
+\newcommand{\fcomb}{\oplus}
+\newcommand{\fdelay}{\mathbin{\Delta}}
+
+\newcommand\finter[2]{\ensuremath{\mathbin{\monecirc{$#1$}{-2pt}{.4}\mkern-4mu\monecirc{$#2$}{2pt}{.4}}}}
+
+\newcommand{\fmap}{\mathbin{\rotatebox[origin=c]{45}{$\boxtimes$}}}
+\newcommand{\fpipe}{\mathbin{\rotatebox[origin=c]{45}{$\boxbslash$}}}
+\newcommand{\fred}{\mathbin{\rotatebox[origin=c]{45}{$\boxdot$}}}
+\newcommand{\fscan}{\mathbin{\rotatebox[origin=c]{45}{$\boxast$}}}
+\newcommand\fcat{\mdoubleplus}
+\newcommand\fsel{\mathrel{@}}

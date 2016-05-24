@@ -20,6 +20,7 @@ module ForSyDe.MoCLib.DE where
 
 import ForSyDe.Core
 import ForSyDe.Core.MoC
+import ForSyDe.Core.Signal
 import qualified ForSyDe.MoCLib.SY as SY
 
 -----------------------------------------------------------------------------

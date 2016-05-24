@@ -20,6 +20,7 @@ module ForSyDe.MoCLib.SY where
 
 import ForSyDe.Core
 import ForSyDe.Core.MoC
+import ForSyDe.Core.Signal
 
 data SY a = SY a
 -----------------------------------------------------------------------------

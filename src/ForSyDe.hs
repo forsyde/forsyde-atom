@@ -8,46 +8,10 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- ForSyDe is a design methodology for cyber-physical systems rooted in the theory of <http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=736561 Models of Computation (MoCs)>. Based on this model, ForSyDe sees systems as networks of processes communicating through signals. 
---
--- Additional features must be included manually by importing the following
--- standard framework-compatible modules:
---
--- * @ForSyDe.MoC.@'ForSyDe.MoC.SY.SY' for using signals or process 
---   constructors in the syncronous MoC library
---
--- * @ForSyDe.MoC.@'ForSyDe.MoC.SDF.SDF' for using signals or process 
---   constructors in the SDF MoC library
---
--- * @ForSyDe.MoC.@'ForSyDe.MoC.Interface.Interface' for using interfaces
---   between MoCs
---
--- * @ForSyDe.@'ForSyDe.Patterns.Patterns' for using process network pattern
---   constructors
---
--- Due to possible name clashes between namespaces it is advised to import the 
--- mentioned modules as /qualified/. An example:
---
--- >    import ForSyDe
--- >    import qualified ForSyDe.MoC.SY as SY
--- >    import qualified ForSyDe.Patterns as PN
--- >
--- >    a = SY.ssignal [1,2,3,4] :: SY.Signal Int
--- >    p1 = SY.comb (+1)
--- >
--- >    v1 = vector [a,a,a,a]
--- >    pn = PN.farm p1 v1
---
+-- 
 -----------------------------------------------------------------------------
 
-module ForSyDe(
-  -- * The Signal
-  module ForSyDe.Core.Signal,
-  -- * The Vector
-  Vector, vector, fromVector,
-  -- * The value wrapper
-  module ForSyDe.Core.MoC,
-) where
+module ForSyDe where
 
 import ForSyDe.Core
 import ForSyDe.Core.Signal
