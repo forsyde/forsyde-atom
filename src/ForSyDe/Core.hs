@@ -110,25 +110,59 @@ module ForSyDe.Core (
 
   Value(..),
 
-  
-  
-  module ForSyDe.Core.ValueExt,
-         
-  
-  -- * Vector type
-       module ForSyDe.Core.Vector,
-       module ForSyDe.Core.Utilities,
+  -- ** Behavior layer
 
+  -- | As seen in ..., the behavior layer abstracts the semantics
+  -- implied by the extended values. In other words, the constructors
+  -- of this layer dictate what action to be performed in case of
+  -- different event types. This layer provides: 
+  -- 
+  -- * a set of behavior atoms. Since we defined only one data type
+  -- for extended values (the 'Value' type) they have been implemented
+  -- as normal functions instead of class methods.
+  --
+  -- * a library of function wrappers as specific behavior atom
+  -- compositions. These wrappers are meant to be passed to the the
+  -- synchronziation layer constructors as arguments when implementing
+  -- process constructors.
+
+  -- *** Atoms
+  
+  (>$), (>*), (>!), (>?), (>%),
+
+  -- *** Behavior wrappers
+  
+  -- | Function wrappers are the behavior layer entities passed as
+  -- arguments to the synchronization layer. They are implemented as
+  -- specific compositions of behavior atoms.
+  --
+  -- For extended documentation on the available behavior wrappers
+  -- please consult the module "ForSyDe.WrapLib"
+
+  -- ** Function layer
+
+  -- | As seen in ... the function layer abstracts nothing. It exposes
+  -- the actual transformations on the event values as specified by a
+  -- system designer. Needless to say, they are taken as arguments
+  -- (and wrapped) by the behavior layer wrappers.
+
+  -- * Utilities
+
+  -- | The 'ForSyDe.Core' module also provides a set of utility
+  -- functions, mainly for aiding the designer to avoid to working
+  -- with event tuples or zip/unzip processes which might polute the
+  -- design.
+
+  module ForSyDe.Core.Utilities,
+         
   -- * Bibliography
 
   -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229. 
 
   -- | #reekie95# [2] Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming. 
-
        
 ) where
 
 import ForSyDe.Core.Signal
-import ForSyDe.Core.Vector
 import ForSyDe.Core.Utilities
 import ForSyDe.Core.ValueExt

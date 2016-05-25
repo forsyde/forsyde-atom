@@ -53,8 +53,8 @@ instance Applicative SY where
 
 
 
-signalSY l = signal ((SY . value) <$> l)
-valueSY    = SY . value
+signalSY l = signal ((SY . Value) <$> l)
+valueSY    = SY . Value
 
 
 

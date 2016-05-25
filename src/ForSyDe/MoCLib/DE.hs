@@ -64,8 +64,8 @@ instance Functor DE where
 --   (DE t a) <*> (DE u b) = SY (a b)
 
 
-signalDE l = signal $ (\(t,v) -> DE t (value v)) <$> l
-valueDE (t,v) = DE t (value v)
+signalDE l = signal $ (\(t,v) -> DE t (Value v)) <$> l
+valueDE (t,v) = DE t (Value v)
 
 
 
