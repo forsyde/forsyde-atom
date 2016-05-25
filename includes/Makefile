@@ -54,6 +54,7 @@ clean:
 	find . -name "*#" -type f -delete
 	find . -name "*.out" -type f -delete
 	find . -name "comment.cut" -type f -delete
+	rm -f ./figs_orig/*.pdf
 
 superclean: clean
 	rm -f ./figs/*
