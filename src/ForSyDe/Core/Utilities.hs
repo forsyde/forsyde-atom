@@ -38,13 +38,41 @@ at86 (_,_,_,_,_,x,_,_) = x
 at87 (_,_,_,_,_,_,x,_) = x
 at88 (_,_,_,_,_,_,_,x) = x
 
-funzip2 x = (at21 <$> x, at22 <$> x)
-funzip3 x = (at31 <$> x, at32 <$> x, at33 <$> x)
-funzip4 x = (at41 <$> x, at42 <$> x, at43 <$> x, at44 <$> x)
-funzip5 x = (at51 <$> x, at52 <$> x, at53 <$> x, at54 <$> x, at55 <$> x)
-funzip6 x = (at61 <$> x, at62 <$> x, at63 <$> x, at64 <$> x, at65 <$> x, at66 <$> x)
-funzip7 x = (at71 <$> x, at72 <$> x, at73 <$> x, at74 <$> x, at75 <$> x, at76 <$> x, at77 <$> x)
-funzip8 x = (at81 <$> x, at82 <$> x, at83 <$> x, at84 <$> x, at85 <$> x, at86 <$> x, at87 <$> x, at88 <$> x)
+funzip2 x = (at21 <$> x,
+             at22 <$> x)
+funzip3 x = (at31 <$> x,
+             at32 <$> x,
+             at33 <$> x)
+funzip4 x = (at41 <$> x,
+             at42 <$> x,
+             at43 <$> x,
+             at44 <$> x)
+funzip5 x = (at51 <$> x,
+             at52 <$> x,
+             at53 <$> x,
+             at54 <$> x,
+             at55 <$> x)
+funzip6 x = (at61 <$> x,
+             at62 <$> x,
+             at63 <$> x,
+             at64 <$> x,
+             at65 <$> x,
+             at66 <$> x)
+funzip7 x = (at71 <$> x,
+             at72 <$> x,
+             at73 <$> x,
+             at74 <$> x,
+             at75 <$> x,
+             at76 <$> x,
+             at77 <$> x)
+funzip8 x = (at81 <$> x,
+             at82 <$> x,
+             at83 <$> x,
+             at84 <$> x,
+             at85 <$> x,
+             at86 <$> x,
+             at87 <$> x,
+             at88 <$> x)
 
 
 infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<

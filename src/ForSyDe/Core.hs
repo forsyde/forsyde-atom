@@ -277,9 +277,38 @@ module ForSyDe.Core (
   -- * Utilities
 
   -- | The 'ForSyDe.Core' module also provides a set of utility
-  -- functions, mainly for aiding the designer to avoid to working
-  -- with event tuples or zip/unzip processes which might polute the
-  -- design.
+  -- functions, mainly for aiding the designer to avoid working with
+  -- event tuples which might polute the design.
+  --
+  -- The most important utilities are the "unzip" processes. Recall
+  -- that our <#proc-definition definition for processes>, the return
+  -- type may be an /n/-arry cartesian product. A caveat of founding
+  -- the ForSyDe framework on a functional language is that, although
+  -- we can express cartesian products for input arguments using the
+  -- curried notation (which is very powerful in combination with an
+  -- applicative style), we cannot do so for return types. For the
+  -- latter we must rely on tuples.
+  --
+  -- Working with tuples of data wrapped on <#3layer so many layers>
+  -- becomes extremely cumbersome. Take for example the case of a
+  -- process constructed with /pc/ in equation (1) below. Using only
+  -- the provided atoms to implement /pc/ would give us a process
+  -- which returns only one signal of an extended tuple and not, as we
+  -- would like, a tuple of signals of events.
+  --
+  -- <<includes/figs/unzip-example.pdf.png>>
+  --
+  -- Therefore, by implementing the data types associated with all
+  -- layers as instances of 'Functor', we were able to provide a (set
+  -- of) /unzip/ process(es) defined as in equation (2) above. Mind
+  -- that we call /unzip/ a utility process and not an atom, since it
+  -- has no sinchronization nor behavior semantic. It just
+  -- conveniently "lifts" the wrapped tuples in order to create
+  -- multiple events and multiple signals, and it is imposed by the
+  -- mechanisms of the type system in the host language.
+  --
+  -- For a list of all the provided utilities, please consult the
+  -- following module:
 
   module ForSyDe.Core.Utilities,
          

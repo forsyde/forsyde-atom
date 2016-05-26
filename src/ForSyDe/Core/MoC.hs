@@ -14,7 +14,14 @@
 -- synchronization layer.
 -----------------------------------------------------------------------------
 
-module ForSyDe.Core.MoC where
+module ForSyDe.Core.MoC(
+  -- * Atoms
+  
+  MoC(..),
+
+  -- * Process constructors
+  
+  ) where
 
 import ForSyDe.Core.Signal
 import ForSyDe.Core.Utilities
