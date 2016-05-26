@@ -86,7 +86,7 @@ mapValue = fmap
 -- (⟂,?,1)
 -- >>> let f = (+1)
 -- >>> liftValue (Value (+1)) v
--- 2
+ -- 2
 -- >>> liftValue (Value (+1)) u
 -- ?
 -- >>> liftValue (Value (+1)) a

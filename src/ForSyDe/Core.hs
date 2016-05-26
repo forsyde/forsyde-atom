@@ -27,7 +27,9 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core (
 
-  -- * Signals
+  -- * Basic notions
+
+  -- ** Signals
 
   -- | In ForSyDe a signal is represented as a (partially or totally)
   -- /ordered/ sequence of events that enables processes to
@@ -50,7 +52,7 @@ module ForSyDe.Core (
   
   -- | #processes#
 
-  -- * Processes
+  -- ** Processes
   
   -- | As described in <#lee98 [1]>, processes are either "set of
   -- possible behaviors" of signals or "relations" between multiple
@@ -65,6 +67,7 @@ module ForSyDe.Core (
   -- semantics and/or a specific composition, but lacking
   -- functionality. 
   --
+  -- #proc-definition#
   -- <<includes/figs/process_definition.pdf.png>>
   --
   -- Since processes are functions, process composition is equivalent
@@ -90,7 +93,7 @@ module ForSyDe.Core (
   --
   -- <<includes/figs/process-network-formula.pdf.png>>
 
-  -- * Extended values
+  -- ** Extended values
 
   -- | Dealing with cyber-physical systems, ForSyDe needs to model
   -- special behaviour such as the absence of events, or
@@ -101,23 +104,110 @@ module ForSyDe.Core (
   -- a new data type. Currently @forsyde-atom@ supports the following
   -- special value extensions:
   --
-  -- [@absent event@ &#8869;] determines the absence of an event at time (tag)
-  -- /t/
-  -- [@undefined value@ ?] determines a non-determinate value,
-  -- similar to the "anything" (@x@ value) in VHDL
+  -- [@absent event@ &#8869;] determines the absence of an event at
+  --time (tag) /t/
+  -- [@undefined value@ ?] suggests a non-determinate value, similar
+  -- to the "anything" (@x@ value) in VHDL
   --
   -- <<includes/figs/extended-values.pdf.png>>
-
+  
   Value(..),
 
+  -- ** Models of Computation (MoCs)
   
+  -- | As mentioned in the introduction, /MoCs/ are classes of behaviors
+  -- dictating the semantics of execution and concurrency in a network
+  -- of processes. Based on the definitions of their tag systems
+  -- ForSyDe identifies MoCs as: /timed/ where /T/ (see
+  -- <#sig-definition signal definition>) is a totally ordered set and
+  -- /t/ express the notion of time, also being called timestamps
+  -- (e.g. continuous time, discrete event, synchronous, etc.); or
+  -- /untimed/, where /T/ is a partially ordered set and /t/ express
+  -- the notion of precedence (e.g. dataflow, etc.).
+  --
+  -- As concerning MoCs, ForSyDe implements the execution semantics
+  -- /through process constructors/, abstracting the timing model and
+  -- inferring a schedule of the process network. This means that all
+  -- processing entities in ForSyDe embed operating semantics dictated
+  -- by a certain MoC and are side-effect-free. This ensures the
+  -- functional correctness of a system even from early design stages.
+  --
+  -- The mechanisms of implementing MoCs are briefly explained as part
+  -- of the <#moc-layer the 3-layered process model>, whereas the
+  -- actual MoCs implemented and their semantics are described in
+  -- their respective library.
+
+
+  -- * The layered process model
+
+  -- | The @forsyde-atom@ project is characterized by two main features:
+  --
+  -- 1. it tries to separate the concerns of execution and
+  -- synchronization in cyber-physical systems
+  -- 1. it provides primitive (indivizible) operators called /atoms/
+  -- as building blocks for independently developing complex aspects
+  -- of a system's execution through means of composition or
+  -- generalization.
+  --
+  -- [@atom@] the elementary (primitive, indivizible) constructor in a
+  -- tagged signal model which embeds timing/behavioural semantics.
+  --
+  -- The separation of concerns led to the so-called /layered process model/
+  -- which is reflected in the library implementation by the
+  -- development of separate independent modules for each aspect of
+  -- the execution. These layers have the following properties:
+  --
+  -- 1. are implemented as higher-order functions, where functions of
+  -- layer /l/ takes functions of layer /l-1/ as arguments.
+  --
+  -- 1. each layer operates on a different part of an event and
+  -- abstracts a different execution aspect.
+  --
+  -- 1. the lowest layer /l=1/ contains arbitrary functions on values
+  -- /V/
+  --
+  -- 1. layers /l>1/ are instantiated using library-provided
+  -- /constructors/ which are in fact specific compositions of
+  -- /atoms/.
+  --
+  -- 1. constructors have meaningful semantics and /known/
+  -- implementations on target platforms. In this sense they are both
+  -- analyzable and synthesizable.
+  --
+  -- 1. complex behaviors can be obtain by means of arbitrary
+  -- compositions of the provided constructors.
+  --
+  -- A depiction of the layers of a process can be seen in the picture
+  -- below:
+  --
+  -- <<includes/figs/3-layered-process.pdf.png>>
+
+  -- ** The synchronization layer
+
+  -- | The synchronization layer abstracts timing semantics as defined
+  -- by a chosen MoC. It provides /process constructors/ as means of
+  -- instantiating processes (see <#proc-definition the process definition>).
+  -- This layer provides:
+  --
+  -- * 4 atoms as infix operators. To show their generality, these
+  -- atoms are implemented as part of a type class 'MoC'. Since we
+  -- have stated that each MoC is determined by its tag system, we
+  -- define tag systems for the supported MoCs in form of event
+  -- constructors (i.e. /T/ &#215; /V/) which are instances of the
+  -- 'MoC' class. Therefore each MoC overloads the 4 atom operators to
+  -- implement their specific timing semantics.
+  --
+  -- * a library of meaningful atom compositions as process
+  -- constructors, extensively documented in the "ForSyDe.MoCLib" module.
+
   
-  module ForSyDe.Core.ValueExt,
+  MoC(..),
          
   
   -- * Vector type
        module ForSyDe.Core.Vector,
        module ForSyDe.Core.Utilities,
+       module ForSyDe.Core.ValueExt,
 
   -- * Bibliography
 
@@ -132,3 +222,5 @@ import ForSyDe.Core.Signal
 import ForSyDe.Core.Vector
 import ForSyDe.Core.Utilities
 import ForSyDe.Core.ValueExt
+import ForSyDe.Core.MoC
+

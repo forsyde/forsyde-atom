@@ -20,7 +20,7 @@ infixr 3 :-
 -- doing so, we benefit from the
 -- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird-Merteens formalism>,
 -- thus all properties of lists may be applied to 'Signal's also.
---
+-- 
 -- A signal's order is determined by the order of application of its
 -- constructors. Thus the finite signal @{e0, e1, e2, e3}@ is created
 -- using the operations
