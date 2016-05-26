@@ -26,7 +26,7 @@ FIGS_DIR        = ./figs
 
 PDF_FIGS	= $(patsubst $(FIGS_ORIG_DIR)/%.pdf,$(FIGS_DIR)/%.pdf,$(wildcard $(FIGS_ORIG_DIR)/*.pdf))
 EPS_FIGS	= $(patsubst $(FIGS_ORIG_DIR)/%.eps,$(FIGS_DIR)/%.pdf,$(wildcard $(FIGS_ORIG_DIR)/*.eps))
-TIKZ_FIGS	= $(patsubst $(FIGS_ORIG_DIR)%.tex,$(FIGS_DIR)%.pdf,$(wildcard $(FIGS_ORIG_DIR)/*.tex))
+TIKZ_FIGS	= $(patsubst $(FIGS_ORIG_DIR)%.tex,$(FIGS_DIR)%.png,$(wildcard $(FIGS_ORIG_DIR)/*.tex))
 SVG_FIGS	= $(patsubst $(FIGS_ORIG_DIR)%.svg,$(FIGS_DIR)%.pdf,$(wildcard $(FIGS_ORIG_DIR)/*.svg))
 JPG_FIGS	= $(patsubst $(FIGS_ORIG_DIR)/%.jpg,$(FIGS_DIR)/%.jpg,$(wildcard $(FIGS_ORIG_DIR)/*.jpg))
 PNG_FIGS	= $(patsubst $(FIGS_ORIG_DIR)/%.png,$(FIGS_DIR)/%.png,$(wildcard $(FIGS_ORIG_DIR)/*.png))
@@ -83,12 +83,11 @@ $(EPS_FIGS) : figs/%.pdf : figs_orig/%.eps
 	a2ping --gsextra='$(GS_OPTS)' --outfile=$@  $(<)
 
 # Rules for Tikz and LaTeX figures
-$(TIKZ_FIGS): figs/%.pdf: figs_orig/%.tex
+$(TIKZ_FIGS): figs/%.png: figs_orig/%.tex
 	@echo $(@F)
 	TEXINPUTS=:$(FIGS_ORIG_DIR)/:$(STYDIR)/ pdflatex $(*F)
-	mv $(@F) $@ 
-	convert -density 150 $@ -quality 90 $@.png
-	rm $@	
+	convert -density 150 $(basename $(*F)).pdf -quality 90 $@
+	rm $(basename $(*F)).pdf
 	rm *.log
 	rm *.aux
 

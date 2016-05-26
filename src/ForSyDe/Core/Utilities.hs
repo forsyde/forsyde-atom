@@ -1,4 +1,55 @@
-module ForSyDe.Core.Utilities where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  ForSyDe.Core.Utilities
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
+-- License     :  BSD-style (see the file LICENSE)
+-- 
+-- Maintainer  :  ugeorge@kth.se
+-- Stability   :  experimental
+-- Portability :  portable
+--
+-- This module implements general purpose utility functions. It mainly
+-- hosts functions dealing with tuples. Utilities are provided for up
+-- until 8-tuples. Follow the examples in the source code in case it
+-- does not suffice.
+-----------------------------------------------------------------------------
+
+module ForSyDe.Core.Utilities(
+  -- * @at@ functions
+  
+  -- | The @at@/xy/ functions return the /y/-th element of an
+  -- /x/-tuple.
+  
+  at21, at22,
+  at31, at32, at33,
+  at41, at42, at43, at44,
+  at51, at52, at53, at54, at55,
+  at61, at62, at63, at64, at65, at66, 
+  at71, at72, at73, at74, at75, at76, at77,
+  at81, at82, at83, at84, at85, at86, at87, at88,
+
+  -- * @funzip@ functions
+
+  -- | The @funzip@/x/ name stands for "functor unzip" and, as the
+  -- name suggests, it "lifts" a functor of /x/-tuple into an /x/-tuple
+  -- of functor.
+
+  funzip2, funzip3, funzip4, funzip5, funzip6, funzip7, funzip8,
+
+  -- * The @unzip@ utilities
+
+  -- | They are implemented as double @funzip@s, and provided as
+  -- postfix operators. They are used for uzipping MoC atoms.
+
+  (-<),
+  (-<<),
+  (-<<<),
+  (-<<<<),
+  (-<<<<<),
+  (-<<<<<<),
+  (-<<<<<<<),
+  
+  ) where
 
 import Prelude hiding (unzip3, filter)
 
@@ -73,7 +124,6 @@ funzip8 x = (at81 <$> x,
              at86 <$> x,
              at87 <$> x,
              at88 <$> x)
-
 
 infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
 (-<)       s = funzip2 (funzip2 <$> s)

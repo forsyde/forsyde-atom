@@ -38,7 +38,7 @@ author:              George Ungureanu
 -- category:            
 build-type:          Simple
 cabal-version:       >=1.22
-extra-doc-files:     includes/figs/*.pdf.png
+extra-doc-files:     includes/figs/*.png
 
 library
   exposed-modules:     ForSyDe

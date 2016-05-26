@@ -39,7 +39,7 @@ infixl 3 ->-, -&-
 --the following function as the type constructor for a MoC-bound
 --signal:
 --
--- <<includes/figs/signal-constructor-formula.pdf.png>>
+-- <<includes/figs/signal-constructor-formula.png>>
 --
 class MoC e where
 
@@ -47,7 +47,7 @@ class MoC e where
   -- mapping a function on extended values to a MoC-bound signal
   -- (signal of tagged events). Its mathematical definition is:
   --
-  -- <<includes/figs/star-atom-formula.pdf.png>>
+  -- <<includes/figs/star-atom-formula.png>>
   --
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
@@ -59,7 +59,7 @@ class MoC e where
   -- functions (bound to a MoC) with a signal of values (bound to the
   -- same MoC). Its mathematical signature is:
   --
-  -- <<includes/figs/ostar-atom-formula.pdf.png>>
+  -- <<includes/figs/ostar-atom-formula.png>>
   --
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
@@ -77,7 +77,7 @@ class MoC e where
   -- @-\>-@ atom prepends an event at the head of a signal. Its
   -- signature used in mathematical formulas is:
   --
-  -- <<includes/figs/pre-atom-formula.pdf.png>>
+  -- <<includes/figs/pre-atom-formula.png>>
   (->-) :: e a -> Signal (e a) -> Signal (e a)
    
   -- | Another property, this time derived from the tagged signal
@@ -89,7 +89,7 @@ class MoC e where
   -- positive constant", thus preserving its characteristic function
   -- intact. Its signature used in mathematical formulas is:
   --
-  -- <<includes/figs/phi-atom-formula.pdf.png>>
+  -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
            
 -----------------------------------------------------------------------------

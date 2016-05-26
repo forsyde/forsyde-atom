@@ -41,7 +41,7 @@ module ForSyDe.Core (
   -- a MoC.
   --
   -- #sig-definition#
-  -- <<includes/figs/tagged-signal-model.pdf.png>>
+  -- <<includes/figs/tagged-signal-model.png>>
 
   Signal(..),
 
@@ -68,7 +68,7 @@ module ForSyDe.Core (
   -- functionality. 
   --
   -- #proc-definition#
-  -- <<includes/figs/process_definition.pdf.png>>
+  -- <<includes/figs/process_definition.png>>
   --
   -- Since processes are functions, process composition is equivalent
   -- to function composition. This means that composing two processes
@@ -82,7 +82,7 @@ module ForSyDe.Core (
   --  "streams" the result from @p1@ to @p2@, as suggested in the
   --  drawing:
   --
-  -- <<includes/figs/ser-composition-formula.pdf.png>>
+  -- <<includes/figs/ser-composition-formula.png>>
   --
   -- [@process networks@] in ForSyDe originate from Reekie's process
   -- nets <#reekie95 [2]> and describe ForSyDe systems in terms of
@@ -91,7 +91,7 @@ module ForSyDe.Core (
   -- is a process itself. The composition above @p2 . p1 @ can also be
   -- regarded as a process network.
   --
-  -- <<includes/figs/process-network-formula.pdf.png>>
+  -- <<includes/figs/process-network-formula.png>>
 
   -- ** Extended values
 
@@ -109,7 +109,7 @@ module ForSyDe.Core (
   -- [@undefined value@ ?] suggests a non-determinate value, similar
   -- to the "anything" (@x@ value) in VHDL
   --
-  -- <<includes/figs/extended-values.pdf.png>>
+  -- <<includes/figs/extended-values.png>>
   
   Value(..),
 
@@ -181,7 +181,7 @@ module ForSyDe.Core (
   -- below:
   --
   -- #3layer#
-  -- <<includes/figs/3-layered-process.pdf.png>>
+  -- <<includes/figs/3-layered-process.png>>
 
   -- ** The synchronization layer
 
@@ -222,7 +222,7 @@ module ForSyDe.Core (
   -- the composition of the respective primitive processes, like in
   -- the example below:
   --
-  -- <<includes/figs/pn-example-constructor.pdf.png>>
+  -- <<includes/figs/pn-example-constructor.png>>
   --
   -- Now if we visualize process networks as graphs, where processes
   -- are nodes and signals are edges, a meaningful process composition
@@ -235,6 +235,37 @@ module ForSyDe.Core (
   --
   -- For an extensive list with the provided process constructors,
   -- please consult the module "ForSyDe.MoCLib"
+
+  -- *** The "unzip" utility
+  --
+  -- | Recall that in our <#proc-definition definition for processes>,
+  -- the return type may be an /n/-arry cartesian product. A caveat of
+  -- founding the ForSyDe framework on a functional language is that,
+  -- although we can express cartesian products for input arguments
+  -- using the curried notation (which is very powerful in combination
+  -- with an applicative style), we cannot do so for return types. For
+  -- the latter we must rely on tuples.
+  --
+  -- Working with tuples of data wrapped as @Event@ which is also
+  -- wrapped in a 'Signal' structure becomes extremely
+  -- cumbersome. Take for example the case of a process constructed
+  -- with /pc/ in equation (1) below. Using only the provided atoms to
+  -- implement /pc/ would give us a process which returns only one
+  -- signal of a tuple and not, as we would like, a tuple of signals
+  -- of events.
+  --
+  -- <<includes/figs/unzip-example.png>>
+  --
+  -- Therefore, by implementing the data types associated with signals
+  -- and events as instances of 'Functor', we were able to provide a
+  -- (set of) /unzip/ process(es) defined as in equation (2) above, as
+  -- part of the "ForSyDe.Core.Utilities" module.  Mind that we call
+  -- /unzip/ a utility process and not an atom, since it has no
+  -- sinchronization nor behavior semantic. It just conveniently
+  -- "lifts" the wrapped tuples in order to create "collections" of
+  -- events and signals, and it is imposed by the mechanisms of the
+  -- type system in the host language.
+
   
   -- ** Behavior layer
 
@@ -278,34 +309,7 @@ module ForSyDe.Core (
 
   -- | The 'ForSyDe.Core' module also provides a set of utility
   -- functions, mainly for aiding the designer to avoid working with
-  -- event tuples which might polute the design.
-  --
-  -- The most important utilities are the "unzip" processes. Recall
-  -- that our <#proc-definition definition for processes>, the return
-  -- type may be an /n/-arry cartesian product. A caveat of founding
-  -- the ForSyDe framework on a functional language is that, although
-  -- we can express cartesian products for input arguments using the
-  -- curried notation (which is very powerful in combination with an
-  -- applicative style), we cannot do so for return types. For the
-  -- latter we must rely on tuples.
-  --
-  -- Working with tuples of data wrapped on <#3layer so many layers>
-  -- becomes extremely cumbersome. Take for example the case of a
-  -- process constructed with /pc/ in equation (1) below. Using only
-  -- the provided atoms to implement /pc/ would give us a process
-  -- which returns only one signal of an extended tuple and not, as we
-  -- would like, a tuple of signals of events.
-  --
-  -- <<includes/figs/unzip-example.pdf.png>>
-  --
-  -- Therefore, by implementing the data types associated with all
-  -- layers as instances of 'Functor', we were able to provide a (set
-  -- of) /unzip/ process(es) defined as in equation (2) above. Mind
-  -- that we call /unzip/ a utility process and not an atom, since it
-  -- has no sinchronization nor behavior semantic. It just
-  -- conveniently "lifts" the wrapped tuples in order to create
-  -- multiple events and multiple signals, and it is imposed by the
-  -- mechanisms of the type system in the host language.
+  -- event tuples which might polute the design. 
   --
   -- For a list of all the provided utilities, please consult the
   -- following module:
