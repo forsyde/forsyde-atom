@@ -37,7 +37,7 @@ STYLEFILES   = $(wildcard $(STYDIR)/*.sty)
 all: pre figs
 
 pre:
-	mkdir -p includes/figs
+	mkdir -p figs
 
 figs : $(EPS_FIGS) $(PDF_FIGS) $(XFIG_FIGS) $(SVG_FIGS) \
 	$(JPG_FIGS) $(PNG_FIGS) $(LATEXFILES) $(TIKZ_FIGS) \
