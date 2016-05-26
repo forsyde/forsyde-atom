@@ -1,5 +1,5 @@
 {-# LANGUAGE PostfixOperators #-}
-{-# OPTIONS_HADDOCK prune, show-extensions #-}
+{-# OPTIONS_HADDOCK show-extensions #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core.Signal
@@ -10,6 +10,8 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
+-- This module implements the atoms and process constructors for the
+-- synchronization layer.
 -----------------------------------------------------------------------------
 
 module ForSyDe.Core.MoC where
