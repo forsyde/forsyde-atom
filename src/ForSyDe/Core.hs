@@ -180,6 +180,7 @@ module ForSyDe.Core (
   -- A depiction of the layers of a process can be seen in the picture
   -- below:
   --
+  -- #3layer#
   -- <<includes/figs/3-layered-process.pdf.png>>
 
   -- ** The synchronization layer
@@ -200,26 +201,97 @@ module ForSyDe.Core (
   -- * a library of meaningful atom compositions as process
   -- constructors, extensively documented in the "ForSyDe.MoCLib" module.
 
+  -- *** Atoms
   
   MoC(..),
-         
-  
-  -- * Vector type
-       module ForSyDe.Core.Vector,
-       module ForSyDe.Core.Utilities,
-       module ForSyDe.Core.ValueExt,
 
+  -- *** Constructors
+
+  -- | As mentioned, process constructors are simply meaningful
+  -- compositions of synchronization atoms. since in the
+  -- <#3layer 3-layered process model> this is represented as the
+  -- outer layer, we can consider that by passing (applied)
+  -- behavior-layer functions to them we obtain processes just like in
+  -- the <#proc-definition process definition>.
+  --
+  -- Recall that by composing /n/ processes, we obtain a process
+  -- network, where each composition infers a signal between two
+  -- processes. This mechanism also works in the sense that by (fully)
+  -- applying a constructor obtained from the composition of two other
+  -- (atom) constructors, we obtain a process network equivalent to
+  -- the composition of the respective primitive processes, like in
+  -- the example below:
+  --
+  -- <<includes/figs/pn-example-constructor.pdf.png>>
+  --
+  -- Now if we visualize process networks as graphs, where processes
+  -- are nodes and signals are edges, a meaningful process composition
+  -- could be regarded as graph patterns. Therefore it is safe to
+  -- associate process constructors as patterns in process networks.
+  --
+  -- [@process network patterns@] is another view of process
+  -- constructors if we regard process networks as graphs and
+  -- meaningful compositions of atoms as graph patterns.
+  --
+  -- For an extensive list with the provided process constructors,
+  -- please consult the module "ForSyDe.MoCLib"
+  
+  -- ** Behavior layer
+
+  -- | As seen in <#3layer layered process model>, the behavior layer
+  -- abstracts the semantics implied by the extended values. In other
+  -- words, the constructors of this layer dictate what action to be
+  -- performed in case of different event types. This layer provides:
+  -- 
+  -- * a set of behavior atoms. Since we defined only one data type
+  -- for extended values (the 'Value' type) they have been implemented
+  -- as normal functions instead of class methods.
+  --
+  -- * a library of function wrappers as specific behavior atom
+  -- compositions. These wrappers are meant to be passed to the the
+  -- synchronziation layer constructors as arguments when implementing
+  -- process constructors.
+
+  -- *** Atoms
+  
+  (>$), (>*), (>!), (>?), (>%),
+
+  -- *** Behavior wrappers
+  
+  -- | Wrappers are the behavior layer entities passed as arguments
+  -- to the synchronization layer. They are implemented as specific
+  -- compositions of behavior atoms.
+  --
+  -- For extended documentation on the available behavior wrappers
+  -- please consult the module "ForSyDe.WrapLib"
+
+
+  -- ** Function layer
+
+  -- | As seen in the <#3layer layered process model> the function
+  -- layer abstracts nothing. It exposes the actual transformations on
+  -- the event values as specified by a system designer. Needless to
+  -- say, they are taken as arguments (and wrapped) by the behavior
+  -- layer wrappers.
+
+  -- * Utilities
+
+  -- | The 'ForSyDe.Core' module also provides a set of utility
+  -- functions, mainly for aiding the designer to avoid to working
+  -- with event tuples or zip/unzip processes which might polute the
+  -- design.
+
+  module ForSyDe.Core.Utilities,
+         
   -- * Bibliography
 
   -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229. 
 
   -- | #reekie95# [2] Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming. 
-
        
 ) where
 
 import ForSyDe.Core.Signal
-import ForSyDe.Core.Vector
 import ForSyDe.Core.Utilities
 import ForSyDe.Core.ValueExt
 import ForSyDe.Core.MoC

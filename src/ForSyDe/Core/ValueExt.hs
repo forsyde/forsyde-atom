@@ -13,8 +13,6 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Core.ValueExt where
 
-import ForSyDe.Core.Vector
-
 -- |The data type 'Value' wraps arbtrary types to extend them with
 -- tokens carrying special behavioural semantics, as defined by
 -- ForSyDe
@@ -48,7 +46,7 @@ instance Functor Value where
   fmap f (Value x) = Value (f x)
 
 -- | 'Applicative' instance. Check source code for the lifting
--- rules. Provides the @(\<*\>)@ operator.
+-- rules. Provides the @(\<*\>)@ operator
 instance Applicative Value where
   pure = Value 
   (Value x) <*> (Value y) = Value (x y)
@@ -62,51 +60,89 @@ instance Applicative Value where
 -- Behavioural implementations
 -----------------------------------------------------------------------------
 
--- | The equivalent of the 'fmap' function or the @(\<$\>)@ infix
+infixl 4 >$, >*, >! , >?,  >%
+-- | The exact equivalent of the 'fmap' function or the '<$>' infix
 -- operator for extended values. It bypasses the special values and
--- maps a function @f@ to a wrapped value.
+-- maps a function @f@ to a wrapped value. It may be regarded as the
+-- "default behavior" of a process.
 --
 -- >>> let (a,u,v)=(Abst,Undef,Value 1)
 -- >>> (a,u,v)
 -- (⟂,?,1)
 -- >>> let f = (+1)
--- >>> (mapValue f a, mapValue f u, mapValue f v)
+-- >>> (f >$ a, f >$ u, f >$ v)
 -- (⟂,?,2)
 -- >>> (f <$> a, f <$> u, f <$> v)
 -- (⟂,?,2)
-mapValue :: (a -> b) -> Value a -> Value b
-mapValue = fmap
+--
+-- As seen in the example above, '$>' is interchangeable with '<$>'.
 
--- | The equivalent of the applicative operator @(\<*\>)@ for extended
--- values. Check the source source code for the Applicative instance
--- to see the lifting rules.
+(>$) :: (a -> b) -> Value a -> Value b
+(>$) = fmap
+
+-- | The exact equivalent of the applicative operator '<*>' for
+-- extended values. It may be regarded as the default behavior in case
+-- two events interact with each other. Check the source source code
+-- for the Applicative instance to see the lifting rules.
 --
 -- >>> let (a,u,v)=(Abst,Undef,Value 1)
 -- >>> (a,u,v)
 -- (⟂,?,1)
 -- >>> let f = (+1)
--- >>> liftValue (Value (+1)) v
- -- 2
--- >>> liftValue (Value (+1)) u
--- ?
--- >>> liftValue (Value (+1)) a
--- *** Exception: Illegal occurrence of an absent and present event
--- >>> -- A more interesting application is when we combine <$> and <*>
--- >>> (+) <$> v <*> v
+-- >>> (Value (+1)) >* v
 -- 2
--- >>> (+) <$> v <*> u
+-- >>> (Value (+1)) >* u
 -- ?
--- >>> (+) <$> a <*> v
+-- >>> (Value (+1)) >* a
 -- *** Exception: Illegal occurrence of an absent and present event
-liftValue :: Value (a -> b) -> Value a -> Value b
-liftValue = (<*>)
+--
+-- Things get interesting when we combine '$>' and '*>'. As
+-- expected, below we get the same results:
+-- 
+-- >>> (+) >$ v >* v
+-- 2
+-- >>> (+) >$ v >* u
+-- ?
+-- >>> (+) >$ a >* v
+-- *** Exception: Illegal occurrence of an absent and present event
+--
+-- As with '$>', '*>' is also interchangeable with '<*>'.
+(>*) :: Value (a -> b) -> Value a -> Value b
+(>*) = (<*>)
 
--- | replaces one wrapped value with another one based on a wrapped boolean predicate 
-predicate :: Value a    -- ^ value to replace with
-          -> Value Bool -- ^ wrapped boolean predicate
-          -> Value a    -- ^ value to replace
-          -> Value a    -- ^ result
-predicate t p x = if p == Value True then x else t
+-- | Predicate atom which replaces a value with and absent event based
+-- on a boolean.
+--
+-- >>> let p = map Value [True, True, False, False]
+-- >>> zipWith (>!) p [Value 1, Undef, Value 2, Abst]
+-- [1,?,⟂,⟂]
+(>!) :: Value Bool  -- ^ wrapped boolean predicate
+     -> Value a     -- ^ value to replace
+     -> Value a     -- ^ result
+p >! x = if p == Value True then x else Abst
+
+-- | Predicate atom which replaces a value with undefined based on a
+-- boolean. The 'Abst' event persists.
+--
+-- >>> let p = map Value [True, True, False, False]
+-- >>> zipWith (>?) p [Value 1, Undef, Value 2, Abst]
+-- [1,?,?,⟂]
+(>?) :: Value Bool  -- ^ wrapped boolean predicate
+      -> Value a     -- ^ value to replace
+      -> Value a     -- ^ result
+p >? Abst = Abst
+p >? x    = if p == Value True then x else Undef
+
+-- | serial storage atom. Stores only present values
+--
+-- >>> Value [] >% Value 1 >% Undef >% Value 2 >% Abst
+-- [2,1]
+(>%) :: Value [a]  -- ^ input storing buffer wrapped as value
+      -> Value a   -- ^ value to be stored
+      -> Value [a] -- ^ output buffer
+buff >% Abst   = buff
+buff >% Undef  = buff
+buff >% Value a = (:) <$> Value a <*> buff
 
 -----------------------------------------------------------------------------
 -- Helper functions
@@ -137,15 +173,5 @@ isUndefined _            = False
 isPresent (Value _)       = True
 isPresent _              = False
 
-
-
-infixl 5 >¤
--- | serial storage infix operator. Stores only present values
-(>¤) :: Value (Vector a) -- ^ input storing buffer wrapped as value
-     -> Value a          -- ^ value to be storred
-     -> Value (Vector a) -- ^ output buffer
-buff >¤ Abst   = buff
-buff >¤ Undef  = buff
-buff >¤ Value a = (:>) <$> Value a <*> buff
 
 ------------------------------------------------------------------------------

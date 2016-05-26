@@ -34,7 +34,12 @@ XFIG_FIGS       = $(patsubst $(FIGS_ORIG_DIR)/%.fig,$(FIGS_DIR)/%.pdf_t,$(wildca
 
 STYLEFILES   = $(wildcard $(STYDIR)/*.sty)
 
-all : $(EPS_FIGS) $(PDF_FIGS) $(XFIG_FIGS) $(SVG_FIGS) \
+all: pre figs
+
+pre:
+	mkdir -p includes/figs
+
+figs : $(EPS_FIGS) $(PDF_FIGS) $(XFIG_FIGS) $(SVG_FIGS) \
 	$(JPG_FIGS) $(PNG_FIGS) $(LATEXFILES) $(TIKZ_FIGS) \
 	Makefile $(STYLEFILES)
 

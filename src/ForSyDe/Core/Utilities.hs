@@ -195,14 +195,14 @@ infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
 (-<<<<<<)  s = funzip7 (funzip7 <$> s)
 (-<<<<<<<) s = funzip8 (funzip8 <$> s)
 
-store1 buff a1                      = buff >¤ a1
-store2 buff a1 a2                   = buff >¤ a1 >¤ a2
-store3 buff a1 a2 a3                = buff >¤ a1 >¤ a2 >¤ a3
-store4 buff a1 a2 a3 a4             = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4
-store5 buff a1 a2 a3 a4 a5          = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5
-store6 buff a1 a2 a3 a4 a5 a6       = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5 >¤ a6
-store7 buff a1 a2 a3 a4 a5 a6 a7    = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5 >¤ a6 >¤ a7
-store8 buff a1 a2 a3 a4 a5 a6 a7 a8 = buff >¤ a1 >¤ a2 >¤ a3 >¤ a4 >¤ a5 >¤ a6 >¤ a7 >¤ a8
+store1 buff a1                      = buff >% a1
+store2 buff a1 a2                   = buff >% a1 >% a2
+store3 buff a1 a2 a3                = buff >% a1 >% a2 >% a3
+store4 buff a1 a2 a3 a4             = buff >% a1 >% a2 >% a3 >% a4
+store5 buff a1 a2 a3 a4 a5          = buff >% a1 >% a2 >% a3 >% a4 >% a5
+store6 buff a1 a2 a3 a4 a5 a6       = buff >% a1 >% a2 >% a3 >% a4 >% a5 >% a6
+store7 buff a1 a2 a3 a4 a5 a6 a7    = buff >% a1 >% a2 >% a3 >% a4 >% a5 >% a6 >% a7
+store8 buff a1 a2 a3 a4 a5 a6 a7 a8 = buff >% a1 >% a2 >% a3 >% a4 >% a5 >% a6 >% a7 >% a8
 
 
 
