@@ -59,6 +59,21 @@ module ForSyDe.Core.MoC(
   -- <<includes/figs/delay-graph.png>>
   delay, (-&>-),
 
+  -- ** @scanl@
+
+  -- | @scanl@ processes model generates the graph shown below. There
+  -- exists a variant with 0 input signals, in which case the process
+  -- is a signal generator.
+  --
+  -- <<includes/figs/scanl-formula.png>>
+  -- <<includes/figs/scanl-graph.png>>
+
+  scanl01, scanl02, scanl03, scanl04,
+  scanl11, scanl12, scanl13, scanl14,
+  scanl21, scanl22, scanl23, scanl24,
+  scanl31, scanl32, scanl33, scanl34,
+  scanl41, scanl42, scanl43, scanl44,
+  
   -- ** @moore@
 
   -- | @moore@ processes model Moore state machines.
@@ -153,6 +168,7 @@ class MoC e where
   --
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
+
            
 -----------------------------------------------------------------------------
 comb11 f s1          = (f -$- s1)
@@ -175,6 +191,47 @@ comb44 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<<)
 infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)
 i -&>- xs  = delay i xs
+
+scanl01 ns i             = st
+  where st               = i -&>- comb11 ns st
+scanl02 ns i             = (funzip2 -$- st -<)
+  where st               = i -&>- comb11 ns st
+scanl03 ns i             = (funzip3 -$- st -<<)
+  where st               = i -&>- comb11 ns st
+scanl04 ns i             = (funzip4 -$- st -<<<)
+  where st               = i -&>- comb11 ns st
+scanl11 ns i s1          = st
+  where st               = i -&>- comb21 ns st s1
+scanl12 ns i s1          = (funzip2 -$- st -<)
+  where st               = i -&>- comb21 ns st s1
+scanl13 ns i s1          = (funzip3 -$- st -<<)
+  where st               = i -&>- comb21 ns st s1
+scanl14 ns i s1          = (funzip4 -$- st -<<<)
+  where st               = i -&>- comb21 ns st s1
+scanl21 ns i s1 s2       = st
+  where st               = i -&>- comb31 ns st s1 s2
+scanl22 ns i s1 s2       = (funzip2 -$- st -<)
+  where st               = i -&>- comb31 ns st s1 s2
+scanl23 ns i s1 s2       = (funzip3 -$- st -<<)
+  where st               = i -&>- comb31 ns st s1 s2
+scanl24 ns i s1 s2       = (funzip4 -$- st -<<<)
+  where st               = i -&>- comb31 ns st s1 s2
+scanl31 ns i s1 s2 s3    = st
+  where st               = i -&>- comb41 ns st s1 s2 s3
+scanl32 ns i s1 s2 s3    = (funzip2 -$- st -<)
+  where st               = i -&>- comb41 ns st s1 s2 s3
+scanl33 ns i s1 s2 s3    = (funzip3 -$- st -<<)
+  where st               = i -&>- comb41 ns st s1 s2 s3
+scanl34 ns i s1 s2 s3    = (funzip4 -$- st -<<<)
+  where st               =  i -&>- comb41 ns st s1 s2 s3
+scanl41 ns i s1 s2 s3 s4 = st
+  where st               =  i -&>- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
+scanl42 ns i s1 s2 s3 s4 = (funzip2 -$- st -<)
+  where st               =  i -&>- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
+scanl43 ns i s1 s2 s3 s4 = (funzip3 -$- st -<<)
+  where st               =  i -&>- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
+scanl44 ns i s1 s2 s3 s4 = (funzip4 -$- st -<<<)
+  where st               =  i -&>- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
 
 moore11 ns od i s1          = comb11 od st
@@ -243,6 +300,3 @@ mealy43 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<)
 mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
   where st            = i -&>- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
 
-
--- | The process constructor 'filter' discards the values who do not fulfill a predicate given by a predicate function and replaces them with as5ent events.
--- filter p s1 = predicate Abst -$- s1 

@@ -29,7 +29,7 @@ module ForSyDe.Core.ValueExt(
   -- behavior wrappers. Each atom has a distinct behavioural semantic
   -- which reflects a real (analizable, implementable) behavior.
   
-  (>$), (>*), (>!), (>?), (>%),
+  (>$), (>*), (>%), replace, unsafeReplace,
 
   -- * Behavior wrappers
   
@@ -126,7 +126,7 @@ instance Applicative Value where
 -- Behavioural implementations
 -----------------------------------------------------------------------------
 
-infixl 4 >$, >*, >! , >?,  >%
+infixl 4 >$, >*,  >%
 -- | The exact equivalent of the 'fmap' function or the '<$>' infix
 -- operator for extended values. It bypasses the special values and
 -- maps a function @f@ to a wrapped value. It may be regarded as the
@@ -175,28 +175,36 @@ infixl 4 >$, >*, >! , >?,  >%
 (>*) :: Value (a -> b) -> Value a -> Value b
 (>*) = (<*>)
 
--- | Predicate atom which replaces a value with and absent event based
--- on a boolean.
+-- | Predicate atom which replaces a value with another value.
+-- The 'Abst' event persists.
 --
--- >>> let p = map Value [True, True, False, False]
--- >>> zipWith (>!) p [Value 1, Undef, Value 2, Abst]
--- [1,?,⟂,⟂]
-(>!) :: Value Bool  -- ^ wrapped boolean predicate
+-- >>> let ps = map Value [False,   False, True,    True]
+-- >>> let xs =           [Value 1, Undef, Value 2, Abst] 
+-- zipWith (replace (Value 5)) ps xs
+-- [1,?,5,⟂]
+-- zipWith (replace Undef) ps xs
+-- [1,?,?,⟂]
+replace :: Value a  -- ^ value to replace with
+     -> Value Bool  -- ^ boolean predicate     
      -> Value a     -- ^ value to replace
      -> Value a     -- ^ result
-p >! x = if p == Value True then x else Abst
+replace _ _ Abst = Abst
+replace v p x    = if p == Value True then v else x
 
--- | Predicate atom which replaces a value with undefined based on a
--- boolean. The 'Abst' event persists.
+-- | Predicate atom which replaces a value with another value.
+-- Overwrites even 'Abst' events.
 --
--- >>> let p = map Value [True, True, False, False]
--- >>> zipWith (>?) p [Value 1, Undef, Value 2, Abst]
--- [1,?,?,⟂]
-(>?) :: Value Bool  -- ^ wrapped boolean predicate
-      -> Value a     -- ^ value to replace
-      -> Value a     -- ^ result
-p >? Abst = Abst
-p >? x    = if p == Value True then x else Undef
+-- >>> let ps = map Value [False,   False, True,    True]
+-- >>> let xs =           [Value 1, Undef, Value 2, Abst] 
+-- zipWith (replace (Value 5)) ps xs
+-- [1,?,5,5]
+-- zipWith (replace Undef) ps xs
+-- [1,?,?,?]
+unsafeReplace :: Value a  -- ^ value to replace with
+     -> Value Bool  -- ^ boolean predicate     
+     -> Value a     -- ^ value to replace
+     -> Value a     -- ^ result
+unsafeReplace v p x = if p == Value True then x else v
 
 -- | serial storage atom. Stores only present values
 --
@@ -218,11 +226,11 @@ fromValue         :: a -> Value a -> a
 -- |The function 'fromValue' converts a value from a extended value.
 unsafeFromValue   ::  Value a -> a
 -- |The functions 'isPresent' checks for the presence of a value.
-isPresent         :: Value a -> Bool
+isPresent         :: Value a -> Value Bool
 -- |The functions 'isAbsent' checks for the absence of a value.
-isAbsent          :: Value a -> Bool
+isAbsent          :: Value a -> Value Bool
 -- |The functions 'isUndefined' checks if the value is defined.
-isUndefined       :: Value a -> Bool
+isUndefined       :: Value a -> Value Bool
 -- | The function 'abstExt' converts a usual value to a present value. 
 value           :: a -> Value a  
 
@@ -231,12 +239,12 @@ fromValue x Abst         = x
 fromValue _ (Value y)     = y
 unsafeFromValue (Value y) = y
 unsafeFromValue Abst     = error "Should not be absent or undefined"
-isAbsent Abst            = True
-isAbsent _               = False
-isUndefined Undef        = True
-isUndefined _            = False
-isPresent (Value _)       = True
-isPresent _              = False
+isAbsent Abst            = Value True
+isAbsent _               = Value False
+isUndefined Undef        = Value True
+isUndefined _            = Value False
+isPresent (Value _)      = Value True
+isPresent _              = Value False
 
 
 -----------------------------------------------------------------------------

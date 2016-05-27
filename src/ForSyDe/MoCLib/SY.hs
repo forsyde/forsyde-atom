@@ -114,6 +114,57 @@ comb43 f = MoC.comb43 (psi43 f)
 comb44 f = MoC.comb44 (psi44 f)
 
 
+-- scanl11 :: (s1 -> a1 -> b1) -> st
+--         -> Sig a1 -> Sig b1                                
+-- scanl12 :: ((s1, s2) -> a1 -> (b1, b2)) -> (b1, b2)
+--         -> Sig a1 -> (Sig b1, Sig b2)                          
+-- scanl13 :: ((s1, s2, s3) -> a1 -> (b1, b2, b3)) -> (b1, b2, b3)
+--         -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
+-- scanl14 :: ((s1, s2, s3, s4) -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+--         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
+-- scanl21 :: (s1 -> a1 -> a2 -> b1) -> st
+--         -> Sig a1 -> Sig a2 -> Sig b1                          
+-- scanl22 :: ((s1, s2) -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
+--         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)                    
+-- scanl23 :: ((s1, s2, s3) -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
+--         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
+-- scanl24 :: ((s1, s2, s3, s4) -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+--         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
+-- scanl31 :: (s1 -> a1 -> a2 -> a3 -> b1) -> st
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
+-- scanl32 :: ((s1, s2) -> a1 -> a2 -> a3 -> (b1, b2)) -> (b1, b2)
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
+-- scanl33 :: ((s1, s2, s3) -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (b1, b2, b3)
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
+-- scanl34 :: ((s1, s2, s3, s4) -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
+-- scanl41 :: (s1 -> a1 -> a2 -> a3 -> a4 -> b1) -> st
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
+-- scanl42 :: ((s1, s2) -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (b1, b2)
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
+-- scanl43 :: ((s1, s2, s3) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (b1, b2, b3)
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
+-- scanl44 :: ((s1, s2, s3, s4) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+--         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
+
+-- scanl11 ns od i = MoC.scanl11 (psi21 ns) (value i)
+-- scanl12 ns od i = MoC.scanl12 (psi22 ns) (value i)
+-- scanl13 ns od i = MoC.scanl13 (psi23 ns) (value i)
+-- scanl14 ns od i = MoC.scanl14 (psi24 ns) (value i)
+-- scanl21 ns od i = MoC.scanl21 (psi31 ns) (value i)
+-- scanl22 ns od i = MoC.scanl22 (psi31 ns) (value i)
+-- scanl23 ns od i = MoC.scanl23 (psi31 ns) (value i)
+-- scanl24 ns od i = MoC.scanl24 (psi31 ns) (value i)
+-- scanl31 ns od i = MoC.scanl31 (psi41 ns) (value i)
+-- scanl32 ns od i = MoC.scanl32 (psi41 ns) (value i)
+-- scanl33 ns od i = MoC.scanl33 (psi41 ns) (value i)
+-- scanl34 ns od i = MoC.scanl34 (psi41 ns) (value i)
+-- scanl41 ns od i = MoC.scanl41 (psi51 ns) (value i)
+-- scanl42 ns od i = MoC.scanl42 (psi51 ns) (value i)
+-- scanl43 ns od i = MoC.scanl43 (psi51 ns) (value i)
+-- scanl44 ns od i = MoC.scanl44 (psi51 ns) (value i)
+
+
 moore11 :: (st -> a1 -> st) -> (st -> b1) -> st
         -> Sig a1 -> Sig b1                                
 moore12 :: (st -> a1 -> st) -> (st -> (b1, b2)) -> st
@@ -218,10 +269,19 @@ mealy44 ns od i = MoC.mealy44 (psi51 ns) (psi54 od) (value i)
 -- FILTER, FILL, HOLD
 
 
--- | The process constructor 'fill' creates a process that 'fills' a signal with present values by replacing as5ent values with a given value. The output signal is not any more of the type 'Arg'.
--- fill :: a -- ^Default value
---        -> Sig (Arg a) -- ^As5ent extended input signal
---        -> Sig a -- ^Output signal
+when :: (a -> Bool) -- ^ Predicate function
+     -> Sig a       -- ^ Input signal
+     -> Sig a       -- ^ Output signal
+when p s = MoC.comb21 (replace Abst) (comb11 p s) s
+
+
+filter :: (a -> Bool) -- ^ Predicate function
+       -> Sig a       -- ^ Input signal
+       -> Sig a       -- ^ Output signal
+filter p s = MoC.comb21 (replace Undef) (comb11 p s) s
+
+fill :: a -> Sig a -> Sig a
+fill x s = MoC.comb21 (unsafeReplace (Value x)) (MoC.comb11 isAbsent s) s
 
 -- -- | The process constructor 'hold' creates a process that 'fills' a signal with values by replacing as5ent values by the preceding present value. Only in s64es, where no preceding value exists, the as5ent value is replaced by a default value. The output signal is not any more of the type 'Arg'.
 -- hold :: a -- ^Default value

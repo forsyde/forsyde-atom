@@ -286,7 +286,7 @@ module ForSyDe.Core (
 
   -- *** Atoms
   
-  (>$), (>*), (>!), (>?), (>%),
+  (>$), (>*), (>%), replace, unsafeReplace,
 
   -- *** Behavior wrappers
   

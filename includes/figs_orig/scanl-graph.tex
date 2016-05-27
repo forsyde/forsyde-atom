@@ -1,0 +1,30 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+\begin{tikzpicture}[nomoccolor]
+  \primitive[moc=sy,f=$ns$]{ns}{0,0}{$\fcomb$};
+  \primitive[moc=sy,f=i]{mem}{0,1}{$\fdelay$};
+  \primitive[moc=sy]{uzp}{2,0}{$\funzip$};
+  \node[anchor=north] (a) at (1,0) {$a$};
+  \node[] (sn) at ($(ns.205)-(1,0)$) {$s^n$};
+  \node[] (sm) at ($(uzp)+(1.5,0)$) {$s^m$};
+
+  %signals
+  \signaln[] (sn) -> (ns.205);
+  \signaln[] (uzp) -> (sm);
+  \signal[] (ns) -> (uzp);
+  \signal[to path={(\tikztostart)|-(\tikztotarget)\tikztonodes}] (a) -> (mem);
+  \signal[to path={(\tikztostart)-|(-.6,1)|-(\tikztotarget)\tikztonodes}] (mem) -> (ns.155);
+  %equivalent node
+  \node at ($(sm)+(1,0)$) {$\equiv$};
+  \moore[f1=$ns$, f2=$od$, f3=i]{mly}{7.5,0}{};
+  \signaln[] (6,0) -> (mly);
+  \signaln[] (mly) -> (9,0);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
