@@ -52,13 +52,13 @@ module ForSyDe.Core.ValueExt(
   -- >>> wf v a v
   -- (*** Exception: Illegal occurrence of an absent and present event
   
-  psi11, psi12, psi13, psi14, psi15, psi16, psi87, psi18,
-  psi21, psi22, psi23, psi24, psi25, psi26, psi87, psi28,
-  psi31, psi32, psi33, psi34, psi35, psi36, psi87, psi38,
-  psi41, psi42, psi43, psi44, psi45, psi46, psi87, psi48,
-  psi51, psi52, psi53, psi54, psi55, psi56, psi87, psi58,
-  psi61, psi62, psi63, psi64, psi65, psi66, psi87, psi68,
-  psi71, psi72, psi73, psi74, psi75, psi76, psi87, psi78,
+  psi11, psi12, psi13, psi14, psi15, psi16, psi17, psi18,
+  psi21, psi22, psi23, psi24, psi25, psi26, psi27, psi28,
+  psi31, psi32, psi33, psi34, psi35, psi36, psi37, psi38,
+  psi41, psi42, psi43, psi44, psi45, psi46, psi47, psi48,
+  psi51, psi52, psi53, psi54, psi55, psi56, psi57, psi58,
+  psi61, psi62, psi63, psi64, psi65, psi66, psi67, psi68,
+  psi71, psi72, psi73, psi74, psi75, psi76, psi77, psi78,
   psi81, psi82, psi83, psi84, psi85, psi86, psi87, psi88,
 
   -- ** @store@
