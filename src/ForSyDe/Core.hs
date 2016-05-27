@@ -199,7 +199,8 @@ module ForSyDe.Core (
   -- implement their specific timing semantics.
   --
   -- * a library of meaningful atom compositions as process
-  -- constructors, extensively documented in the "ForSyDe.MoCLib" module.
+  -- constructors, extensively documented in the "ForSyDe.Core.MoC"
+  -- module.
 
   -- *** Atoms
   

@@ -1,0 +1,47 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+\newsavebox{\hack}
+\savebox{\hack}{$\ostar$}
+
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+  \primitive[moc=sy,f=$f$]{p1}{0,2.25}{$\star$};
+  \primitive[]{p2}{1,1.5}{\usebox{\hack}};
+  \primitive[]{p3}{3,0}{\usebox{\hack}};
+  \primitive[]{p4}{4,0}{$\funzip$};
+  \node[] (in1) at ($(p1)-(1,0)$) {$s_{i,1}$};
+  \node[] (in2) at ($(p2)-(2,0)$) {$s_{i,2}$};
+  \node[] (in3) at ($(p3)-(4,0)$) {$s_{i,n}$};
+  \node[] (ou1) at ($(p4)+(2,2.25)$) {$s_{o,1}$};
+  \node[] (ou2) at ($(p4)+(2,1.5)$) {$s_{o,2}$};
+  \node[] (ou3) at ($(p4)+(2,0)$) {$s_{o,m}$};
+  \node[] at ($(in2)!.5!(in3)$) {$\vdots$}; 
+  \node[] at ($(ou2)!.5!(ou3)$) {$\vdots$};
+  \node[] at ($(p2)!.5!(p3)$) {$\cdots$};
+  \signal[] (in1) -> (p1);
+  \signal[] (in2) -> (p2);
+  \signal[] (in3) -> (p3);
+  \signal[] (p1) -> (p2);
+  \signal[] (p2) -> ($(p2)!.3!(p3)$);
+  \signal[] ($(p2)!.7!(p3)$) -> (p3);
+  \signal[] (p3) -> (p4);
+  \signal[] (p4) - ($(ou1)-(1,0)$); \signal[] ($(ou1)-(1,0)$) -> (ou1);
+  \signal[] (p4) - ($(ou2)-(1,0)$); \signal[] ($(ou2)-(1,0)$) -> (ou2);
+  \signal[] (p4) -> (ou3);
+  
+  \node[] (eq) at ($(ou1)!.5!(ou3)+(1,0)$) {$\equiv$};
+
+  \primitive[f=$f$]{c1} {$(eq)+(2,0)$} {$\oplus$};
+  \node[anchor=south west] (ci) at ($(c1)-(1.5,0)$) {$s_{i}$};
+  \node[anchor=south east] (co) at ($(c1)+(1.5,0)$) {$s_{o}$};
+  \signaln[] (ci.south west) -> (c1);
+  \signaln[] (c1) -> (co.south east);
+  
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
