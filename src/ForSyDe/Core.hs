@@ -234,8 +234,8 @@ module ForSyDe.Core (
   -- constructors if we regard process networks as graphs and
   -- meaningful compositions of atoms as graph patterns.
   --
-  -- For an extensive list with the provided process constructors,
-  -- please consult the module "ForSyDe.MoCLib"
+  -- __/Extended documentation with all the provided process/__
+  -- __/constructors is in "ForSyDe.Core.MoC"/__
 
   -- *** The "unzip" utility
   --
@@ -294,8 +294,8 @@ module ForSyDe.Core (
   -- to the synchronization layer. They are implemented as specific
   -- compositions of behavior atoms.
   --
-  -- For extended documentation on the available behavior wrappers
-  -- please consult the module "ForSyDe.WrapLib"
+  -- __/Extended documentation with all the provided behavior/__
+  -- __/wrappers is in "ForSyDe.Core.ValueExt"/__
 
 
   -- ** Function layer

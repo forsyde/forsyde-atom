@@ -8,9 +8,74 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- 
+-- This module implements the atoms and wrappers for the behavior
+-- layer in ForSyDe processes.
 -----------------------------------------------------------------------------
-module ForSyDe.Core.ValueExt where
+module ForSyDe.Core.ValueExt(
+
+  -- | The behavior layer is enabled by the 'Value' type constructor.
+  
+  Value(..),
+
+  -- * Utility functions
+
+  -- | These functions are provided for user convenience
+
+  value, fromValue, unsafeFromValue, isPresent, isAbsent, isUndefined,
+
+  -- * Behavior atoms
+
+  -- | These are the primitive (undivisible) blocks for implementing
+  -- behavior wrappers. Each atom has a distinct behavioural semantic
+  -- which reflects a real (analizable, implementable) behavior.
+  
+  (>$), (>*), (>!), (>?), (>%),
+
+  -- * Behavior wrappers
+  
+  -- ** @psi@
+  
+  -- | The @psi@/XY/ wrapper wraps a function with /X/ inputs and /Y/
+  -- outputs in a default ForSyDe behavior. E.g.:
+  --
+  -- >>> let (v,u,a)=(Value 1, Undef, Abst)
+  -- >>> (v,u,a)
+  -- (1,?,⟂)
+  -- >>> let f a b c = (a+b,b-c)
+  -- >>> let wf = psi32 f
+  -- >>> t: wf
+  -- wf :: Num b => Value b -> Value b -> Value b -> (Value b, Value b)
+  -- >>> wf v v v
+  -- (2,0)
+  -- >>> wf v u v
+  -- (?,?)
+  -- >>> wf v a v
+  -- (*** Exception: Illegal occurrence of an absent and present event
+  
+  psi11, psi12, psi13, psi14, psi15, psi16, psi87, psi18,
+  psi21, psi22, psi23, psi24, psi25, psi26, psi87, psi28,
+  psi31, psi32, psi33, psi34, psi35, psi36, psi87, psi38,
+  psi41, psi42, psi43, psi44, psi45, psi46, psi87, psi48,
+  psi51, psi52, psi53, psi54, psi55, psi56, psi87, psi58,
+  psi61, psi62, psi63, psi64, psi65, psi66, psi87, psi68,
+  psi71, psi72, psi73, psi74, psi75, psi76, psi87, psi78,
+  psi81, psi82, psi83, psi84, psi85, psi86, psi87, psi88,
+
+  -- ** @store@
+
+  -- | The @store@/X/ wrapper pushes the present and defined values
+  -- into a given (e.g. FIFO) buffer.
+  --
+  -- >>> store5 (Value [1,2]) (Value 3) Undef (Value 4) Abst Undef
+  -- [4,3,1,2]
+  -- >>> store5 Undef         (Value 3) Undef (Value 4) Abst Undef
+  -- ?
+  -- >>> store5 Abst          (Value 3) Undef (Value 4) Abst Undef
+  -- *** Exception: Illegal occurrence of an absent and present event
+  
+  store1, store2, store3, store4, store5, store6, store7, store8,
+ 
+  ) where
 
 import ForSyDe.Core.Utilities
 
@@ -76,7 +141,7 @@ infixl 4 >$, >*, >! , >?,  >%
 -- >>> (f <$> a, f <$> u, f <$> v)
 -- (⟂,?,2)
 --
--- As seen in the example above, '$>' is interchangeable with '<$>'.
+-- As seen in the example above, '>$' is interchangeable with '<$>'.
 
 (>$) :: (a -> b) -> Value a -> Value b
 (>$) = fmap
@@ -89,7 +154,6 @@ infixl 4 >$, >*, >! , >?,  >%
 -- >>> let (a,u,v)=(Abst,Undef,Value 1)
 -- >>> (a,u,v)
 -- (⟂,?,1)
--- >>> let f = (+1)
 -- >>> (Value (+1)) >* v
 -- 2
 -- >>> (Value (+1)) >* u
@@ -97,8 +161,8 @@ infixl 4 >$, >*, >! , >?,  >%
 -- >>> (Value (+1)) >* a
 -- *** Exception: Illegal occurrence of an absent and present event
 --
--- Things get interesting when we combine '$>' and '*>'. As
--- expected, below we get the same results:
+-- Things get interesting when we combine '>$' and '>*' in an
+-- applicative style. As expected, below we get the same results:
 -- 
 -- >>> (+) >$ v >* v
 -- 2
@@ -107,7 +171,7 @@ infixl 4 >$, >*, >! , >?,  >%
 -- >>> (+) >$ a >* v
 -- *** Exception: Illegal occurrence of an absent and present event
 --
--- As with '$>', '*>' is also interchangeable with '<*>'.
+-- As with '>$', '>*' is also interchangeable with '<*>'.
 (>*) :: Value (a -> b) -> Value a -> Value b
 (>*) = (<*>)
 
@@ -146,7 +210,7 @@ buff >% Undef  = buff
 buff >% Value a = (:) <$> Value a <*> buff
 
 -----------------------------------------------------------------------------
--- Helper functions
+-- Utility functions
 -----------------------------------------------------------------------------
 
 -- |The function 'fromValue' converts a value from a extended value.
@@ -175,8 +239,9 @@ isPresent (Value _)       = True
 isPresent _              = False
 
 
-------------------------------------------------------------------------------
-
+-----------------------------------------------------------------------------
+-- Behavior wrappers
+-----------------------------------------------------------------------------
 
 psi11 f a1                      =         (f >$ a1)
 psi12 f a1                      = funzip2 (f >$ a1)
