@@ -29,14 +29,17 @@ To clean the documentation and the intermediate files generated for it
 type:
 
     make clean
+    
+To delete the sandbox, use `cabal` instead:
+
+    cabal sandbox delete
 
 There are a number of dependencies to be taken care of:
 
  * Haskell dependencies: check `forsyde-atom.cabal` for the libraries
    and compilers necessary
 
- * `git`: for setting up the right `type-level` and
-   `parameterized-data` in the sandbox.
+ * `git`: for setting up the dependent Haskell libraries in the sandbox.
 
  * `haddock` for generating the documentation
 
