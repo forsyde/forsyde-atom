@@ -154,16 +154,6 @@ infixl 4 >$, >*,  >%
 -- >>> let (a,u,v)=(Abst,Undef,Value 1)
 -- >>> (a,u,v)
 -- (⟂,?,1)
--- >>> (Value (+1)) >* v
--- 2
--- >>> (Value (+1)) >* u
--- ?
--- >>> (Value (+1)) >* a
--- *** Exception: Illegal occurrence of an absent and present event
---
--- Things get interesting when we combine '>$' and '>*' in an
--- applicative style. As expected, below we get the same results:
--- 
 -- >>> (+) >$ v >* v
 -- 2
 -- >>> (+) >$ v >* u
@@ -174,6 +164,14 @@ infixl 4 >$, >*,  >%
 -- As with '>$', '>*' is also interchangeable with '<*>'.
 (>*) :: Value (a -> b) -> Value a -> Value b
 (>*) = (<*>)
+
+infixl 4 >!
+(>!) :: ((a -> b -> b), Value b) -> Value a -> ((a -> b -> b), Value b)
+(f, k) >! Abst  = (f, k)
+(f, k) >! Undef = (f, k)
+(f, k) >! x     = (f, f <$> x <*> k)
+
+
 
 -- | Predicate atom which replaces a value with another value.
 -- The 'Abst' event persists.
