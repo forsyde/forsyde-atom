@@ -287,17 +287,17 @@ mealy44 ns od i = MoC.mealy44 (psi51 ns) (psi54 od) (event i)
 when :: Sig Bool    -- ^ Signal of predicates
      -> Sig a       -- ^ Input signal
      -> Sig a       -- ^ Output signal
-when p s = MoC.comb21 ( replace Abst) p s
+when p s = MoC.comb21 replaceA p s
 
 
 filter :: (a -> Bool) -- ^ Predicate function
        -> Sig a       -- ^ Input signal
        -> Sig a       -- ^ Output signal
-filter p s = MoC.comb21 (replace Undef) (comb11 p s) s
+filter p s = MoC.comb21 replaceU (comb11 p s) s
 
 fill :: a -> Sig a -> Sig a
-fill x s = MoC.comb21 (unsafeReplace (Value x)) (MoC.comb11 isAbsent s) s
+fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isAbsent s) s
 
 hold :: a -> Sig a -> Sig a
-hold init s = MoC.scanl11 fillF (event init) s
-  where fillF st inp = unsafeReplace st (isAbsent inp) inp
+hold init = MoC.scanl11 fillF (event init)
+  where fillF st inp = unsafeReplaceV st (isAbsent inp) inp
