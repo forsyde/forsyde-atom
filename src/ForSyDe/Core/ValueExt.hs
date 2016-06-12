@@ -89,6 +89,10 @@ module ForSyDe.Core.ValueExt(
 
   -- ** @replace@
 
+  -- | The @replace@/X/ class of wrappers replaces a value with an
+  -- @[ V - another value | U - undefined value | A - absent event ]@
+  -- based on a boolean predicate.
+  
   replaceV, replaceU, replaceA, unsafeReplaceV, unsafeReplaceU,
   
   ) where
@@ -367,8 +371,8 @@ reduce7 f a1 a2 a3 a4 a5 a6 a7    = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6
 reduce8 f a1 a2 a3 a4 a5 a6 a7 a8 = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6 >% a7 >% a8
 
 
-replaceV       v p x = p >#  (x, v)
+replaceV       v p x = p >#  (x,v)
 replaceU         p x = p >#  (x,Undef)
 replaceA         p x = p >#  (x,Abst)
-unsafeReplaceV v p x = p >#! (x, v)
+unsafeReplaceV v p x = p >#! (x,v)
 unsafeReplaceU   p x = p >#! (x,Undef)

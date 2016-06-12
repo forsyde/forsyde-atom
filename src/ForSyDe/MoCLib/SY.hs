@@ -8,13 +8,115 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The SY library implements the atoms holding the sematics for the
+-- The @SY@ library implements the atoms holding the sematics for the
 -- synchronous computation model. It also provides a set of helpers
 -- for properly instantiating process network patterns as process
 -- constructors.
+--
+-- 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoCLib.SY where
+module ForSyDe.MoCLib.SY (
+
+  -- * Synchronous (@SY@) event
+
+  -- | According to <#lee98 [1]>, "two events are synchronous if they
+  -- have the same tag, and two signals are stnchronous if all events
+  -- in one signal are synchronous to an event in the second signal
+  -- and vice-versa. A system is synchronous if every signals in the
+  -- system is synchronous to all the other signals in the system."
+  --
+  -- The synchronous (@SY@) MoC defines no notion of physical time,
+  -- its tag system suggesting in fact the notion of precedence among
+  -- events. From the above two assumptions, we can demistify how the
+  -- SY MoC behaves:
+  --
+  -- [SY MoC] the SY MoC assumes that the computation is performed
+  -- instantaneously (with zero delay), at certain synchronization
+  -- points, when data is assumed to be available.
+  --
+  -- For understanding how a SY system behaves, let us depict a
+  -- possible behavior in time of the input and output signals of a SY
+  -- process:
+  --
+  -- <<includes/figs/sy-example.png>>
+  --
+  -- Implementing the SY tag system is straightforward if we consider
+  -- signals as infinite lists. In this case tags are implicitly
+  -- defined as the 
+  
+  Sig, SY(..), event, ForSyDe.MoCLib.SY.signal, 
+
+  -- * @SY@ process constuctors
+  
+  -- ** @comb@
+
+  -- | @comb@ processes map combinatorial functions on signals and
+  -- take care of synchronization between input signals.
+  --
+  -- <<includes/figs/comb-formula.png>>
+  -- <<includes/figs/comb-graph.png>>
+
+  comb11, comb12, comb13, comb14,
+  comb21, comb22, comb23, comb24,
+  comb31, comb32, comb33, comb34,
+  comb41, comb42, comb43, comb44,
+
+  -- ** @delay@
+
+  -- | The @delay@ process provides both an initial token and shifts the
+  -- phase of the signal. In other words, it "delays" a signal with
+  -- one event.
+  --
+  -- <<includes/figs/delay-formula.png>>
+  -- <<includes/figs/delay-graph.png>>
+  delay,
+
+  -- ** @scanl@
+
+  -- | @scanl@ processes model generates the graph shown below. There
+  -- exists a variant with 0 input signals, in which case the process
+  -- is a signal generator.
+  --
+  -- <<includes/figs/scanl-formula.png>>
+  -- <<includes/figs/scanl-graph.png>>
+
+  scanl11, scanl12, scanl13, scanl14,
+  scanl21, scanl22, scanl23, scanl24,
+  scanl31, scanl32, scanl33, scanl34,
+  scanl41, scanl42, scanl43, scanl44,
+  
+  -- ** @moore@
+
+  -- | @moore@ processes model Moore state machines.
+  --
+  -- <<includes/figs/moore-formula.png>>
+  -- <<includes/figs/moore-graph.png>>
+
+  moore11, moore12, moore13, moore14,
+  moore21, moore22, moore23, moore24,
+  moore31, moore32, moore33, moore34,
+  moore41, moore42, moore43, moore44,
+
+  -- ** @mealy@
+
+  -- | @mealy@ processes model Mealy state machines.
+  --
+  -- <<includes/figs/mealy-formula.png>>
+  -- <<includes/figs/mealy-graph.png>>
+
+  mealy11, mealy12, mealy13, mealy14,
+  mealy21, mealy22, mealy23, mealy24,
+  mealy31, mealy32, mealy33, mealy34,
+  mealy41, mealy42, mealy43, mealy44,  
+
+         
+  -- * Bibliography
+
+  -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229. 
+
+  
+  ) where
 
 import           ForSyDe.Core.MoC (MoC(..))
 import qualified ForSyDe.Core.MoC as MoC
@@ -127,6 +229,20 @@ comb41 f = MoC.comb41 (psi41 f)
 comb42 f = MoC.comb42 (psi42 f)
 comb43 f = MoC.comb43 (psi43 f)
 comb44 f = MoC.comb44 (psi44 f)
+
+generate1 :: (b1 -> b1) -> b1
+          -> Sig b1                                
+generate2 :: ((b1, b2) -> (b1, b2)) -> (b1, b2)
+          -> (Sig b1, Sig b2)                          
+generate3 :: ((b1, b2, b3) -> (b1, b2, b3)) -> (b1, b2, b3)
+          -> (Sig b1, Sig b2, Sig b3)                      
+generate4 :: ((b1, b2, b3, b4) -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+          -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
+
+generate1 ns i = MoC.scanl01 (psi11 ns) (event i)
+generate2 ns i = MoC.scanl02 (psi11 ns) (event i)
+generate3 ns i = MoC.scanl03 (psi11 ns) (event i)
+generate4 ns i = MoC.scanl04 (psi11 ns) (event i)
 
 
 scanl11 :: (b1 -> a1 -> b1) -> b1
@@ -300,4 +416,4 @@ fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isAbsent s) s
 
 hold :: a -> Sig a -> Sig a
 hold init = MoC.scanl11 fillF (event init)
-  where fillF st inp = unsafeReplaceV st (isAbsent inp) inp
+  where fillF st inp = (unsafeReplaceV st) (isAbsent inp) inp
