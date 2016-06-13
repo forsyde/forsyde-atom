@@ -462,28 +462,45 @@ mealy44 ns od i = MoC.mealy44 (psi51 ns) (psi54 od) (event i)
 -- @when@ construct in the synchronous language Lustre <#hal91 [2]>,
 -- based on which clock calculus can be performed.
 --
--- >>> let s1 = signal [1,2,3,4,5,6]
--- >>> let s2 = comb11 (>3) s1
--- >>> s1
+-- >>> let s = signal [1,2,3,4,5,6]
+-- >>> let p = comb11 (>3) s
+-- >>> s
 -- {1,2,3,4,5,6}
--- >>> s2
+-- >>> p
 -- {False,False,False,True,True,True}
--- >>> when s2 s1
+-- >>> when p s
 -- {⟂,⟂,⟂,4,5,6}
 when :: Sig Bool    -- ^ Signal of predicates
      -> Sig a       -- ^ Input signal
      -> Sig a       -- ^ Output signal
 when p s = MoC.comb21 (replaceA . psi11 not) p s
 
-
+-- | Filters out values to unknown if they do not fulfill a predicate
+-- function.
+--
+-- >>> let s = signal [1,2,3,4,5,6]
+-- >>> filter (>3) s
+-- {?,?,?,4,5,6}
 filter :: (a -> Bool) -- ^ Predicate function
        -> Sig a       -- ^ Input signal
        -> Sig a       -- ^ Output signal
 filter p s = MoC.comb21 replaceU (comb11 p s) s
 
+-- | Fills absent events with a pre-defined value. 
+--
+-- >>> let s = filter (>3) $ signal [1,2,3,4,5,6]
+-- >>> fill 5 s
+-- {5,5,5,4,5,6}
 fill :: a -> Sig a -> Sig a
 fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isAbsent s) s
 
+
+-- | Similar to 'fill', but holds the last non-absent value if there
+-- was one.
+--
+-- >>> let s = filter (<3) $ signal [1,2,3,4,5,6]
+-- >>> fill 5 s
+-- {1,2,3,3,3,3}
 hold :: a -> Sig a -> Sig a
 hold init = MoC.scanl11 fillF (event init)
   where fillF st inp = (unsafeReplaceV st) (isAbsent inp) inp
