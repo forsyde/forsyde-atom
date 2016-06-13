@@ -285,8 +285,8 @@ module ForSyDe.Core (
   -- process constructors.
 
   -- *** Atoms
-  
-  (>$), (>*), (>%), replace, unsafeReplace,
+    
+  (>$), (>*), (>%), (>%!), (>#), (>#!),
 
   -- *** Behavior wrappers
   

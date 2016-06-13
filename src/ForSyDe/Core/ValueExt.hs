@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+-----------------1------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core.AbsentExt
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016;
@@ -29,7 +29,7 @@ module ForSyDe.Core.ValueExt(
   -- behavior wrappers. Each atom has a distinct behavioural semantic
   -- which reflects a real (analizable, implementable) behavior.
   
-  (>$), (>*), (>%), replace, unsafeReplace,
+  (>$), (>*), (>%), (>%!), (>#), (>#!),
 
   -- * Behavior wrappers
   
@@ -63,8 +63,8 @@ module ForSyDe.Core.ValueExt(
 
   -- ** @store@
 
-  -- | The @store@/X/ wrapper pushes the present and defined values
-  -- into a given (e.g. FIFO) buffer.
+  -- | The @store@/X/ wrapper pushes the present defined values into a
+  -- given list (e.g. FIFO) buffer.
   --
   -- >>> store5 (Value [1,2]) (Value 3) Undef (Value 4) Abst Undef
   -- [4,3,1,2]
@@ -74,7 +74,27 @@ module ForSyDe.Core.ValueExt(
   -- *** Exception: Illegal occurrence of an absent and present event
   
   store1, store2, store3, store4, store5, store6, store7, store8,
- 
+
+  -- ** @reduce@
+
+  -- | The @reduce@/X/ merges the values belonging to multiple signals
+  -- based on a given rule
+  --
+  -- >>> reduce5 (+) (Value 3) (Value 4) Abst (Value 1) Abst
+  -- 8
+  -- >>> reduce5 (+) (Value 3) (Value 4) Abst (Value 1) Undef
+  -- ?
+
+  reduce2, reduce3, reduce4, reduce5, reduce6, reduce7, reduce8,
+
+  -- ** @replace@
+
+  -- | The @replace@/X/ class of wrappers replaces a value with an
+  -- @[ V - another value | U - undefined value | A - absent event ]@
+  -- based on a boolean predicate.
+  
+  replaceV, replaceU, replaceA, unsafeReplaceV, unsafeReplaceU,
+  
   ) where
 
 import ForSyDe.Core.Utilities
@@ -126,7 +146,7 @@ instance Applicative Value where
 -- Behavioural implementations
 -----------------------------------------------------------------------------
 
-infixl 4 >$, >*,  >%
+infixl 4 >$, >*, >%, >%!, >#, >#!
 -- | The exact equivalent of the 'fmap' function or the '<$>' infix
 -- operator for extended values. It bypasses the special values and
 -- maps a function @f@ to a wrapped value. It may be regarded as the
@@ -165,44 +185,71 @@ infixl 4 >$, >*,  >%
 (>*) :: Value (a -> b) -> Value a -> Value b
 (>*) = (<*>)
 
-(>%) :: ((a -> b -> b), Value b) -> Value a -> ((a -> b -> b), Value b)
+-- | Reduce atom. Used to recursively fold multiple values from
+-- different signals. Undefined values affect the result.
+--
+-- >>> let x = ((:),Value []) >% (Value 1) >% Abst >% (Value 2) 
+-- >>> snd x
+-- [2,1]
+-- >>> snd $ x >% Undef 
+-- Undef
+(>%) :: ((a -> b -> b), Value b) -- ^ (folding function, kernel value)
+     -> Value a                  -- ^ current term
+     -> ((a -> b -> b), Value b) -- ^ (same folding function to be
+                                 -- passed to the next term, folding
+                                 -- result)
 (f, k) >% Abst  = (f, k)
-(f, k) >% Undef = (f, k)
 (f, k) >% x     = (f, f <$> x <*> k)
 
+
+-- | Unsafe reduce atom. Used to recursively fold multiple values from
+-- different signals. Undefined values are ignored!
+--
+-- >>> let x = ((:),Value []) >% (Value 1) >% Abst >% (Value 2) >% Undef
+-- >>> snd x
+-- [2,1]
+(>%!) :: ((a -> b -> b), Value b) -- ^ (folding function, kernel value)
+      -> Value a                  -- ^ current term
+      -> ((a -> b -> b), Value b) -- ^ (same folding function to be
+                                  -- passed to the next term, folding
+                                  -- result)
+(f, k) >%! Abst  = (f, k)
+(f, k) >%! Undef = (f, k)
+(f, k) >%! x     = (f, f <$> x <*> k)
 
 
 -- | Predicate atom which replaces a value with another value.
 -- The 'Abst' event persists.
 --
--- >>> let ps = map Value [False,   False, True,    True]
--- >>> let xs =           [Value 1, Undef, Value 2, Abst] 
--- zipWith (replace (Value 5)) ps xs
--- [1,?,5,⟂]
--- zipWith (replace Undef) ps xs
--- [1,?,?,⟂]
-replace :: Value a  -- ^ value to replace with
-     -> Value Bool  -- ^ boolean predicate     
-     -> Value a     -- ^ value to replace
-     -> Value a     -- ^ result
-replace _ _ Abst = Abst
-replace v p x    = if p == Value True then v else x
+-- >>> let ps = map Value [False, True]
+-- >>> zipWith (>#) ps $ repeat (Value 1, Value 5)
+-- [1,5]
+-- >>> zipWith (>#) ps $ repeat (Undef, Value 5)
+-- [?,5]
+-- >>> zipWith (>#) ps $ repeat (Abst, Value 5)
+-- [⟂,⟂]
+(>#) :: Value Bool         -- ^ boolean predicate
+     -> (Value a, Value a) -- ^ (value to replace, value to replace with)
+     -> Value a            -- ^ result
+_           ># (Abst, _) = Abst
+Value True  ># (_, v)    = v
+Value False ># (x, _)    = x
 
--- | Predicate atom which replaces a value with another value.
--- Overwrites even 'Abst' events.
+-- | Unsafe predicate atom which replaces a value with another
+-- value. Overwrites even 'Abst' events.
 --
--- >>> let ps = map Value [False,   False, True,    True]
--- >>> let xs =           [Value 1, Undef, Value 2, Abst] 
--- zipWith (replace (Value 5)) ps xs
--- [1,?,5,5]
--- zipWith (replace Undef) ps xs
--- [1,?,?,?]
-unsafeReplace :: Value a  -- ^ value to replace with
-     -> Value Bool  -- ^ boolean predicate     
-     -> Value a     -- ^ value to replace
-     -> Value a     -- ^ result
-unsafeReplace v p x = if p == Value True then x else v
-
+-- >>> let ps = map Value [False, True]
+-- >>> zipWith (>#!) ps $ repeat (Value 1, Value 5)
+-- [1,5]
+-- >>> zipWith (>#!) ps $ repeat (Undef, Value 5)
+-- [?,5]
+-- >>> zipWith (>#!) ps $ repeat (Abst, Value 5)
+-- [⟂,5]
+(>#!) :: Value Bool         -- ^ boolean predicate
+      -> (Value a, Value a) -- ^ (value to replace, value to replace with)
+      -> Value a            -- ^ result
+Value True  >#! (_, v)    = v
+Value False >#! (x, _)    = x
 
 -----------------------------------------------------------------------------
 -- Utility functions
@@ -221,17 +268,18 @@ isUndefined       :: Value a -> Value Bool
 -- | The function 'abstExt' converts a usual value to a present value. 
 value           :: a -> Value a  
 
-value                    = pure
-fromValue x Abst         = x   
+value                     = pure
+fromValue x Abst          = x   
+fromValue x Undef         = x   
 fromValue _ (Value y)     = y
 unsafeFromValue (Value y) = y
-unsafeFromValue Abst     = error "Should not be absent or undefined"
-isAbsent Abst            = Value True
-isAbsent _               = Value False
-isUndefined Undef        = Value True
-isUndefined _            = Value False
-isPresent (Value _)      = Value True
-isPresent _              = Value False
+unsafeFromValue _         = error "Should not be absent or undefined"
+isAbsent Abst       = Value True
+isAbsent _          = Value False
+isUndefined Undef   = Value True
+isUndefined _       = Value False
+isPresent (Value _) = Value True
+isPresent _         = Value False
 
 
 -----------------------------------------------------------------------------
@@ -304,13 +352,27 @@ psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip7 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6
 psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip8 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
 
 
-store1 buff a1                      = buff >% a1
-store2 buff a1 a2                   = buff >% a1 >% a2
-store3 buff a1 a2 a3                = buff >% a1 >% a2 >% a3
-store4 buff a1 a2 a3 a4             = buff >% a1 >% a2 >% a3 >% a4
-store5 buff a1 a2 a3 a4 a5          = buff >% a1 >% a2 >% a3 >% a4 >% a5
-store6 buff a1 a2 a3 a4 a5 a6       = buff >% a1 >% a2 >% a3 >% a4 >% a5 >% a6
-store7 buff a1 a2 a3 a4 a5 a6 a7    = buff >% a1 >% a2 >% a3 >% a4 >% a5 >% a6 >% a7
-store8 buff a1 a2 a3 a4 a5 a6 a7 a8 = buff >% a1 >% a2 >% a3 >% a4 >% a5 >% a6 >% a7 >% a8
+store1 buff a1                      = at22 $ ((:), buff) >%! a1
+store2 buff a1 a2                   = at22 $ ((:), buff) >%! a1 >%! a2
+store3 buff a1 a2 a3                = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3
+store4 buff a1 a2 a3 a4             = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4
+store5 buff a1 a2 a3 a4 a5          = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4 >%! a5
+store6 buff a1 a2 a3 a4 a5 a6       = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4 >%! a5 >%! a6
+store7 buff a1 a2 a3 a4 a5 a6 a7    = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4 >%! a5 >%! a6 >%! a7
+store8 buff a1 a2 a3 a4 a5 a6 a7 a8 = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4 >%! a5 >%! a6 >%! a7 >%! a8
 
 
+reduce2 f a1 a2                   = at22 $ (f, a1) >% a2
+reduce3 f a1 a2 a3                = at22 $ (f, a1) >% a2 >% a3
+reduce4 f a1 a2 a3 a4             = at22 $ (f, a1) >% a2 >% a3 >% a4
+reduce5 f a1 a2 a3 a4 a5          = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5
+reduce6 f a1 a2 a3 a4 a5 a6       = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6
+reduce7 f a1 a2 a3 a4 a5 a6 a7    = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6 >% a7
+reduce8 f a1 a2 a3 a4 a5 a6 a7 a8 = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6 >% a7 >% a8
+
+
+replaceV       v p x = p >#  (x,v)
+replaceU         p x = p >#  (x,Undef)
+replaceA         p x = p >#  (x,Abst)
+unsafeReplaceV v p x = p >#! (x,v)
+unsafeReplaceU   p x = p >#! (x,Undef)

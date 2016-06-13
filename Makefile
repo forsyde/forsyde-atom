@@ -1,7 +1,7 @@
 doc: 
 	$(MAKE) -C includes
 	cabal configure
-	cabal haddock --hyperlink-source
+	cabal haddock --hyperlink-source --css=includes/styles/ocean.css
 
 sandbox:
 	cabal sandbox init
