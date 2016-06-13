@@ -165,11 +165,10 @@ infixl 4 >$, >*,  >%
 (>*) :: Value (a -> b) -> Value a -> Value b
 (>*) = (<*>)
 
-infixl 4 >!
-(>!) :: ((a -> b -> b), Value b) -> Value a -> ((a -> b -> b), Value b)
-(f, k) >! Abst  = (f, k)
-(f, k) >! Undef = (f, k)
-(f, k) >! x     = (f, f <$> x <*> k)
+(>%) :: ((a -> b -> b), Value b) -> Value a -> ((a -> b -> b), Value b)
+(f, k) >% Abst  = (f, k)
+(f, k) >% Undef = (f, k)
+(f, k) >% x     = (f, f <$> x <*> k)
 
 
 
@@ -204,16 +203,6 @@ unsafeReplace :: Value a  -- ^ value to replace with
      -> Value a     -- ^ result
 unsafeReplace v p x = if p == Value True then x else v
 
--- | serial storage atom. Stores only present values
---
--- >>> Value [] >% Value 1 >% Undef >% Value 2 >% Abst
--- [2,1]
-(>%) :: Value [a]  -- ^ input storing buffer wrapped as value
-      -> Value a   -- ^ value to be stored
-      -> Value [a] -- ^ output buffer
-buff >% Abst   = buff
-buff >% Undef  = buff
-buff >% Value a = (:) <$> Value a <*> buff
 
 -----------------------------------------------------------------------------
 -- Utility functions
