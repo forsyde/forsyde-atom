@@ -30,12 +30,13 @@ description:
   theoretical concepts behind this library.
   * the
 
--- license:             
+license:             BSD3
 license-file:        LICENSE
 author:              George Ungureanu
--- maintainer:          
--- copyright:           
--- category:            
+maintainer:          ugeorge@kth.se
+copyright:           Copyright (c) 2015, George Ungureanu, KTH/ICT/ESY
+homepage:            https://github.com/forsyde/forsyde-atom
+category:            model, cyber-physical systems, skeletons
 build-type:          Simple
 cabal-version:       >=1.22
 extra-doc-files:     includes/figs/*.png
@@ -53,7 +54,7 @@ library
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
-  build-depends:       base>=4.7.10, parameterized-data, type-level, QuickCheck, HUnit
+  build-depends:       base>=4.7.10 && <6, parameterized-data, type-level, QuickCheck, HUnit
   hs-source-dirs:      src
 
 Test-Suite forsyde-testsuite
@@ -61,4 +62,4 @@ Test-Suite forsyde-testsuite
   Default-Language:     Haskell2010
   Hs-Source-Dirs:       tests
   Main-is:              SYTest.hs
-  Build-depends:        base, forsyde-atom, QuickCheck, HUnit
+  Build-depends:        base>=4.7.10 && <6, forsyde-atom, QuickCheck, HUnit
