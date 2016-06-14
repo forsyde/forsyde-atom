@@ -455,6 +455,18 @@ mealy42 ns od i = MoC.mealy42 (psi51 ns) (psi52 od) (event i)
 mealy43 ns od i = MoC.mealy43 (psi51 ns) (psi53 od) (event i)
 mealy44 ns od i = MoC.mealy44 (psi51 ns) (psi54 od) (event i)
 
+
+buffer1 :: [a] -> Sig a -> Sig [a]
+buffer2 :: [a] -> Sig a -> Sig a -> Sig [a]
+buffer3 :: [a] -> Sig a -> Sig a -> Sig a -> Sig [a]
+buffer4 :: [a] -> Sig a -> Sig a -> Sig a -> Sig a -> Sig [a]
+
+buffer1 i = MoC.scanl11 store1 (event i)
+buffer2 i = MoC.scanl21 store2 (event i)
+buffer3 i = MoC.scanl31 store3 (event i)
+buffer4 i = MoC.scanl41 store4 (event i)
+
+
 -- FILTER, FILL, HOLD
 
 -- | This process predicates the existence of events in a signal based
@@ -504,3 +516,5 @@ fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isAbsent s) s
 hold :: a -> Sig a -> Sig a
 hold init = MoC.scanl11 fillF (event init)
   where fillF st inp = (unsafeReplaceV st) (isAbsent inp) inp
+
+
