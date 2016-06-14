@@ -54,12 +54,23 @@ library
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
-  build-depends:       base>=4.7.10 && <6, parameterized-data, type-level, QuickCheck, HUnit
+  build-depends:       base>=4.7.10 && <6, 
+                       parameterized-data, 
+                       type-level,
+                       test-framework,
+                       test-framework-hunit,
+                       QuickCheck, 
+                       HUnit
   hs-source-dirs:      src
 
 Test-Suite forsyde-testsuite
-  Type:                 exitcode-stdio-1.0
-  Default-Language:     Haskell2010
-  Hs-Source-Dirs:       tests
-  Main-is:              SYTest.hs
-  Build-depends:        base>=4.7.10 && <6, forsyde-atom, QuickCheck, HUnit
+  Type:                exitcode-stdio-1.0
+  Default-Language:    Haskell2010
+  Hs-Source-Dirs:      tests
+  Main-is:             SYTest.hs
+  Build-depends:       base>=4.7.10 && <6, 
+                       forsyde-atom, 
+                       QuickCheck, 
+                       test-framework,
+                       test-framework-hunit,
+                       HUnit
