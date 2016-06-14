@@ -176,7 +176,7 @@ type Sig a = S.Signal (SY (Value a))
 -- instance of the 'MoC' class. Since SY tags are implicit, this data
 -- type only wraps values inside a constructor that identifies it as a
 -- "synchronous event".
-data SY a  = SY a
+data SY a  = SY a deriving Eq
 -----------------------------------------------------------------------------
 
 -- | Implenents the SY semantics for the MoC atoms.

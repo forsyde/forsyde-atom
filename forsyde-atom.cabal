@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                forsyde-atom
-version:             0.2.0.0
+version:             0.1.0.0
 synopsis:            A shallow-embedded DSL for modeling cyber-physical systems 
 description:         
   ForSyDe is a design methodology for cyber-physical systems rooted in
@@ -53,5 +53,12 @@ library
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
-  build-depends:       base>=4.7.10, parameterized-data, type-level
+  build-depends:       base>=4.7.10, parameterized-data, type-level, QuickCheck, HUnit
   hs-source-dirs:      src
+
+Test-Suite forsyde-testsuite
+  Type:                 exitcode-stdio-1.0
+  Default-Language:     Haskell2010
+  Hs-Source-Dirs:       tests
+  Main-is:              SYTest.hs
+  Build-depends:        base, forsyde-atom, QuickCheck, HUnit
