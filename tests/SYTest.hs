@@ -23,27 +23,27 @@ split c xs = xs' : if null xs'' then [] else split c (tail xs'')
 prop_split_inv xs = forAll (elements xs) $ \c -> unsplit c (split c xs) == xs
 
 
-fromSY (SY.SY a) = a
+-- fromSY (SY.SY a) = a
 
-instance Arbitrary (Signal a) where
-  arbitrary = do
-    x <- arbitrary
-    return (signal x)
+-- instance Arbitrary (Signal a) where
+--   arbitrary = do
+--     x <- arbitrary
+--     return (signal x)
 
-instance Arbitrary (SY.SY a) where
-  arbitrary = do
-    x <- arbitrary
-    return (SY.SY x)
-
-
-instance Arbitrary (Value a) where
-  arbitrary = do
-    x <- arbitrary
-    return (value x)
+-- instance Arbitrary (SY.SY a) where
+--   arbitrary = do
+--     x <- arbitrary
+--     return (SY.SY x)
 
 
-sync_comb :: SY.Sig Int -> SY.Sig Int -> Bool 
-sync_comb sa sb = SY.comb21 (+) sa sb == signal ( map SY.SY $ zipWith (psi21 (+)) (map fromSY (fromSignal sa)) (map fromSY (fromSignal sb)))
+-- instance Arbitrary (Value a) where
+--   arbitrary = do
+--     x <- arbitrary
+--     return (value x)
 
-main = quickCheck sync_comb
+
+-- sync_comb :: SY.Sig Int -> SY.Sig Int -> Bool 
+-- sync_comb sa sb = SY.comb21 (+) sa sb == signal ( map SY.SY $ zipWith (psi21 (+)) (map fromSY (fromSignal sa)) (map fromSY (fromSignal sb)))
+
+main = quickCheck prop_split_inv
 -- /show
