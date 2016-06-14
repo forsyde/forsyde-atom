@@ -31,12 +31,9 @@ prop_split_inv xs = forAll (elements xs) $ \c -> unsplit c (split c xs) == xs
 testfoo = TestCase $ assertEqual "Foo == Foo"
     "Foo" "Foo"
 
-testfoo2 = TestCase $ assertEqual "Foo != Bar"
-    "Foo" "Bar"
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
-tests = hUnitTestToTests $ TestList [TestLabel "testfoo" testfoo,
-                                     TestLabel "testfoo2" testfoo2]
+tests = hUnitTestToTests $ TestList [TestLabel "testfoo" testfoo]
 
 
 
