@@ -59,6 +59,7 @@ library
                        type-level,
                        test-framework,
                        test-framework-hunit,
+                       test-framework-quickcheck2,
                        QuickCheck, 
                        HUnit
   hs-source-dirs:      src
@@ -73,4 +74,5 @@ Test-Suite forsyde-testsuite
                        QuickCheck, 
                        test-framework,
                        test-framework-hunit,
+                       test-framework-quickcheck2,
                        HUnit

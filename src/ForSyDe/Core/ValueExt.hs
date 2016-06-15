@@ -21,7 +21,7 @@ module ForSyDe.Core.ValueExt(
 
   -- | These functions are provided for user convenience
 
-  value, fromValue, unsafeFromValue, isPresent, isAbsent, isUndefined,
+  value, fromValue, unsafeFromValue, isPresent, isNotPresent, isAbsent, isUndefined,
 
   -- * Behavior atoms
 
@@ -280,7 +280,7 @@ isUndefined Undef   = Value True
 isUndefined _       = Value False
 isPresent (Value _) = Value True
 isPresent _         = Value False
-
+isNotPresent a      = not <$> isPresent a
 
 -----------------------------------------------------------------------------
 -- Behavior wrappers
