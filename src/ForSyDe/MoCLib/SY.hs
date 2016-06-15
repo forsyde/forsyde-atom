@@ -121,6 +121,20 @@ module ForSyDe.MoCLib.SY (
   scanld21, scanld22, scanld23, scanld24,
   scanld31, scanld32, scanld33, scanld34,
   scanld41, scanld42, scanld43, scanld44,
+
+  -- ** @scanl@
+
+  -- | @scanl@ is a state machine without an output decoder. It is an
+  -- instantiation of the @scanXY@ MoC constructor
+  -- (eg. 'ForSyDe.Core.MoC.scanl11').
+  --
+  -- <<includes/figs/sy-scanl-graph.png>>
+
+  scanl11, scanl12, scanl13, scanl14,
+  scanl21, scanl22, scanl23, scanl24,
+  scanl31, scanl32, scanl33, scanl34,
+  scanl41, scanl42, scanl43, scanl44,
+
   
   -- ** @moore@
 
@@ -153,7 +167,7 @@ module ForSyDe.MoCLib.SY (
   -- | These processes manipulate the behavior of a signal based on
   -- predicates on their status.
 
-  when, filter, fill, -- hold,
+  when, filter, fill, hold,
          
   -- * Bibliography
 
@@ -354,6 +368,57 @@ scanld43 ns i = MoC.scanld43 (psi51 ns) (event i)
 scanld44 ns i = MoC.scanld44 (psi51 ns) (event i)
 
 
+scanl11 :: (b1 -> a1 -> b1) -> b1
+        -> Sig a1 -> Sig b1                                
+scanl12 :: ((b1, b2) -> a1 -> (b1, b2)) -> (b1, b2)
+        -> Sig a1 -> (Sig b1, Sig b2)                          
+scanl13 :: ((b1, b2, b3) -> a1 -> (b1, b2, b3)) -> (b1, b2, b3)
+        -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
+scanl14 :: ((b1, b2, b3, b4) -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+        -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
+scanl21 :: (b1 -> a1 -> a2 -> b1) -> b1
+        -> Sig a1 -> Sig a2 -> Sig b1                          
+scanl22 :: ((b1, b2) -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
+        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)                    
+scanl23 :: ((b1, b2, b3) -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
+        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
+scanl24 :: ((b1, b2, b3, b4) -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
+scanl31 :: (b1 -> a1 -> a2 -> a3 -> b1) -> b1
+        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
+scanl32 :: ((b1, b2) -> a1 -> a2 -> a3 -> (b1, b2)) -> (b1, b2)
+        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
+scanl33 :: ((b1, b2, b3) -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (b1, b2, b3)
+        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
+scanl34 :: ((b1, b2, b3, b4) -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
+scanl41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1) -> b1
+        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
+scanl42 :: ((b1, b2) -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (b1, b2)
+        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
+scanl43 :: ((b1, b2, b3) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (b1, b2, b3)
+        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
+scanl44 :: ((b1, b2, b3, b4) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
+
+scanl11 ns i = MoC.scanl11 (psi21 ns) (event i)
+scanl12 ns i = MoC.scanl12 (psi21 ns) (event i)
+scanl13 ns i = MoC.scanl13 (psi21 ns) (event i)
+scanl14 ns i = MoC.scanl14 (psi21 ns) (event i)
+scanl21 ns i = MoC.scanl21 (psi31 ns) (event i)
+scanl22 ns i = MoC.scanl22 (psi31 ns) (event i)
+scanl23 ns i = MoC.scanl23 (psi31 ns) (event i)
+scanl24 ns i = MoC.scanl24 (psi31 ns) (event i)
+scanl31 ns i = MoC.scanl31 (psi41 ns) (event i)
+scanl32 ns i = MoC.scanl32 (psi41 ns) (event i)
+scanl33 ns i = MoC.scanl33 (psi41 ns) (event i)
+scanl34 ns i = MoC.scanl34 (psi41 ns) (event i)
+scanl41 ns i = MoC.scanl41 (psi51 ns) (event i)
+scanl42 ns i = MoC.scanl42 (psi51 ns) (event i)
+scanl43 ns i = MoC.scanl43 (psi51 ns) (event i)
+scanl44 ns i = MoC.scanl44 (psi51 ns) (event i)
+
+
 moore11 :: (st -> a1 -> st) -> (st -> b1) -> st
         -> Sig a1 -> Sig b1                                
 moore12 :: (st -> a1 -> st) -> (st -> (b1, b2)) -> st
@@ -507,14 +572,14 @@ fill :: a -> Sig a -> Sig a
 fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isNotPresent s) s
 
 
--- -- | Similar to 'fill', but holds the last non-absent value if there
--- -- was one.
--- --
--- -- >>> let s = filter (<3) $ signal [1,2,3,4,5,6]
--- -- >>> fill 5 s
--- -- {1,2,3,3,3,3}
--- hold :: a -> Sig a -> Sig a
--- hold init = MoC.scanld11 fillF (event init)
---   where fillF st inp = (unsafeReplaceV st) (isNotPresent inp) inp
+-- | Similar to 'fill', but holds the last non-absent value if there
+-- was one.
+--
+-- >>> let s = filter (<3) $ signal [1,2,3,4,5,6]
+-- >>> holf 5 s
+-- {1,2,3,3,3,3}
+hold :: a -> Sig a -> Sig a
+hold init = MoC.scanl11 fillF (event init)
+  where fillF st inp = (unsafeReplaceV st) (isNotPresent inp) inp
 
 

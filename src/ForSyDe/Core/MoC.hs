@@ -60,6 +60,22 @@ module ForSyDe.Core.MoC(
   -- <<includes/figs/delay-graph.png>>
   delay, (-&>-),
 
+  -- ** @scanl@
+
+  -- | @scanl@ processes model generates the graph shown below. There
+  -- exists a variant with 0 input signals, in which case the process
+  -- is a signal generator.
+  --
+  -- <<includes/figs/scanl-formula.png>>
+  -- <<includes/figs/scanl-graph.png>>
+
+  -- scanl01, scanl02, scanl03, scanl04,
+  scanl11, scanl12, scanl13, scanl14,
+  scanl21, scanl22, scanl23, scanl24,
+  scanl31, scanl32, scanl33, scanl34,
+  scanl41, scanl42, scanl43, scanl44,
+
+  
   -- ** @scanld@
 
   -- | @scanld@ processes model generates the graph shown below. There
@@ -197,6 +213,39 @@ infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)
 i -&>- xs  = delay i xs
 
+
+scanl11 ns i s1          = comb21 ns st s1 
+  where st               = i -&>- ns -$- st -*- s1
+scanl12 ns i s1          = (funzip2 -$- comb21 ns st s1 -<)
+  where st               = i -&>- comb21 ns st s1
+scanl13 ns i s1          = (funzip3 -$- comb21 ns st s1 -<<)
+  where st               = i -&>- comb21 ns st s1
+scanl14 ns i s1          = (funzip4 -$- comb21 ns st s1 -<<<)
+  where st               = i -&>- comb21 ns st s1
+scanl21 ns i s1 s2       = comb31 ns st s1 s2
+  where st               = i -&>- comb31 ns st s1 s2
+scanl22 ns i s1 s2       = (funzip2 -$- comb31 ns st s1 s2 -<)
+  where st               = i -&>- comb31 ns st s1 s2
+scanl23 ns i s1 s2       = (funzip3 -$- comb31 ns st s1 s2 -<<)
+  where st               = i -&>- comb31 ns st s1 s2
+scanl24 ns i s1 s2       = (funzip4 -$- comb31 ns st s1 s2 -<<<)
+  where st               = i -&>- comb31 ns st s1 s2
+scanl31 ns i s1 s2 s3    = comb41 ns st s1 s2 s3
+  where st               = i -&>- comb41 ns st s1 s2 s3
+scanl32 ns i s1 s2 s3    = (funzip2 -$- comb41 ns st s1 s2 s3 -<)
+  where st               = i -&>- comb41 ns st s1 s2 s3
+scanl33 ns i s1 s2 s3    = (funzip3 -$- comb41 ns st s1 s2 s3 -<<)
+  where st               = i -&>- comb41 ns st s1 s2 s3
+scanl34 ns i s1 s2 s3    = (funzip4 -$- comb41 ns st s1 s2 s3 -<<<)
+  where st               =  i -&>- comb41 ns st s1 s2 s3
+scanl41 ns i s1 s2 s3 s4 = comb51 ns st s1 s2 s3 s4
+  where st               =  i -&>- comb51 ns st s1 s2 s3 s4
+scanl42 ns i s1 s2 s3 s4 = (funzip2 -$- comb51 ns st s1 s2 s3 s4 -<)
+  where st               =  i -&>- comb51 ns st s1 s2 s3 s4
+scanl43 ns i s1 s2 s3 s4 = (funzip3 -$- comb51 ns st s1 s2 s3 s4 -<<)
+  where st               =  i -&>- comb51 ns st s1 s2 s3 s4
+scanl44 ns i s1 s2 s3 s4 = (funzip4 -$- comb51 ns st s1 s2 s3 s4 -<<<)
+  where st               =  i -&>- comb51 ns st s1 s2 s3 s4
 
 
 scanld01 ns i             = st

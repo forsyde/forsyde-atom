@@ -1,17 +1,14 @@
 module Main where
 
-import Test.Framework
-import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.HUnit
-import Test.QuickCheck
-import ForSyDe.Core
+import           Test.HUnit
+import           Test.QuickCheck
+import           ForSyDe.Core
+import           Test.Framework
+import           Test.Framework.Providers.HUnit
+import           Test.Framework.Providers.QuickCheck2 (testProperty)
 
-import  ForSyDe.Core.Signal as S
-
+import           ForSyDe.Core.Signal as S
 import qualified ForSyDe.MoCLib.SY as SY
-
-
 
 instance Arbitrary a => Arbitrary (Signal a) where
   arbitrary = do
@@ -87,6 +84,8 @@ test_constant = (S.takeS 3 c1, S.takeS 3 c2) @?= (SY.signal [1,1,1], SY.signal [
 
 test_generate = (s1, s2) @?= (SY.signal [1,2,3,4,5], SY.signal [2,4,6,8,10,12,14])
 
+test_scanl = SY.scanl11 (+) 1 s1 @?= SY.signal [2,4,7,11,16]
+
 test_scanld = SY.scanld11 (+) 1 s1 @?= SY.signal [1,2,4,7,11,16]
 
 test_moore = SY.moore11 (+) (+1) 1 s1 @?= SY.signal [2,3,5,8,12,17]
@@ -99,8 +98,10 @@ test_when = SY.when p s1 @?= SY.SY <$> S.signal [Abst, Abst, Abst, Value 4, Valu
 test_filter = SY.filter (>3) s1 @?= SY.SY <$> S.signal [Value 1, Value 2, Value 3, Undef, Undef]
 
 test_fill = SY.fill 5 s @?= SY.SY <$> S.signal [Value 1, Value 2, Value 3, Value 5, Value 5]
-  where s = SY.filter (>3) s1
+  where s = SY.filter (>3) s
 
+test_hold = SY.hold 5 s @?= SY.SY <$> S.signal [Value 1, Value 2, Value 3, Value 3, Value 3]
+  where s = SY.filter (>3) s1
 
 
 -- Test suite
@@ -123,13 +124,15 @@ tests = [
       testCase "test delay" test_delay_1,
       testCase "test constant" test_constant,
       testCase "test generate" test_generate,
+      testCase "test scanl" test_scanl,
       testCase "test scanld" test_scanld,
       testCase "test moore" test_moore,
       testCase "test mealy" test_mealy,
       testCase "test when" test_when,
       testCase "test filter" test_filter,
       testCase "test fill" test_fill,
-      -- testCase "dummybar" testbar
+      testCase "test hold" test_hold,
+      testCase "dummybar" testbar
       ]
   ] 
 
