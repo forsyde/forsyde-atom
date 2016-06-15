@@ -10,8 +10,8 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The synchronuous library defines process constructors, processes and a signal conduit
--- for the synchronous computational model. A process constructor is a
+-- The continous time library defines process constructors, processes and a signal conduit
+-- for the continous time computational model. A process constructor is a
 -- higher order function which together with combinational function(s)
 -- and values as arguments constructs a process. 
 -----------------------------------------------------------------------------
