@@ -50,7 +50,7 @@ library
                        ForSyDe.Core.ValueExt,
                        ForSyDe.Core.Utilities,
                        ForSyDe.MoCLib.SY,
-                       ForSyDe.MoCLib.DE
+                       ForSyDe.MoCLib.DT
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
@@ -68,7 +68,7 @@ Test-Suite forsyde-testsuite
   Type:                exitcode-stdio-1.0
   Default-Language:    Haskell2010
   Hs-Source-Dirs:      tests
-  Main-is:             SYTest.hs
+  Main-is:             Tests.hs
   Build-depends:       base>=4.7.10 && <6, 
                        forsyde-atom, 
                        QuickCheck, 

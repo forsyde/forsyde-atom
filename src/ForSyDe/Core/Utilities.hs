@@ -1,3 +1,4 @@
+{-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core.Utilities
@@ -10,7 +11,7 @@
 --
 -- This module implements general purpose utility functions. It mainly
 -- hosts functions dealing with tuples. Utilities are provided for up
--- until 8-tuples. Follow the examples in the source code in case it
+-- until 9-tuples. Follow the examples in the source code in case it
 -- does not suffice.
 -----------------------------------------------------------------------------
 
@@ -27,27 +28,53 @@ module ForSyDe.Core.Utilities(
   at61, at62, at63, at64, at65, at66, 
   at71, at72, at73, at74, at75, at76, at77,
   at81, at82, at83, at84, at85, at86, at87, at88,
-
-  -- * @funzip@ functions
-
-  -- | The @funzip@/x/ name stands for "functor unzip" and, as the
-  -- name suggests, it "lifts" a functor of /x/-tuple into an /x/-tuple
-  -- of functor.
-
-  funzip2, funzip3, funzip4, funzip5, funzip6, funzip7, funzip8,
+  at91, at92, at93, at94, at95, at96, at97, at98, at99,
 
   -- * The @unzip@ utilities
 
-  -- | They are implemented as double @funzip@s, and provided as
-  -- postfix operators. They are used for uzipping MoC atoms.
+  -- | These utility functions provided as postfix operators "lift" a
+  -- tuple from one layer to several layers above (check
+  -- "ForSyDe.Core" for recalling what a "layer" is). It is necessary
+  -- to reconstruct containers, for example signals from processes
+  -- with multiple outputs, since outputs need to be expressed in
+  -- tuple form.
+  --
+  -- The operator convention is @(|+<+)@, where the number of @|@
+  -- represent the number of layers the n-tuple is lifted, while the
+  -- number of @<@ + 1 is the order /n/ of the n-tuple.
 
-  (-<),
-  (-<<),
-  (-<<<),
-  (-<<<<),
-  (-<<<<<),
-  (-<<<<<<),
-  (-<<<<<<<),
+  -- ** one layer
+  
+  (|<),
+  (|<<),
+  (|<<<),
+  (|<<<<),
+  (|<<<<<),
+  (|<<<<<<),
+  (|<<<<<<<),
+  (|<<<<<<<<),
+
+  -- ** two layers
+ 
+  (||<),
+  (||<<),
+  (||<<<),
+  (||<<<<),
+  (||<<<<<),
+  (||<<<<<<),
+  (||<<<<<<<),
+  (||<<<<<<<<),
+
+  -- ** three layers
+
+  (|||<),
+  (|||<<),
+  (|||<<<),
+  (|||<<<<),
+  (|||<<<<<),
+  (|||<<<<<<),
+  (|||<<<<<<<),
+  (|||<<<<<<<<), 
   
   ) where
 
@@ -88,48 +115,81 @@ at85 (_,_,_,_,x,_,_,_) = x
 at86 (_,_,_,_,_,x,_,_) = x
 at87 (_,_,_,_,_,_,x,_) = x
 at88 (_,_,_,_,_,_,_,x) = x
+at91 (x,_,_,_,_,_,_,_,_) = x
+at92 (_,x,_,_,_,_,_,_,_) = x
+at93 (_,_,x,_,_,_,_,_,_) = x
+at94 (_,_,_,x,_,_,_,_,_) = x
+at95 (_,_,_,_,x,_,_,_,_) = x
+at96 (_,_,_,_,_,x,_,_,_) = x
+at97 (_,_,_,_,_,_,x,_,_) = x
+at98 (_,_,_,_,_,_,_,x,_) = x
+at99 (_,_,_,_,_,_,_,_,x) = x
 
-funzip2 x = (at21 <$> x,
-             at22 <$> x)
-funzip3 x = (at31 <$> x,
-             at32 <$> x,
-             at33 <$> x)
-funzip4 x = (at41 <$> x,
-             at42 <$> x,
-             at43 <$> x,
-             at44 <$> x)
-funzip5 x = (at51 <$> x,
-             at52 <$> x,
-             at53 <$> x,
-             at54 <$> x,
-             at55 <$> x)
-funzip6 x = (at61 <$> x,
-             at62 <$> x,
-             at63 <$> x,
-             at64 <$> x,
-             at65 <$> x,
-             at66 <$> x)
-funzip7 x = (at71 <$> x,
-             at72 <$> x,
-             at73 <$> x,
-             at74 <$> x,
-             at75 <$> x,
-             at76 <$> x,
-             at77 <$> x)
-funzip8 x = (at81 <$> x,
-             at82 <$> x,
-             at83 <$> x,
-             at84 <$> x,
-             at85 <$> x,
-             at86 <$> x,
-             at87 <$> x,
-             at88 <$> x)
 
-infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
-(-<)       s = funzip2 (funzip2 <$> s)
-(-<<)      s = funzip3 (funzip3 <$> s)
-(-<<<)     s = funzip4 (funzip4 <$> s)
-(-<<<<)    s = funzip5 (funzip5 <$> s)
-(-<<<<<)   s = funzip6 (funzip6 <$> s)
-(-<<<<<<)  s = funzip7 (funzip7 <$> s)
-(-<<<<<<<) s = funzip8 (funzip8 <$> s)
+infixl 3 |<, |<<, |<<<, |<<<<, |<<<<<, |<<<<<<, |<<<<<<<, |<<<<<<<<
+(|<)        x = (at21 <$> x,
+                 at22 <$> x)
+(|<<)       x = (at31 <$> x,
+                 at32 <$> x,
+                 at33 <$> x)
+(|<<<)      x = (at41 <$> x,
+                 at42 <$> x,
+                 at43 <$> x,
+                 at44 <$> x)
+(|<<<<)     x = (at51 <$> x,
+                 at52 <$> x,
+                 at53 <$> x,
+                 at54 <$> x,
+                 at55 <$> x)
+(|<<<<<)    x = (at61 <$> x,
+                 at62 <$> x,
+                 at63 <$> x,
+                 at64 <$> x,
+                 at65 <$> x,
+                 at66 <$> x)
+(|<<<<<<)   x = (at71 <$> x,
+                 at72 <$> x,
+                 at73 <$> x,
+                 at74 <$> x,
+                 at75 <$> x,
+                 at76 <$> x,
+                 at77 <$> x)
+(|<<<<<<<)  x = (at81 <$> x,
+                 at82 <$> x,
+                 at83 <$> x,
+                 at84 <$> x,
+                 at85 <$> x,
+                 at86 <$> x,
+                 at87 <$> x,
+                 at88 <$> x)
+(|<<<<<<<<) x = (at91 <$> x,
+                 at92 <$> x,
+                 at93 <$> x,
+                 at94 <$> x,
+                 at95 <$> x,
+                 at96 <$> x,
+                 at97 <$> x,
+                 at98 <$> x,
+                 at99 <$> x)  
+
+
+infixl 3 ||<, ||<<, ||<<<, ||<<<<, ||<<<<<, ||<<<<<<, ||<<<<<<<, ||<<<<<<<<
+(||<)        s = ((|<) <$> s        |<)
+(||<<)       s = ((|<<) <$> s       |<<)
+(||<<<)      s = ((|<<<) <$> s      |<<<)
+(||<<<<)     s = ((|<<<<) <$> s     |<<<<)
+(||<<<<<)    s = ((|<<<<<) <$> s    |<<<<<)
+(||<<<<<<)   s = ((|<<<<<<) <$> s   |<<<<<<)
+(||<<<<<<<)  s = ((|<<<<<<<) <$> s  |<<<<<<<)
+(||<<<<<<<<) s = ((|<<<<<<<<) <$> s |<<<<<<<<)
+
+
+infixl 3 |||<,  |||<<, |||<<<, |||<<<<, |||<<<<<, |||<<<<<<, |||<<<<<<<, |||<<<<<<<<
+(|||<)        s = (((|<) <$>) <$> s        ||<)
+(|||<<)       s = (((|<<) <$>) <$> s       ||<<)
+(|||<<<)      s = (((|<<<) <$>) <$> s      ||<<<)
+(|||<<<<)     s = (((|<<<<) <$>) <$> s     ||<<<<)
+(|||<<<<<)    s = (((|<<<<<) <$>) <$> s    ||<<<<<)
+(|||<<<<<<)   s = (((|<<<<<<) <$>) <$> s   ||<<<<<<)
+(|||<<<<<<<)  s = (((|<<<<<<<) <$>) <$> s  ||<<<<<<<)
+(|||<<<<<<<<) s = (((|<<<<<<<<) <$>) <$> s ||<<<<<<<<)

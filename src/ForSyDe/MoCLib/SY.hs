@@ -162,6 +162,15 @@ module ForSyDe.MoCLib.SY (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
+  -- ** @buffer@
+
+  -- | @buffer@ processes roughly implement a memory model which
+  -- stores all input present and known values.
+  --
+  -- <<includes/figs/sy-buffer-graph.png>>
+
+  buffer1, buffer2, buffer3, buffer4,
+  
   -- ** Predicate processes
 
   -- | These processes manipulate the behavior of a signal based on
@@ -526,10 +535,10 @@ buffer2 :: [a] -> Sig a -> Sig a -> Sig [a]
 buffer3 :: [a] -> Sig a -> Sig a -> Sig a -> Sig [a]
 buffer4 :: [a] -> Sig a -> Sig a -> Sig a -> Sig a -> Sig [a]
 
-buffer1 i = MoC.scanld11 store1 (event i)
-buffer2 i = MoC.scanld21 store2 (event i)
-buffer3 i = MoC.scanld31 store3 (event i)
-buffer4 i = MoC.scanld41 store4 (event i)
+buffer1 i = MoC.scanl11 store1 (event i)
+buffer2 i = MoC.scanl21 store2 (event i)
+buffer3 i = MoC.scanl31 store3 (event i)
+buffer4 i = MoC.scanl41 store4 (event i)
 
 
 -- FILTER, FILL, HOLD
