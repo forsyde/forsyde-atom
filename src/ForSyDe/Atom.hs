@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK not-home, prune #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core
+-- Module      :  ForSyDe.Atom
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -25,7 +25,7 @@
 -- of processes.
 --
 -----------------------------------------------------------------------------
-module ForSyDe.Core (
+module ForSyDe.Atom (
 
   -- * Basic notions
 
@@ -290,7 +290,7 @@ module ForSyDe.Core (
 
   -- *** Behavior wrappers
   
-  -- | Wrappers are the behavior layer entities passed as arguments
+  -- | Behaviors are the behavior layer entities passed as arguments
   -- to the synchronization layer. They are implemented as specific
   -- compositions of behavior atoms.
   --
@@ -315,7 +315,7 @@ module ForSyDe.Core (
   -- For a list of all the provided utilities, please consult the
   -- following module:
 
-  module ForSyDe.Core.Utilities,
+  module ForSyDe.Atom.Utilities,
          
   -- * Bibliography
 
@@ -325,8 +325,7 @@ module ForSyDe.Core (
        
 ) where
 
-import ForSyDe.Core.Signal
-import ForSyDe.Core.Utilities
-import ForSyDe.Core.ValueExt
-import ForSyDe.Core.MoC
+import ForSyDe.Atom.MoC
+import ForSyDe.Atom.Utilities
+import ForSyDe.Atom.Behavior
 

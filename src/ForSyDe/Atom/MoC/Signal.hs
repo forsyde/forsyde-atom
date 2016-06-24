@@ -1,6 +1,7 @@
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core.Signal
+-- Module      :  ForSyDe.Atom.MoC.Signal
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -9,9 +10,9 @@
 -- Portability :  portable
 --
 -- This module defines the shallow-embedded 'Signal' datatype and
--- functions operating on it.
+-- utility functions operating on it.
 -----------------------------------------------------------------------------
-module ForSyDe.Core.Signal  where
+module ForSyDe.Atom.MoC.Signal  where
 
 
 infixr 3 :-

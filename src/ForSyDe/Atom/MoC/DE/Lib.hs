@@ -1,85 +1,26 @@
 {-# LANGUAGE PostfixOperators #-}
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.MoC.DT
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
+-- Module      :  ForSyDe.MoC.DE.Lib
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
- 
+--
+-- This module provides a set of helpers for properly instantiating
+-- process network patterns as process constructors.
+-- 
 -----------------------------------------------------------------------------
+module ForSyDe.Atom.MoC.DE.Lib where
 
-module ForSyDe.MoCLib.DT where
+import qualified ForSyDe.Atom.MoC.Constructors as MoC
+import           ForSyDe.Atom.MoC.DE.Core
+import           ForSyDe.Atom.Utilities
+import           ForSyDe.Atom.Behavior hiding (value)
 
-import           ForSyDe.Core
-import qualified ForSyDe.Core.MoC as MoC
-import           ForSyDe.Core.Signal as S
-import           ForSyDe.Core.ValueExt
-import qualified ForSyDe.MoCLib.SY as SY
-
--- | Type alias for a DT signal
-type Sig a = S.Signal (DT (Value a))
-
--- | The DT type, identifying a discrete time event and implementing an
--- instance of the 'MoC' class. A discrete event explicitates its tag
--- which is represented as an integer.
-data DT a = DT Int a deriving Eq
-
--- | Implenents the DT semantics for the MoC atoms
-instance MoC DT where
-  _ -$- NullS = NullS
-  f -$- (x:-xs) = fmap f x :- f -$- xs
-  ---------------------
-  sf -*- sx = init (DT 0 Undef) sf sx
-    where init (DT ptx px) s1@(DT tf f :- fs) s2@(DT tx x :- xs)
-            | tf == tx = DT tf (f  x) :- comb (DT tf f) (DT  tx  x) fs xs
-            | tf <  tx = DT tf (f px) :- comb (DT tf f) (DT ptx px) fs s2
-            | tf >  tx = DT tx (f  Undef) :- init (DT tx x) s1 xs
-          comb (DT ptf pf) (DT ptx px) s1@(DT tf f :- fs) s2@(DT tx x :- xs)
-            | tf == tx = DT tf ( f  x) :- comb (DT  tf  f) (DT  tx  x) fs xs
-            | tf <  tx = DT tf ( f px) :- comb (DT  tf  f) (DT ptx px) fs s2
-            | tf >  tx = DT tx (pf  x) :- comb (DT ptf pf) (DT  tx  x) s1 xs
-          comb _ (DT ptx px) (DT tf f :- fs) NullS
-            = DT tf (f px) :- comb (DT tf f) (DT ptx px) fs NullS
-          comb (DT ptf pf) _ NullS (DT tx x :- xs)
-            = DT tx (pf x) :- comb (DT ptf pf) (DT tx x) NullS xs
-          comb _ _ NullS NullS = NullS
-  ---------------------
-  (DT _ v) ->- xs = DT 0 v :- xs
-  ---------------------
-  (DT t _) -&- xs = (\(DT t1 v) -> DT (t1 + t) v) <$> xs
-
-
--- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@
-instance Show a => Show (DT a) where
-  showsPrec _ (DT t x) = (++) ( "(@" ++ show t ++ ":" ++ show x ++ ")")
-
--- | Reads the string for a normal tuple @(Int,Value a)@ as an event @DT a@
-instance (Read a) => Read (DT a) where
-  readsPrec _ x     = [(DT t v, x) | ((t,v), x) <- reads x]
-
--- | Needed to implement the @unzip@ utilities
-instance Functor DT where
-  fmap f (DT t a) = DT t (f a)
-
- -----------------------------------------------------------------------------
-
--- | Wraps a tuple @(tag, value)@ into a DT event of extended values
-event       :: (Int, a) -> DT (Value a)
-event (t,v) = DT t (Value v)
-
--- | Transforms a list of tuples such as the ones taken by 'event'
--- into a DT signal
-signal   :: [(Int, a)] -> Sig a
-signal l = S.signal $ (\(t,v) -> DT t (Value v)) <$> l
-
------------------------------------------------------------------------------ 
-
-----------------------
----- CONSTRUCTORS ----
-----------------------
 
 
 delay :: Int -> a -> Sig a -> Sig a
@@ -141,10 +82,10 @@ constant2 :: (b1, b2) -> (Sig b1, Sig b2)
 constant3 :: (b1, b2, b3) -> (Sig b1, Sig b2, Sig b3)                      
 constant4 :: (b1, b2, b3, b4) -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 
-constant1 i =  ForSyDe.MoCLib.DT.signal [(0, i)]
-constant2 i = (ForSyDe.MoCLib.DT.signal [(0, i)] |||<)
-constant3 i = (ForSyDe.MoCLib.DT.signal [(0, i)] |||<<)
-constant4 i = (ForSyDe.MoCLib.DT.signal [(0, i)] |||<<<)
+constant1 i =  signal [(0, i)]
+constant2 i = (signal [(0, i)] |||<)
+constant3 i = (signal [(0, i)] |||<<)
+constant4 i = (signal [(0, i)] |||<<<)
 
 scanld11 :: (b1 -> a1 -> b1) -> Int -> b1
          -> Sig a1 -> Sig b1                                
@@ -357,39 +298,3 @@ sync4 :: Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig a1, Sig a2, Sig a3, Sig a4
 sync2 = comb22 (,)
 sync3 = comb33 (,,)
 sync4 = comb44 (,,,)
-
-
-
--- de2syr s1          = funzip2 $ (\(DT t a) -> (t,a)) <$> s1
--- de2syr2 s1 s2       = (tag, funzip2 sigs)
---   where (tag, sigs) = funzip2 $ (\(DT t a) -> (t,a)) <$> ((,)   -$- s1 -*- s2)
--- -- de2syr3 s1 s2 s3    = (tag, funzip3 sigs)
--- --   where (tag, sigs) = funzip2 $ (\(DT t a) -> (t,a)) <$> ((,,)  -$- s1 -*- s2 -*- s3)
--- -- de2syr4 s1 s2 s3 s4 = (tag, funzip4 sigs)
--- --   where (tag, sigs) = funzip2 $ (\(DT t a) -> (t,a)) <$> ((,,,) -$- s1 -*- s2 -*- s3 -*- s4)
-
--- syr2de tags s1          = (\t a -> (DT t a)) <$> tags <*> s1
--- syr2de2 tags s1 s2       = funzip2 $ (\t a b -> (DT t a, DT t b)) <$> tags <*> s1 <*> s2
--- -- syr2de3 tags s1 s2 s3    = funzip3 $ (\t a b c -> (DT t a, DT t b, DT t c))
--- --                            <$> tags <*> s1 <*> s2 <*> s2
--- -- syr2de4 tags s1 s2 s3 s4 = funzip4 $ (\t a b c d -> (DT t a, DT t b, DT t c, DT t d))
--- --                            <$> tags <*> s1 <*> s2 <*> s3 <*> s4
-
-
--- filt sels s = (#) -$- sels -*- s
-
--- store buff s1 = (>¤) -$- buff -*- s1
-
-
--- -------------------------------------------------------------------
-
-
-                 
--- controller 0 0 = (1, 1)
--- controller 0 1 = (1, 0)
--- controller 1 0 = (0, 1)
--- controller 1 1 = (0, 1)
-
-
--- r = signal [DT 0 (D 1), DT 3 (D 0), DT 5 (D 1)]
--- l = signal [DT 0 (D 1), DT 4 (D 0)] 

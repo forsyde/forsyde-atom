@@ -1,8 +1,8 @@
 module TestUtils where
 
 
-import ForSyDe.Core
-import ForSyDe.Core.Signal
+import ForSyDe.Atom
+import ForSyDe.Atom.MoC.Signal
 import Test.QuickCheck
 
 
