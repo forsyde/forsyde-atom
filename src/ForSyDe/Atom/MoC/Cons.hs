@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK show-extensions, prune, hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.MoC.Constructors
+-- Module      :  ForSyDe.Atom.MoC.Cons
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -14,10 +14,10 @@
 -- synchronization layer.
 -----------------------------------------------------------------------------
 
-module ForSyDe.Atom.MoC.Constructors where
+module ForSyDe.Atom.MoC.Cons where
 
-import ForSyDe.Atom.MoC.Atoms
-import ForSyDe.Atom.Utilities
+import ForSyDe.Atom.MoC.Atom
+import ForSyDe.Atom.Utility
 import ForSyDe.Atom.Behavior
 
 comb11 f s1             = (f -$- s1)

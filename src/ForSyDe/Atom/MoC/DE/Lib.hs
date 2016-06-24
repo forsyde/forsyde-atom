@@ -16,9 +16,9 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.DE.Lib where
 
-import qualified ForSyDe.Atom.MoC.Constructors as MoC
+import qualified ForSyDe.Atom.MoC.Cons as MoC
 import           ForSyDe.Atom.MoC.DE.Core
-import           ForSyDe.Atom.Utilities
+import           ForSyDe.Atom.Utility
 import           ForSyDe.Atom.Behavior hiding (value)
 
 

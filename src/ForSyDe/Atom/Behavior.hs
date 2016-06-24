@@ -83,6 +83,6 @@ module ForSyDe.Atom.Behavior (
   
   ) where
 
-import ForSyDe.Atom.Behavior.Atoms
-import ForSyDe.Atom.Behavior.Constructors
+import ForSyDe.Atom.Behavior.Atom
+import ForSyDe.Atom.Behavior.Cons
 import ForSyDe.Atom.Behavior.ValueExt

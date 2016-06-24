@@ -1,7 +1,7 @@
 {-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.MoCLib.Interfaces
+-- Module      :  ForSyDe.MoCLib.Interface
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,7 +11,7 @@
 -- 
 -- This module implements interface processes between MoCs.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.MoC.Interfaces where
+module ForSyDe.Atom.MoC.Interface where
 
 -- import ForSyDe.Core
 -- import qualified ForSyDe.MoCLib.SY as SY

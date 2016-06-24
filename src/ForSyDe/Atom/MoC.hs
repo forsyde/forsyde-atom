@@ -19,7 +19,7 @@ module ForSyDe.Atom.MoC(
   
   Signal(..),
 
-  -- * Atoms
+  -- * Atom
   
   MoC(..),
 
@@ -29,7 +29,7 @@ module ForSyDe.Atom.MoC(
   -- constructors are implemented as compositions of MoC atoms. In
   -- order to avoid working with signals of tuples @unzip@ and in
   -- order for the process network to reflect the passed functions,
-  -- process utilities (defined in "ForSyDe.Core.Utilities") are also
+  -- process utilities (defined in "ForSyDe.Core.Utility") are also
   -- used.
   --
   -- Due to Haskell's strict type system and the implementation
@@ -120,7 +120,7 @@ module ForSyDe.Atom.MoC(
   mealy41, mealy42, mealy43, mealy44,  
   ) where
 
-import ForSyDe.Atom.MoC.Atoms
-import ForSyDe.Atom.MoC.Constructors
+import ForSyDe.Atom.MoC.Atom
+import ForSyDe.Atom.MoC.Cons
 import ForSyDe.Atom.MoC.Signal
 

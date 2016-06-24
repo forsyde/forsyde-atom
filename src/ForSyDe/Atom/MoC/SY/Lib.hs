@@ -15,7 +15,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.SY.Lib where
 
-import qualified ForSyDe.Atom.MoC.Constructors as MoC
+import qualified ForSyDe.Atom.MoC.Cons as MoC
 import           ForSyDe.Atom.MoC.SY.Core
 import           ForSyDe.Atom.Behavior          hiding (value)
 import           Prelude                       hiding (filter)

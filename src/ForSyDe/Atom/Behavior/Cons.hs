@@ -1,7 +1,7 @@
 {-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Behavior.Constructors
+-- Module      :  ForSyDe.Atom.Behavior.Cons
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,11 +12,11 @@
 -- This module implements the atoms and wrappers for the behavior
 -- layer in ForSyDe processes.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Behavior.Constructors where
+module ForSyDe.Atom.Behavior.Cons where
 
-import ForSyDe.Atom.Behavior.Atoms
+import ForSyDe.Atom.Behavior.Atom
 import ForSyDe.Atom.Behavior.ValueExt
-import ForSyDe.Atom.Utilities
+import ForSyDe.Atom.Utility
 
 psi11 f a1                      = (f >$ a1)
 psi12 f a1                      = (f >$ a1 |<)

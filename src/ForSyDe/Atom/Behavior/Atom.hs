@@ -11,7 +11,7 @@
 -- This module implements the atoms and wrappers for the behavior
 -- layer in ForSyDe processes.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Behavior.Atoms where
+module ForSyDe.Atom.Behavior.Atom where
 
 infixl 4 >$, >*, >%, >%!, >#, >#!
 

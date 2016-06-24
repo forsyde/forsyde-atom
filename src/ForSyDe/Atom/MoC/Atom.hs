@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK show-extensions, prune, hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.MoC.Atoms
+-- Module      :  ForSyDe.Atom.MoC.Atom
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -13,10 +13,10 @@
 -- synchronization layer.
 -----------------------------------------------------------------------------
 
-module ForSyDe.Atom.MoC.Atoms where
+module ForSyDe.Atom.MoC.Atom where
 
 import ForSyDe.Atom.MoC.Signal
-import ForSyDe.Atom.Utilities
+import ForSyDe.Atom.Utility
 import ForSyDe.Atom.Behavior
 
 infixl 5 -$-, -*-

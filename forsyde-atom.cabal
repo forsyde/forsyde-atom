@@ -44,21 +44,21 @@ extra-doc-files:     includes/figs/*.png
 library
   exposed-modules:     ForSyDe.Atom
                        ForSyDe.Atom.Behavior,
-                       ForSyDe.Atom.Behavior.Atoms,
-                       ForSyDe.Atom.Behavior.Constructors,
+                       ForSyDe.Atom.Behavior.Atom,
+                       ForSyDe.Atom.Behavior.Cons,
                        ForSyDe.Atom.Behavior.ValueExt,
                        ForSyDe.Atom.MoC,
                        ForSyDe.Atom.MoC.Signal,
-                       ForSyDe.Atom.MoC.Atoms,
-                       ForSyDe.Atom.MoC.Constructors,
-                       ForSyDe.Atom.MoC.Interfaces,
+                       ForSyDe.Atom.MoC.Atom,
+                       ForSyDe.Atom.MoC.Cons,
+                       ForSyDe.Atom.MoC.Interface,
                        ForSyDe.Atom.MoC.SY,
                        ForSyDe.Atom.MoC.SY.Core,
                        ForSyDe.Atom.MoC.SY.Lib,
                        ForSyDe.Atom.MoC.DE,
                        ForSyDe.Atom.MoC.DE.Core,
                        ForSyDe.Atom.MoC.DE.Lib,
-                       ForSyDe.Atom.Utilities
+                       ForSyDe.Atom.Utility
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators

@@ -1,7 +1,7 @@
 {-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core.Utilities
+-- Module      :  ForSyDe.Core.Utility
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -10,12 +10,12 @@
 -- Portability :  portable
 --
 -- This module implements general purpose utility functions. It mainly
--- hosts functions dealing with tuples. Utilities are provided for up
+-- hosts functions dealing with tuples. Utility are provided for up
 -- until 9-tuples. Follow the examples in the source code in case it
 -- does not suffice.
 -----------------------------------------------------------------------------
 
-module ForSyDe.Atom.Utilities(
+module ForSyDe.Atom.Utility(
   -- * @at@ functions
   
   -- | The @at@/xy/ functions return the /y/-th element of an

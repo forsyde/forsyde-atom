@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.Behavior.ValueExt where
 
-import ForSyDe.Atom.Behavior.Atoms
+import ForSyDe.Atom.Behavior.Atom
 
 -- |The data type 'Value' wraps arbtrary types to extend them with
 -- tokens carrying special behavioural semantics, as defined by
