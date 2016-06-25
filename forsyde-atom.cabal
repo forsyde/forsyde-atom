@@ -44,9 +44,6 @@ extra-doc-files:     includes/figs/*.png
 library
   exposed-modules:     ForSyDe.Atom
                        ForSyDe.Atom.Behavior,
-                       ForSyDe.Atom.Behavior.Atom,
-                       ForSyDe.Atom.Behavior.Cons,
-                       ForSyDe.Atom.Behavior.ValueExt,
                        ForSyDe.Atom.MoC,
                        ForSyDe.Atom.MoC.Signal,
                        ForSyDe.Atom.MoC.Atom,
