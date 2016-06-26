@@ -48,13 +48,15 @@ library
                        ForSyDe.Atom.MoC.Signal,
                        ForSyDe.Atom.MoC.Atom,
                        ForSyDe.Atom.MoC.Cons,
-                       ForSyDe.Atom.MoC.Interface,
                        ForSyDe.Atom.MoC.SY,
                        ForSyDe.Atom.MoC.SY.Core,
                        ForSyDe.Atom.MoC.SY.Lib,
+                       ForSyDe.Atom.MoC.SY.Interface,
                        ForSyDe.Atom.MoC.DE,
                        ForSyDe.Atom.MoC.DE.Core,
                        ForSyDe.Atom.MoC.DE.Lib,
+                       ForSyDe.Atom.MoC.DE.Interface,
+                       ForSyDe.Atom.MoC.DE.Hybrid,
                        ForSyDe.Atom.Utility
   -- other-modules:       
   Default-Language:    Haskell2010

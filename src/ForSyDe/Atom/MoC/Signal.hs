@@ -43,6 +43,13 @@ data Signal e = NullS         -- ^ terminates a signal
 instance Functor Signal where
   fmap _ NullS   = NullS
   fmap f (x:-xs) = f x :- fmap f xs
+
+instance Applicative Signal where
+  pure x = x :- NullS
+  _ <*> NullS = NullS
+  NullS <*> _ = NullS
+  (f:-fs) <*> (x:-xs) = f x :- fs <*> xs 
+
   
 -- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (Signal a) where
