@@ -17,18 +17,19 @@
 module ForSyDe.Atom.MoC.DE.Interface where
 
 import           ForSyDe.Atom.Behavior
-import           ForSyDe.Atom.Utility
 import           ForSyDe.Atom.MoC.Atom
+import           ForSyDe.Atom.MoC.DE.Core (Tag)
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
+import           ForSyDe.Atom.Utility
 
-eventToSY :: DE.DE (Value a) -> (SY.SY (Value Int), SY.SY (Value a))
+eventToSY :: DE.DE (Value a) -> (SY.SY (Value Tag), SY.SY (Value a))
 eventToSY (DE.DE t a) = (SY.event t, SY.SY a)
 
-toSY  :: DE.Sig a ->                                     (SY.Sig Int, SY.Sig a)
-toSY2 :: DE.Sig a -> DE.Sig b ->                         (SY.Sig Int, SY.Sig a, SY.Sig b)
-toSY3 :: DE.Sig a -> DE.Sig b -> DE.Sig c ->             (SY.Sig Int, SY.Sig a, SY.Sig b, SY.Sig c)
-toSY4 :: DE.Sig a -> DE.Sig b -> DE.Sig c -> DE.Sig d -> (SY.Sig Int, SY.Sig a, SY.Sig b, SY.Sig c, SY.Sig d)
+toSY  :: DE.Sig a ->                                     (SY.Sig Tag, SY.Sig a)
+toSY2 :: DE.Sig a -> DE.Sig b ->                         (SY.Sig Tag, SY.Sig a, SY.Sig b)
+toSY3 :: DE.Sig a -> DE.Sig b -> DE.Sig c ->             (SY.Sig Tag, SY.Sig a, SY.Sig b, SY.Sig c)
+toSY4 :: DE.Sig a -> DE.Sig b -> DE.Sig c -> DE.Sig d -> (SY.Sig Tag, SY.Sig a, SY.Sig b, SY.Sig c, SY.Sig d)
 
 toSY  s1           = (eventToSY <$> s1 |<)
 toSY2 s1 s2        = let (tags, sigs)         = (eventToSY <$> (psi21 (,) -$- s1 -*- s2) |<)

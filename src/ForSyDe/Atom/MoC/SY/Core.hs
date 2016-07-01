@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -31,6 +32,8 @@ data SY a  = SY a deriving Eq
 
 -- | Implenents the SY semantics for the MoC atoms.
 instance MoC SY where
+  type Arg SY a = Value a
+  ---------------------
   (-$-) = (<$>).(<$>)
   ---------------------
   _ -*- NullS = NullS

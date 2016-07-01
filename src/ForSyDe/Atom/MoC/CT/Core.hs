@@ -1,186 +1,103 @@
-{-# LANGUAGE PostfixOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.MoC.CT
--- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; 
---                    SAM Group, KTH/ICT/ECS 2007-2008
+-- Module      :  ForSyDe.Atom.MoC.CT.Core
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The synchronuous library defines process constructors, processes and a signal conduit
--- for the synchronous computational model. A process constructor is a
--- higher order function which together with combinational function(s)
--- and values as arguments constructs a process. 
+-- This module implements the core semantics of the CT MoC.
+ 
 -----------------------------------------------------------------------------
 
-module ForSyDe.MoC.CT where
+module ForSyDe.Atom.MoC.CT.Core where
 
-import ForSyDe.Core
-import ForSyDe.Core.Utility
+import ForSyDe.Atom.MoC.Atom
+import ForSyDe.Atom.MoC.Signal as S
+import ForSyDe.Atom.Behavior
 
-plot :: (Num a, Show a) => Time -> SignalCT a -> Signal (Time, UExt a)
-plot step (Event t f :- fs) = plot' t f fs 
-  where plot' ct cf NullS = (ct, cf ct) :- plot' (ct + step) cf NullS
-        plot' ct cf (Event t f :- fs)
-          | ct < t    = (ct, cf ct) :- plot' (ct + step) cf (Event t f :- fs)
-          | otherwise = ( t,  f  t) :- plot' ( t + step)  f fs
-
------------------------------------------------------------------------------
+import Numeric
+import Data.Ratio
 
 type Time = Rational
-type SignalCT a = Signal (Event a)
 
-data Event a = Event Time (Time -> UExt a)
+-- | Type alias for a CT signal
+type Sig a = S.Signal (CT (Value a))
 
-instance Functor Event where
-  fmap f (Event t a) = Event t (fmap f <$> a)
-          
+-- | The CT type, identifying a discrete time event and implementing an
+-- instance of the 'MoC' class. A discrete event explicitates its tag
+-- which is represented as an integer.
+data CT a = CT Time (Time -> a) 
+
+-- | Implenents the CT semantics for the MoC atoms
+instance MoC CT where
+  type Arg CT a = Value a
+  ---------------------
+  _ -$- NullS = NullS
+  f -$- (x:-xs) = fmap f x :- f -$- xs
+  ---------------------
+  -- (-*-) :: Signal (CT Time (Time -> (Value a -> b))) -> Signal (CT Time (Time -> Value a)) -> Signal (CT Time (Time -> b))
+  sf -*- sx = init (CT 0.0 (\_ -> Undef)) sf sx
+    where init :: CT (Value a) -> Signal (CT (Value a -> b)) -> Signal (CT (Value a)) -> Signal (CT b)
+          init (CT ptx px) s1@(CT tf f :- fs) s2@(CT tx x :- xs)
+            | tf == tx = CT tf (\a -> (f a) (x a))  :- comb (CT tf f) (CT  tx  x) fs xs
+            | tf <  tx = CT tf (\a -> (f a) (px a)) :- comb (CT tf f) (CT ptx px) fs s2
+            | tf >  tx = CT tx (\a -> (f a) Undef)  :- init (CT tx x) s1 xs
+          comb (CT ptf pf) (CT ptx px) s1@(CT tf f :- fs) s2@(CT tx x :- xs)
+            | tf == tx = CT tf (\a -> (f a) (x a))  :- comb (CT  tf  f) (CT  tx  x) fs xs
+            | tf <  tx = CT tf (\a -> (f a) (px a)) :- comb (CT  tf  f) (CT ptx px) fs s2
+            | tf >  tx = CT tx (\a -> (pf a) (x a)) :- comb (CT ptf pf) (CT  tx  x) s1 xs
+          comb _ (CT ptx px) (CT tf f :- fs) NullS
+            = CT tf (\a -> (f a) (px a)) :- comb (CT tf f) (CT ptx px) fs NullS
+          comb (CT ptf pf) _ NullS (CT tx x :- xs)
+            = CT tx (\a -> (pf a) (x a)) :- comb (CT ptf pf) (CT tx x) NullS xs
+          comb _ _ NullS NullS = NullS
+  ---------------------
+  (CT _ v) ->- xs = CT 0 v :- xs
+  ---------------------
+  (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
+
+
+-- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@
+instance Show a => Show (CT a) where
+  showsPrec _ (CT t x) = (++) ( show (x t) ++ "@" ++ (showFFloat Nothing $ fromRat t) "" )
+
+
+-- | Needed to implement the @unzip@ utilities
+instance Functor CT where
+  fmap f (CT t a) = CT t (f <$> a)
+
 -----------------------------------------------------------------------------
 
-infixl 5 -$-
-(-$-) :: (a -> b) -> Signal (Event a) -> Signal (Event b)
-_ -$- NullS = NullS
-f -$- (e :- es) = f <$> e  :- f -$- es
+-- | Wraps a tuple @(tag, value)@ into a DE event of extended values
+event       :: (Rational, Rational -> a) -> CT (Value a)
+event (t,f) = CT t (Value . f)
 
-infixl 5 -*-
-(-*-) :: Signal (Event (a -> b)) -> Signal (Event a) -> Signal (Event b)
-sf -*- sx = zpw (Event 0.0 (\x -> U)) (Event 0.0 (\x -> U)) sf sx
-  where zpw (Event pt1 px1) (Event pt2 px2) s1@(Event t1 x1 :- xs1) s2@(Event t2 x2 :- xs2)
-          | t1 == t2 = Event t1 (\a -> (x1 a) <*> (x2 a))  :- zpw (Event t1 x1) (Event  t2 x2)  xs1 xs2
-          | t1 <  t2 = Event t1 (\a -> (x1 a) <*> (px2 a)) :- zpw (Event t1 x1) (Event pt2 px2) xs1 s2
-          | t1 >  t2 = Event t2 (\a -> (px1 a) <*> (x2 a)) :- zpw (Event pt1 px1) (Event t2 x2) s1  xs2
-        zpw _ (Event pt2 px2) (Event t1 x1 :- xs1) NullS
-          = Event t1 (\a -> (x1 a) <*> (px2 a)) :- zpw (Event t1 x1) (Event pt2 px2) xs1 NullS
-        zpw (Event pt1 px1) _ NullS (Event t2 x2 :- xs2)
-          = Event t2 (\a -> (px1 a) <*> (x2 a)) :- zpw (Event pt1 px1) (Event t2 x2) NullS xs2
-        zpw _ _ NullS NullS = NullS
+-- | Transforms a list of tuples such as the ones taken by 'event'
+-- into a DE signal
+signal   :: [(Rational, Rational -> a)] -> Sig a
+signal l = S.signal $ event <$> l
 
-infixl 4 ->-
-(->-) :: Event a -> Signal (Event a) -> Signal (Event a)
-i@(Event t v) ->- xs = (Event 0 v) :- (\(Event t1 g) -> Event (t1 + t) g) <$> xs
+partition :: Rational -> Sig a -> Sig a 
+partition _    NullS     = NullS
+partition sample (x:-xs) = chunk x xs
+  where chunk (CT t f) s@(CT nt nf :- fs)
+          | t < nt    = CT t f :- chunk (CT (t+sample) f) s
+          | otherwise = CT nt nf :- chunk (CT nt nf) fs
+        chunk _ NullS = NullS
 
-infixl 3 -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<
-(-<)       s = funzip2 (funzip2 <$> s)
-(-<<)      s = funzip3 (funzip3 <$> s)
-(-<<<)     s = funzip4 (funzip4 <$> s)
-(-<<<<)    s = funzip5 (funzip5 <$> s)
-(-<<<<<)   s = funzip6 (funzip6 <$> s)
-(-<<<<<<)  s = funzip7 (funzip7 <$> s)
-(-<<<<<<<) s = funzip8 (funzip8 <$> s)
+partitionUntil _ _ NullS = NullS
+partitionUntil until sample (x:-xs) = chunk x xs
+  where chunk (CT t f) s@(CT nt nf :- fs)
+          | t <= until && t < nt  = CT t f :- chunk (CT (t+sample) f) s
+          | t <= until && t >= nt = CT nt nf :- chunk (CT nt nf) fs
+          | otherwise = NullS
+        chunk (CT t f) NullS
+          | t <= until = CT t f :- chunk (CT (t+sample) f) NullS
+          | otherwise  = NullS
 
------------------------------------------------------------------------------
-
-
-----------------------
----- CONSTRUCTORS ----
-----------------------
-
--- -- | The `comb` take a combinatorial function as argument and returns a process with one input signals and one output signal.
--- comb :: (a -> b) -- ^ combinatorial function
---        -> Signal (Subsig a) -- ^ input signal
---        -> Signal (Subsig b) -- ^ output signal
-
--- -- | Behaves like 'comb', but the process takes 2 input signals.
--- comb2 :: (a -> b -> c) -> Signal (Subsig a) -> Signal (Subsig b) -> Signal (Subsig c)
-
--- -- | Behaves like 'comb', but the process takes 3 input signals.
--- comb3 :: (a -> b -> c -> d) -> Signal (Subsig a) -> Signal (Subsig b) -> Signal (Subsig c) -> Signal (Subsig d)
-
--- -- | Behaves like 'comb', but the process takes 4 input signals.
--- comb4 :: (a -> b -> c -> d -> e) -> Signal (Subsig a) -> Signal (Subsig b) -> Signal (Subsig c) -> Signal (Subsig d) -> Signal (Subsig e)
-
--- -- DELAY
-
--- -- | The process constructor 'delay' delays the signal one event cycle by introducing an initial value at the beginning of the output signal. It is necessary to initialize feed-back loops.
--- delay :: (Subsig a) -- ^Initial state
---         -> Signal (Subsig a) -- ^Input signal
---         -> Signal (Subsig a) -- ^Output signal
-
-
-comb11 f s1          = (f -$- s1)
-comb12 f s1          = (f -$- s1 -<)
-comb13 f s1          = (f -$- s1 -<<)
-comb14 f s1          = (f -$- s1 -<<<)
-comb21 f s1 s2       = (f -$- s1 -*- s2)
-comb22 f s1 s2       = (f -$- s1 -*- s2 -<)
-comb23 f s1 s2       = (f -$- s1 -*- s2 -<<)
-comb24 f s1 s2       = (f -$- s1 -*- s2 -<<<)
-comb31 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3)
-comb32 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3 -<)
-comb33 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3 -<<)
-comb34 f s1 s2 s3    = (f -$- s1 -*- s2 -*- s3 -<<<)
-comb41 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4)
-comb42 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<)
-comb43 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<)
-comb44 f s1 s2 s3 s4 = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<<)
-
-delay s1 xs = s1 ->- xs
-
-moore11 ns od i s1          = comb11 od st
-  where st                  = i ->- comb21 ns st s1
-moore12 ns od i s1          = comb12 od st
-  where st                  = i ->- comb21 ns st s1
-moore13 ns od i s1          = (od -$- st -<<)
-  where st                  = i ->- comb21 ns st s1
-moore14 ns od i s1          = (od -$- st -<<<)
-  where st                  = i ->- comb21 ns st s1
-moore21 ns od i s1 s2       = (od -$- st)
-  where st                  = i ->- comb31 ns st s1 s2
-moore22 ns od i s1 s2       = (od -$- st -<)
-  where st                  = i ->- comb31 ns st s1 s2
-moore23 ns od i s1 s2       = (od -$- st -<<)
-  where st                  = i ->- comb31 ns st s1 s2
-moore24 ns od i s1 s2       = (od -$- st -<<<)
-  where st                  = i ->- comb31 ns st s1 s2
-moore31 ns od i s1 s2 s3    = (od -$- st)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore32 ns od i s1 s2 s3    = (od -$- st -<)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore33 ns od i s1 s2 s3    = (od -$- st -<<)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore34 ns od i s1 s2 s3    = (od -$- st -<<<)
-  where st                  = i ->- comb41 ns st s1 s2 s3
-moore41 ns od i s1 s2 s3 s4 = (od -$- st)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-moore42 ns od i s1 s2 s3 s4 = (od -$- st -<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-moore43 ns od i s1 s2 s3 s4 = (od -$- st -<<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-moore44 ns od i s1 s2 s3 s4 = (od -$- st -<<<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-
-mealy11 ns od i s1          = comb21 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy12 ns od i s1          = comb22 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy13 ns od i s1          = comb23 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy14 ns od i s1          = comb24 od st s1
-  where st                  = i ->- comb21 ns st s1
-mealy21 ns od i s1 s2       = comb31 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy22 ns od i s1 s2       = comb32 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy23 ns od i s1 s2       = comb33 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy24 ns od i s1 s2       = comb34 od st s1 s2
-  where st                  = i ->- comb31 ns st s1 s2
-mealy31 ns od i s1 s2 s3    = comb41 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy32 ns od i s1 s2 s3    = comb42 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy33 ns od i s1 s2 s3    = comb43 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy34 ns od i s1 s2 s3    = comb44 od st s1 s2 s3
-  where st                  = i ->- comb41 ns st s1 s2 s3
-mealy41 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-mealy42 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-mealy43 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
-mealy44 ns od i s1 s2 s3 s4 = (od -$- st -*- s1 -*- s2 -*- s3 -*- s4 -<<<)
-  where st                  = i ->- ns -$- st -*- s1 -*- s2 -*- s3 -*- s4
+----------------------------------------------------------------------------- 

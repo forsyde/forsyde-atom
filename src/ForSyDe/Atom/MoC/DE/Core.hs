@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -19,16 +20,20 @@ import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.MoC.Signal as S
 import ForSyDe.Atom.Behavior
 
+type Tag = Int
+
 -- | Type alias for a DE signal
 type Sig a = S.Signal (DE (Value a))
 
 -- | The DE type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data DE a = DE Int a deriving Eq
+data DE a = DE Tag a deriving Eq
 
 -- | Implenents the DE semantics for the MoC atoms
 instance MoC DE where
+  type Arg DE a = Value a
+  ---------------------
   _ -$- NullS = NullS
   f -$- (x:-xs) = fmap f x :- f -$- xs
   ---------------------
@@ -52,11 +57,11 @@ instance MoC DE where
   (DE t _) -&- xs = (\(DE t1 v) -> DE (t1 + t) v) <$> xs
 
 
--- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@
+-- | Shows the event with tag @t@ and value @v@ as @v\@t@
 instance Show a => Show (DE a) where
-  showsPrec _ (DE t x) = (++) ( "(@" ++ show t ++ ":" ++ show x ++ ")")
+  showsPrec _ (DE t x) = (++) ( show x ++ "@" ++ show t )
 
--- | Reads the string for a normal tuple @(Int,Value a)@ as an event @DE a@
+-- | Reads the string for a normal tuple @(Tag,Value a)@ as an event @DE a@
 instance (Read a) => Read (DE a) where
   readsPrec _ x     = [(DE t v, x) | ((t,v), x) <- reads x]
 

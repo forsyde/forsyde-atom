@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_HADDOCK show-extensions, prune, hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -19,6 +20,7 @@ import ForSyDe.Atom.MoC.Signal
 import ForSyDe.Atom.Utility
 import ForSyDe.Atom.Behavior
 
+
 infixl 5 -$-, -*-
 infixl 3 ->-, -&-
 
@@ -35,6 +37,8 @@ infixl 3 ->-, -&-
 --
 class MoC e where
 
+  type Arg e a
+
   -- | This is a rough equivalent of the @(\<$\>)@ functor operator,
   -- mapping a function on extended values to a MoC-bound signal
   -- (signal of tagged events). Its mathematical definition is:
@@ -44,7 +48,7 @@ class MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-$-)  :: (Value a -> b) -> Signal (e (Value a)) -> Signal (e b)
+  (-$-)  :: (Arg e a -> b) -> Signal (e (Value a)) -> Signal (e b)
 
   -- | This is a rough equivalent of the @(\<*\>)@ applicative functor
   -- operator, used for synchronizing and applying a signal of
@@ -56,7 +60,7 @@ class MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: Signal (e (Value a -> b)) -> Signal (e (Value a)) -> Signal (e b)
+  (-*-) :: Signal (e (Arg e a -> b)) -> Signal (e (Value a)) -> Signal (e b)
 
   -- | Since ForSyDe signals are modeled similar to
   -- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird lists>, the

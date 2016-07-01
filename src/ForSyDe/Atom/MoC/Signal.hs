@@ -91,6 +91,10 @@ headS (x :- _) = x
 tailS NullS  = NullS
 tailS (_ :- a) = a
 
+lastS NullS = error "Empty signal"
+lastS (x:-NullS) = x
+lastS (_:- xs)   = lastS xs
+
 isNull NullS = True
 isNull _ = False
 
