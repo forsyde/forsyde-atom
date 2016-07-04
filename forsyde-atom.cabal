@@ -60,13 +60,14 @@ library
                        ForSyDe.Atom.MoC.CT,
                        ForSyDe.Atom.MoC.CT.Core,
                        ForSyDe.Atom.MoC.CT.Lib,
+                       ForSyDe.Atom.MoC.SDF,
                        ForSyDe.Atom.MoC.SDF.Core,
                        ForSyDe.Atom.MoC.SDF.Lib,
                        ForSyDe.Atom.Utility
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
-  build-depends:       base>=4.7.10 && <6, 
+  build-depends:       base>=4.8 && <6, 
                        parameterized-data, 
                        type-level,
                        test-framework,
@@ -81,7 +82,7 @@ Test-Suite forsyde-testsuite
   Default-Language:    Haskell2010
   Hs-Source-Dirs:      tests
   Main-is:             Tests.hs
-  Build-depends:       base>=4.7.10 && <6, 
+  Build-depends:       base>=4.8 && <6, 
                        forsyde-atom, 
                        QuickCheck, 
                        test-framework,

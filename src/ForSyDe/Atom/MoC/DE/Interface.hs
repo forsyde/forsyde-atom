@@ -23,7 +23,7 @@ import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
 import           ForSyDe.Atom.Utility
 
-eventToSY :: DE.DE (Value a) -> (SY.SY (Value Tag), SY.SY (Value a))
+eventToSY :: DE.Event a -> (SY.Event Tag, SY.Event a)
 eventToSY (DE.DE t a) = (SY.event t, SY.SY a)
 
 toSY  :: DE.Sig a ->                                     (SY.Sig Tag, SY.Sig a)

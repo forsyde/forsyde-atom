@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators #-}
+{-# LANGUAGE PostfixOperators, TypeFamilies #-}
 {-# OPTIONS_HADDOCK show-extensions, prune, hide #-}
 -----------------------------------------------------------------------------
 -- |

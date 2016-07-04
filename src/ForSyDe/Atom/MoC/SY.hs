@@ -176,7 +176,8 @@ module ForSyDe.Atom.MoC.SY (
   -- | These processes manipulate the behavior of a signal based on
   -- predicates on their status.
 
-  when, filter, fill, hold,
+  when, filter, fill,
+  hold,
          
   -- * Bibliography
 

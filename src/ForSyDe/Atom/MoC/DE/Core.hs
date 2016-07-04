@@ -23,19 +23,20 @@ import ForSyDe.Atom.Behavior
 type Tag = Int
 
 -- | Type alias for a DE signal
-type Sig a = S.Signal (DE (Value a))
+type Event a = DE () (Value a)
+type Sig a   = S.Signal (Event a)
 
 -- | The DE type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data DE a = DE Tag a deriving Eq
+data DE c a = DE Tag a deriving Eq
 
 -- | Implenents the DE semantics for the MoC atoms
 instance MoC DE where
-  type Arg DE a = Value a
+  type Arg DE c a = Value a
   ---------------------
   _ -$- NullS = NullS
-  f -$- (x:-xs) = fmap f x :- f -$- xs
+  f -$- (x:-xs) = fmapC f x :- f -$- xs
   ---------------------
   sf -*- sx = init (DE 0 Undef) sf sx
     where init (DE ptx px) s1@(DE tf f :- fs) s2@(DE tx x :- xs)
@@ -56,23 +57,28 @@ instance MoC DE where
   ---------------------
   (DE t _) -&- xs = (\(DE t1 v) -> DE (t1 + t) v) <$> xs
 
+instance ContextFunctor DE where
+  type Context DE c = (NoContext c)
+  fmapC f (DE t a)      = DE t (f a)
+  liftC (DE t1 f) (DE t2 a) = DE t1 (f a)
+
 
 -- | Shows the event with tag @t@ and value @v@ as @v\@t@
-instance Show a => Show (DE a) where
+instance Show a => Show (DE c a) where
   showsPrec _ (DE t x) = (++) ( show x ++ "@" ++ show t )
 
 -- | Reads the string for a normal tuple @(Tag,Value a)@ as an event @DE a@
-instance (Read a) => Read (DE a) where
+instance (Read a) => Read (DE c a) where
   readsPrec _ x     = [(DE t v, x) | ((t,v), x) <- reads x]
 
 -- | Needed to implement the @unzip@ utilities
-instance Functor DE where
+instance Functor (DE c) where
   fmap f (DE t a) = DE t (f a)
 
  -----------------------------------------------------------------------------
 
 -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
-event       :: (Int, a) -> DE (Value a)
+event       :: (Int, a) -> Event a
 event (t,v) = DE t (Value v)
 
 -- | Transforms a list of tuples such as the ones taken by 'event'

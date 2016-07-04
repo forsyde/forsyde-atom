@@ -7,7 +7,7 @@ import           Test.HUnit
 import           Test.QuickCheck
 import           TestUtils
 
-instance Arbitrary a => Arbitrary (SY.SY a) where
+instance (Arbitrary a) => Arbitrary (SY.SY c a) where
   arbitrary = do
     x <- arbitrary
     return (SY.SY x)

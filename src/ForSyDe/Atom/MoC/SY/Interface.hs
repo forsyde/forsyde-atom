@@ -22,7 +22,7 @@ import           ForSyDe.Atom.MoC.Atom
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
 
-eventToDE :: SY.SY (Value DE.Tag) -> SY.SY (Value a) -> DE.DE (Value a)
+eventToDE :: SY.Event DE.Tag -> SY.Event a -> DE.Event a
 eventToDE (SY.SY t) (SY.SY a) = DE.DE (unsafeFromValue t) a
 
 toDE  ::  SY.Sig DE.Tag -> SY.Sig a                                     -> DE.Sig a

@@ -352,7 +352,7 @@ filter p s = MoC.comb21 replaceU (comb11 p s) s
 -- >>> fill 5 s
 -- {1,2,3,5,5,5}
 fill :: a -> Sig a -> Sig a
-fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isNotPresent s) s
+fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isNotPresent s :: Sig Bool) s
 
 
 -- | Similar to 'fill', but holds the last non-absent value if there
