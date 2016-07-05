@@ -15,7 +15,7 @@
 
 module ForSyDe.Atom.MoC.Atom where
 
-import ForSyDe.Atom.MoC.Signal
+import ForSyDe.Atom.Signal
 import ForSyDe.Atom.Utility
 import ForSyDe.Atom.Behavior
 

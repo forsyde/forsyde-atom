@@ -1,8 +1,8 @@
 module SYTest where
 
 import           ForSyDe.Atom
-import           ForSyDe.Atom.MoC.Signal as S
-import qualified ForSyDe.Atom.MoC.SY     as SY
+import qualified ForSyDe.Atom.MoC.SY as SY
+import           ForSyDe.Atom.Signal as S
 import           Test.HUnit
 import           Test.QuickCheck
 import           TestUtils

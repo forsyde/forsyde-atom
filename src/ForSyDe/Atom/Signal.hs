@@ -12,7 +12,7 @@
 -- This module defines the shallow-embedded 'Signal' datatype and
 -- utility functions operating on it.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.MoC.Signal  where
+module ForSyDe.Atom.Signal  where
 
 
 infixr 3 :-

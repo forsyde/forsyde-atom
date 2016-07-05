@@ -325,7 +325,8 @@ module ForSyDe.Atom (
        
 ) where
 
-import ForSyDe.Atom.MoC
-import ForSyDe.Atom.Utility
 import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.MoC
+import ForSyDe.Atom.Signal
+import ForSyDe.Atom.Utility
 

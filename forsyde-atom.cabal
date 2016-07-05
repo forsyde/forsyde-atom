@@ -43,9 +43,9 @@ extra-doc-files:     includes/figs/*.png
 
 library
   exposed-modules:     ForSyDe.Atom
+                       ForSyDe.Atom.Signal,
                        ForSyDe.Atom.Behavior,
                        ForSyDe.Atom.MoC,
-                       ForSyDe.Atom.MoC.Signal,
                        ForSyDe.Atom.MoC.Atom,
                        ForSyDe.Atom.MoC.Cons,
                        ForSyDe.Atom.MoC.SY,
@@ -57,6 +57,9 @@ library
                        ForSyDe.Atom.MoC.DE.Lib,
                        ForSyDe.Atom.MoC.DE.Interface,
                        ForSyDe.Atom.MoC.DE.Hybrid,
+                       ForSyDe.Atom.MoC.CT,
+                       ForSyDe.Atom.MoC.CT.Core,
+                       ForSyDe.Atom.MoC.CT.Lib,
                        ForSyDe.Atom.Utility
   -- other-modules:       
   Default-Language:    Haskell2010

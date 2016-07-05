@@ -15,9 +15,7 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
-  -- * Signal
-  
-  Signal(..),
+
 
   -- * Atom
   
@@ -122,5 +120,4 @@ module ForSyDe.Atom.MoC(
 
 import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.MoC.Cons
-import ForSyDe.Atom.MoC.Signal
 
