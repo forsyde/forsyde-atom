@@ -1,7 +1,7 @@
 {-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core.AbsentExt
+-- Module      :  ForSyDe.Atom.Behavior
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,7 +12,7 @@
 -- This module implements the atoms and wrappers for the behavior
 -- layer in ForSyDe processes.
 -----------------------------------------------------------------------------
-module ForSyDe.Core.ValueExt(
+module ForSyDe.Atom.Behavior(
 
   -- | The behavior layer is enabled by the 'Value' type constructor.
   
@@ -98,7 +98,7 @@ module ForSyDe.Core.ValueExt(
   
   ) where
 
-import ForSyDe.Core.Utilities
+import ForSyDe.Atom.Utility
 
 -- |The data type 'Value' wraps arbtrary types to extend them with
 -- tokens carrying special behavioural semantics, as defined by

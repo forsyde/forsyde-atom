@@ -1,7 +1,7 @@
 {-# LANGUAGE PostfixOperators #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core.Utilities
+-- Module      :  ForSyDe.Core.Utility
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -10,12 +10,12 @@
 -- Portability :  portable
 --
 -- This module implements general purpose utility functions. It mainly
--- hosts functions dealing with tuples. Utilities are provided for up
+-- hosts functions dealing with tuples. Utility are provided for up
 -- until 9-tuples. Follow the examples in the source code in case it
 -- does not suffice.
 -----------------------------------------------------------------------------
 
-module ForSyDe.Core.Utilities(
+module ForSyDe.Atom.Utility(
   -- * @at@ functions
   
   -- | The @at@/xy/ functions return the /y/-th element of an
@@ -75,7 +75,29 @@ module ForSyDe.Core.Utilities(
   (|||<<<<<<),
   (|||<<<<<<<),
   (|||<<<<<<<<), 
+
+  -- ** four layers
   
+  (||||<),
+  (||||<<),
+  (||||<<<),
+  (||||<<<<),
+  (||||<<<<<),
+  (||||<<<<<<),
+  (||||<<<<<<<),
+  (||||<<<<<<<<), 
+
+  -- * The @curry@ utilities
+
+  (<>),
+  (<>>),
+  (<>>>),
+  (<>>>>),
+  (<>>>>>),
+  (<>>>>>>),
+  (<>>>>>>>),
+  (<>>>>>>>>)
+
   ) where
 
 import Prelude hiding (unzip3, filter)
@@ -193,3 +215,26 @@ infixl 3 |||<,  |||<<, |||<<<, |||<<<<, |||<<<<<, |||<<<<<<, |||<<<<<<<, |||<<<<
 (|||<<<<<<)   s = (((|<<<<<<) <$>) <$> s   ||<<<<<<)
 (|||<<<<<<<)  s = (((|<<<<<<<) <$>) <$> s  ||<<<<<<<)
 (|||<<<<<<<<) s = (((|<<<<<<<<) <$>) <$> s ||<<<<<<<<)
+
+
+infixl 3 ||||<,  ||||<<, ||||<<<, ||||<<<<, ||||<<<<<, ||||<<<<<<, ||||<<<<<<<, ||||<<<<<<<<
+(||||<)        s = ((((|<) <$>) <$>) <$> s        |||<)
+(||||<<)       s = ((((|<<) <$>) <$>) <$> s       |||<<)
+(||||<<<)      s = ((((|<<<) <$>) <$>) <$> s      |||<<<)
+(||||<<<<)     s = ((((|<<<<) <$>) <$>) <$> s     |||<<<<)
+(||||<<<<<)    s = ((((|<<<<<) <$>) <$>) <$> s    |||<<<<<)
+(||||<<<<<<)   s = ((((|<<<<<<) <$>) <$>) <$> s   |||<<<<<<)
+(||||<<<<<<<)  s = ((((|<<<<<<<) <$>) <$>) <$> s  |||<<<<<<<)
+(||||<<<<<<<<) s = ((((|<<<<<<<<) <$>) <$>) <$> s |||<<<<<<<<)
+
+
+
+infixl 6 <>,  <>>, <>>>, <>>>>, <>>>>>, <>>>>>>, <>>>>>>>, <>>>>>>>>
+f <>        (a1, a2)                             = f a1 a2
+f <>>       (a1, a2, a3)                         = f a1 a2 a3
+f <>>>      (a1, a2, a3, a4)                     = f a1 a2 a3 a4
+f <>>>>     (a1, a2, a3, a4, a5)                 = f a1 a2 a3 a4 a5
+f <>>>>>    (a1, a2, a3, a4, a5, a6)             = f a1 a2 a3 a4 a5 a6
+f <>>>>>>   (a1, a2, a3, a4, a5, a6, a7)         = f a1 a2 a3 a4 a5 a6 a7
+f <>>>>>>>  (a1, a2, a3, a4, a5, a6, a7, a8)     = f a1 a2 a3 a4 a5 a6 a7 a8
+f <>>>>>>>> (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f a1 a2 a3 a4 a5 a6 a7 a8 a9

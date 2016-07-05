@@ -20,7 +20,7 @@ module ForSyDe.MoC.SDF where
 
 import Prelude hiding (zip, zip3, filter, unzip, unzip3)
 import ForSyDe.Core
-import ForSyDe.Core.Utilities
+import ForSyDe.Core.Utility
 import Data.TypeLevel hiding ((==))
 import Data.Param.FSVec as V hiding (length, take)
 
