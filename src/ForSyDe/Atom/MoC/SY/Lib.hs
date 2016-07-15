@@ -19,6 +19,8 @@ import qualified ForSyDe.Atom.MoC.Cons as MoC
 import           ForSyDe.Atom.MoC.SY.Core
 import           ForSyDe.Atom.Behavior          hiding (value)
 import           Prelude                       hiding (filter)
+import ForSyDe.Atom.Utility (id1, id2, id3, id4)
+
 
 delay :: a -> Sig a -> Sig a
 delay i = MoC.delay (event i)
@@ -79,127 +81,127 @@ constant2 :: (b1, b2) -> (Sig b1, Sig b2)
 constant3 :: (b1, b2, b3) -> (Sig b1, Sig b2, Sig b3)                      
 constant4 :: (b1, b2, b3, b4) -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 
-constant1 i = MoC.scanld01 (psi11 id) (event i)
-constant2 i = MoC.scanld02 (psi11 id) (event i)
-constant3 i = MoC.scanld03 (psi11 id) (event i)
-constant4 i = MoC.scanld04 (psi11 id) (event i)
+constant1 i = MoC.scanld01 (psi11 id1) (event  i)
+constant2 i = MoC.scanld02 (psi22 id2) (event2 i)
+constant3 i = MoC.scanld03 (psi33 id3) (event3 i)
+constant4 i = MoC.scanld04 (psi44 id4) (event4 i)
 
 
 generate1 :: (b1 -> b1) -> b1
           -> Sig b1                                
-generate2 :: ((b1, b2) -> (b1, b2)) -> (b1, b2)
+generate2 :: (b1 -> b2 -> (b1, b2)) -> (b1, b2)
           -> (Sig b1, Sig b2)                          
-generate3 :: ((b1, b2, b3) -> (b1, b2, b3)) -> (b1, b2, b3)
+generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3)) -> (b1, b2, b3)
           -> (Sig b1, Sig b2, Sig b3)                      
-generate4 :: ((b1, b2, b3, b4) -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
           -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 
-generate1 ns i = MoC.scanld01 (psi11 ns) (event i)
-generate2 ns i = MoC.scanld02 (psi11 ns) (event i)
-generate3 ns i = MoC.scanld03 (psi11 ns) (event i)
-generate4 ns i = MoC.scanld04 (psi11 ns) (event i)
+generate1 ns i = MoC.scanld01 (psi11 ns) (event  i)
+generate2 ns i = MoC.scanld02 (psi22 ns) (event2 i)
+generate3 ns i = MoC.scanld03 (psi33 ns) (event3 i)
+generate4 ns i = MoC.scanld04 (psi44 ns) (event4 i)
 
 
 scanld11 :: (b1 -> a1 -> b1) -> b1
         -> Sig a1 -> Sig b1                                
-scanld12 :: ((b1, b2) -> a1 -> (b1, b2)) -> (b1, b2)
+scanld12 :: (b1 -> b2 -> a1 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> (Sig b1, Sig b2)                          
-scanld13 :: ((b1, b2, b3) -> a1 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanld13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-scanld14 :: ((b1, b2, b3, b4) -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanld14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 scanld21 :: (b1 -> a1 -> a2 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig b1                          
-scanld22 :: ((b1, b2) -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
+scanld22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)                    
-scanld23 :: ((b1, b2, b3) -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanld23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-scanld24 :: ((b1, b2, b3, b4) -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanld24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
 scanld31 :: (b1 -> a1 -> a2 -> a3 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-scanld32 :: ((b1, b2) -> a1 -> a2 -> a3 -> (b1, b2)) -> (b1, b2)
+scanld32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-scanld33 :: ((b1, b2, b3) -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanld33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-scanld34 :: ((b1, b2, b3, b4) -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanld34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
 scanld41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-scanld42 :: ((b1, b2) -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (b1, b2)
+scanld42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-scanld43 :: ((b1, b2, b3) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanld43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-scanld44 :: ((b1, b2, b3, b4) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanld44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 
-scanld11 ns i = MoC.scanld11 (psi21 ns) (event i)
-scanld12 ns i = MoC.scanld12 (psi21 ns) (event i)
-scanld13 ns i = MoC.scanld13 (psi21 ns) (event i)
-scanld14 ns i = MoC.scanld14 (psi21 ns) (event i)
-scanld21 ns i = MoC.scanld21 (psi31 ns) (event i)
-scanld22 ns i = MoC.scanld22 (psi31 ns) (event i)
-scanld23 ns i = MoC.scanld23 (psi31 ns) (event i)
-scanld24 ns i = MoC.scanld24 (psi31 ns) (event i)
-scanld31 ns i = MoC.scanld31 (psi41 ns) (event i)
-scanld32 ns i = MoC.scanld32 (psi41 ns) (event i)
-scanld33 ns i = MoC.scanld33 (psi41 ns) (event i)
-scanld34 ns i = MoC.scanld34 (psi41 ns) (event i)
-scanld41 ns i = MoC.scanld41 (psi51 ns) (event i)
-scanld42 ns i = MoC.scanld42 (psi51 ns) (event i)
-scanld43 ns i = MoC.scanld43 (psi51 ns) (event i)
-scanld44 ns i = MoC.scanld44 (psi51 ns) (event i)
+scanld11 ns i = MoC.scanld11 (psi21 ns) (event  i)
+scanld12 ns i = MoC.scanld12 (psi32 ns) (event2 i)
+scanld13 ns i = MoC.scanld13 (psi43 ns) (event3 i)
+scanld14 ns i = MoC.scanld14 (psi54 ns) (event4 i)
+scanld21 ns i = MoC.scanld21 (psi31 ns) (event  i)
+scanld22 ns i = MoC.scanld22 (psi42 ns) (event2 i)
+scanld23 ns i = MoC.scanld23 (psi53 ns) (event3 i)
+scanld24 ns i = MoC.scanld24 (psi64 ns) (event4 i)
+scanld31 ns i = MoC.scanld31 (psi41 ns) (event  i)
+scanld32 ns i = MoC.scanld32 (psi52 ns) (event2 i)
+scanld33 ns i = MoC.scanld33 (psi63 ns) (event3 i)
+scanld34 ns i = MoC.scanld34 (psi74 ns) (event4 i)
+scanld41 ns i = MoC.scanld41 (psi51 ns) (event  i)
+scanld42 ns i = MoC.scanld42 (psi62 ns) (event2 i)
+scanld43 ns i = MoC.scanld43 (psi73 ns) (event3 i)
+scanld44 ns i = MoC.scanld44 (psi84 ns) (event4 i)
 
 
 scanl11 :: (b1 -> a1 -> b1) -> b1
         -> Sig a1 -> Sig b1                                
-scanl12 :: ((b1, b2) -> a1 -> (b1, b2)) -> (b1, b2)
+scanl12 :: (b1 -> b2 -> a1 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> (Sig b1, Sig b2)                          
-scanl13 :: ((b1, b2, b3) -> a1 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanl13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-scanl14 :: ((b1, b2, b3, b4) -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanl14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 scanl21 :: (b1 -> a1 -> a2 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig b1                          
-scanl22 :: ((b1, b2) -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
+scanl22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)                    
-scanl23 :: ((b1, b2, b3) -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanl23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-scanl24 :: ((b1, b2, b3, b4) -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanl24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
 scanl31 :: (b1 -> a1 -> a2 -> a3 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-scanl32 :: ((b1, b2) -> a1 -> a2 -> a3 -> (b1, b2)) -> (b1, b2)
+scanl32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-scanl33 :: ((b1, b2, b3) -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanl33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-scanl34 :: ((b1, b2, b3, b4) -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanl34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
 scanl41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-scanl42 :: ((b1, b2) -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (b1, b2)
+scanl42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (b1, b2)
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-scanl43 :: ((b1, b2, b3) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (b1, b2, b3)
+scanl43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-scanl44 :: ((b1, b2, b3, b4) -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
+scanl44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 
-scanl11 ns i = MoC.scanl11 (psi21 ns) (event i)
-scanl12 ns i = MoC.scanl12 (psi21 ns) (event i)
-scanl13 ns i = MoC.scanl13 (psi21 ns) (event i)
-scanl14 ns i = MoC.scanl14 (psi21 ns) (event i)
-scanl21 ns i = MoC.scanl21 (psi31 ns) (event i)
-scanl22 ns i = MoC.scanl22 (psi31 ns) (event i)
-scanl23 ns i = MoC.scanl23 (psi31 ns) (event i)
-scanl24 ns i = MoC.scanl24 (psi31 ns) (event i)
-scanl31 ns i = MoC.scanl31 (psi41 ns) (event i)
-scanl32 ns i = MoC.scanl32 (psi41 ns) (event i)
-scanl33 ns i = MoC.scanl33 (psi41 ns) (event i)
-scanl34 ns i = MoC.scanl34 (psi41 ns) (event i)
-scanl41 ns i = MoC.scanl41 (psi51 ns) (event i)
-scanl42 ns i = MoC.scanl42 (psi51 ns) (event i)
-scanl43 ns i = MoC.scanl43 (psi51 ns) (event i)
-scanl44 ns i = MoC.scanl44 (psi51 ns) (event i)
+scanl11 ns i = MoC.scanl11 (psi21 ns) (event  i)
+scanl12 ns i = MoC.scanl12 (psi32 ns) (event2 i)
+scanl13 ns i = MoC.scanl13 (psi43 ns) (event3 i)
+scanl14 ns i = MoC.scanl14 (psi54 ns) (event4 i)
+scanl21 ns i = MoC.scanl21 (psi31 ns) (event  i)
+scanl22 ns i = MoC.scanl22 (psi42 ns) (event2 i)
+scanl23 ns i = MoC.scanl23 (psi53 ns) (event3 i)
+scanl24 ns i = MoC.scanl24 (psi64 ns) (event4 i)
+scanl31 ns i = MoC.scanl31 (psi41 ns) (event  i)
+scanl32 ns i = MoC.scanl32 (psi52 ns) (event2 i)
+scanl33 ns i = MoC.scanl33 (psi63 ns) (event3 i)
+scanl34 ns i = MoC.scanl34 (psi74 ns) (event4 i)
+scanl41 ns i = MoC.scanl41 (psi51 ns) (event  i)
+scanl42 ns i = MoC.scanl42 (psi62 ns) (event2 i)
+scanl43 ns i = MoC.scanl43 (psi73 ns) (event3 i)
+scanl44 ns i = MoC.scanl44 (psi84 ns) (event4 i)
 
 
 moore11 :: (st -> a1 -> st) -> (st -> b1) -> st
@@ -304,65 +306,65 @@ mealy43 ns od i = MoC.mealy43 (psi51 ns) (psi53 od) (event i)
 mealy44 ns od i = MoC.mealy44 (psi51 ns) (psi54 od) (event i)
 
 
-buffer1 :: [a] -> Sig a -> Sig [a]
-buffer2 :: [a] -> Sig a -> Sig a -> Sig [a]
-buffer3 :: [a] -> Sig a -> Sig a -> Sig a -> Sig [a]
-buffer4 :: [a] -> Sig a -> Sig a -> Sig a -> Sig a -> Sig [a]
+-- buffer1 :: [a] -> Sig a -> Sig [a]
+-- buffer2 :: [a] -> Sig a -> Sig a -> Sig [a]
+-- buffer3 :: [a] -> Sig a -> Sig a -> Sig a -> Sig [a]
+-- buffer4 :: [a] -> Sig a -> Sig a -> Sig a -> Sig a -> Sig [a]
 
-buffer1 i = MoC.scanl11 store1 (event i)
-buffer2 i = MoC.scanl21 store2 (event i)
-buffer3 i = MoC.scanl31 store3 (event i)
-buffer4 i = MoC.scanl41 store4 (event i)
-
-
--- FILTER, FILL, HOLD
-
--- | This process predicates the existence of events in a signal based
--- on a signal of boolean values (conditions). It is similar to the
--- @when@ construct in the synchronous language Lustre <#hal91 [2]>,
--- based on which clock calculus can be performed.
---
--- >>> let s = signal [1,2,3,4,5,6]
--- >>> let p = comb11 (>3) s
--- >>> s
--- {1,2,3,4,5,6}
--- >>> p
--- {False,False,False,True,True,True}
--- >>> when p s
--- {⟂,⟂,⟂,4,5,6}
-when :: Sig Bool    -- ^ Signal of predicates
-     -> Sig a       -- ^ Input signal
-     -> Sig a       -- ^ Output signal
-when p s = MoC.comb21 (replaceA . psi11 not) p s
-
--- | Filters out values to unknown if they do not fulfill a predicate
--- function.
---
--- >>> let s = signal [1,2,3,4,5,6]
--- >>> filter (>3) s
--- {1,2,3,?,?,?}
-filter :: (a -> Bool) -- ^ Predicate function
-       -> Sig a       -- ^ Input signal
-       -> Sig a       -- ^ Output signal
-filter p s = MoC.comb21 replaceU (comb11 p s) s
-
--- | Fills absent events with a pre-defined value. 
---
--- >>> let s = filter (>3) $ signal [1,2,3,4,5,6]
--- >>> fill 5 s
--- {1,2,3,5,5,5}
-fill :: a -> Sig a -> Sig a
-fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isNotPresent s :: Sig Bool) s
+-- buffer1 i = MoC.scanl11 store1 (event i)
+-- buffer2 i = MoC.scanl21 store2 (event i)
+-- buffer3 i = MoC.scanl31 store3 (event i)
+-- buffer4 i = MoC.scanl41 store4 (event i)
 
 
--- | Similar to 'fill', but holds the last non-absent value if there
--- was one.
---
--- >>> let s = filter (<3) $ signal [1,2,3,4,5,6]
--- >>> holf 5 s
--- {1,2,3,3,3,3}
-hold :: a -> Sig a -> Sig a
-hold init = MoC.scanl11 fillF (event init)
-  where fillF st inp = (unsafeReplaceV st) (isNotPresent inp) inp
+-- -- FILTER, FILL, HOLD
+
+-- -- | This process predicates the existence of events in a signal based
+-- -- on a signal of boolean values (conditions). It is similar to the
+-- -- @when@ construct in the synchronous language Lustre <#hal91 [2]>,
+-- -- based on which clock calculus can be performed.
+-- --
+-- -- >>> let s = signal [1,2,3,4,5,6]
+-- -- >>> let p = comb11 (>3) s
+-- -- >>> s
+-- -- {1,2,3,4,5,6}
+-- -- >>> p
+-- -- {False,False,False,True,True,True}
+-- -- >>> when p s
+-- -- {⟂,⟂,⟂,4,5,6}
+-- when :: Sig Bool    -- ^ Signal of predicates
+--      -> Sig a       -- ^ Input signal
+--      -> Sig a       -- ^ Output signal
+-- when p s = MoC.comb21 (replaceA . psi11 not) p s
+
+-- -- | Filters out values to unknown if they do not fulfill a predicate
+-- -- function.
+-- --
+-- -- >>> let s = signal [1,2,3,4,5,6]
+-- -- >>> filter (>3) s
+-- -- {1,2,3,?,?,?}
+-- filter :: (a -> Bool) -- ^ Predicate function
+--        -> Sig a       -- ^ Input signal
+--        -> Sig a       -- ^ Output signal
+-- filter p s = MoC.comb21 replaceU (comb11 p s) s
+
+-- -- | Fills absent events with a pre-defined value. 
+-- --
+-- -- >>> let s = filter (>3) $ signal [1,2,3,4,5,6]
+-- -- >>> fill 5 s
+-- -- {1,2,3,5,5,5}
+-- fill :: a -> Sig a -> Sig a
+-- fill x s = MoC.comb21 (unsafeReplaceV (Value x)) (MoC.comb11 isNotPresent s :: Sig Bool) s
+
+
+-- -- | Similar to 'fill', but holds the last non-absent value if there
+-- -- was one.
+-- --
+-- -- >>> let s = filter (<3) $ signal [1,2,3,4,5,6]
+-- -- >>> holf 5 s
+-- -- {1,2,3,3,3,3}
+-- hold :: a -> Sig a -> Sig a
+-- hold init = MoC.scanl11 fillF (event init)
+--   where fillF st inp = (unsafeReplaceV st) (isNotPresent inp) inp
 
 

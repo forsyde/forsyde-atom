@@ -20,26 +20,26 @@ module ForSyDe.Atom.MoC.SDF.Core where
 import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.MoC.Signal as S
 import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.Utility (($$),($$$),($$$$), id1, id2, id3, id4)
+
 
 
 import qualified Data.Param.FSVec as V
 import Data.TypeLevel hiding ((==))
 
 -- | Type alias for a CT signal
--- type Sigr a = S.Signal (SDF D0 (Value a)) 
-
-
-type Sig a    = (forall rate.Nat rate => S.Signal (SDF rate (Value a)))
-type Sigr r a = S.Signal (SDF r (Value a))
+type Sig a   = S.Signal (Event a) 
+type Event a = SDF (Value a)
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data SDF c a = SDF a
+data SDF a = SDF a
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC SDF where
-  type Arg SDF c a = Value (V.FSVec c a)
+  type Arg SDF rate a = Value (V.FSVec rate a)
+  type Context SDF rate = (Nat rate)
   ---------------------
   _ -$- NullS           = NullS
   f -$- xs = let x'  = extract c xs 
@@ -56,89 +56,69 @@ instance MoC SDF where
                             then SDF (f $ pack x') :- fs -*- xs'
                             else NullS
   ---------------------
-  (->-) = (:-)
+  o = (S.signal . fmap SDF . concat . fmap unpack . (fmap . fmap) V.fromVector . fmap fromSDF . S.fromSignal)
+  ---------------------
+  (->-) = (+-+) . S.signal . fmap SDF . unpack . fmap V.fromVector . fromSDF
   ---------------------
   (-&-) _ a = a
   ---------------------
 
-instance ContextFunctor SDF where
-  type Context SDF c    = (Nat c)
-  fmapC f (SDF a)       = SDF (f a)
-  liftC (SDF f) (SDF a) = SDF (f a)
+-- instance ContextFunctor SDF where
+--   type Context SDF c    = (Nat c)
+--   fmapC f (SDF a)       = SDF (f a)
+--   liftC (SDF f) (SDF a) = SDF (f a)
+  
 
 
 -- | Needed for the implementation of the '-$-' atom and also the
 -- @unzip@ utilities.
-instance Functor (SDF c) where
+instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
  
 -- | Shows the (extended) value wrapped
-instance Show a => Show (SDF c a) where
+instance Show a => Show (SDF a) where
   showsPrec _ (SDF x) = (++) (show x)
 
 -----------------------------------------------------------------------------
 
 -- | Wraps a base value into a SY event of extended values
-event    :: (Nat c) => a -> SDF c (Value a)
-event    = SDF . Value 
+
+event     :: a         -> Event a
+event2    :: (a,b)     -> (Event a,Event b)
+event3    :: (a,b,c)   -> (Event a,Event b,Event c)
+event4    :: (a,b,c,d) -> (Event a,Event b,Event c,Event d)
+
+event    = SDF . Value
+event2   = ($$) (event, event)
+event3   = ($$$) (event, event, event)
+event4   = ($$$$) (event, event, event, event)
 
 -- | Wraps a list into a SY signal
 signal   :: [a] -> Sig a
 signal l = S.signal (event <$> l)
 
+vid1 :: V.FSVec D1 a -> V.FSVec D1 a
+vid2 :: V.FSVec D1 a -> V.FSVec D1 b -> (V.FSVec D1 a, V.FSVec D1 b)
+vid3 :: V.FSVec D1 a -> V.FSVec D1 b -> V.FSVec D1 c -> (V.FSVec D1 a, V.FSVec D1 b, V.FSVec D1 c)
+vid4 :: V.FSVec D1 a -> V.FSVec D1 b -> V.FSVec D1 c -> V.FSVec D1 d -> (V.FSVec D1 a, V.FSVec D1 b, V.FSVec D1 c, V.FSVec D1 d)
+vid1 = id1
+vid2 = id2
+vid3 = id3
+vid4 = id4
 -----------------------------------------------------------------------------
 
 fromSDF (SDF a) = a
 
 pack ::(Nat s) => V.FSVec s (Value a) -> Value (V.FSVec s a)
-pack = fmap V.FSVec . transpose . V.fromVector
+pack = fmap V.reallyUnsafeVector . transpose . V.fromVector
   where transpose []     = Value []
         transpose (a:as) = (:) <$> a <*> transpose as
 
-extract :: (Nat s1, Nat s2) => s2 -> Signal (SDF s1 (Value a)) -> V.FSVec s2 (Value a)
+unpack Abst       = []
+unpack Undef      = []
+unpack (Value as) = Value <$> as
+
+extract :: (Nat s) => s -> Signal (SDF (Value a)) -> V.FSVec s (Value a)
 extract c = V.reallyUnsafeVector . take (toInt c) . fmap fromSDF . fromSignal
 
-cat :: (Nat p, Nat p') => Signal (SDF p' (Value (V.FSVec p a))) -> S.Signal (SDF p (Value a))
-cat = (S.signal . fmap SDF . concat . fmap unpack . (fmap . fmap) V.fromVector . fmap fromSDF . S.fromSignal)
-  where unpack Abst       = []
-        unpack Undef      = []
-        unpack (Value as) = Value <$> as
-
-
--- -----------------------------------------------------------------------------
-
--- test :: V.FSVec D1 a -> V.FSVec D2 a
--- test' :: V.FSVec D2 a -> (V.FSVec D1 Int, V.FSVec D2 a)
--- test'' :: V.FSVec D3 a -> V.FSVec D4 a -> V.FSVec D2 a
--- test'''' :: V.FSVec D4 a -> V.FSVec D2 a
-
--- test x = V.unsafeVector d2 [V.head x, V.last x]
--- test' x = (V.unsafeVector d1 [V.length x], V.unsafeVector d2 [V.head x, V.last x])
--- test'' x y = V.unsafeVector d2 [V.head x, V.last y]
--- test'''' x = V.unsafeVector d2 [V.head x, V.last x]
-
-
--- s = ForSyDe.Atom.MoC.SDF.Core.signal [1,2,3,4,5,6,7] 
-
--- q' = (psi12 test' -$- s ||<)
--- q = psi11 test -$- s 
--- q'' = psi21 test'' -$- s -*- s
--- q'''' = psi11 test'''' -$- s 
-
-
--- -- q''' a = cat $ psi21 test'' -$- a -*- a
-
-
--- -- -- e'''
--- -- --   :: Nat c2 =>
--- -- --      Sig a
--- -- --      -> Signal (SDF c2 (Value a)) -> Signal (SDF D4 (Value a))
-
--- -- e''' a b = cat $ C.comb21 (psi21 test'') a b
-
--- -- -- w  = cat q             
-  
--- -- -- w' = (cat, cat) <**> q'  
--- -- w''= cat q'' :: Sigr Int     
-
--- -- -- z = psi11 test -$- w
+-----------------------------------------------------------------------------

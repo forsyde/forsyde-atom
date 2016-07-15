@@ -19,13 +19,14 @@ module ForSyDe.Atom.MoC.SY.Core where
 import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.MoC.Signal as S
 import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.Utility (($$), ($$$), ($$$$))
 
 import GHC.Exts
 
 
 
 -- | Type alias for a SY signal
-type Event a = SY () (Value a)
+type Event a = SY (Value a)
 type Sig a   = S.Signal (Event a)
 
 
@@ -33,52 +34,70 @@ type Sig a   = S.Signal (Event a)
 -- instance of the 'MoC' class. Since SY tags are implicit, this data
 -- type only wraps values inside a constructor that identifies it as a
 -- "synchronous event".
-data SY c a  = SY a deriving Eq
+data SY a  = SY a deriving Eq
 -----------------------------------------------------------------------------
 
 -- | Implenents the SY semantics for the MoC atoms.
 instance MoC SY where
-  type Arg SY c a = Value a
+  type Arg SY c a = SYArg c a
+  type Context SY c = ()
   ---------------------
-  (-$-) = fmap . fmapC
+  (-$-) = fmap . (>$<)
   ---------------------
   _ -*- NullS = NullS
   NullS -*- _ = NullS
   (f:-fs) -*- (x:-xs) = f >*< x :- fs -*- xs
   ---------------------
-  (->-) = (:-)
+  o = (fmap . fmap) unArg
+  ---------------------
+  (->-) = (:-) . (fmap unArg)
   ---------------------
   (-&-) _ a = a
   ---------------------
 
-instance ContextFunctor SY where
-  type Context SY c = (NoContext c)
-  fmapC f (SY a)      = SY (f a)
-  liftC (SY f) (SY a) = SY (f a)
-
 -- | Shows the (extended) value wrapped
-instance Show a => Show (SY c a) where
+instance Show a => Show (SY a) where
   showsPrec _ (SY x) = (++) (show x)
 
 -- | Reads the (extended) value wrapped
-instance Read a => Read (SY c a) where
+instance Read a => Read (SY a) where
   readsPrec _ s       = [(SY x, r) | (x, r) <- reads s]
 
 -- | Needed for the implementation of the '-$-' atom and also the
 -- @unzip@ utilities.
-instance Functor (SY c) where
+instance Functor (SY) where
   fmap f (SY a) = SY (f a)
 
 -- | Needed for the implementation of the '-*-' atom
-instance Applicative (SY a) where
+instance Applicative (SY) where
   pure = SY 
   (SY a) <*> (SY b) = SY (a b)
 
 -----------------------------------------------------------------------------
 
+newtype SYArg c a = SYArg {unArg :: Value a }
+
+instance Functor (SYArg c) where
+  fmap f (SYArg a) = SYArg (fmap f a)
+
+instance Applicative (SYArg c) where
+  pure = SYArg . Value
+  (SYArg f) <*> (SYArg a) = SYArg (f <*> a)
+
+infixl 4 >$<, >*<
+(>$<) = fmap . (\f a -> f $ SYArg a)
+fs >*< gs = fs <*> (fmap SYArg gs)
+
+-----------------------------------------------------------------------------
+
 -- | Wraps a base value into a SY event of extended values
-event    :: a -> Event a
-event    = SY . Value
+event  :: a -> SY (SYArg c a)
+event  = SY . pure
+event2 = ($$) (event, event)
+event3 = ($$$) (event, event, event)
+event4 = ($$$$) (event, event, event, event)
+
+
 
 -- | Wraps a list into a SY signal
 signal   :: [a] -> Sig a
