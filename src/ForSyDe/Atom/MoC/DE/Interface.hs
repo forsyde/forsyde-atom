@@ -26,19 +26,23 @@ import           ForSyDe.Atom.Utility
 eventToSY :: DE.Event a -> (SY.Event Tag, SY.Event a)
 eventToSY (DE.DE t a) = (SY.event t, SY.SY a)
 
+
+argumentToSY :: DE.DE (DE.DEArg c a) -> (SY.SY (SY.SYArg c Tag), SY.SY (SY.SYArg c a))
+argumentToSY (DE.DE t a) = (SY.argument t, SY.SY (SY.SYArg (DE.unArg a)))
+
 toSY  :: DE.Sig a ->                                     (SY.Sig Tag, SY.Sig a)
 toSY2 :: DE.Sig a -> DE.Sig b ->                         (SY.Sig Tag, SY.Sig a, SY.Sig b)
 toSY3 :: DE.Sig a -> DE.Sig b -> DE.Sig c ->             (SY.Sig Tag, SY.Sig a, SY.Sig b, SY.Sig c)
 toSY4 :: DE.Sig a -> DE.Sig b -> DE.Sig c -> DE.Sig d -> (SY.Sig Tag, SY.Sig a, SY.Sig b, SY.Sig c, SY.Sig d)
 
 toSY  s1           = (eventToSY <$> s1 |<)
-toSY2 s1 s2        = let (tags, sigs)         = (eventToSY <$> (psi21 (,) -$- s1 -*- s2) |<)
+toSY2 s1 s2        = let (tags, sigs)         = (argumentToSY <$> (psi21 (,) -$- s1 -*- s2) |<)
                          (sy1, sy2)           = (sigs |||<)
-                     in  (tags, sy1, sy2) 
-toSY3 s1 s2 s3     = let (tags, sigs)         = (eventToSY <$> (psi31 (,,) -$- s1 -*- s2 -*- s3) |<)
+                     in  (o tags, o sy1, o sy2) 
+toSY3 s1 s2 s3     = let (tags, sigs)         = (argumentToSY <$> (psi31 (,,) -$- s1 -*- s2 -*- s3) |<)
                          (sy1, sy2, sy3)      = (sigs |||<<)
-                     in  (tags, sy1, sy2, sy3) 
-toSY4 s1 s2 s3 s4  = let (tags, sigs)         = (eventToSY <$> (psi41 (,,,) -$- s1 -*- s2 -*- s3 -*- s4) |<)
+                     in  (o tags, o sy1, o sy2, o sy3) 
+toSY4 s1 s2 s3 s4  = let (tags, sigs)         = (argumentToSY <$> (psi41 (,,,) -$- s1 -*- s2 -*- s3 -*- s4) |<)
                          (sy1, sy2, sy3, sy4) = (sigs |||<<<)
-                     in  (tags, sy1, sy2, sy3, sy4) 
+                     in  (o tags, o sy1, o sy2, o sy3, o sy4) 
 

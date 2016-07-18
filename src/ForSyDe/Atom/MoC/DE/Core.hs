@@ -19,6 +19,8 @@ module ForSyDe.Atom.MoC.DE.Core where
 import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.MoC.Signal as S
 import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.Utility (($$),($$$),($$$$))
+
 
 type Tag = Int
 
@@ -99,9 +101,17 @@ ue = DE 0 Undef
 
 -----------------------------------------------------------------------------
 
--- | Wraps a tuple @(tag, value)@ into a DE event of extended values
-event       :: (Int, a) -> Event a
-event (t,v) = DE t (Value v)
+-- | Wraps a tuple @(tag, value)@ into a DE argument of extended values
+argument  :: (Tag, a) -> DE (DEArg c a)
+argument (t,v) = DE t (pure v)
+argument2  = ($$) (argument,argument)
+argument3  = ($$$) (argument,argument,argument)
+argument4  = ($$$$) (argument,argument,argument,argument)
+
+-- | Wraps a tuple @(tag, value)@ into a DE argument of extended values
+event  :: (Tag, a) -> Event a 
+event (t,v) = DE t (pure v)
+
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
 -- into a DE signal

@@ -90,14 +90,15 @@ fs >*< gs = fs <*> (fmap SYArg gs)
 
 -----------------------------------------------------------------------------
 
--- | Wraps a base value into a SY event of extended values
-event  :: a -> SY (SYArg c a)
+-- | Wraps a base value into a SY argument of extended values
+argument  :: a -> SY (SYArg c a)
+argument  = SY . pure
+argument2 = ($$) (argument, argument)
+argument3 = ($$$) (argument, argument, argument)
+argument4 = ($$$$) (argument, argument, argument, argument)
+
+event  :: a -> Event a
 event  = SY . pure
-event2 = ($$) (event, event)
-event3 = ($$$) (event, event, event)
-event4 = ($$$$) (event, event, event, event)
-
-
 
 -- | Wraps a list into a SY signal
 signal   :: [a] -> Sig a

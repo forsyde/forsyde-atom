@@ -82,6 +82,8 @@ Test-Suite forsyde-testsuite
   Default-Language:    Haskell2010
   Hs-Source-Dirs:      tests
   Main-is:             Tests.hs
+  exposed-modules:     SYTests.hs
+                       TestUtils.hs
   Build-depends:       base>=4.8 && <6, 
                        forsyde-atom, 
                        QuickCheck, 
