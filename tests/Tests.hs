@@ -29,11 +29,11 @@ tests = [
       testCase "test scanl"    SY.test_scanl,
       testCase "test scanld"   SY.test_scanld,
       testCase "test moore"    SY.test_moore,
-      testCase "test mealy"    SY.test_mealy,
-      testCase "test when"     SY.test_when,
-      testCase "test filter"   SY.test_filter,
-      testCase "test fill"     SY.test_fill,
-      testCase "test hold"     SY.test_hold
+      testCase "test mealy"    SY.test_mealy-- ,
+      -- testCase "test when"     SY.test_when,
+      -- testCase "test filter"   SY.test_filter,
+      -- testCase "test fill"     SY.test_fill,
+      -- testCase "test hold"     SY.test_hold
       ]
   ] 
 

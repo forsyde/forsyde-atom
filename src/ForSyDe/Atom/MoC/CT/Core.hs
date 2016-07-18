@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -19,6 +19,7 @@ module ForSyDe.Atom.MoC.CT.Core where
 import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.MoC.Signal as S
 import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 
 import Numeric
 import Data.Ratio
@@ -27,21 +28,21 @@ type Time = Rational
 
 -- | Type alias for a CT signal
 type Sig   a = S.Signal (Event a)
-type Event a = CT () (Value a)
+type Event a = CT (Value a)
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data CT c a = CT Time (Time -> a) 
+data CT a = CT Time (Time -> a) 
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC CT where
-  type Arg CT c a = Value a
+  type Context CT c = ()
+  type Arg CT c a = CTArg c a
   ---------------------
   _ -$- NullS = NullS
-  f -$- (x:-xs) = fmapC f x :- f -$- xs
+  f -$- (x:-xs) = f >$< x :- f -$- xs
   ---------------------
-  -- (-*-) :: Signal (CT Time (Time -> (Value a -> b))) -> Signal (CT Time (Time -> Value a)) -> Signal (CT Time (Time -> b))
   sf -*- sx = init (CT 0.0 (\_ -> Undef)) sf sx
     where init px s1@(f :- fs) s2@(x :- xs)
             | tag f == tag x        = f %> f  >*< x  :- comb f  x  fs xs
@@ -55,27 +56,56 @@ instance MoC CT where
           comb pf _ NullS (x :- xs) = x %> pf >*< x  :- comb pf x NullS xs
           comb _ _ NullS NullS      = NullS
   ---------------------
-  (CT _ v) ->- xs = CT 0 v :- xs
+  o = (fmap . fmap) unArg
+  ---------------------
+  (CT _ av) ->- xs = CT 0 (unArg <$> av) :- xs
   ---------------------
   (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
-
-
-instance ContextFunctor CT where
-  type Context CT c       = (NoContext c)
-  fmapC f (CT t a)        = CT t (f . a)
-  liftC (CT t f) (CT _ x) = CT t (\a ->  (f a) (x a))
-
+    
 
 -- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@
-instance Show a => Show (CT c a) where
+instance Show a => Show (CT a) where
   showsPrec _ (CT t x) = (++) ( show (x t) ++ "@" ++ (showFFloat Nothing $ fromRat t) "" )
 
 
 -- | Needed to implement the @unzip@ utilities
-instance Functor (CT c) where
+instance Functor (CT) where
   fmap f (CT t a) = CT t (f <$> a)
 
+-- | Needed to implement the @unzip@ utilities
+instance Applicative (CT) where
+  pure a = CT 0.0 (\_ -> a)
+  (CT t f) <*> (CT _ x) = CT t (\a -> (f a) (x a))
+
 -----------------------------------------------------------------------------
+
+newtype CTArg c a = CTArg {unArg :: Value a }
+
+instance Functor (CTArg c) where
+  fmap f (CTArg a) = CTArg (fmap f a)
+
+instance Applicative (CTArg c) where
+  pure = CTArg . pure
+  (CTArg f) <*> (CTArg a) = CTArg (f <*> a)
+
+infixl 4 >$<, >*<
+(>$<) = fmap . (\f a -> f $ CTArg a)
+fs >*< gs = fs <*> (fmap CTArg gs)
+
+infixl 7 %>
+(CT t _) %> (CT _ x) = CT t x
+tag (CT t _) = t 
+ue = CT 0.0 (\_ -> Undef) :: Event x
+
+-----------------------------------------------------------------------------
+
+-- | Wraps a tuple @(tag, value)@ into a CT argument of extended values
+argument  :: (Rational, Rational -> a) -> CT (CTArg c a)
+argument (t,f) = CT t (pure . f)
+argument2  = ($$) (argument,argument)
+argument3  = ($$$) (argument,argument,argument)
+argument4  = ($$$$) (argument,argument,argument,argument)
+
 
 -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
 event       :: (Rational, Rational -> a) -> Event a
@@ -104,11 +134,13 @@ partitionUntil until sample (x:-xs) = chunk x xs
           | t <= until = CT t f :- chunk (CT (t+sample) f) NullS
           | otherwise  = NullS
 
-tag (CT t _) = t 
 
-infixl 7 %>
-(%>) :: (NoContext c1, NoContext c2) => CT c1 a -> CT c2 b -> CT c2 b
-(CT t _) %> (CT _ x) = CT t x
 
-ue = CT 0.0 (\_ -> Undef) :: Event x
 ----------------------------------------------------------------------------- 
+
+
+-- s = ForSyDe.Atom.MoC.CT.Core.signal [(0, \_ -> 1), (2, \_ -> 0)]
+-- i = argument (1, \t -> t)
+-- q = i ->- (i -&- s)
+
+-- w = o $ psi21 (+) -$- s -*- q

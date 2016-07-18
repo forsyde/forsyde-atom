@@ -89,3 +89,9 @@ Test-Suite forsyde-testsuite
                        test-framework-hunit,
                        test-framework-quickcheck2,
                        HUnit
+
+
+source-repository head
+  type:     git
+  location: https://github.com/forsyde/forsyde-atom.git
+  

@@ -51,7 +51,7 @@ module ForSyDe.Atom.MoC.SY (
   -- /V&#8337;/. Thus we have the definition of the SY event
   -- implementing (among others) the 'MoC' class:
   
-  SY(..),
+  SY(..), Event,
 
   -- | For convenience we also provide a type alias for a SY signal
   -- which stands for "signal of synchronous events where the values
@@ -169,15 +169,15 @@ module ForSyDe.Atom.MoC.SY (
   --
   -- <<includes/figs/sy-buffer-graph.png>>
 
-  buffer1, buffer2, buffer3, buffer4,
+  -- buffer1, buffer2, buffer3, buffer4,
   
-  -- ** Predicate processes
+  -- -- ** Predicate processes
 
-  -- | These processes manipulate the behavior of a signal based on
-  -- predicates on their status.
+  -- -- | These processes manipulate the behavior of a signal based on
+  -- -- predicates on their status.
 
-  when, filter, fill,
-  hold,
+  -- when, filter, fill,
+  -- hold,
          
   -- * Bibliography
 
