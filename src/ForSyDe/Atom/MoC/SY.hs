@@ -51,7 +51,7 @@ module ForSyDe.Atom.MoC.SY (
   -- /V&#8337;/. Thus we have the definition of the SY event
   -- implementing (among others) the 'MoC' class:
   
-  SY(..),
+  SY(..), Event,
 
   -- | For convenience we also provide a type alias for a SY signal
   -- which stands for "signal of synchronous events where the values

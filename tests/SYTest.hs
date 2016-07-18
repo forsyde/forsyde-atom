@@ -1,21 +1,23 @@
+{-# LANGUAGE FlexibleInstances #-}
 module SYTest where
 
 import           ForSyDe.Atom
 import           ForSyDe.Atom.MoC.Signal as S
 import qualified ForSyDe.Atom.MoC.SY     as SY
+import           ForSyDe.Atom.MoC.SY.Core (SYArg(..))
 import           Test.HUnit
 import           Test.QuickCheck
--- import           TestUtils
+import           TestUtils
 
 instance (Arbitrary a) => Arbitrary (SY.SY a) where
   arbitrary = do
     x <- arbitrary
     return (SY.SY x)
 
-countEvent _ NullS = 0
-countEvent a (x :- xs) | a == x    = 1 + countEvent a xs
-                       | otherwise = countEvent a xs
-
+instance (Arbitrary a) => Arbitrary (SYArg c a) where
+  arbitrary = do
+    x <- arbitrary
+    return (SYArg x)
 
 -- Properties
 

@@ -57,9 +57,9 @@ library
                        ForSyDe.Atom.MoC.DE.Lib,
                        ForSyDe.Atom.MoC.DE.Interface,
                        ForSyDe.Atom.MoC.DE.Hybrid,
-                       --ForSyDe.Atom.MoC.CT,
-                       --ForSyDe.Atom.MoC.CT.Core,
-                       --ForSyDe.Atom.MoC.CT.Lib,
+                       ForSyDe.Atom.MoC.CT,
+                       ForSyDe.Atom.MoC.CT.Core,
+                       ForSyDe.Atom.MoC.CT.Lib,
                        ForSyDe.Atom.MoC.SDF,
                        ForSyDe.Atom.MoC.SDF.Core,
                        ForSyDe.Atom.MoC.SDF.Lib,
@@ -82,8 +82,6 @@ Test-Suite forsyde-testsuite
   Default-Language:    Haskell2010
   Hs-Source-Dirs:      tests
   Main-is:             Tests.hs
-  exposed-modules:     SYTests.hs
-                       TestUtils.hs
   Build-depends:       base>=4.8 && <6, 
                        forsyde-atom, 
                        QuickCheck, 
@@ -91,3 +89,9 @@ Test-Suite forsyde-testsuite
                        test-framework-hunit,
                        test-framework-quickcheck2,
                        HUnit
+
+
+source-repository head
+  type:     git
+  location: https://github.com/forsyde/forsyde-atom.git
+  
