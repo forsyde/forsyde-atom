@@ -37,18 +37,20 @@ type Sig a   = S.Signal (Event a)
 data SY a  = SY a deriving Eq
 -----------------------------------------------------------------------------
 
--- | Implenents the SY semantics for the MoC atoms.
-instance MoC SY where
+instance Partitioned SY where
   type Arg SY c a = SYArg c a
   type Context SY c = ()
+  o = (fmap . fmap) unArg
+
+  
+-- | Implenents the SY semantics for the MoC atoms.
+instance MoC SY where
   ---------------------
   (-$-) = fmap . (>$<)
   ---------------------
   _ -*- NullS = NullS
   NullS -*- _ = NullS
   (f:-fs) -*- (x:-xs) = f >*< x :- fs -*- xs
-  ---------------------
-  o = (fmap . fmap) unArg
   ---------------------
   (->-) = (:-) . (fmap unArg)
   ---------------------

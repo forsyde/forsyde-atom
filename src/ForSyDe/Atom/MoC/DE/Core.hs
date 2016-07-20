@@ -33,10 +33,13 @@ type Sig a   = S.Signal (Event a)
 -- which is represented as an integer.
 data DE a = DE Tag a deriving Eq
 
+instance Partitioned DE where
+  type Arg DE c a = DEArg c a
+  type Context DE c = ()
+  o = (fmap . fmap) unArg
+
 -- | Implenents the DE semantics for the MoC atoms
 instance MoC DE where
-  type Context DE c = ()
-  type Arg DE c a = DEArg c a
   ---------------------
   _ -$- NullS = NullS
   f -$- (x:-xs) = f >$< x :- f -$- xs
@@ -53,8 +56,6 @@ instance MoC DE where
           comb _ px (f :- fs) NullS = f %> f  >*< px :- comb f px fs NullS
           comb pf _ NullS (x :- xs) = x %> pf >*< x  :- comb pf x NullS xs
           comb _ _ NullS NullS      = NullS
-  ---------------------
-  o = (fmap . fmap) unArg
   ---------------------
   (DE _ (DEArg v)) ->- xs = DE 0 v :- xs
   ---------------------

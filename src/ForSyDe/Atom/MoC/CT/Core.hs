@@ -35,11 +35,14 @@ type Event a = CT (Value a)
 -- which is represented as an integer.
 data CT a = CT Time (Time -> a) 
 
+
+instance Partitioned CT where
+  type Arg CT c a = CTArg c a
+  type Context CT c = ()
+  o = (fmap . fmap) unArg
+
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC CT where
-  type Context CT c = ()
-  type Arg CT c a = CTArg c a
-  ---------------------
   _ -$- NullS = NullS
   f -$- (x:-xs) = f >$< x :- f -$- xs
   ---------------------
@@ -55,8 +58,6 @@ instance MoC CT where
           comb _ px (f :- fs) NullS = f %> f  >*< px :- comb f px fs NullS
           comb pf _ NullS (x :- xs) = x %> pf >*< x  :- comb pf x NullS xs
           comb _ _ NullS NullS      = NullS
-  ---------------------
-  o = (fmap . fmap) unArg
   ---------------------
   (CT _ av) ->- xs = CT 0 (unArg <$> av) :- xs
   ---------------------

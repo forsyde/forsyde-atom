@@ -36,10 +36,13 @@ type Event a = SDF (Value a)
 -- which is represented as an integer.
 data SDF a = SDF a
 
--- | Implenents the CT semantics for the MoC atoms
-instance MoC SDF where
+instance Partitioned SDF where
   type Arg SDF rate a = Value (V.FSVec rate a)
   type Context SDF rate = (Nat rate)
+  o = (S.signal . fmap SDF . concat . fmap unpack . (fmap . fmap) V.fromVector . fmap fromSDF . S.fromSignal)
+
+-- | Implenents the CT semantics for the MoC atoms
+instance MoC SDF where
   ---------------------
   _ -$- NullS           = NullS
   f -$- xs = let x'  = extract c xs 
@@ -55,8 +58,6 @@ instance MoC SDF where
                          in if toInt c == length (V.fromVector x')
                             then SDF (f $ pack x') :- fs -*- xs'
                             else NullS
-  ---------------------
-  o = (S.signal . fmap SDF . concat . fmap unpack . (fmap . fmap) V.fromVector . fmap fromSDF . S.fromSignal)
   ---------------------
   (->-) = (+-+) . S.signal . fmap SDF . unpack . fmap V.fromVector . fromSDF
   ---------------------
