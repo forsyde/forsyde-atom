@@ -4,6 +4,7 @@ module ForSyDe.Atom.MoC.Cons where
 
 import ForSyDe.Atom.MoC.Atom
 import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Behavior
 
 infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)

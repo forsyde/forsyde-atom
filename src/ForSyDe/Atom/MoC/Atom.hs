@@ -47,7 +47,7 @@ class (Partitioned e) => MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-$-) :: (Context e c) => (Arg e c a -> b) -> Signal (e (Value a)) -> Signal (e b)
+  (-$-) :: (Context e c) => (Arg e c (Value a) -> b) -> Signal (e (Value a)) -> Signal (e b)
 
   -- | This is a rough equivalent of the @(\<*\>)@ applicative functor
   -- operator, used for synchronizing and applying a signal of
@@ -59,7 +59,7 @@ class (Partitioned e) => MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: (Context e c) => Signal (e (Arg e c a -> b)) -> Signal (e (Value a)) -> Signal (e b)
+  (-*-) :: (Context e c) => Signal (e (Arg e c (Value a) -> b)) -> Signal (e (Value a)) -> Signal (e b)
 
   -- | Since ForSyDe signals are modeled similar to
   -- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird lists>, the
@@ -73,7 +73,7 @@ class (Partitioned e) => MoC e where
   -- signature used in mathematical formulas is:
   --
   -- <<includes/figs/pre-atom-formula.png>>
-  (->-) :: (Context e c) => e (Arg e c a) -> Signal (e (Value a)) -> Signal (e (Value a))
+  (->-) :: (Context e c) => e (Arg e c (Value a)) -> Signal (e (Value a)) -> Signal (e (Value a))
    
   -- | Another property, this time derived from the tagged signal
   -- model, requires the processes to be /monotonic/
@@ -85,15 +85,13 @@ class (Partitioned e) => MoC e where
   -- intact. Its signature used in mathematical formulas is:
   --
   -- <<includes/figs/phi-atom-formula.png>>
-  (-&-) :: (Context e c) => e (Arg e c a) -> Signal (e (Value a)) -> Signal (e (Value a))
-   
-  -- fromArg :: (Context e c) => e (Arg e c a) -> e (Value a)
+  (-&-) :: (Context e c) => e (Arg e c (Value a)) -> Signal (e (Value a)) -> Signal (e (Value a))
 
 
 class Partitioned e where
   type Arg e c a = r | r -> c a
   type Context e c :: Constraint
-  o :: (Context e c) => Signal (e (Arg e c a)) -> Signal (e (Value a))
+  o :: (Context e c) => Signal (e (Arg e c a)) -> Signal (e a)
 
 infixl 3 -¤, -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<, -<<<<<<<<
 (-¤)        s =  o   $ s
@@ -105,3 +103,4 @@ infixl 3 -¤, -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<, -<<<<<<<<
 (-<<<<<<)   s = (o,o,o,o,o,o,o) $$$$$$$ (s ||<<<<<<)
 (-<<<<<<<)  s = (o,o,o,o,o,o,o,o) $$$$$$$$ (s ||<<<<<<<)
 (-<<<<<<<<) s = (o,o,o,o,o,o,o,o,o) $$$$$$$$$ (s ||<<<<<<<<)
+

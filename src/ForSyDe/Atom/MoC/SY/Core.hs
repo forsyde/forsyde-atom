@@ -77,14 +77,14 @@ instance Applicative (SY) where
 
 -----------------------------------------------------------------------------
 
-newtype SYArg c a = SYArg {unArg :: Value a }
+newtype SYArg c a = SYArg {unArg :: a }
 
 instance Functor (SYArg c) where
-  fmap f (SYArg a) = SYArg (fmap f a)
+  fmap f (SYArg a) = SYArg (f a)
 
 instance Applicative (SYArg c) where
-  pure = SYArg . Value
-  (SYArg f) <*> (SYArg a) = SYArg (f <*> a)
+  pure = SYArg
+  (SYArg f) <*> (SYArg a) = SYArg (f a)
 
 infixl 4 >$<, >*<
 (>$<) = fmap . (\f a -> f $ SYArg a)
@@ -92,15 +92,22 @@ fs >*< gs = fs <*> (fmap SYArg gs)
 
 -----------------------------------------------------------------------------
 
--- | Wraps a base value into a SY argument of extended values
-argument  :: a -> SY (SYArg c a)
-argument  = SY . pure
-argument2 = ($$) (argument, argument)
-argument3 = ($$$) (argument, argument, argument)
-argument4 = ($$$$) (argument, argument, argument, argument)
+event  :: a -> SY (SYArg c (Value a))
+event  = SY . pure . pure
+event2 = ($$) (event, event)
+event3 = ($$$) (event, event, event)
+event4 = ($$$$) (event, event, event, event)
 
-event  :: a -> Event a
-event  = SY . pure
+
+-- -- | Wraps a base value into a SY argument of extended values
+-- argument  :: a -> SY (SYArg c a)
+-- argument  = SY . pure
+-- argument2 = ($$) (argument, argument)
+-- argument3 = ($$$) (argument, argument, argument)
+-- argument4 = ($$$$) (argument, argument, argument, argument)
+
+-- event  :: a -> Event a
+-- event  = SY . pure
 
 -- | Wraps a list into a SY signal
 signal   :: [a] -> Sig a

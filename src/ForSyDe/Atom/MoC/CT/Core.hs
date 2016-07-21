@@ -80,14 +80,14 @@ instance Applicative (CT) where
 
 -----------------------------------------------------------------------------
 
-newtype CTArg c a = CTArg {unArg :: Value a }
+newtype CTArg c a = CTArg {unArg :: a }
 
 instance Functor (CTArg c) where
-  fmap f (CTArg a) = CTArg (fmap f a)
+  fmap f (CTArg a) = CTArg (f a)
 
 instance Applicative (CTArg c) where
-  pure = CTArg . pure
-  (CTArg f) <*> (CTArg a) = CTArg (f <*> a)
+  pure = CTArg
+  (CTArg f) <*> (CTArg a) = CTArg (f a)
 
 infixl 4 >$<, >*<
 (>$<) = fmap . (\f a -> f $ CTArg a)
@@ -100,22 +100,31 @@ ue = CT 0.0 (\_ -> Undef) :: Event x
 
 -----------------------------------------------------------------------------
 
--- | Wraps a tuple @(tag, value)@ into a CT argument of extended values
-argument  :: (Rational, Rational -> a) -> CT (CTArg c a)
-argument (t,f) = CT t (pure . f)
-argument2  = ($$) (argument,argument)
-argument3  = ($$$) (argument,argument,argument)
-argument4  = ($$$$) (argument,argument,argument,argument)
-
 
 -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
-event       :: (Rational, Rational -> a) -> Event a
-event (t,f) = CT t (Value . f)
+event  :: (Rational, Rational -> a) -> CT (CTArg c (Value a))
+event (t,f) = CT t (pure . Value . f)
+event2  = ($$) (event,event)
+event3  = ($$$) (event,event,event)
+event4  = ($$$$) (event,event,event,event)
+
+
+-- -- | Wraps a tuple @(tag, value)@ into a CT argument of extended values
+-- argument  :: (Rational, Rational -> a) -> CT (CTArg c a)
+-- argument (t,f) = CT t (pure . f)
+-- argument2  = ($$) (argument,argument)
+-- argument3  = ($$$) (argument,argument,argument)
+-- argument4  = ($$$$) (argument,argument,argument,argument)
+
+
+-- -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
+-- event       :: (Rational, Rational -> a) -> Event a
+-- event (t,f) = CT t (Value . f)
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
 -- into a DE signal
 signal   :: [(Rational, Rational -> a)] -> Sig a
-signal l = S.signal $ event <$> l
+signal l = S.signal $ (\(t,f) -> CT t (Value . f)) <$> l
 
 partition :: Rational -> Sig a -> Sig a 
 partition _    NullS     = NullS
