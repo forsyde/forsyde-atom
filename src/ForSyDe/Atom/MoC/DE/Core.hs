@@ -33,10 +33,13 @@ type Sig a   = S.Signal (Event a)
 -- which is represented as an integer.
 data DE a = DE Tag a deriving Eq
 
+instance Partitioned DE where
+  type Arg DE c a = DEArg c a
+  type Context DE c = ()
+  o = (fmap . fmap) unArg
+
 -- | Implenents the DE semantics for the MoC atoms
 instance MoC DE where
-  type Context DE c = ()
-  type Arg DE c a = DEArg c a
   ---------------------
   _ -$- NullS = NullS
   f -$- (x:-xs) = f >$< x :- f -$- xs
@@ -53,8 +56,6 @@ instance MoC DE where
           comb _ px (f :- fs) NullS = f %> f  >*< px :- comb f px fs NullS
           comb pf _ NullS (x :- xs) = x %> pf >*< x  :- comb pf x NullS xs
           comb _ _ NullS NullS      = NullS
-  ---------------------
-  o = (fmap . fmap) unArg
   ---------------------
   (DE _ (DEArg v)) ->- xs = DE 0 v :- xs
   ---------------------
@@ -80,14 +81,14 @@ instance Applicative (DE) where
 
 -----------------------------------------------------------------------------
 
-newtype DEArg c a = DEArg {unArg :: Value a }
+newtype DEArg c a = DEArg {unArg :: a }
 
 instance Functor (DEArg c) where
-  fmap f (DEArg a) = DEArg (fmap f a)
+  fmap f (DEArg a) = DEArg (f a)
 
 instance Applicative (DEArg c) where
-  pure = DEArg . Value
-  (DEArg f) <*> (DEArg a) = DEArg (f <*> a)
+  pure = DEArg
+  (DEArg f) <*> (DEArg a) = DEArg (f a)
 
 infixl 4 >$<, >*<
 (>$<) = fmap . (\f a -> f $ DEArg a)
@@ -101,16 +102,16 @@ ue = DE 0 Undef
 
 -----------------------------------------------------------------------------
 
--- | Wraps a tuple @(tag, value)@ into a DE argument of extended values
-argument  :: (Tag, a) -> DE (DEArg c a)
-argument (t,v) = DE t (pure v)
-argument2  = ($$) (argument,argument)
-argument3  = ($$$) (argument,argument,argument)
-argument4  = ($$$$) (argument,argument,argument,argument)
+-- | Wraps a tuple @(tag, value)@ into a DE event of extended values
+event  :: (Tag, a) -> DE (DEArg c (Value a))
+event (t,v) = DE t ((pure . pure) v)
+event2  = ($$) (event,event)
+event3  = ($$$) (event,event,event)
+event4  = ($$$$) (event,event,event,event)
 
--- | Wraps a tuple @(tag, value)@ into a DE argument of extended values
-event  :: (Tag, a) -> Event a 
-event (t,v) = DE t (pure v)
+-- -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
+-- event  :: (Tag, a) -> Event a 
+-- event (t,v) = DE t (pure v)
 
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
