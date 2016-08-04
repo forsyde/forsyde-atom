@@ -16,10 +16,10 @@
 
 module ForSyDe.Atom.MoC.CT.Core where
 
-import ForSyDe.Atom.MoC.Atom
-import ForSyDe.Atom.MoC.Signal as S
+import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.Utility (($$),($$$),($$$$))
+import ForSyDe.Atom.Utility
 
 import Numeric
 import Data.Ratio
@@ -28,38 +28,33 @@ type Time = Rational
 
 -- | Type alias for a CT signal
 type Sig   a = S.Signal (Event a)
-type Event a = CT (Value a)
+type Event a = CT ([Value a])
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data CT a = CT Time (Time -> a) 
-
-
-instance Partitioned CT where
-  type Arg CT c a = CTArg c a
-  type Context CT c = ()
-  o = (fmap . fmap) unArg
+data CT a  = CT { tag :: Time, val :: Time -> a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC CT where
-  _ -$- NullS = NullS
-  f -$- (x:-xs) = f >$< x :- f -$- xs
+  type Param CT = ()
   ---------------------
-  sf -*- sx = init (CT 0.0 (\_ -> Undef)) sf sx
+  (-$-) (_,f) = (,) () . (fmap . fmap) f
+  ---------------------
+  (_,sf) -*- sx = ((), init ue sf sx)
     where init px s1@(f :- fs) s2@(x :- xs)
-            | tag f == tag x        = f %> f  >*< x  :- comb f  x  fs xs
-            | tag f <  tag x        = f %> f  >*< px :- comb f  px fs s2
-            | tag f >  tag x        = x %> f  >*< ue :- init    x  s1 xs
+            | tag f == tag x        = f %> f  <*> x  :- comb f  x  fs xs
+            | tag f <  tag x        = f %> f  <*> px :- comb f  px fs s2
+            | tag f >  tag x        = x %> f  <*> ue :- init    x  s1 xs
           comb pf px s1@(f :- fs) s2@(x :- xs)
-            | tag f == tag x        = f %> f  >*< x  :- comb f  x  fs xs
-            | tag f <  tag x        = f %> f  >*< px :- comb f  px fs s2
-            | tag f >  tag x        = x %> pf >*< x  :- comb pf x  s1 xs
-          comb _ px (f :- fs) NullS = f %> f  >*< px :- comb f px fs NullS
-          comb pf _ NullS (x :- xs) = x %> pf >*< x  :- comb pf x NullS xs
+            | tag f == tag x        = f %> f  <*> x  :- comb f  x  fs xs
+            | tag f <  tag x        = f %> f  <*> px :- comb f  px fs s2
+            | tag f >  tag x        = x %> pf <*> x  :- comb pf x  s1 xs
+          comb _ px (f :- fs) NullS = f %> f  <*> px :- comb f px fs NullS
+          comb pf _ NullS (x :- xs) = x %> pf <*> x  :- comb pf x NullS xs
           comb _ _ NullS NullS      = NullS
   ---------------------
-  (CT _ av) ->- xs = CT 0 (unArg <$> av) :- xs
+  (CT _ v) ->- xs =  (CT 0 v) :- xs
   ---------------------
   (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
     
@@ -80,51 +75,36 @@ instance Applicative (CT) where
 
 -----------------------------------------------------------------------------
 
-newtype CTArg c a = CTArg {unArg :: a }
+-- newtype CTArg c a = CTArg {unArg :: a }
 
-instance Functor (CTArg c) where
-  fmap f (CTArg a) = CTArg (f a)
+-- instance Functor (CTArg c) where
+--   fmap f (CTArg a) = CTArg (f a)
 
-instance Applicative (CTArg c) where
-  pure = CTArg
-  (CTArg f) <*> (CTArg a) = CTArg (f a)
+-- instance Applicative (CTArg c) where
+--   pure = CTArg
+--   (CTArg f) <*> (CTArg a) = CTArg (f a)
 
-infixl 4 >$<, >*<
-(>$<) = fmap . (\f a -> f $ CTArg a)
-fs >*< gs = fs <*> (fmap CTArg gs)
+-- infixl 4 >$<, >*<
+-- (>$<) = fmap . (\f a -> f $ CTArg a)
+-- fs >*< gs = fs <*> (fmap CTArg gs)
 
 infixl 7 %>
 (CT t _) %> (CT _ x) = CT t x
-tag (CT t _) = t 
-ue = CT 0.0 (\_ -> Undef) :: Event x
+ue = CT 0.0 (\_ -> [Undef]) :: Event x
 
 -----------------------------------------------------------------------------
 
-
 -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
-event  :: (Rational, Rational -> a) -> CT (CTArg c (Value a))
+event  :: (Time, Time -> a) -> Event a 
 event (t,f) = CT t (pure . Value . f)
-event2  = ($$) (event,event)
-event3  = ($$$) (event,event,event)
-event4  = ($$$$) (event,event,event,event)
-
-
--- -- | Wraps a tuple @(tag, value)@ into a CT argument of extended values
--- argument  :: (Rational, Rational -> a) -> CT (CTArg c a)
--- argument (t,f) = CT t (pure . f)
--- argument2  = ($$) (argument,argument)
--- argument3  = ($$$) (argument,argument,argument)
--- argument4  = ($$$$) (argument,argument,argument,argument)
-
-
--- -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
--- event       :: (Rational, Rational -> a) -> Event a
--- event (t,f) = CT t (Value . f)
+event2 = ($$) (event,event)
+event3 = ($$$) (event,event,event)
+event4 = ($$$$) (event,event,event,event)
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
 -- into a DE signal
-signal   :: [(Rational, Rational -> a)] -> Sig a
-signal l = S.signal $ (\(t,f) -> CT t (Value . f)) <$> l
+signal   :: [(Time, Time -> a)] -> Sig a
+signal l = S.signal (event <$> l)
 
 partition :: Rational -> Sig a -> Sig a 
 partition _    NullS     = NullS
@@ -144,13 +124,82 @@ partitionUntil until sample (x:-xs) = chunk x xs
           | t <= until = CT t f :- chunk (CT (t+sample) f) NullS
           | otherwise  = NullS
 
-
-
 ----------------------------------------------------------------------------- 
+
+wrap11 :: (a1->b1)                             -> ((), [a1]->[b1])
+wrap21 :: (a1->a2->b1)                         -> ((), [a1]->[a2]->[b1])
+wrap31 :: (a1->a2->a3->b1)                     -> ((), [a1]->[a2]->[a3]->[b1])
+wrap41 :: (a1->a2->a3->a4->b1)                 -> ((), [a1]->[a2]->[a3]->[a4]->[b1])
+wrap51 :: (a1->a2->a3->a4->a5->b1)             -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[b1])
+wrap61 :: (a1->a2->a3->a4->a5->a6->b1)         -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[b1])
+wrap71 :: (a1->a2->a3->a4->a5->a6->a7->b1)     -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->[b1])
+wrap81 :: (a1->a2->a3->a4->a5->a6->a7->a8->b1) -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->[a8]->[b1])
+
+wrap12 :: (a1->(b1,b2))                             -> ((), [a1]->([b1],[b2]))
+wrap22 :: (a1->a2->(b1,b2))                         -> ((), [a1]->[a2]->([b1],[b2]))
+wrap32 :: (a1->a2->a3->(b1,b2))                     -> ((), [a1]->[a2]->[a3]->([b1],[b2]))
+wrap42 :: (a1->a2->a3->a4->(b1,b2))                 -> ((), [a1]->[a2]->[a3]->[a4]->([b1],[b2]))
+wrap52 :: (a1->a2->a3->a4->a5->(b1,b2))             -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->([b1],[b2]))
+wrap62 :: (a1->a2->a3->a4->a5->a6->(b1,b2))         -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->([b1],[b2]))
+wrap72 :: (a1->a2->a3->a4->a5->a6->a7->(b1,b2))     -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->([b1],[b2]))
+wrap82 :: (a1->a2->a3->a4->a5->a6->a7->a8->(b1,b2)) -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->[a8]->([b1],[b2]))
+
+wrap13 :: (a1->(b1,b2,b3))                             -> ((), [a1]->([b1],[b2],[b3]))
+wrap23 :: (a1->a2->(b1,b2,b3))                         -> ((), [a1]->[a2]->([b1],[b2],[b3]))
+wrap33 :: (a1->a2->a3->(b1,b2,b3))                     -> ((), [a1]->[a2]->[a3]->([b1],[b2],[b3]))
+wrap43 :: (a1->a2->a3->a4->(b1,b2,b3))                 -> ((), [a1]->[a2]->[a3]->[a4]->([b1],[b2],[b3]))
+wrap53 :: (a1->a2->a3->a4->a5->(b1,b2,b3))             -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->([b1],[b2],[b3]))
+wrap63 :: (a1->a2->a3->a4->a5->a6->(b1,b2,b3))         -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->([b1],[b2],[b3]))
+wrap73 :: (a1->a2->a3->a4->a5->a6->a7->(b1,b2,b3))     -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->([b1],[b2],[b3]))
+wrap83 :: (a1->a2->a3->a4->a5->a6->a7->a8->(b1,b2,b3)) -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->[a8]->([b1],[b2],[b3]))
+
+wrap14 :: (a1->(b1,b2,b3,b4))                             -> ((), [a1]->([b1],[b2],[b3],[b4]))
+wrap24 :: (a1->a2->(b1,b2,b3,b4))                         -> ((), [a1]->[a2]->([b1],[b2],[b3],[b4]))
+wrap34 :: (a1->a2->a3->(b1,b2,b3,b4))                     -> ((), [a1]->[a2]->[a3]->([b1],[b2],[b3],[b4]))
+wrap44 :: (a1->a2->a3->a4->(b1,b2,b3,b4))                 -> ((), [a1]->[a2]->[a3]->[a4]->([b1],[b2],[b3],[b4]))
+wrap54 :: (a1->a2->a3->a4->a5->(b1,b2,b3,b4))             -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->([b1],[b2],[b3],[b4]))
+wrap64 :: (a1->a2->a3->a4->a5->a6->(b1,b2,b3,b4))         -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->([b1],[b2],[b3],[b4]))
+wrap74 :: (a1->a2->a3->a4->a5->a6->a7->(b1,b2,b3,b4))     -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->([b1],[b2],[b3],[b4]))
+wrap84 :: (a1->a2->a3->a4->a5->a6->a7->a8->(b1,b2,b3,b4)) -> ((), [a1]->[a2]->[a3]->[a4]->[a5]->[a6]->[a7]->[a8]->([b1],[b2],[b3],[b4]))
+
+wrap11 = (,) () . psi11
+wrap21 = (,) () . psi21
+wrap31 = (,) () . psi31
+wrap41 = (,) () . psi41
+wrap51 = (,) () . psi51
+wrap61 = (,) () . psi61
+wrap71 = (,) () . psi71
+wrap81 = (,) () . psi81
+wrap12 = (,) () . psi12
+wrap22 = (,) () . psi22
+wrap32 = (,) () . psi32
+wrap42 = (,) () . psi42
+wrap52 = (,) () . psi52
+wrap62 = (,) () . psi62
+wrap72 = (,) () . psi72
+wrap82 = (,) () . psi82
+wrap13 = (,) () . psi13
+wrap23 = (,) () . psi23
+wrap33 = (,) () . psi33
+wrap43 = (,) () . psi43
+wrap53 = (,) () . psi53
+wrap63 = (,) () . psi63
+wrap73 = (,) () . psi73
+wrap83 = (,) () . psi83
+wrap14 = (,) () . psi14
+wrap24 = (,) () . psi24
+wrap34 = (,) () . psi34
+wrap44 = (,) () . psi44
+wrap54 = (,) () . psi54
+wrap64 = (,) () . psi64
+wrap74 = (,) () . psi74
+wrap84 = (,) () . psi84
+
+
 
 
 -- s = ForSyDe.Atom.MoC.CT.Core.signal [(0, \_ -> 1), (2, \_ -> 0)]
--- i = argument (1, \t -> t)
+-- i = event (1, \t -> t)
 -- q = i ->- (i -&- s)
 
--- w = o $ psi21 (+) -$- s -*- q
+-- w = wrap21 (psi21 (+)) -$- s -*- q
