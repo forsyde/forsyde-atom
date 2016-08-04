@@ -64,10 +64,6 @@ instance MoC SDF where
 instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
  
--- -- | Shows the (extended) value wrapped
--- instance Show a => Show (SDF [a]) where
---   showsPrec _ (SDF x) = (++) (show x)
-
 -- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (SDF [a]) where
   showsPrec p = showParen (p>1) . showSignal . fromSDF

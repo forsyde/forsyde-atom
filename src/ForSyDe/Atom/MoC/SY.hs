@@ -92,8 +92,8 @@ module ForSyDe.Atom.MoC.SY (
   -- ** @constant@
 
   -- | A signal generator which keeps a value constant. It
-  -- is actually an instantiation of the @scanld0X@ constructor
-  -- (eg. 'ForSyDe.Core.MoC.scanld01').
+  -- is actually an instantiation of the @stated0X@ constructor
+  -- (eg. 'ForSyDe.Core.MoC.stated01').
   --
   -- <<includes/figs/sy-constant-graph.png>>
   
@@ -102,38 +102,38 @@ module ForSyDe.Atom.MoC.SY (
   -- ** @generate@
 
   -- | A signal generator based on a function and a kernel value. It
-  -- is actually an instantiation of the @scanld0X@ constructor
-  -- (eg. 'ForSyDe.Core.MoC.scanld01').
+  -- is actually an instantiation of the @stated0X@ constructor
+  -- (eg. 'ForSyDe.Core.MoC.stated01').
   --
   -- <<includes/figs/sy-generate-graph.png>>
   
   generate1, generate2, generate3, generate4,
   
-  -- ** @scanld@
+  -- ** @stated@
 
-  -- | @scanld@ is a state machine without an output decoder. It is an
+  -- | @stated@ is a state machine without an output decoder. It is an
   -- instantiation of the @scanXY@ MoC constructor
-  -- (eg. 'ForSyDe.Core.MoC.scanld11').
+  -- (eg. 'ForSyDe.Core.MoC.stated11').
   --
-  -- <<includes/figs/sy-scanld-graph.png>>
+  -- <<includes/figs/sy-stated-graph.png>>
 
-  scanld11, scanld12, scanld13, scanld14,
-  scanld21, scanld22, scanld23, scanld24,
-  scanld31, scanld32, scanld33, scanld34,
-  scanld41, scanld42, scanld43, scanld44,
+  stated11, stated12, stated13, stated14,
+  stated21, stated22, stated23, stated24,
+  stated31, stated32, stated33, stated34,
+  stated41, stated42, stated43, stated44,
 
-  -- ** @scanl@
+  -- ** @state@
 
-  -- | @scanl@ is a state machine without an output decoder. It is an
+  -- | @state@ is a state machine without an output decoder. It is an
   -- instantiation of the @scanXY@ MoC constructor
-  -- (eg. 'ForSyDe.Core.MoC.scanl11').
+  -- (eg. 'ForSyDe.Core.MoC.state11').
   --
-  -- <<includes/figs/sy-scanl-graph.png>>
+  -- <<includes/figs/sy-state-graph.png>>
 
-  scanl11, scanl12, scanl13, scanl14,
-  scanl21, scanl22, scanl23, scanl24,
-  scanl31, scanl32, scanl33, scanl34,
-  scanl41, scanl42, scanl43, scanl44,
+  state11, state12, state13, state14,
+  state21, state22, state23, state24,
+  state31, state32, state33, state34,
+  state41, state42, state43, state44,
 
   
   -- ** @moore@

@@ -2,7 +2,7 @@ module TestUtils where
 
 
 import ForSyDe.Atom
-import ForSyDe.Atom.MoC.Signal
+import ForSyDe.Atom.Signal
 import Test.QuickCheck
 
 

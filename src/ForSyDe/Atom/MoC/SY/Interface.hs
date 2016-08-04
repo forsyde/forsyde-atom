@@ -18,12 +18,12 @@ module ForSyDe.Atom.MoC.SY.Interface where
 
 import           ForSyDe.Atom.Behavior
 import           ForSyDe.Atom.Utility
-import           ForSyDe.Atom.MoC.Atom
+import           ForSyDe.Atom.MoC.AtomLib
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
 
 eventToDE :: SY.Event DE.Tag -> SY.Event a -> DE.Event a
-eventToDE (SY.SY t) (SY.SY a) = DE.DE (unsafeFromValue t) a
+eventToDE (SY.SY [t]) (SY.SY a) = DE.DE (unsafeFromValue t) a
 
 toDE  ::  SY.Sig DE.Tag -> SY.Sig a                                     -> DE.Sig a
 toDE2 ::  SY.Sig DE.Tag -> SY.Sig a -> SY.Sig b                         -> (DE.Sig a, DE.Sig b)
