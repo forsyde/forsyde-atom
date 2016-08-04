@@ -43,7 +43,7 @@ module ForSyDe.Atom (
   -- #sig-definition#
   -- <<includes/figs/tagged-signal-model.png>>
 
-  Signal(..),
+  -- Signal(..),
 
   -- | Additional functions for the 'Signal' data type are provided
   -- for covenience in library development. For an extended API

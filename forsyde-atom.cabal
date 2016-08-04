@@ -43,11 +43,10 @@ extra-doc-files:     includes/figs/*.png
 
 library
   exposed-modules:     ForSyDe.Atom
-                       ForSyDe.Atom.Signal,
                        ForSyDe.Atom.Behavior,
+                       ForSyDe.Atom.Signal,
                        ForSyDe.Atom.MoC,
-                       ForSyDe.Atom.MoC.Atom,
-                       ForSyDe.Atom.MoC.Cons,
+                       ForSyDe.Atom.MoC.AtomLib,
                        ForSyDe.Atom.MoC.SY,
                        ForSyDe.Atom.MoC.SY.Core,
                        ForSyDe.Atom.MoC.SY.Lib,
@@ -60,13 +59,14 @@ library
                        ForSyDe.Atom.MoC.CT,
                        ForSyDe.Atom.MoC.CT.Core,
                        ForSyDe.Atom.MoC.CT.Lib,
+                       ForSyDe.Atom.MoC.SDF,
+                       ForSyDe.Atom.MoC.SDF.Core,
+                       ForSyDe.Atom.MoC.SDF.Lib,
                        ForSyDe.Atom.Utility
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
-  build-depends:       base>=4.7.10 && <6, 
-                       parameterized-data, 
-                       type-level,
+  build-depends:       base>=4.8 && <6, 
                        test-framework,
                        test-framework-hunit,
                        test-framework-quickcheck2,
@@ -79,10 +79,16 @@ Test-Suite forsyde-testsuite
   Default-Language:    Haskell2010
   Hs-Source-Dirs:      tests
   Main-is:             Tests.hs
-  Build-depends:       base>=4.7.10 && <6, 
+  Build-depends:       base>=4.8 && <6, 
                        forsyde-atom, 
                        QuickCheck, 
                        test-framework,
                        test-framework-hunit,
                        test-framework-quickcheck2,
                        HUnit
+
+
+source-repository head
+  type:     git
+  location: https://github.com/forsyde/forsyde-atom.git
+  

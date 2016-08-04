@@ -26,14 +26,14 @@ tests = [
       testCase "test delay"    SY.test_delay_1,
       testCase "test constant" SY.test_constant,
       testCase "test generate" SY.test_generate,
-      testCase "test scanl"    SY.test_scanl,
-      testCase "test scanld"   SY.test_scanld,
+      testCase "test state"    SY.test_state,
+      testCase "test stated"   SY.test_stated,
       testCase "test moore"    SY.test_moore,
-      testCase "test mealy"    SY.test_mealy,
-      testCase "test when"     SY.test_when,
-      testCase "test filter"   SY.test_filter,
-      testCase "test fill"     SY.test_fill,
-      testCase "test hold"     SY.test_hold
+      testCase "test mealy"    SY.test_mealy-- ,
+      -- testCase "test when"     SY.test_when,
+      -- testCase "test filter"   SY.test_filter,
+      -- testCase "test fill"     SY.test_fill,
+      -- testCase "test hold"     SY.test_hold
       ]
   ] 
 
