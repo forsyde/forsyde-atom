@@ -110,6 +110,9 @@ module ForSyDe.Atom.Utility(
   ($$$$$$$$$),
 
   id1, id2, id3, id4, id5, id6, id7, id8, id9,
+
+
+  sequenceA1, sequenceA2, sequenceA3, sequenceA4, sequenceA5, sequenceA6, sequenceA7, sequenceA8, sequenceA9,
   
   psi11, psi12, psi13, psi14, psi15, psi16, psi17, psi18,
   psi21, psi22, psi23, psi24, psi25, psi26, psi27, psi28,
@@ -349,3 +352,35 @@ psi85 f a1 a2 a3 a4 a5 a6 a7 a8 = (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <
 psi86 f a1 a2 a3 a4 a5 a6 a7 a8 = (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8 |<<<<<)
 psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8 |<<<<<<)
 psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = (f <$> a1 <*> a2 <*> a3 <*> a4 <*> a5 <*> a6 <*> a7 <*> a8 |<<<<<<<)
+
+
+
+
+sequenceA1 f x1                         = f (sequenceA x1)
+sequenceA2 f x1 x2                      = f (sequenceA x1) (sequenceA x2)
+sequenceA3 f x1 x2 x3                   = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+sequenceA4 f x1 x2 x3 x4                = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+                                            (sequenceA x4)
+sequenceA5 f x1 x2 x3 x4 x5             = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+                                            (sequenceA x4) (sequenceA x5)
+sequenceA6 f x1 x2 x3 x4 x5 x6          = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+                                            (sequenceA x4) (sequenceA x5) (sequenceA x6)
+sequenceA7 f x1 x2 x3 x4 x5 x6 x7       = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+                                            (sequenceA x4) (sequenceA x5) (sequenceA x6)
+                                            (sequenceA x7)
+sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8    = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+                                            (sequenceA x4) (sequenceA x5) (sequenceA x6)
+                                            (sequenceA x7) (sequenceA x8)
+sequenceA9 f x1 x2 x3 x4 x5 x6 x7 x8 x9 = f (sequenceA x1) (sequenceA x2) (sequenceA x3)
+                                            (sequenceA x4) (sequenceA x5) (sequenceA x6)
+                                            (sequenceA x7) (sequenceA x8) (sequenceA x9)
+
+
+-- assert c s a | not c     = error s
+--              | otherwise = a
+
+-- assertBin1 op lhs rhs = assert (lhs `op` rhs)
+-- assertBin2 op lhs rhs msg as = (assert,assert) $$ ((op,op) $$ lhs $$ rhs) $$ (msg,msg) $$  as
+-- assertBin3 op lhs rhs msg as = (assert,assert,assert) $$$ ((op,op,op) $$$ lhs $$$ rhs) $$$ (msg,msg,msg) $$$ as
+-- assertBin4 op lhs rhs msg as = (assert,assert,assert,assert) $$$$ ((op,op,op,op) $$$$ lhs $$$$ rhs)
+--                                $$$$ (msg,msg,msg,msg) $$$$ as

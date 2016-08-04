@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, RankNTypes, PostfixOperators #-}
+{-# LANGUAGE TypeFamilies, PostfixOperators, FlexibleInstances #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.MoC.SDF
@@ -17,155 +17,162 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.SDF.Core where
 
-import ForSyDe.Atom.MoC.Atom
-import ForSyDe.Atom.MoC.Signal as S
+import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.Utility (($$),($$$),($$$$), id1, id2, id3, id4)
+import ForSyDe.Atom.Utility
 
 
-
-import qualified Data.Param.FSVec as V
-import Data.TypeLevel hiding ((==))
 
 -- | Type alias for a CT signal
-type Sig a   = S.Signal (Event a) 
-type Event a = SDF (Value a)
+type Sig a       = S.Signal (Partition a)
+type Partition a = SDF [Value a]
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data SDF a = SDF a
-
-instance Partitioned SDF where
-  type Arg SDF rate a = (V.FSVec rate a)
-  type Context SDF rate = (Nat rate)
-  o = (S.signal . fmap SDF . concat . fmap V.fromVector . fmap fromSDF . S.fromSignal)
+newtype SDF a = SDF { fromSDF :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC SDF where
+  type Param SDF = [Int]
   ---------------------
-  _ -$- NullS           = NullS
-  f -$- xs = let x'  = extract c xs 
-                 xs' = dropS (toInt c) xs
-                 c   = V.lengthT x'
-             in if toInt c == length (V.fromVector x')
-                then SDF (f x') :- f -$- xs'
-                else NullS
+  (env ,_) -$- NullS = (env, NullS)
+  (c:cs,f) -$- s = (cs, comb c f $ concat $ map fromSDF $ fromSignal s)
+    where comb c f l = let x'  = take c l
+                           xs' = drop c l
+                       in if   length x' == c
+                          then SDF (f x') :- comb c f xs'
+                          else NullS
   ---------------------
-  (SDF f :- fs) -*- xs = let x'  = extract c xs
-                             xs' = dropS (toInt c) xs
-                             c   = V.lengthT x'
-                         in if toInt c == length (V.fromVector x')
-                            then SDF (f x') :- fs -*- xs'
-                            else NullS
+  (env ,_)  -*- NullS = (env, NullS)
+  (env ,NullS) -*- _  = (env, NullS)
+  (c:cs,fs) -*- s = (cs, comb2 c fs $ concat $ map fromSDF $ fromSignal s)
+    where comb2 c (SDF f:-fs) l = let x'  = take c l
+                                      xs' = drop c l
+                                  in if   length x' == c
+                                     then SDF (f x') :- comb2 c fs xs'
+                                     else NullS
   ---------------------
-  (->-) = (+-+) . S.signal . fmap SDF . V.fromVector . fromSDF 
+  (->-) = (:-) 
   ---------------------
   (-&-) _ a = a
   ---------------------
-
--- instance ContextFunctor SDF where
---   type Context SDF c    = (Nat c)
---   fmapC f (SDF a)       = SDF (f a)
---   liftC (SDF f) (SDF a) = SDF (f a)
-  
-
 
 -- | Needed for the implementation of the '-$-' atom and also the
 -- @unzip@ utilities.
 instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
  
--- | Shows the (extended) value wrapped
-instance Show a => Show (SDF a) where
-  showsPrec _ (SDF x) = (++) (show x)
+-- -- | Shows the (extended) value wrapped
+-- instance Show a => Show (SDF [a]) where
+--   showsPrec _ (SDF x) = (++) (show x)
+
+-- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
+instance (Show a) => Show (SDF [a]) where
+  showsPrec p = showParen (p>1) . showSignal . fromSDF
+    where
+      showSignal (x : xs)  = showEvent x . showSignal' xs
+      showSignal ([])      = showChar ' ' . showChar '\b'
+      showSignal' (x : xs) = showChar ',' . showEvent x . showSignal' xs
+      showSignal' ([])     = showChar ' ' . showChar '\b'
+      showEvent x          = shows x
 
 -----------------------------------------------------------------------------
 
--- | Wraps a base value into a SY event of extended values
+signal :: [a] -> Sig a
+signal l = S.signal [part l]
 
--- event     :: a         -> Event a
--- event2    :: (a,b)     -> (Event a,Event b)
--- event3    :: (a,b,c)   -> (Event a,Event b,Event c)
--- event4    :: (a,b,c,d) -> (Event a,Event b,Event c,Event d)
+part :: [a] -> Partition a
+part l = SDF (Value <$> l)
 
---event  :: a -> SY (SYArg c (Value a))
-
-event  :: (Nat n1) => V.FSVec n1 a -> SDF (V.FSVec n1 (Value a))
-event2 :: (Nat n1, Nat n2) => (V.FSVec n1 a, V.FSVec n2 b)
-          -> (SDF (V.FSVec n1 (Value a)), SDF (V.FSVec n2 (Value b)))
-event3 :: (Nat n1, Nat n2, Nat n3) => (V.FSVec n1 a, V.FSVec n2 b, V.FSVec n3 c)
-          -> (SDF (V.FSVec n1 (Value a)), SDF (V.FSVec n2 (Value b)), SDF (V.FSVec n3 (Value c)))
-event4 :: (Nat n1, Nat n2, Nat n3, Nat n4) => (V.FSVec n1 a, V.FSVec n2 b, V.FSVec n3 c, V.FSVec n4 d)
-          -> (SDF (V.FSVec n1 (Value a)), SDF (V.FSVec n2 (Value b)), SDF (V.FSVec n3 (Value c)), SDF (V.FSVec n4 (Value d)))
-
-event    = SDF . fmap pure
-event2   = ($$) (event, event)
-event3   = ($$$) (event, event, event)
-event4   = ($$$$) (event, event, event, event)
-
--- -- | Wraps a list into a SY signal
--- signal   :: [a] -> Sig a
--- signal l = S.signal (event <$> l)
-
-vid1 :: V.FSVec D1 a -> V.FSVec D1 a
-vid2 :: V.FSVec D1 a -> V.FSVec D1 b -> (V.FSVec D1 a, V.FSVec D1 b)
-vid3 :: V.FSVec D1 a -> V.FSVec D1 b -> V.FSVec D1 c -> (V.FSVec D1 a, V.FSVec D1 b, V.FSVec D1 c)
-vid4 :: V.FSVec D1 a -> V.FSVec D1 b -> V.FSVec D1 c -> V.FSVec D1 d -> (V.FSVec D1 a, V.FSVec D1 b, V.FSVec D1 c, V.FSVec D1 d)
-vid1 = id1
-vid2 = id2
-vid3 = id3
-vid4 = id4
------------------------------------------------------------------------------
-
-fromSDF (SDF a) = a
-
-
-unpack Abst       = []
-unpack Undef      = []
-unpack (Value as) = Value <$> as
-
-extract :: (Nat s) => s -> Signal (SDF (Value a)) -> V.FSVec s (Value a)
-extract c = V.reallyUnsafeVector . take (toInt c) . fmap fromSDF . fromSignal
+part2 (l1,l2) = (part l1, part l2)
+part3 (l1,l2,l3) = (part l1, part l2, part l3)
+part4 (l1,l2,l3,l4) = (part l1, part l2, part l3, part l4)
 
 -----------------------------------------------------------------------------
 
+check p Abst      = take p $ repeat Abst
+check p Undef     = take p $ repeat Undef
+check p (Value x) | length x /= p = error "Wrong production"
+                  | otherwise     = Value <$> x
 
--- isp11 :: (Nat n1, Nat n2) => (V.FSVec n1 a -> V.FSVec n2 b) -> V.FSVec n1 (Value a) -> V.FSVec n2 (Value b)
+check11 p f x1                      = check p $ sequenceA1 f x1
+check21 p f x1 x2                   = check p $ sequenceA2 f x1 x2
+check31 p f x1 x2 x3                = check p $ sequenceA3 f x1 x2 x3 
+check41 p f x1 x2 x3 x4             = check p $ sequenceA4 f x1 x2 x3 x4  
+check51 p f x1 x2 x3 x4 x5          = check p $ sequenceA5 f x1 x2 x3 x4 x5   
+check61 p f x1 x2 x3 x4 x5 x6       = check p $ sequenceA6 f x1 x2 x3 x4 x5 x6
+check71 p f x1 x2 x3 x4 x5 x6 x7    = check p $ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
+check81 p f x1 x2 x3 x4 x5 x6 x7 x8 = check p $ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
 
-pack ::(Nat s) => V.FSVec s (Value a) -> Value (V.FSVec s a)
-pack = fmap V.reallyUnsafeVector . transpose . V.fromVector
-  where transpose []     = Value []
-        transpose (a:as) = (:) <$> a <*> transpose as
+check12 ps f x1                      = (check,check) $$ ps $$ sequenceA1 f x1
+check22 ps f x1 x2                   = (check,check) $$ ps $$ sequenceA2 f x1 x2
+check32 ps f x1 x2 x3                = (check,check) $$ ps $$ sequenceA3 f x1 x2 x3 
+check42 ps f x1 x2 x3 x4             = (check,check) $$ ps $$ sequenceA4 f x1 x2 x3 x4  
+check52 ps f x1 x2 x3 x4 x5          = (check,check) $$ ps $$ sequenceA5 f x1 x2 x3 x4 x5   
+check62 ps f x1 x2 x3 x4 x5 x6       = (check,check) $$ ps $$ sequenceA6 f x1 x2 x3 x4 x5 x6
+check72 ps f x1 x2 x3 x4 x5 x6 x7    = (check,check) $$ ps $$ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
+check82 ps f x1 x2 x3 x4 x5 x6 x7 x8 = (check,check) $$ ps $$ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
 
--- TODO:: WRONG!!!
-unpack' ::(Nat s) => Value (V.FSVec s a) -> V.FSVec s (Value a)
-unpack' Abst       = V.reallyUnsafeVector [Abst]
-unpack' Undef      = V.reallyUnsafeVector [Undef]
-unpack' (Value as) = Value <$> as
+check13 ps f x1                      = (check,check,check) $$$ ps $$$ sequenceA1 f x1
+check23 ps f x1 x2                   = (check,check,check) $$$ ps $$$ sequenceA2 f x1 x2
+check33 ps f x1 x2 x3                = (check,check,check) $$$ ps $$$ sequenceA3 f x1 x2 x3 
+check43 ps f x1 x2 x3 x4             = (check,check,check) $$$ ps $$$ sequenceA4 f x1 x2 x3 x4  
+check53 ps f x1 x2 x3 x4 x5          = (check,check,check) $$$ ps $$$ sequenceA5 f x1 x2 x3 x4 x5   
+check63 ps f x1 x2 x3 x4 x5 x6       = (check,check,check) $$$ ps $$$ sequenceA6 f x1 x2 x3 x4 x5 x6
+check73 ps f x1 x2 x3 x4 x5 x6 x7    = (check,check,check) $$$ ps $$$ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
+check83 ps f x1 x2 x3 x4 x5 x6 x7 x8 = (check,check,check) $$$ ps $$$ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
+
+check14 ps f x1                      = (check,check,check,check) $$$$ ps $$$$ sequenceA1 f x1
+check24 ps f x1 x2                   = (check,check,check,check) $$$$ ps $$$$ sequenceA2 f x1 x2
+check34 ps f x1 x2 x3                = (check,check,check,check) $$$$ ps $$$$ sequenceA3 f x1 x2 x3 
+check44 ps f x1 x2 x3 x4             = (check,check,check,check) $$$$ ps $$$$ sequenceA4 f x1 x2 x3 x4  
+check54 ps f x1 x2 x3 x4 x5          = (check,check,check,check) $$$$ ps $$$$ sequenceA5 f x1 x2 x3 x4 x5   
+check64 ps f x1 x2 x3 x4 x5 x6       = (check,check,check,check) $$$$ ps $$$$ sequenceA6 f x1 x2 x3 x4 x5 x6
+check74 ps f x1 x2 x3 x4 x5 x6 x7    = (check,check,check,check) $$$$ ps $$$$ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
+check84 ps f x1 x2 x3 x4 x5 x6 x7 x8 = (check,check,check,check) $$$$ ps $$$$ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
 
 
-isp1 f a = f (pack a)
-isp2 f a b = f (pack a) (pack b)
-isp3 f a b c = f (pack a) (pack b) (pack c)
-isp4 f a b c d = f (pack a) (pack b) (pack c) (pack d)
+wrap11 (c1)                      ps = (,) [c1]                      . check11 ps
+wrap21 (c1,c2)                   ps = (,) [c1,c2]                   . check21 ps
+wrap31 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check31 ps
+wrap41 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check41 ps
+wrap51 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check51 ps
+wrap61 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check61 ps
+wrap71 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check71 ps
+wrap81 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check81 ps
 
-isp11 f a       = unpack' $ isp1 f a
-isp21 f a b     = unpack' $ isp2 f a b
-isp31 f a b c   = unpack' $ isp3 f a b c 
-isp41 f a b c d = unpack' $ isp4 f a b c d
+wrap12 (c1)                      ps = (,) [c1]                      . check12 ps
+wrap22 (c1,c2)                   ps = (,) [c1,c2]                   . check22 ps
+wrap32 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check32 ps
+wrap42 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check42 ps
+wrap52 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check52 ps
+wrap62 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check62 ps
+wrap72 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check72 ps
+wrap82 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check82 ps
 
-isp12 f a       = (unpack',unpack') $$ isp1 f a
-isp22 f a b     = (unpack',unpack') $$ isp2 f a b
-isp32 f a b c   = (unpack',unpack') $$ isp3 f a b c 
-isp42 f a b c d = (unpack',unpack') $$ isp4 f a b c d
+wrap13 (c1)                      ps = (,) [c1]                      . check13 ps
+wrap23 (c1,c2)                   ps = (,) [c1,c2]                   . check23 ps
+wrap33 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check33 ps
+wrap43 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check43 ps
+wrap53 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check53 ps
+wrap63 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check63 ps
+wrap73 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check73 ps
+wrap83 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check83 ps
 
-isp13 f a       = (unpack',unpack',unpack') $$$ isp1 f a
-isp23 f a b     = (unpack',unpack',unpack') $$$ isp2 f a b
-isp33 f a b c   = (unpack',unpack',unpack') $$$ isp3 f a b c 
-isp43 f a b c d = (unpack',unpack',unpack') $$$ isp4 f a b c d
+wrap14 (c1)                      ps = (,) [c1]                      . check14 ps
+wrap24 (c1,c2)                   ps = (,) [c1,c2]                   . check24 ps
+wrap34 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check34 ps
+wrap44 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check44 ps
+wrap54 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check54 ps
+wrap64 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check64 ps
+wrap74 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check74 ps
+wrap84 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check84 ps
 
-isp14 f a       = (unpack',unpack',unpack',unpack') $$$$ isp1 f a
-isp24 f a b     = (unpack',unpack',unpack',unpack') $$$$ isp2 f a b
-isp34 f a b c   = (unpack',unpack',unpack',unpack') $$$$ isp3 f a b c 
-isp44 f a b c d = (unpack',unpack',unpack',unpack') $$$$ isp4 f a b c d
+
+-- s = ForSyDe.Atom.MoC.SDF.Core.signal [1,2,3,4,5,6,7,8,9]
+
+-- tst1 x = [head x]
+-- tst2 x y = [head x + head y, last y - last x]
+
