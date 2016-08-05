@@ -33,7 +33,7 @@ type Event a = CT ([Value a])
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-data CT a  = CT { tag :: Time, val :: Time -> a }
+data CT a  = CT { tag :: Time, func :: Time -> a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC CT where
@@ -45,7 +45,9 @@ instance MoC CT where
     where init px s1@(f :- fs) s2@(x :- xs)
             | tag f == tag x        = f %> f  <*> x  :- comb f  x  fs xs
             | tag f <  tag x        = f %> f  <*> px :- comb f  px fs s2
-            | tag f >  tag x        = x %> f  <*> ue :- init    x  s1 xs
+            | tag f >  tag x        = x %> f  <*> ue :- comb f  x  s1 xs
+          init _ _ NullS            = NullS
+          init _ NullS _            = NullS
           comb pf px s1@(f :- fs) s2@(x :- xs)
             | tag f == tag x        = f %> f  <*> x  :- comb f  x  fs xs
             | tag f <  tag x        = f %> f  <*> px :- comb f  px fs s2
@@ -74,27 +76,22 @@ instance Applicative (CT) where
   (CT t f) <*> (CT _ x) = CT t (\a -> (f a) (x a))
 
 -----------------------------------------------------------------------------
+-- These functions are not exported and are used for testing purpose only.
 
--- newtype CTArg c a = CTArg {unArg :: a }
+part :: (Time, Time -> a) -> CT [a]
+part (t,f) = CT t (pure . f)
 
--- instance Functor (CTArg c) where
---   fmap f (CTArg a) = CTArg (f a)
-
--- instance Applicative (CTArg c) where
---   pure = CTArg
---   (CTArg f) <*> (CTArg a) = CTArg (f a)
-
--- infixl 4 >$<, >*<
--- (>$<) = fmap . (\f a -> f $ CTArg a)
--- fs >*< gs = fs <*> (fmap CTArg gs)
+stream :: [(Time, Time -> a)] -> Signal (CT [a])
+stream l = S.signal (part <$> l)
 
 infixl 7 %>
 (CT t _) %> (CT _ x) = CT t x
 ue = CT 0.0 (\_ -> [Undef]) :: Event x
 
+-- end of testbench functions
 -----------------------------------------------------------------------------
 
--- | Wraps a tuple @(tag, value)@ into a DE event of extended values
+-- | Wraps a tuple @(tag, value)@ into a CT event of extended values
 event  :: (Time, Time -> a) -> Event a 
 event (t,f) = CT t (pure . Value . f)
 event2 = ($$) (event,event)
@@ -102,7 +99,7 @@ event3 = ($$$) (event,event,event)
 event4 = ($$$$) (event,event,event,event)
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
--- into a DE signal
+-- into a CT signal
 signal   :: [(Time, Time -> a)] -> Sig a
 signal l = S.signal (event <$> l)
 
@@ -123,6 +120,9 @@ partitionUntil until sample (x:-xs) = chunk x xs
         chunk (CT t f) NullS
           | t <= until = CT t f :- chunk (CT (t+sample) f) NullS
           | otherwise  = NullS
+
+
+eval s = (\(CT t f) -> f t) <$> s
 
 ----------------------------------------------------------------------------- 
 

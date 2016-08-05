@@ -79,15 +79,22 @@ instance Applicative (SY) where
   (SY a) <*> (SY b) = SY (a b)
 
 -----------------------------------------------------------------------------
+-- These functions are not exported and are used for testing purpose only.
+
+part :: a -> SY [a]
+part = SY . pure
+
+stream :: [a] -> Signal (SY [a])
+stream l = S.signal (part <$> l)
+
+-- end of testbench functions
+-----------------------------------------------------------------------------
 
 event  :: a -> Event a
 event  = part . pure
 event2 = ($$) (event, event)
 event3 = ($$$) (event, event, event)
 event4 = ($$$$) (event, event, event, event)
-
-part :: a -> SY [a]
-part = SY . pure
 
 -- | Wraps a list into a SY signal
 signal   :: [a] -> Sig a
@@ -163,3 +170,4 @@ wrap54 = (,) () . psi54
 wrap64 = (,) () . psi64
 wrap74 = (,) () . psi74
 wrap84 = (,) () . psi84
+

@@ -21,8 +21,6 @@ import           ForSyDe.Atom.MoC.CT.Core
 import           ForSyDe.Atom.Utility
 import           ForSyDe.Atom.Behavior hiding (value)
 
-
-
 delay :: Time -> (Time -> a) -> Sig a -> Sig a
 delay t f = MoC.delay (event (t, f))
 
@@ -86,6 +84,25 @@ constant1 i =  signal [(0, i)]
 constant2 (i1,i2) = (signal [(0, i1)], signal [(0, i2)])
 constant3 (i1,i2,i3) = (signal [(0, i1)], signal [(0, i2)], signal [(0, i3)])
 constant4 (i1,i2,i3,i4) = (signal [(0, i1)], signal [(0, i2)], signal [(0, i3)], signal [(0, i4)])
+
+
+
+
+generate1 :: (b1 -> b1) -> (Time, Time -> b1)
+          -> Sig b1                                
+generate2 :: (b1 -> b2 -> (b1, b2)) -> ((Time, Time -> b1), (Time, Time -> b2))
+          -> (Sig b1, Sig b2)                          
+generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3)) -> ((Time, Time -> b1), (Time, Time -> b2), (Time, Time -> b3))
+          -> (Sig b1, Sig b2, Sig b3)                      
+generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4)) -> ((Time, Time -> b1), (Time, Time -> b2), (Time, Time -> b3), (Time, Time -> b4))
+          -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
+
+generate1 ns i = MoC.stated01 (wrap11 (psi11 ns)) (event  i)
+generate2 ns i = MoC.stated02 (wrap22 (psi22 ns)) (event2 i)
+generate3 ns i = MoC.stated03 (wrap33 (psi33 ns)) (event3 i)
+generate4 ns i = MoC.stated04 (wrap44 (psi44 ns)) (event4 i)
+
+
 
 
 stated11 :: (b1 -> a1 -> b1) -> (Time, Time -> b1)
@@ -303,3 +320,5 @@ sync4 = comb44 (,,,)
 -- s = ForSyDe.Atom.MoC.CT.Core.signal [(0, \_ -> 1), (2, \_ -> 0)]
 -- q = ForSyDe.Atom.MoC.CT.Lib.delay 1 (\t -> t) s
 
+-- (s1,s2) = (S.takeS 5 k1, S.takeS 7 k2) :: (Sig Int, Sig Int)
+--   where (k1, k2) = generate2 (\a b -> (a+1,b+2)) ((9,\_->2),(24,\_->5))

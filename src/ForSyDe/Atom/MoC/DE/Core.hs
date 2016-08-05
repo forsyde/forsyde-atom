@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -20,9 +20,9 @@ import ForSyDe.Atom.MoC.AtomLib
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
+import Numeric.Natural
 
-
-type Tag = Int
+type Tag = Natural
 
 -- | Type alias for a DE signal
 type Event a = DE ([Value a])
@@ -43,13 +43,15 @@ instance MoC DE where
     where init px s1@(f :- fs) s2@(x :- xs)
             | tag f == tag x        = f %> f  <*> x  :- comb f  x  fs xs
             | tag f <  tag x        = f %> f  <*> px :- comb f  px fs s2
-            | tag f >  tag x        = x %> f  <*> ue :- init    x  s1 xs
+            | tag f >  tag x        = x %> f  <*> ue :- comb f  x  s1 xs
+          init _ _ NullS            = NullS
+          init _ NullS _            = NullS
           comb pf px s1@(f :- fs) s2@(x :- xs)
             | tag f == tag x        = f %> f  <*> x  :- comb f  x  fs xs
             | tag f <  tag x        = f %> f  <*> px :- comb f  px fs s2
             | tag f >  tag x        = x %> pf <*> x  :- comb pf x  s1 xs
-          comb _ px (f :- fs) NullS = f %> f  <*> px :- comb f px fs NullS
-          comb pf _ NullS (x :- xs) = x %> pf <*> x  :- comb pf x NullS xs
+          comb _ px (f :- fs) NullS = f %> f  <*> px :- comb f  px fs NullS
+          comb pf _ NullS (x :- xs) = x %> pf <*> x  :- comb pf x  NullS xs
           comb _ _ NullS NullS      = NullS
   ---------------------
   (DE _ v) ->- xs = pure v :- xs
@@ -65,6 +67,9 @@ instance Show a => Show (DE a) where
 instance (Read a) => Read (DE a) where
   readsPrec _ x     = [(DE t v, x) | ((t,v), x) <- reads x]
 
+instance Eq a => Eq (DE [a]) where
+  DE t1 [a] == DE t2 [b] = t1 == t2 && a == b 
+
 -- | Needed to implement the @unzip@ utilities
 instance Functor (DE) where
   fmap f (DE t a) = DE t (f a)
@@ -75,31 +80,26 @@ instance Applicative (DE) where
   (DE tf f) <*> (DE _ x) = DE tf (f x)
 
 -----------------------------------------------------------------------------
+-- These functions are not exported and are used for testing purpose only.
 
--- newtype DEArg c a = DEArg {unArg :: a }
+part :: (Tag, a) -> DE [a]
+part (t,v) = DE t (pure v)
 
--- instance Functor (DEArg c) where
---   fmap f (DEArg a) = DEArg (f a)
+stream :: [(Tag, a)] -> Signal (DE [a])
+stream l = S.signal (part <$> l)
 
--- instance Applicative (DEArg c) where
---   pure = DEArg
---   (DEArg f) <*> (DEArg a) = DEArg (f a)
-
--- infixl 4 >$<, >*<
--- (>$<) = fmap . (\f a -> f $ DEArg a)
--- fs >*< gs = fs <*> (fmap DEArg gs)
 
 infixl 7 %>
 (DE t _) %> (DE _ x) = DE t x
---tag (DE t _) = t 
 ue = DE 0 [Undef]
 
-
+-- end of testbench functions
 -----------------------------------------------------------------------------
+
 
 -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
 event  :: (Tag, a) -> Event a 
-event (t,v) = DE t $ (pure . pure) v
+event (t,v) = part (t, pure v)
 event2 = ($$) (event,event)
 event3 = ($$$) (event,event,event)
 event4 = ($$$$) (event,event,event,event)
