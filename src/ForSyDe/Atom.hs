@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK not-home, prune #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core
+-- Module      :  ForSyDe.Atom
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -25,7 +25,7 @@
 -- of processes.
 --
 -----------------------------------------------------------------------------
-module ForSyDe.Core (
+module ForSyDe.Atom (
 
   -- * Basic notions
 
@@ -43,7 +43,7 @@ module ForSyDe.Core (
   -- #sig-definition#
   -- <<includes/figs/tagged-signal-model.png>>
 
-  Signal(..),
+  -- Signal(..),
 
   -- | Additional functions for the 'Signal' data type are provided
   -- for covenience in library development. For an extended API
@@ -202,11 +202,11 @@ module ForSyDe.Core (
   -- constructors, extensively documented in the "ForSyDe.Core.MoC"
   -- module.
 
-  -- *** Atoms
+  -- *** Atom
   
   MoC(..),
 
-  -- *** Constructors
+  -- *** Cons
 
   -- | As mentioned, process constructors are simply meaningful
   -- compositions of synchronization atoms. since in the
@@ -260,7 +260,7 @@ module ForSyDe.Core (
   -- Therefore, by implementing the data types associated with signals
   -- and events as instances of 'Functor', we were able to provide a
   -- (set of) /unzip/ process(es) defined as in equation (2) above, as
-  -- part of the "ForSyDe.Core.Utilities" module.  Mind that we call
+  -- part of the "ForSyDe.Core.Utility" module.  Mind that we call
   -- /unzip/ a utility process and not an atom, since it has no
   -- sinchronization nor behavior semantic. It just conveniently
   -- "lifts" the wrapped tuples in order to create "collections" of
@@ -284,13 +284,13 @@ module ForSyDe.Core (
   -- synchronziation layer constructors as arguments when implementing
   -- process constructors.
 
-  -- *** Atoms
+  -- *** Atom
     
   (>$), (>*), (>%), (>%!), (>#), (>#!),
 
   -- *** Behavior wrappers
   
-  -- | Wrappers are the behavior layer entities passed as arguments
+  -- | Behaviors are the behavior layer entities passed as arguments
   -- to the synchronization layer. They are implemented as specific
   -- compositions of behavior atoms.
   --
@@ -306,7 +306,7 @@ module ForSyDe.Core (
   -- say, they are taken as arguments (and wrapped) by the behavior
   -- layer wrappers.
 
-  -- * Utilities
+  -- * Utility
 
   -- | The 'ForSyDe.Core' module also provides a set of utility
   -- functions, mainly for aiding the designer to avoid working with
@@ -315,7 +315,7 @@ module ForSyDe.Core (
   -- For a list of all the provided utilities, please consult the
   -- following module:
 
-  module ForSyDe.Core.Utilities,
+  module ForSyDe.Atom.Utility,
          
   -- * Bibliography
 
@@ -325,8 +325,8 @@ module ForSyDe.Core (
        
 ) where
 
-import ForSyDe.Core.Signal
-import ForSyDe.Core.Utilities
-import ForSyDe.Core.ValueExt
-import ForSyDe.Core.MoC
+import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.MoC
+import ForSyDe.Atom.Signal
+import ForSyDe.Atom.Utility
 

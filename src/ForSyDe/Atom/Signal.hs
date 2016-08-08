@@ -1,6 +1,7 @@
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core.Signal
+-- Module      :  ForSyDe.Atom.MoC.Signal
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -9,9 +10,9 @@
 -- Portability :  portable
 --
 -- This module defines the shallow-embedded 'Signal' datatype and
--- functions operating on it.
+-- utility functions operating on it.
 -----------------------------------------------------------------------------
-module ForSyDe.Core.Signal  where
+module ForSyDe.Atom.Signal  where
 
 
 infixr 3 :-
@@ -34,7 +35,6 @@ infixr 3 :-
 data Signal e = NullS         -- ^ terminates a signal
               | e :- Signal e -- ^ the default constructor appends an
                               -- event to the head of the stream
-              deriving (Eq)
 
 -- | 'Functor' instance, allows for the mapping of a function @(a ->b)@
 -- upon all the events of a @'Signal' a@. See the Processes section
@@ -42,7 +42,20 @@ data Signal e = NullS         -- ^ terminates a signal
 instance Functor Signal where
   fmap _ NullS   = NullS
   fmap f (x:-xs) = f x :- fmap f xs
-  
+
+instance Applicative Signal where
+  pure x = x :- NullS
+  _ <*> NullS = NullS
+  NullS <*> _ = NullS
+  (f:-fs) <*> (x:-xs) = f x :- fs <*> xs 
+
+instance Foldable Signal where
+  foldr k z = go
+    where
+      go NullS   = z
+      go (y:-ys) = y `k` go ys
+
+
 -- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (Signal a) where
   showsPrec p = showParen (p>1) . showSignal
@@ -82,6 +95,10 @@ headS (x :- _) = x
 
 tailS NullS  = NullS
 tailS (_ :- a) = a
+
+lastS NullS = error "Empty signal"
+lastS (x:-NullS) = x
+lastS (_:- xs)   = lastS xs
 
 isNull NullS = True
 isNull _ = False

@@ -1,6 +1,8 @@
 forsyde-atom
 ============
 
+[![Build Status](https://travis-ci.org/forsyde/forsyde-atom.svg?branch=dev-untracked)](https://travis-ci.org/forsyde/forsyde-atom)
+
 Reimplementation of the ForSyDe-Haskell modelling library in an
 applicative manner using the concept of atoms, and a layered process
 model.

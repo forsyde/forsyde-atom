@@ -30,35 +30,65 @@ description:
   theoretical concepts behind this library.
   * the
 
--- license:             
+license:             BSD3
 license-file:        LICENSE
 author:              George Ungureanu
--- maintainer:          
--- copyright:           
--- category:            
+maintainer:          ugeorge@kth.se
+copyright:           Copyright (c) 2015-2016, George Ungureanu, KTH/ICT/ESY
+homepage:            https://github.com/forsyde/forsyde-atom
+category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple
 cabal-version:       >=1.22
 extra-doc-files:     includes/figs/*.png
 
 library
-  exposed-modules:     ForSyDe
-                       ForSyDe.Core,
-                       ForSyDe.Core.Signal,
-                       ForSyDe.Core.Vector,
-                       ForSyDe.Core.MoC,
-                       ForSyDe.Core.ValueExt,
-                       ForSyDe.Core.Utilities,
-                       ForSyDe.MoCLib.SY,
-                       ForSyDe.MoCLib.DE
+  exposed-modules:     ForSyDe.Atom
+                       ForSyDe.Atom.Behavior,
+                       ForSyDe.Atom.Signal,
+                       ForSyDe.Atom.MoC,
+                       ForSyDe.Atom.MoC.AtomLib,
+                       ForSyDe.Atom.MoC.SY,
+                       ForSyDe.Atom.MoC.SY.Core,
+                       ForSyDe.Atom.MoC.SY.Lib,
+                       ForSyDe.Atom.MoC.SY.Interface,
+                       ForSyDe.Atom.MoC.DE,
+                       ForSyDe.Atom.MoC.DE.Core,
+                       ForSyDe.Atom.MoC.DE.Lib,
+                       ForSyDe.Atom.MoC.DE.Interface,
+                       ForSyDe.Atom.MoC.DE.Hybrid,
+                       ForSyDe.Atom.MoC.CT,
+                       ForSyDe.Atom.MoC.CT.Core,
+                       ForSyDe.Atom.MoC.CT.Lib,
+                       ForSyDe.Atom.MoC.SDF,
+                       ForSyDe.Atom.MoC.SDF.Core,
+                       ForSyDe.Atom.MoC.SDF.Lib,
+                       ForSyDe.Atom.Utility
   -- other-modules:       
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators
-  build-depends:       base>=4.7.10, parameterized-data, type-level, QuickCheck, HUnit
+  build-depends:       base>=4.8 && <6, 
+                       test-framework,
+                       test-framework-hunit,
+                       test-framework-quickcheck2,
+                       QuickCheck, 
+                       HUnit
   hs-source-dirs:      src
 
 Test-Suite forsyde-testsuite
-  Type:                 exitcode-stdio-1.0
-  Default-Language:     Haskell2010
-  Hs-Source-Dirs:       tests
-  Main-is:              SYTest.hs
-  Build-depends:        base, forsyde-atom, QuickCheck, HUnit
+  Type:                exitcode-stdio-1.0
+  Default-Language:    Haskell2010
+  Hs-Source-Dirs:      tests
+  Main-is:             Tests.hs
+  Build-depends:       base>=4.8 && <6, 
+                       forsyde-atom, 
+                       QuickCheck, 
+                       test-framework,
+                       test-framework-hunit,
+                       test-framework-quickcheck2,
+                       HUnit
+
+
+source-repository head
+  type:     git
+  location: https://github.com/forsyde/forsyde-atom.git
+  

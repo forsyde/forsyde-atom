@@ -1,6 +1,7 @@
------------------1------------------------------------------------------------
+{-# LANGUAGE PostfixOperators #-}
+-----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Core.AbsentExt
+-- Module      :  ForSyDe.Atom.Behavior
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,7 +12,7 @@
 -- This module implements the atoms and wrappers for the behavior
 -- layer in ForSyDe processes.
 -----------------------------------------------------------------------------
-module ForSyDe.Core.ValueExt(
+module ForSyDe.Atom.Behavior(
 
   -- | The behavior layer is enabled by the 'Value' type constructor.
   
@@ -21,7 +22,7 @@ module ForSyDe.Core.ValueExt(
 
   -- | These functions are provided for user convenience
 
-  value, fromValue, unsafeFromValue, isPresent, isAbsent, isUndefined,
+  value, fromValue, unsafeFromValue, isPresent, isNotPresent, isAbsent, isUndefined,
 
   -- * Behavior atoms
 
@@ -52,14 +53,15 @@ module ForSyDe.Core.ValueExt(
   -- >>> wf v a v
   -- (*** Exception: Illegal occurrence of an absent and present event
   
-  psi11, psi12, psi13, psi14, psi15, psi16, psi17, psi18,
-  psi21, psi22, psi23, psi24, psi25, psi26, psi27, psi28,
-  psi31, psi32, psi33, psi34, psi35, psi36, psi37, psi38,
-  psi41, psi42, psi43, psi44, psi45, psi46, psi47, psi48,
-  psi51, psi52, psi53, psi54, psi55, psi56, psi57, psi58,
-  psi61, psi62, psi63, psi64, psi65, psi66, psi67, psi68,
-  psi71, psi72, psi73, psi74, psi75, psi76, psi77, psi78,
-  psi81, psi82, psi83, psi84, psi85, psi86, psi87, psi88,
+
+  csi11, csi12, csi13, csi14, csi15, csi16, csi17, csi18,
+  csi21, csi22, csi23, csi24, csi25, csi26, csi27, csi28,
+  csi31, csi32, csi33, csi34, csi35, csi36, csi37, csi38,
+  csi41, csi42, csi43, csi44, csi45, csi46, csi47, csi48,
+  csi51, csi52, csi53, csi54, csi55, csi56, csi57, csi58,
+  csi61, csi62, csi63, csi64, csi65, csi66, csi67, csi68,
+  csi71, csi72, csi73, csi74, csi75, csi76, csi77, csi78,
+  csi81, csi82, csi83, csi84, csi85, csi86, csi87, csi88,
 
   -- ** @store@
 
@@ -97,7 +99,7 @@ module ForSyDe.Core.ValueExt(
   
   ) where
 
-import ForSyDe.Core.Utilities
+import ForSyDe.Atom.Utility
 
 -- |The data type 'Value' wraps arbtrary types to extend them with
 -- tokens carrying special behavioural semantics, as defined by
@@ -280,76 +282,76 @@ isUndefined Undef   = Value True
 isUndefined _       = Value False
 isPresent (Value _) = Value True
 isPresent _         = Value False
-
+isNotPresent a      = not <$> isPresent a
 
 -----------------------------------------------------------------------------
 -- Behavior wrappers
 -----------------------------------------------------------------------------
 
-psi11 f a1                      =         (f >$ a1)
-psi12 f a1                      = funzip2 (f >$ a1)
-psi13 f a1                      = funzip3 (f >$ a1)
-psi14 f a1                      = funzip4 (f >$ a1)
-psi15 f a1                      = funzip5 (f >$ a1)
-psi16 f a1                      = funzip6 (f >$ a1)
-psi17 f a1                      = funzip7 (f >$ a1)
-psi18 f a1                      = funzip8 (f >$ a1)
-psi21 f a1 a2                   =         (f >$ a1 >* a2)
-psi22 f a1 a2                   = funzip2 (f >$ a1 >* a2)
-psi23 f a1 a2                   = funzip3 (f >$ a1 >* a2)
-psi24 f a1 a2                   = funzip4 (f >$ a1 >* a2)
-psi25 f a1 a2                   = funzip5 (f >$ a1 >* a2)
-psi26 f a1 a2                   = funzip6 (f >$ a1 >* a2)
-psi27 f a1 a2                   = funzip7 (f >$ a1 >* a2)
-psi28 f a1 a2                   = funzip8 (f >$ a1 >* a2)
-psi31 f a1 a2 a3                =         (f >$ a1 >* a2 >* a3)
-psi32 f a1 a2 a3                = funzip2 (f >$ a1 >* a2 >* a3)
-psi33 f a1 a2 a3                = funzip3 (f >$ a1 >* a2 >* a3)
-psi34 f a1 a2 a3                = funzip4 (f >$ a1 >* a2 >* a3)
-psi35 f a1 a2 a3                = funzip5 (f >$ a1 >* a2 >* a3)
-psi36 f a1 a2 a3                = funzip6 (f >$ a1 >* a2 >* a3)
-psi37 f a1 a2 a3                = funzip7 (f >$ a1 >* a2 >* a3)
-psi38 f a1 a2 a3                = funzip8 (f >$ a1 >* a2 >* a3)
-psi41 f a1 a2 a3 a4             =         (f >$ a1 >* a2 >* a3 >* a4)
-psi42 f a1 a2 a3 a4             = funzip2 (f >$ a1 >* a2 >* a3 >* a4)
-psi43 f a1 a2 a3 a4             = funzip3 (f >$ a1 >* a2 >* a3 >* a4)
-psi44 f a1 a2 a3 a4             = funzip4 (f >$ a1 >* a2 >* a3 >* a4)
-psi45 f a1 a2 a3 a4             = funzip5 (f >$ a1 >* a2 >* a3 >* a4)
-psi46 f a1 a2 a3 a4             = funzip6 (f >$ a1 >* a2 >* a3 >* a4)
-psi47 f a1 a2 a3 a4             = funzip7 (f >$ a1 >* a2 >* a3 >* a4)
-psi48 f a1 a2 a3 a4             = funzip8 (f >$ a1 >* a2 >* a3 >* a4)
-psi51 f a1 a2 a3 a4 a5          =         (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi52 f a1 a2 a3 a4 a5          = funzip2 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi53 f a1 a2 a3 a4 a5          = funzip3 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi54 f a1 a2 a3 a4 a5          = funzip4 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi55 f a1 a2 a3 a4 a5          = funzip5 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi56 f a1 a2 a3 a4 a5          = funzip6 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi57 f a1 a2 a3 a4 a5          = funzip7 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi58 f a1 a2 a3 a4 a5          = funzip8 (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-psi61 f a1 a2 a3 a4 a5 a6       =         (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi62 f a1 a2 a3 a4 a5 a6       = funzip2 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi63 f a1 a2 a3 a4 a5 a6       = funzip3 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi64 f a1 a2 a3 a4 a5 a6       = funzip4 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi65 f a1 a2 a3 a4 a5 a6       = funzip5 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi66 f a1 a2 a3 a4 a5 a6       = funzip6 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi67 f a1 a2 a3 a4 a5 a6       = funzip7 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi68 f a1 a2 a3 a4 a5 a6       = funzip8 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-psi71 f a1 a2 a3 a4 a5 a6 a7    =         (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi72 f a1 a2 a3 a4 a5 a6 a7    = funzip2 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi73 f a1 a2 a3 a4 a5 a6 a7    = funzip3 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi74 f a1 a2 a3 a4 a5 a6 a7    = funzip4 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi75 f a1 a2 a3 a4 a5 a6 a7    = funzip5 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi76 f a1 a2 a3 a4 a5 a6 a7    = funzip6 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi77 f a1 a2 a3 a4 a5 a6 a7    = funzip7 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi78 f a1 a2 a3 a4 a5 a6 a7    = funzip8 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-psi81 f a1 a2 a3 a4 a5 a6 a7 a8 =         (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi82 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip2 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi83 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip3 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi84 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip4 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi85 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip5 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi86 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip6 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip7 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = funzip8 (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
+csi11 f a1                      = (f >$ a1)
+csi12 f a1                      = (f >$ a1 |<)
+csi13 f a1                      = (f >$ a1 |<<)
+csi14 f a1                      = (f >$ a1 |<<<)
+csi15 f a1                      = (f >$ a1 |<<<<)
+csi16 f a1                      = (f >$ a1 |<<<<<)
+csi17 f a1                      = (f >$ a1 |<<<<<<)
+csi18 f a1                      = (f >$ a1 |<<<<<<<)
+csi21 f a1 a2                   = (f >$ a1 >* a2)
+csi22 f a1 a2                   = (f >$ a1 >* a2 |<)
+csi23 f a1 a2                   = (f >$ a1 >* a2 |<<)
+csi24 f a1 a2                   = (f >$ a1 >* a2 |<<<)
+csi25 f a1 a2                   = (f >$ a1 >* a2 |<<<<)
+csi26 f a1 a2                   = (f >$ a1 >* a2 |<<<<<)
+csi27 f a1 a2                   = (f >$ a1 >* a2 |<<<<<<)
+csi28 f a1 a2                   = (f >$ a1 >* a2 |<<<<<<<)
+csi31 f a1 a2 a3                = (f >$ a1 >* a2 >* a3)
+csi32 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<)
+csi33 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<)
+csi34 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<)
+csi35 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<)
+csi36 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<)
+csi37 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<<)
+csi38 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<<<)
+csi41 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4)
+csi42 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<)
+csi43 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<)
+csi44 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<)
+csi45 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<)
+csi46 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<)
+csi47 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<<)
+csi48 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<<<)
+csi51 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5)
+csi52 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<)
+csi53 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<)
+csi54 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<)
+csi55 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<)
+csi56 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<)
+csi57 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<<)
+csi58 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<<<)
+csi61 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
+csi62 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<)
+csi63 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<)
+csi64 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<)
+csi65 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<)
+csi66 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<)
+csi67 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<<)
+csi68 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<<<)
+csi71 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
+csi72 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<)
+csi73 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<)
+csi74 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<)
+csi75 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<)
+csi76 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<)
+csi77 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<<)
+csi78 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<<<)
+csi81 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
+csi82 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<)
+csi83 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<)
+csi84 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<)
+csi85 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<)
+csi86 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<)
+csi87 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<<)
+csi88 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<<<)
 
 
 store1 buff a1                      = at22 $ ((:), buff) >%! a1
@@ -376,3 +378,4 @@ replaceU         p x = p >#  (x,Undef)
 replaceA         p x = p >#  (x,Abst)
 unsafeReplaceV v p x = p >#! (x,v)
 unsafeReplaceU   p x = p >#! (x,Undef)
+
