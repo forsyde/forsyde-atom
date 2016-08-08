@@ -37,7 +37,7 @@ newtype SDF a = SDF { fromSDF :: a }
 instance MoC SDF where
   type Param SDF = [Int]
   ---------------------
-  (env ,_) -$- NullS = (env, NullS)
+  (c:cs,_) -$- NullS = (cs, NullS)
   (c:cs,f) -$- s = (cs, comb c f $ concat $ map fromSDF $ fromSignal s)
     where comb c f l = let x'  = take c l
                            xs' = drop c l
@@ -45,34 +45,36 @@ instance MoC SDF where
                           then SDF (f x') :- comb c f xs'
                           else NullS
   ---------------------
-  (env ,_)  -*- NullS = (env, NullS)
-  (env ,NullS) -*- _  = (env, NullS)
+  (c:cs,_)  -*- NullS = (cs, NullS)
+  (c:cs,NullS) -*- _  = (cs, NullS)
   (c:cs,fs) -*- s = (cs, comb2 c fs $ concat $ map fromSDF $ fromSignal s)
     where comb2 c (SDF f:-fs) l = let x'  = take c l
                                       xs' = drop c l
                                   in if   length x' == c
                                      then SDF (f x') :- comb2 c fs xs'
                                      else NullS
+          comb2 _ NullS       _ = NullS
   ---------------------
   (->-) = (:-) 
   ---------------------
   (-&-) _ a = a
   ---------------------
+  fromEvent = fromSDF
 
 -- | Needed for the implementation of the '-$-' atom and also the
 -- @unzip@ utilities.
 instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
- 
+  
 -- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (SDF [a]) where
-  showsPrec p = showParen (p>1) . showSignal . fromSDF
+  showsPrec p = showParen (p>1) . showPartition . fromSDF
     where
-      showSignal (x : xs)  = showEvent x . showSignal' xs
-      showSignal ([])      = showChar ' ' . showChar '\b'
-      showSignal' (x : xs) = showChar ',' . showEvent x . showSignal' xs
-      showSignal' ([])     = showChar ' ' . showChar '\b'
-      showEvent x          = shows x
+      showPartition (x : xs)  = showEvent x . showPartition' xs 
+      showPartition ([])      = showChar ' ' . showChar '\b'
+      showPartition' (x : xs) = showChar ',' . showEvent x . showPartition' xs
+      showPartition' ([])     = showChar ' ' . showChar '\b'
+      showEvent x             = shows x
 
 -----------------------------------------------------------------------------
 
@@ -92,6 +94,7 @@ check p Abst      = take p $ repeat Abst
 check p Undef     = take p $ repeat Undef
 check p (Value x) | length x /= p = error "Wrong production"
                   | otherwise     = Value <$> x
+--check p (Value x) = Value <$> x
 
 check11 p f x1                      = check p $ sequenceA1 f x1
 check21 p f x1 x2                   = check p $ sequenceA2 f x1 x2

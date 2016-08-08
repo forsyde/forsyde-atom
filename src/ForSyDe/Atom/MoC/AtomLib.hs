@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators, TypeFamilies #-}
+{-# LANGUAGE PostfixOperators, TypeFamilies, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK show-extensions, prune, hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -89,10 +89,12 @@ class MoC e where
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
 
 
--- class Partitioned e where
---   type Arg e c a = r | r -> c a
---   type Context e c :: Constraint
---   o :: (Context e c) => Signal (e (Arg e c a)) -> Signal (e a)
+  fromEvent :: e a -> a
+
+
+instance (Eq a, MoC e)  => Eq (Signal (e [a])) where
+  a == b = flat a == flat b
+    where flat = concat . map fromEvent . fromSignal
 
 infixl 3 -¤, -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<, -<<<<<<<<
 (-¤)        (_,s) =  s

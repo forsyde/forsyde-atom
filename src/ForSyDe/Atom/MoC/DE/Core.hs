@@ -57,6 +57,8 @@ instance MoC DE where
   (DE _ v) ->- xs = pure v :- xs
   ---------------------
   (DE t _) -&- xs = (\(DE t1 v) -> DE (t1 + t) v) <$> xs
+  ---------------------
+  fromEvent = val
 
 
 -- | Shows the event with tag @t@ and value @v@ as @v\@t@

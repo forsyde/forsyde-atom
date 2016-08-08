@@ -59,6 +59,8 @@ instance MoC CT where
   (CT _ v) ->- xs =  (CT 0 v) :- xs
   ---------------------
   (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
+  ---------------------
+  fromEvent (CT t f) = f t
     
 
 -- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@
@@ -120,7 +122,6 @@ partitionUntil until sample (x:-xs) = chunk x xs
         chunk (CT t f) NullS
           | t <= until = CT t f :- chunk (CT (t+sample) f) NullS
           | otherwise  = NullS
-
 
 eval s = (\(CT t f) -> f t) <$> s
 

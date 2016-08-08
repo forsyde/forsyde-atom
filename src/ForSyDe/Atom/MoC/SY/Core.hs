@@ -46,6 +46,7 @@ instance MoC SY where
   ---------------------
   (-&-) _ a = a
   ---------------------
+  fromEvent = fromSY
 
 -- | Shows the (extended) value wrapped
 -- instance Show a => Show (SY a) where
