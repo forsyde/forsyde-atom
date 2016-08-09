@@ -16,9 +16,9 @@
 
 module ForSyDe.Atom.MoC.AtomLib where
 
+import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Signal
 import ForSyDe.Atom.Utility
-import ForSyDe.Atom.Behavior
 
 infixl 5 -$-, -*-
 infixl 3 ->-, -&-

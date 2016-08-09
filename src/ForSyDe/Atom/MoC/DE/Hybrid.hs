@@ -60,38 +60,38 @@ import           ForSyDe.Atom.Utility
 
 
 
-stateMachine11 syproc de1 = let (ts, sy1) = DE.toSY de1
-                            in  SY.toDE ts $     syproc sy1 
-stateMachine12 syproc de1 = let (ts, sy1) = DE.toSY de1
-                            in  SY.toDE2 ts <>   syproc sy1
-stateMachine13 syproc de1 = let (ts, sy1) = DE.toSY de1
-                            in  SY.toDE3 ts <>>  syproc sy1
-stateMachine14 syproc de1 = let (ts, sy1) = DE.toSY de1
-                            in  SY.toDE4 ts <>>> syproc sy1
+syMachine11 syproc de1 = let (ts, sy1) = DE.toSY de1
+                         in  SY.toDE ts $     syproc sy1 
+syMachine12 syproc de1 = let (ts, sy1) = DE.toSY de1
+                         in  SY.toDE2 ts <>   syproc sy1
+syMachine13 syproc de1 = let (ts, sy1) = DE.toSY de1
+                         in  SY.toDE3 ts <>>  syproc sy1
+syMachine14 syproc de1 = let (ts, sy1) = DE.toSY de1
+                         in  SY.toDE4 ts <>>> syproc sy1
 
-stateMachine21 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
-                                in  SY.toDE ts $     syproc sy1 sy2
-stateMachine22 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
-                                in  SY.toDE2 ts <>   syproc sy1 sy2
-stateMachine23 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
-                                in  SY.toDE3 ts <>>  syproc sy1 sy2
-stateMachine24 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
-                                in  SY.toDE4 ts <>>> syproc sy1 sy2
+syMachine21 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
+                             in  SY.toDE ts $     syproc sy1 sy2
+syMachine22 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
+                             in  SY.toDE2 ts <>   syproc sy1 sy2
+syMachine23 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
+                             in  SY.toDE3 ts <>>  syproc sy1 sy2
+syMachine24 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2
+                             in  SY.toDE4 ts <>>> syproc sy1 sy2
 
-stateMachine31 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
-                                    in  SY.toDE ts $     syproc sy1 sy2 sy3
-stateMachine32 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
-                                    in  SY.toDE2 ts <>   syproc sy1 sy2 sy3
-stateMachine33 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
-                                    in  SY.toDE3 ts <>>  syproc sy1 sy2 sy3
-stateMachine34 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
-                                    in  SY.toDE4 ts <>>> syproc sy1 sy2 sy3
+syMachine31 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
+                                 in  SY.toDE ts $     syproc sy1 sy2 sy3
+syMachine32 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
+                                 in  SY.toDE2 ts <>   syproc sy1 sy2 sy3
+syMachine33 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
+                                 in  SY.toDE3 ts <>>  syproc sy1 sy2 sy3
+syMachine34 syproc de1 de2 de3 = let (ts, sy1, sy2, sy3) = DE.toSY3 de1 de2 de3
+                                 in  SY.toDE4 ts <>>> syproc sy1 sy2 sy3
 
-stateMachine41 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
-                                        in  SY.toDE ts $     syproc sy1 sy2 sy3 sy4
-stateMachine42 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
-                                        in  SY.toDE2 ts <>   syproc sy1 sy2 sy3 sy4
-stateMachine43 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
-                                        in  SY.toDE3 ts <>>  syproc sy1 sy2 sy3 sy4
-stateMachine44 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
-                                        in  SY.toDE4 ts <>>> syproc sy1 sy2 sy3 sy4
+syMachine41 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
+                                     in  SY.toDE ts $     syproc sy1 sy2 sy3 sy4
+syMachine42 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
+                                     in  SY.toDE2 ts <>   syproc sy1 sy2 sy3 sy4
+syMachine43 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
+                                     in  SY.toDE3 ts <>>  syproc sy1 sy2 sy3 sy4
+syMachine44 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
+                                     in  SY.toDE4 ts <>>> syproc sy1 sy2 sy3 sy4

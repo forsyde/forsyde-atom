@@ -28,7 +28,7 @@ constSig l = CT.signal $ (\(t,v) -> (t,\_->v)) <$> l
 
 -- -- Properties
 
-prop_delay_1 ts xs = 1 + S.lengthS sig == S.lengthS (CT.delay 2 (\_->1) sig)
+prop_delay_1 ts xs = 1 + length sig == length (CT.delay 2 (\_->1) sig)
   where types = (ts :: TagList , xs :: SY.Sig Int)
         sig   = sigGen ts xs
 
@@ -36,19 +36,19 @@ prop_delay_2 ts xs = checkTags $ CT.delay 2 (\_->1) sig
   where types = (ts :: TagList , xs :: SY.Sig Int)
         sig   = sigGen ts xs   
         
-prop_delay_comb_1 ts xs | S.lengthS sigi == 0 = S.lengthS sigo == 0
-                        | otherwise           = 50 + S.lengthS sigi == S.lengthS (S.takeS (50 + S.lengthS sigi) sigo)
+prop_delay_comb_1 ts xs | length sigi == 0 = length sigo == 0
+                        | otherwise           = 50 + length sigi == length (S.takeS (50 + length sigi) sigo)
   where types = (ts :: TagList , xs :: SY.Sig Int)
         sigi  = sigGen ts xs
         sigo  = CT.mealy11 (+) (-) (1,(\_->1)) sigi
 
-prop_comb_1 ts xs = S.lengthS sig == S.lengthS (CT.comb11 (+1) sig)
+prop_comb_1 ts xs = length sig == length (CT.comb11 (+1) sig)
   where types = (ts :: TagList , xs :: SY.Sig Int)
         sig   = sigGen ts xs   
 
-prop_comb_2 tx xs ty ys | S.lengthS sig1 == 0 = S.lengthS sigo == 0
-                        | S.lengthS sig2 == 0 = S.lengthS sigo == 0
-                        | otherwise           = max (S.lengthS sig1) (S.lengthS sig2) <= S.lengthS sigo
+prop_comb_2 tx xs ty ys | length sig1 == 0 = length sigo == 0
+                        | length sig2 == 0 = length sigo == 0
+                        | otherwise           = max (length sig1) (length sig2) <= length sigo
   where types = (tx :: TagList , xs :: SY.Sig Int, ty :: TagList , ys :: SY.Sig Int)
         sig1  = sigGen tx xs
         sig2  = sigGen ty ys

@@ -62,8 +62,8 @@ instance MoC DE where
 
 
 -- | Shows the event with tag @t@ and value @v@ as @v\@t@
-instance Show a => Show (DE a) where
-  showsPrec _ (DE t x) = (++) ( show x ++ "@" ++ show t )
+instance Show a => Show (DE [a]) where
+  showsPrec _ (DE t [x]) = (++) ( " " ++ show x ++ " @" ++ show t )
 
 -- | Reads the string for a normal tuple @(Tag,Value a)@ as an event @DE a@
 instance (Read a) => Read (DE a) where

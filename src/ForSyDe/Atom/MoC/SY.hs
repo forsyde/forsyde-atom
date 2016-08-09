@@ -178,6 +178,10 @@ module ForSyDe.Atom.MoC.SY (
 
   when, filter, fill,
   hold,
+
+  -- * Interfaces
+
+  toDE, toDE2, toDE3, toDE4
          
   -- * Bibliography
 
@@ -190,3 +194,4 @@ module ForSyDe.Atom.MoC.SY (
 import Prelude hiding (filter)
 import ForSyDe.Atom.MoC.SY.Core
 import ForSyDe.Atom.MoC.SY.Lib
+import ForSyDe.Atom.MoC.SY.Interface
