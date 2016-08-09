@@ -20,8 +20,6 @@ import ForSyDe.Atom.Signal
 import ForSyDe.Atom.Utility
 import ForSyDe.Atom.Behavior
 
-import GHC.Exts
-
 infixl 5 -$-, -*-
 infixl 3 ->-, -&-
 

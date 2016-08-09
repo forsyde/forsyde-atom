@@ -9,24 +9,132 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The formal foundation upon which ForSyDe defines the execution
--- semantics of heterogeneous cyber-physical systems is the tagged
--- signal model <#lee98 [1]>.  This is a denotational framework
--- introduced by Lee and Sangiovanni-Vincentelli as a common meta
--- model for describing properties of concurrent systems in general
--- terms as sets of possible behaviors. Systems are regarded as
--- /compositions/ of /processes/ acting on /signals/ which are
--- collections of events. Signals are characterized by a /tag system/
--- which determines causality between events, and could model time,
+-- The formal foundation upon which ForSyDe <#sander04 [1]> defines
+-- the execution semantics is the /tagged signal model/ <#lee98 [2]>.
+-- This is a denotational framework introduced by Lee and
+-- Sangiovanni-Vincentelli as a common meta model for describing
+-- properties of concurrent systems in general terms as sets of
+-- possible behaviors. Systems are regarded as /compositions/ of
+-- /processes/ acting on /signals/ which are collections of
+-- events. Signals are characterized by a /tag system/ which
+-- determines causality between events, and could model time,
 -- precedence relationships, synchronization points, and other key
 -- properties. Based on how tag systems are defined, one can identify
 -- several /Models of Computations (MoCs)/ as classes of behaviors
 -- dictating the semantics of execution and concurrency in a network
 -- of processes.
 --
+-- The above crash introduction in the philosophy behind ForSyDe
+-- states the intentions of the @forsyde-atom@ library: it is supposed
+-- to be a modelling framework used as a proof-of-concept for the
+-- atom-based approach to cyber-physical systems. This approach
+-- extends the tagged signal model by systematically deconstructing
+-- processes to their basic core and recreating them using a minimal
+-- language of primitive "building blocks".
+--  
+-- Before diving into the library's entrails, we do require a gentler
+-- introduction into the basic usage and some notions that build up
+-- the theoretical foundation for this library. The user is
+-- recommended to read this page as it exposes some key ideas while
+-- for in-depth knowledge she should follow the documentation links
+-- for the modules associated with each section It is also recommended
+-- to consult the source code whenever hinted since it contains
+-- valuable information.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom (
 
+  -- * Getting started
+
+  -- | This section covers only basic usage of this library just to
+  -- get a hang of how it looks. For more advanced tutorials, please
+  -- consult the <https://github.com/forsyde/forsyde-atom project web page>.
+  -- 
+  -- To create a process network you need to instantiate processes and
+  -- signals. While their actual definition and type signature is less
+  -- than pretty, the library provides helpers to hide the
+  -- instantiations and wrapping behind friendly higher-order
+  -- functions, accessible by importing the modules associated to the
+  -- MoCs you are going to use. In this example we shall use SY and DE
+  -- MoCs:
+  --
+  -- >>> import qualified ForSyDe.Atom.MoC.SY as SY
+  -- >>> import qualified ForSyDe.Atom.MoC.DE as DE
+  --
+  -- All MoC modules contain functions purposefully using the same
+  -- names to show that underneath their friendly form they
+  -- instantiate the /same/ network of atoms. Thus to avoid name
+  -- clashes you are forced to import qualified.
+  --
+  -- Now let's instantiate a signal of SY events:
+  --
+  -- >>> let s1 = SY.signal [1,2,3,4,5]
+  -- >>> s1
+  -- > {1,2,3,4,5}
+  -- >>> :t s1
+  -- > s1 :: Num a => SY.Sig a
+  --
+  -- @SY.Sig@ is just a type alias that hides a more complex type. For
+  -- the time being, it is enough to consider it as a 'Signal'
+  -- containing 'SY' events. There are several ways to create
+  -- signals. One is, as above, to convert it from another structure
+  -- (in this case a list of values). Another way is to generate it
+  -- using a @generate@ process:
+  --
+  -- >>> let s2 = SY.generate1 (+1) 3
+  -- >>> takeS 5 s2
+  -- > {3,4,5,6,7}
+  --
+  -- The 'ForSyDe.Atom.MoC.SY.generate1' process generates an infinite
+  -- signal of SY events starting from an initial state (e.g. @3@),
+  -- creating a new event each iteration by applying a "next state"
+  -- function (e.g. @(+1)@) and storing this new event as the current
+  -- state. This is why in order to show that it works we need to
+  -- select in our case the first 5 events to be printed out, using
+  -- the utility 'ForSyDe.MoC.Signal.takeS'. The @1@ suffix stands for
+  -- the number of signals generated. If we want to generate for
+  -- example two signals, there is a process
+  -- 'ForSyDe.Atom.MoC.SY.generate2' which does precisely this:
+  -- 
+  -- >>> :t SY.generate2
+  -- SY.generate2 :: (b1 -> b2 -> (b1, b2))
+  --              -> (b1, b2) -> (SY.Sig b1, SY.Sig b2)
+  -- >>> let (s3,s4) = SY.generate2 (\a b -> (a + b, a - b))(5,3) 
+  -- >>> takeS 5 s3
+  -- > {5,8,10,16,20}
+  -- >>> takeS 5 s4
+  -- > {3,2,6,4,12}
+  --
+  -- Notice the signature of both the process and the passed function:
+  -- the inputs are curried (@b1 -> b2 -> ...@) while the outputs are
+  -- tupled (@... -> (b1, b2)@). This is a recurring theme throughout
+  -- this library, and the reason is easy to guess: a function in
+  -- Haskell may have only /one/ output. We shall postpone further
+  -- motivation and design features for another part of this
+  -- documentation, until then you can have this in the back of your
+  -- head.
+  --
+  -- Now let us synchronize two signals and apply a combinatorial
+  -- function on them. 'ForSyDe.Atom.MoC.SY.comb21' does this for us,
+  -- and you guessed right: the @2@ stands for the number of inputs
+  -- whereas the @1@ stands for the number of outputs. The SY
+  -- semantics take care of trimming the tail of the infinite signal
+  -- @s2@ during the synchronization phase.
+  --
+  -- >>> :t SY.comb21
+  -- SY.comb21 :: (a1 -> a2 -> b1) -> SY.Sig a1 -> SY.Sig a2 -> SY.Sig b1
+  -- >>> SY.comb21 (+) s1 s2
+  -- {4,6,8,10,12}
+  --
+  -- Another very important process is the 'ForSyDe.Atom.MoC.SY.delay'
+  -- which "delays" a signal with one (initial) event. In SY it simply
+  -- has the following effect:
+  --
+  -- >>> s1
+  -- {1,2,3,4,5}
+  -- >>> SY.delay 5 s1
+  -- {5,1,2,3,4,5}
+
+  
   -- * Basic notions
 
   -- ** Signals
@@ -43,7 +151,7 @@ module ForSyDe.Atom (
   -- #sig-definition#
   -- <<includes/figs/tagged-signal-model.png>>
 
-  -- Signal(..),
+  Signal(..),
 
   -- | Additional functions for the 'Signal' data type are provided
   -- for covenience in library development. For an extended API
@@ -319,10 +427,14 @@ module ForSyDe.Atom (
          
   -- * Bibliography
 
-  -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229. 
+  -- | #sander04# [1] Sander, I., & Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [formal system design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.
+  
+  -- | #lee98# [2] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229. 
 
-  -- | #reekie95# [2] Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming. 
-       
+  -- | #reekie95# [3] Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming. 
+
+
+  
 ) where
 
 import ForSyDe.Atom.Behavior
