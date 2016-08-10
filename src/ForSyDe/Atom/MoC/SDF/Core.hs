@@ -17,7 +17,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.SDF.Core where
 
-import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
@@ -35,7 +35,7 @@ newtype SDF a = SDF { fromSDF :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC SDF where
-  type Param SDF = [Int]
+  type Context SDF = [Int]
   ---------------------
   (c:cs,_) -$- NullS = (cs, NullS)
   (c:cs,f) -$- s = (cs, comb c f $ concat $ map fromSDF $ fromSignal s)

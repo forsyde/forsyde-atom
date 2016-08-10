@@ -16,7 +16,7 @@
 
 module ForSyDe.Atom.MoC.CT.Core where
 
-import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
@@ -37,7 +37,7 @@ data CT a  = CT { tag :: Time, func :: Time -> a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC CT where
-  type Param CT = ()
+  type Context CT = ()
   ---------------------
   (-$-) (_,f) = (,) () . (fmap . fmap) f
   ---------------------

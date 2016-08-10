@@ -229,9 +229,12 @@ module ForSyDe.Atom (
   -- >>> let syOut = SY.mealy21 (\st a b -> a + b) (\st a b -> st) 0 sy1 sy2
   -- >>> let deOut = SY.toDE tags syOut
   --
-  -- We used a provided currying utility (@ (<>) :: (t1 -> t2 -> t) -> (t1, t2) -> t @)
-  -- to conveniently apply the process with two arguments @DE.toSY2@ on the
-  -- tuple of signals @ twoDESigs @.
+  -- We used a provided currying utility ('ForSyDe.Atom.Utility.<>')
+  -- to conveniently apply the process with two arguments @DE.toSY2@
+  -- on the tuple of signals @ twoDESigs@. There are dozens of
+  -- utilities in the "ForSyDe.Atom.Utility" module, thus you might do
+  -- well to check them out. So let's see how this process network
+  -- behaves:
   --
   -- >>> takeS 10 $ fst twoDESigs 
   -- > { 4 @0, 6 @10, 6 @17, 8 @20, 8 @24, 10 @27, 12 @30, 12 @31, 10 @34, 14 @37}
@@ -415,6 +418,12 @@ module ForSyDe.Atom (
   -- which emeds a set of semantics relevant for their respective
   -- layer (e.g. timing, behavioural, structural, etc.)
   --
+  -- [@atom patterns@] is another view of constructors if we consider
+  -- atom composition in its graph representation. Therfore we denote
+  -- a "pattern" as being a meaningful composition. We also use the
+  -- term "pattern" to differentiate atom compositions as constructors
+  -- from atoms as constructors.
+  --
   -- The separation of concerns led to the so-called /layered process model/
   -- which is reflected in the library implementation by the
   -- development of separate independent modules for each aspect of
@@ -431,10 +440,8 @@ module ForSyDe.Atom (
   --
   -- 1. layers /l>1/ are instantiated using library-provided
   -- /constructors/ which are in fact specific compositions of
-  -- /atoms/. Following the network analogy for composition, we can
-  -- call these compositions of higher-order functions "patterns" to
-  -- differentiate them from atoms as constructors.
-  --
+  -- /atoms/.
+--
   -- 1. constructors are meaningful and can be associated with /known/
   -- implementations on some target platforms. In this sense they are
   -- both analyzable and synthesizable.
@@ -449,7 +456,7 @@ module ForSyDe.Atom (
   -- <<includes/figs/3-layered-process.png>>
   -- #synch#
   
-  -- ** The synchronization layer
+  -- ** Synchronization layer
 
   -- | The synchronization layer abstracts timing semantics as defined
   -- by a chosen MoC. It provides:
@@ -469,10 +476,90 @@ module ForSyDe.Atom (
   -- with a set of execution and synchronization rules; and provides a
   -- set of process constructors as helpers that create atom network
   -- patterns.
-
+  --
+  -- ==== Internal representation
+  --
+  -- While the implementation furthers away from the formal
+  -- description of this framework due to various reasons and
+  -- practical decisions that we had to undergo, there still is an
+  -- equivalence relation between the two. We shall try to follow that
+  -- relation closely when introducing a new element. Basically we
+  -- still adhere to the <#sig-definition tagged signal model> <#lee98 [1]> 
+  -- but we need enhance it with various (practical) type containers
+  -- in order to cope with the limitations imposed by the host
+  -- language.
+  --
+  -- First of all, <#sig-definition signals> are represented using a
+  -- list-like structure 'Signal', which is a container for
+  -- events. The events (/e/ = (/t/,/v/) &#8712; /T/ &#215; /V/) are
+  -- represented themselves with their own type constructor (which is
+  -- different for each MoC), along the lines of:
+  --
+  -- > data Event V = Ev T V
+  -- 
+  -- Although the user API hides this, the internal representation of
+  -- events instead of being /T/ &#215; /V/ is actually /T/ &#215;
+  -- [/V/]. Basically we are grouping all events with the same tag
+  -- under one event type constructor, like in the following example:
+  --
+  -- > {Ev t1 v1, Ev t1 v2, Ev t1 v3, Ev t2 v4, Ev t3 v5, Ev t3 v6} :: Signal (Event V)
+  -- >            === {Ev t1 [v1,v2,v3], Ev t2 [v4], Ev t3 [v5,v6]} :: Signal (Event [V])
+  -- 
+  -- In this way, the library represents /T/ as a /total order/
+  -- (instead of a partial one) even for untimed MoCs. Notice that
+  -- this is a design feature which was demanded by Haskell's strict
+  -- type system. Consequently, we can now enunciate:
+  --
+  -- [design rule #3] for each newly consumed input data token at any
+  -- instant in time, a process must produce /exactly/ one output data
+  -- token (i.e. @ Event [V]@).
+  --
+  -- One last implementation feature considers the static environment
+  -- inside which some MoC atom patterns are acting. Some MoCs
+  -- (e.g. 'ForSyDe.Atom.MoC.SDF') imply that a context is provided to
+  -- the process constructors (e.g. consumption and production
+  -- rates). This is especially difficult to satisfy in the condition
+  -- that we claim that atoms are self-sufficient and
+  -- independent. Using a global/partially local environment variables
+  -- would clash with the assumption that ForSyDe processes (and
+  -- Haskell functions for that matter) are side-effect-free. Among
+  -- many alternative implementations to satisfy this requirement, we
+  -- chose the best trade-off that both enforces the idea of atom
+  -- independence /AND/ is flexible enough to host all known MoCs.
+  --
+  -- For the above reasons you will see that some atoms (e.g. '-$-',
+  -- '-*-') take both a function and a context tupled together and
+  -- apply it to a signal. Since we have been takling about /patterns/
+  -- sharing a context space, it is most appropriate that the atoms'
+  -- type signature features both the result and the context tupled
+  -- together. This way, future stages of the composition (i.e. the
+  -- following processes in the network) can make use of this context
+  -- space. Of course, this demands the usage of a /utility/ to
+  -- extract the needed result signal and ignore the passed context,
+  -- but this is a workaround which we can gladly assume since it does
+  -- not affect the formalism in any way.
+  --
+  -- [utility] function without any semantical value thus not an
+  -- atom. It operates upon and might alter the /structure/ (i.e. type
+  -- constructor, form) of some datum, but it does not affect its
+  -- state.
+  --
+  -- Finally, in order to compare atom implementations to their formal
+  -- notation, we shall consider the type function /S/ as defined
+  -- below, where /S/&#8336; is the equivalent notation for
+  -- @Signal(Event &#945;)@. Notice that the formal description
+  -- ignores altogether the value partition (i.e. @Event[&#945;]@)
+  -- since, as mentioned earlier, this is a design feature.
+  --
+  -- <<includes/figs/signal-constructor-formula.png>>
+  --
+  -- ==== Atoms
+  
   MoC(..),
 
-  -- | As mentioned, process constructors are simply meaningful
+  -- | ==== Atom process network patterns
+  --
+  -- As mentioned, process constructors are simply meaningful
   -- compositions of synchronization atoms. since in the <#3layer layered process model>
   -- this is represented as the outer layer, we can consider that by
   -- passing (applied) behavior-layer functions to them we obtain
@@ -499,10 +586,10 @@ module ForSyDe.Atom (
   --
   -- __/Extended documentation with all the provided process/__
   -- __/constructors is in "ForSyDe.Core.MoC"/__
-
-  -- *** The "unzip" utility
   --
-  -- | Recall that in our <#proc-definition definition for processes>,
+  -- ==== Unzip
+  --
+  -- Recall that in our <#proc-definition definition for processes>,
   -- the return type may be an /n/-arry cartesian product. A caveat of
   -- founding the ForSyDe framework on a functional language is that,
   -- although we can express cartesian products for input arguments
@@ -546,14 +633,14 @@ module ForSyDe.Atom (
   -- compositions. These wrappers are meant to be passed to the the
   -- synchronziation layer constructors as arguments when implementing
   -- process constructors.
-
-  -- *** Atom
+  --
+  -- ==== Atom
     
   (>$), (>*), (>%), (>%!), (>#), (>#!),
 
-  -- *** Behavior wrappers
-  
-  -- | Behaviors are the behavior layer entities passed as arguments
+  -- | ==== Behavior wrappers
+  --
+  -- Behaviors are the behavior layer entities passed as arguments
   -- to the synchronization layer. They are implemented as specific
   -- compositions of behavior atoms.
   --

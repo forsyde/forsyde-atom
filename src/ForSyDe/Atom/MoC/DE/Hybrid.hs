@@ -15,7 +15,7 @@
 
 module ForSyDe.Atom.MoC.DE.Hybrid where
 
-import           ForSyDe.Atom.MoC.AtomLib
+import           ForSyDe.Atom.MoC
 -- import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.DE.Interface as DE
 -- import qualified ForSyDe.Atom.MoC.SY.Core as SY

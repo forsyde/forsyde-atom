@@ -67,7 +67,6 @@ library
                        ForSyDe.Atom.Behavior,
                        ForSyDe.Atom.Signal,
                        ForSyDe.Atom.MoC,
-                       ForSyDe.Atom.MoC.AtomLib,
                        ForSyDe.Atom.MoC.SY,
                        ForSyDe.Atom.MoC.SY.Core,
                        ForSyDe.Atom.MoC.SY.Lib,

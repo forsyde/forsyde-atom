@@ -17,7 +17,7 @@
 module ForSyDe.Atom.MoC.DE.Interface where
 
 import           ForSyDe.Atom.Behavior
-import           ForSyDe.Atom.MoC.AtomLib hiding (comb22, comb33, comb44)
+import           ForSyDe.Atom.MoC hiding (comb22, comb33, comb44)
 import           ForSyDe.Atom.MoC.DE.Core (Tag)
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 import           ForSyDe.Atom.Utility

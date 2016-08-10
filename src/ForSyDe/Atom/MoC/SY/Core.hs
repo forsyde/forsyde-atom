@@ -17,7 +17,7 @@
 module ForSyDe.Atom.MoC.SY.Core where
 
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Utility
 
@@ -36,7 +36,7 @@ newtype SY a  = SY { fromSY :: a }
   
 -- | Implenents the SY semantics for the MoC atoms.
 instance MoC SY where
-  type Param SY = ()
+  type Context SY = ()
   ---------------------
   (-$-) (_,f) = (,) () . (fmap . fmap) f
   ---------------------

@@ -16,7 +16,7 @@
 
 module ForSyDe.Atom.MoC.DE.Core where
 
-import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
@@ -35,7 +35,7 @@ data DE a  = DE { tag :: Tag, val :: a }
 
 -- | Implenents the DE semantics for the MoC atoms
 instance MoC DE where
-  type Param DE = ()
+  type Context DE = ()
   ---------------------
   (-$-) (_,f) = (,) () . (fmap . fmap) f
   ---------------------
