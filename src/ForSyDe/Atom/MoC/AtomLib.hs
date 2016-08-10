@@ -23,14 +23,14 @@ import ForSyDe.Atom.Utility
 infixl 5 -$-, -*-
 infixl 3 ->-, -&-
 
--- | This is a typelass holding the synchronization layer atoms.
--- Each model of computation defines its tag system by providing an
--- @Event@ typeonstructor (that defines /T/ &#215; /V/) which is an
--- instance of this class.
+-- | This is a type class defining the synchronization layer atoms.
+-- Each model of computation exposes its tag system through an unique
+-- event constructor (that defines /T/ &#215; /V/) as an instance of
+-- this class.
 --
 -- In order to simplify the mathematical notations, we shall consider
---the following function as the typeonstructor for a MoC-bound
---signal:
+-- the following function as the typeonstructor for a MoC-bound
+-- signal:
 --
 -- <<includes/figs/signal-constructor-formula.png>>
 --
@@ -85,9 +85,11 @@ class MoC e where
   --
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
-
-
   fromEvent :: e a -> a
+
+-- class Event e where
+--   event     :: a -> e a
+--   fromEvent :: e a -> a
 
 
 instance (Eq a, MoC e)  => Eq (Signal (e [a])) where

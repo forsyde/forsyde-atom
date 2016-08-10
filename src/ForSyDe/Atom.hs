@@ -395,17 +395,25 @@ module ForSyDe.Atom (
   -- /compared against their implementation equivalents and we shall/
   -- /try to justify the design decisions that we had to undergo./
   
-  -- | The @forsyde-atom@ project is characterized by two main features:
+  -- | The @forsyde-atom@ project is characterized by three main
+  -- features:
   --
   -- 1. it tries to separate the concerns of execution and
   -- synchronization in cyber-physical systems
+  --
   -- 1. it provides primitive (indivizible) operators called /atoms/
   -- as building blocks for independently developing complex aspects
   -- of a system's execution through means of composition or
   -- generalization.
   --
-  -- [@atom@] the elementary (primitive, indivizible) constructor in a
-  -- tagged signal model which embeds timing/behavioural semantics.
+  -- 1. it tries to decouple structure (composition) from meaning
+  -- (semantics), the only semantical carriers being atoms which can
+  -- be overloaded and triggered by the data type they input, whereas
+  -- their composition is static.
+  --
+  -- [@atom@] the elementary (primitive, indivizible) constructor
+  -- which emeds a set of semantics relevant for their respective
+  -- layer (e.g. timing, behavioural, structural, etc.)
   --
   -- The separation of concerns led to the so-called /layered process model/
   -- which is reflected in the library implementation by the
@@ -416,24 +424,26 @@ module ForSyDe.Atom (
   -- layer /l/ takes functions of layer /l-1/ as arguments.
   --
   -- 1. each layer operates on a different part of an event and
-  -- abstracts a different execution aspect.
+  -- abstracts a different aspect.
   --
   -- 1. the lowest layer /l=1/ contains arbitrary functions on values
   -- /V/
   --
   -- 1. layers /l>1/ are instantiated using library-provided
   -- /constructors/ which are in fact specific compositions of
-  -- /atoms/.
+  -- /atoms/. Following the network analogy for composition, we can
+  -- call these compositions of higher-order functions "patterns" to
+  -- differentiate them from atoms as constructors.
   --
-  -- 1. constructors have meaningful semantics and /known/
-  -- implementations on target platforms. In this sense they are both
-  -- analyzable and synthesizable.
+  -- 1. constructors are meaningful and can be associated with /known/
+  -- implementations on some target platforms. In this sense they are
+  -- both analyzable and synthesizable.
   --
   -- 1. complex behaviors can be obtain by means of arbitrary
   -- compositions of the provided constructors.
   --
-  -- A depiction of the layers of a process can be seen in the picture
-  -- below:
+  -- A depiction of the (currently implemented) layers of a process
+  -- can be seen in the picture below:
   --
   -- #3layer#
   -- <<includes/figs/3-layered-process.png>>
@@ -442,34 +452,31 @@ module ForSyDe.Atom (
   -- ** The synchronization layer
 
   -- | The synchronization layer abstracts timing semantics as defined
-  -- by a chosen MoC. It provides /process constructors/ as means of
-  -- instantiating processes (see <#proc-definition the process definition>).
-  -- This layer provides:
+  -- by a chosen MoC. It provides:
   --
-  -- * 4 atoms as infix operators. To show their generality, these
-  -- atoms are implemented as part of a type class 'MoC'. Since we
-  -- have stated that each MoC is determined by its tag system, we
-  -- define tag systems for the supported MoCs in form of event
-  -- constructors (i.e. /T/ &#215; /V/) which are instances of the
-  -- 'MoC' class. Therefore each MoC overloads the 4 atom operators to
-  -- implement their specific timing semantics.
+  -- * 4 atoms as infix operators. To show their generality, they are
+  -- implemented as methods of /one/ type class. Since each MoC is
+  -- determined by its tag system, we expose this through the
+  -- structure of events (i.e. /T/ &#215; /V/) which are instances of
+  -- this class. Thus an event's type will trigger an atom to behave
+  -- in accordance to its associated MoC.
   --
-  -- * a library of meaningful atom compositions as process
-  -- constructors, extensively documented in the "ForSyDe.Core.MoC"
+  -- * a library of meaningful atom network patterns as process
+  -- constructors, extensively documented in the "ForSyDe.Atom.MoC"
   -- module.
+  --
+  -- * a module for each supported MoC which instantiates the atoms
+  -- with a set of execution and synchronization rules; and provides a
+  -- set of process constructors as helpers that create atom network
+  -- patterns.
 
-  -- *** Atom
-  
   MoC(..),
 
-  -- *** Cons
-
   -- | As mentioned, process constructors are simply meaningful
-  -- compositions of synchronization atoms. since in the
-  -- <#3layer 3-layered process model> this is represented as the
-  -- outer layer, we can consider that by passing (applied)
-  -- behavior-layer functions to them we obtain processes just like in
-  -- the <#proc-definition process definition>.
+  -- compositions of synchronization atoms. since in the <#3layer layered process model>
+  -- this is represented as the outer layer, we can consider that by
+  -- passing (applied) behavior-layer functions to them we obtain
+  -- processes just like in the <#proc-definition process definition>.
   --
   -- Recall that by composing /n/ processes, we obtain a process
   -- network, where each composition infers a signal between two

@@ -36,8 +36,8 @@ infixr 3 :-
 -- to create and simulate infinite signals, but on the other hand
 -- imposes that the first/previous event is always fully
 -- evaluated. Not respecting this condition immediately emerges as a
--- deadlock in self-referential calls (i.e. zero-delay feedback
--- loops). This can be translated into:
+-- deadlock in case a self-referential calls occurs (i.e. a zero-delay
+-- feedback loop). This can be translated into:
 --
 -- [design rule #1] all process network paths associated with a
 -- feedback loop must contain (at least) one delay process to ensure
