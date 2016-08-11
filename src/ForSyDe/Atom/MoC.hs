@@ -1,5 +1,5 @@
 {-# LANGUAGE PostfixOperators, TypeFamilies, FlexibleInstances #-}
-{-# OPTIONS_HADDOCK show-extensions #-}
+{-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC
@@ -15,75 +15,13 @@
 -- atoms. It does /NOT/ export any implementation or instantiation of
 -- a specific MoC.
 --
--- 
--- While the implementation furthers away from the formal
--- description of this framework due to various reasons and
--- practical decisions that we had to undergo, there still is an
--- equivalence relation between the two. We shall try to follow that
--- relation closely when introducing a new element. Basically we
--- still adhere to the <#sig-definition tagged signal model> <#lee98 [1]> 
--- but we need enhance it with various (practical) type containers
--- in order to cope with the limitations imposed by the host
--- language.
---
--- First of all, <#sig-definition signals> are represented using a
--- list-like structure 'Signal', which is a container for
--- events. The events (/e/ = (/t/,/v/) &#8712; /T/ &#215; /V/) are
--- represented themselves with their own type constructor (which is
--- different for each MoC), along the lines of:
---
--- > data Event V = Ev T V
--- 
--- Although the user API hides this, the internal representation of
--- events instead of being /T/ &#215; /V/ is actually /T/ &#215;
--- [/V/]. Basically we are grouping all events with the same tag
--- under one event type constructor, like in the following example:
---
--- > {Ev t1 v1, Ev t1 v2, Ev t1 v3, Ev t2 v4, Ev t3 v5, Ev t3 v6} :: Signal (Event V)
--- >            === {Ev t1 [v1,v2,v3], Ev t2 [v4], Ev t3 [v5,v6]} :: Signal (Event [V])
--- 
--- In this way, the library represents /T/ as a /total order/
--- (instead of a partial one) even for untimed MoCs. Notice that
--- this is a design feature which was demanded by Haskell's strict
--- type system. Consequently, we can now enunciate:
---
--- [design rule #3] for each newly consumed input data token at any
--- instant in time, a process must produce /exactly/ one output data
--- token (i.e. @ Event [V]@).
---
--- One last implementation feature considers the static environment
--- inside which some MoC atom patterns are acting. Some MoCs
--- (e.g. 'ForSyDe.Atom.MoC.SDF') imply that a context is provided to
--- the process constructors (e.g. consumption and production
--- rates). This is especially difficult to satisfy in the condition
--- that we claim that atoms are self-sufficient and
--- independent. Using a global/partially local environment variables
--- would clash with the assumption that ForSyDe processes (and
--- Haskell functions for that matter) are side-effect-free. Among
--- many alternative implementations to satisfy this requirement, we
--- chose the best trade-off that both enforces the idea of atom
--- independence /AND/ is flexible enough to host all known MoCs.
---
--- For the above reasons you will see that some atoms (e.g. '-$-',
--- '-*-') take both a function and a context tupled together and
--- apply it to a signal. Since we have been takling about /patterns/
--- sharing a context space, it is most appropriate that the atoms'
--- type signature features both the result and the context tupled
--- together. This way, future stages of the composition (i.e. the
--- following processes in the network) can make use of this context
--- space. Of course, this demands the usage of a /utility/ to
--- extract the needed result signal and ignore the passed context,
--- but this is a workaround which we can gladly assume since it does
--- not affect the formalism in any way.
---
--- Finally, in order to compare atom implementations to their formal
--- notation, we shall consider the type function /S/ as defined
--- below, where /S/&#8336; is the equivalent notation for
--- @Signal(Event &#945;)@. Notice that the formal description
--- ignores altogether the value partition (i.e. @Event[&#945;]@)
--- since, as mentioned earlier, this is a design feature.
---
--- <<includes/figs/signal-constructor-formula.png>>
+-- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
+-- provided by the library API are named along the lines of
+-- @functionMN@ where @M@ represents the number of __/curried/__
+-- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
+-- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
+-- repetition we shall only provide documentation for functions with 2
+-- inputs and 2 outputs (i.e. @function22@).
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
@@ -94,69 +32,32 @@ module ForSyDe.Atom.MoC(
 
   -- * Process constructors
 
-  -- | As shown in the documentation of "ForSyDe.Core" process
-  -- constructors are implemented as compositions of MoC atoms. In
-  -- order to avoid working with signals of tuples @unzip@ and in
-  -- order for the process network to reflect the passed functions,
-  -- process utilities (defined in "ForSyDe.Core.Utility") are also
-  -- used.
+  -- | As shown in the documentation of "ForSyDe.Atom" process
+  -- constructors are implemented as compositions of MoC atoms. Also,
+  -- in order to avoid working with signals of tuples and for process
+  -- network to reflect the passed functions, we use @unzip@ utilities
+  -- (defined in "ForSyDe.Core.Utility").
   --
   -- Due to Haskell's strict type system and the implementation
-  -- mechanisms, we need to provide separate constructors @nameXY@,
-  -- where @name@ is the process constructor type, @X@ is the number
-  -- of inputs and @Y@ is the number of outputs. This module provides
-  -- constructors with /X &#8804; 4/ and /Y &#8804; 4/. If needed, the
-  -- designer is free to implement her own constructor by following
-  -- the atom composition rules in the source code.
+  -- mechanisms, we need to provide separate constructors @processXY@,
+  -- where @process@ is the process constructor type, @X@ is the
+  -- number of inputs and @Y@ is the number of outputs. This module
+  -- provides constructors with @ X = [0..4]@ and @ Y = [1..4]@. If
+  -- needed, the designer is free to implement her own constructor by
+  -- following the atom composition rules in the source code.
 
-  -- ** @comb@
-
-  -- | @comb@ processes map combinatorial functions on signals and
-  -- take care of synchronization between input signals.
-  --
-  -- <<includes/figs/comb-formula.png>>
-  -- <<includes/figs/comb-graph.png>>
-
+  delay, (-&>-),
+  
   comb11, comb12, comb13, comb14,
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
   comb51, comb52, comb53, comb54,
 
-  -- ** @delay@
-
-  -- | The @delay@ process provides both an initial token and shifts the
-  -- phase of the signal. In other words, it "delays" a signal with
-  -- one event.
-  --
-  -- <<includes/figs/delay-formula.png>>
-  -- <<includes/figs/delay-graph.png>>
-  delay, (-&>-),
-
-  -- ** @state@
-
-  -- | @state@ processes model generates the graph shown below. There
-  -- exists a variant with 0 input signals, in which case the process
-  -- is a signal generator.
-  --
-  -- <<includes/figs/state-formula.png>>
-  -- <<includes/figs/state-graph.png>>
-
-  --state01, state02, state03, state04,
   state11, state12, state13, state14,
   state21, state22, state23, state24,
   state31, state32, state33, state34,
   state41, state42, state43, state44,
-
-  
-  -- ** @stated@
-
-  -- | @stated@ processes model generates the graph shown below. There
-  -- exists a variant with 0 input signals, in which case the process
-  -- is a signal generator.
-  --
-  -- <<includes/figs/stated-formula.png>>
-  -- <<includes/figs/stated-graph.png>>
 
   stated01, stated02, stated03, stated04,
   stated11, stated12, stated13, stated14,
@@ -201,12 +102,14 @@ infixl 3 ->-, -&-
 -- event constructor as an instance of this class, which defines /T/
 -- &#215; /V/.
 --
-class MoC e where
+class (Functor e) => MoC e where
+  -- | A type defined by each MoC, determining the context in the
+  -- presence which functions are being applied.
   type Context e
   
-  -- | This is a rough equivalent of the @(\<$\>)@ functor operator,
-  -- mapping a function on extended values to a MoC-bound signal
-  -- (signal of tagged events). Its mathematical definition is:
+  -- | This atom is mapping a function on extended values in the
+  -- presence of a context to a MoC-bound signal (signal of tagged
+  -- events), defined as:
   --
   -- <<includes/figs/star-atom-formula.png>>
   --
@@ -215,10 +118,10 @@ class MoC e where
   -- of arguments.
   (-$-) :: (Context e, [Value a] -> b) -> Signal (e [Value a]) -> Signal (e b)
 
-  -- | This is a rough equivalent of the @(\<*\>)@ applicative functor
-  -- operator, used for synchronizing and applying a signal of
-  -- functions (bound to a MoC) with a signal of values (bound to the
-  -- same MoC). Its mathematical signature is:
+  -- | This atom synchronizes two MoC-bound signals, one carrying
+  -- functions on extended values in the presence of a context, and
+  -- the other containing extended values, during which it applies the
+  -- former on the latter. It's definition is:
   --
   -- <<includes/figs/ostar-atom-formula.png>>
   --
@@ -227,28 +130,21 @@ class MoC e where
   -- of arguments.
   (-*-) :: (Signal (e (Context e, [Value a] -> b))) -> Signal (e [Value a]) -> Signal (e b)
 
-  -- | Since ForSyDe signals are modeled similar to
-  -- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird lists>, the
-  -- inherent execution model of ForSyDe process networks is the
-  -- dataflow network (Kahn process network), as shown by Reekie in
-  -- his <http://ptolemy.eecs.berkeley.edu/~johnr/papers/thesis.html process nets>.
-  -- Therefore it is of utmost importance to provide an atom which
-  -- provides an initial event (token) to avoid execution deadlock in
-  -- feedback loops (self-referential processes). Concretely, the
-  -- @-\>-@ atom prepends an event at the head of a signal. Its
-  -- signature used in mathematical formulas is:
+  -- | When defining the 'Signal' type we enunciated __design rule #2__
+  -- where we noticed the importance of initial tokens in feedback
+  -- loops. The '->-' atom satisfies this need. Concretely, it prepends
+  -- an event at the head of a signal. Its signature used in
+  -- mathematical formulas is:
   --
   -- <<includes/figs/pre-atom-formula.png>>
   (->-) :: e a -> Signal (e a) -> Signal (e a)
    
-  -- | Another property, this time derived from the tagged signal
-  -- model, requires the processes to be /monotonic/
-  -- (order-preserving) in order to preserve determinancy. Therefore
-  -- we introduce the @(-&-)@ atom as means to manipulate the tags in
-  -- a signal in a manner which respects monotonicity. Its behavior
-  -- could be described as "shifting the phase of a signal with a
-  -- positiveonstant", thus preserving its characteristic function
-  -- intact. Its signature used in mathematical formulas is:
+  -- | We introduce the '-&-' atom as means to manipulate the tags in
+  -- a signal in a manner which respects monotonicity in order to
+  -- respect __design rule #1__ stated in the 'Signal' section. Its
+  -- behavior could be described as "shifting the phase of a signal
+  -- with a positive constant", thus preserving its characteristic
+  -- function intact. Its signature used in mathematical formulas is:
   --
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
@@ -263,59 +159,110 @@ instance (Eq a, MoC e)  => Eq (Signal (e [a])) where
   a == b = flat a == flat b
     where flat = concat . map fromEvent . fromSignal
 
-infixl 3 -¤, -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<, -<<<<<<<<
-(-¤)        (s) =  s
-(-<)        (s) = (s ||<)
-(-<<)       (s) = (s ||<<)
-(-<<<)      (s) = (s ||<<<)
-(-<<<<)     (s) = (s ||<<<<)
-(-<<<<<)    (s) = (s ||<<<<<)
-(-<<<<<<)   (s) = (s ||<<<<<<)
-(-<<<<<<<)  (s) = (s ||<<<<<<<)
-(-<<<<<<<<) (s) = (s ||<<<<<<<<)
+----------------- DOCUMENTATION -----------------
+
+-- | 
+-- #comb22f# /(*) actually/ @[Value a1] -> [Value a2] -> (b1, b2)@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @comb@ processes takes care of synchronization between signals and
+-- maps combinatorial functions on their event values.
+--
+-- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
+comb22 :: (MoC e)
+          => (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2)))
+          -- ^ (<#comb22f *>)
+          -> Signal (e [Value a1])          -- ^ first input signal
+          -> Signal (e [Value a2])          -- ^ second input signal
+          -> (Signal (e b1), Signal (e b2)) -- ^ two output signals
+
+-- | 
+-- #state22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @state@ processes model generates the graph shown below. There
+-- exists a variant with 0 input signals, in which case the process
+-- is a signal generator.
+--
+-- <<includes/figs/scanl-formula.png>>
+-- <<includes/figs/scanl-graph.png>>
+state22 :: MoC e
+           => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
+           -- ^ (<#state22f *>) 
+           -> (e [Value st1], e [Value st2])  -- ^ initial states
+           -> Signal (e [Value a1])
+           -> Signal (e [Value a2])
+           -> (Signal (e [Value st1]), Signal (e [Value st2]))
+
+-- | 
+-- #stated22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @stated@ processes model generates the graph shown below. There
+-- exists a variant with 0 input signals, in which case the process
+-- is a signal generator.
+--
+-- <<includes/figs/stated-formula.png>>
+-- <<includes/figs/stated-graph.png>>
+stated22 :: MoC e
+           => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
+           -- ^ (<#stated22f *>) 
+           -> (e [Value st1], e [Value st2])  -- ^ initial states
+           -> Signal (e [Value a1])
+           -> Signal (e [Value a2])
+           -> (Signal (e [Value st1]), Signal (e [Value st2])) 
+
+--------------- END DOCUMENTATION ---------------
 
 
-
+-- | The @delay@ process provides both an initial token and shifts the
+-- phase of the signal. In other words, it "delays" a signal with
+-- one event.
+--
+-- <<includes/figs/delay-formula.png>>
+-- <<includes/figs/delay-graph.png>>
 infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)
-i -&>- xs = delay i xs
+i -&>- xs = delay i xs          
 
+comb11 f s1                      = (f -$- s1)
+comb21 f s1 s2                   = (f -$- s1 -*- s2)
+comb31 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3)
+comb41 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4)
+comb51 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5)
+comb61 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6)
+comb71 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7)
+comb81 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8)
 
-comb11 f s1                      = (f -$- s1 -¤)
-comb21 f s1 s2                   = (f -$- s1 -*- s2 -¤)
-comb31 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 -¤)
-comb41 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 -¤)
-comb51 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -¤)
-comb61 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -¤)
-comb71 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -¤)
-comb81 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -¤)
+comb12 f s1                      = (f -$- s1 ||<)
+comb22 f s1 s2                   = (f -$- s1 -*- s2 ||<)
+comb32 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 ||<)
+comb42 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 ||<)
+comb52 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 ||<)
+comb62 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 ||<)
+comb72 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 ||<)
+comb82 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 ||<)
 
-comb12 f s1                      = (f -$- s1 -<)
-comb22 f s1 s2                   = (f -$- s1 -*- s2 -<)
-comb32 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 -<)
-comb42 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 -<)
-comb52 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -<)
-comb62 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -<)
-comb72 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -<)
-comb82 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 -<)
+comb13 f s1                      = (f -$- s1 ||<<)
+comb23 f s1 s2                   = (f -$- s1 -*- s2 ||<<)
+comb33 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 ||<<)
+comb43 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 ||<<)
+comb53 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 ||<<)
+comb63 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 ||<<)
+comb73 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 ||<<)
+comb83 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 ||<<)
 
-comb13 f s1                      = (f -$- s1 -<<)
-comb23 f s1 s2                   = (f -$- s1 -*- s2 -<<)
-comb33 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 -<<)
-comb43 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<)
-comb53 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -<<)
-comb63 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -<<)
-comb73 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -<<)
-comb83 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 -<<)
-
-comb14 f s1                      = (f -$- s1 -<<<)
-comb24 f s1 s2                   = (f -$- s1 -*- s2 -<<<)
-comb34 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 -<<<)
-comb44 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 -<<<)
-comb54 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -<<<)
-comb64 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -<<<)
-comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -<<<)
-comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -<<<)
+comb14 f s1                      = (f -$- s1 ||<<<)
+comb24 f s1 s2                   = (f -$- s1 -*- s2 ||<<<)
+comb34 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 ||<<<)
+comb44 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 ||<<<)
+comb54 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 ||<<<)
+comb64 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 ||<<<)
+comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 ||<<<)
+comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 ||<<<)
 
 state11 ns i s1          =        comb21 ns st s1 
   where st               = i -&>- comb21 ns st s1 

@@ -22,23 +22,24 @@
 \newlength\myheight
 \newcommand*\ccircled[1]{\settowidth{\myheight}{#1}%
     {\tikz[baseline=(char.base)]{%
-        \node[shape=circle, draw, ultra thin, inner sep=0pt](char){#1};}}}
+        \node[shape=circle, draw, ultra thin, inner sep=0pt, minimum size=0](char){#1};}}}
 
 \newcommand\vect[1]{\langle{#1}\rangle}
 \newcommand\pc[1]{\mathtt{#1}\ }
+\newcommand\wrapdf[1]{\overline{#1}}
+
 
 \newcommand{\ostar}{\ensuremath{\mathbin{\ccircled{$\star$}}}}
+\newcommand{\fpre}{\ensuremath{\mathbin{\ccircled{\scriptsize$\prec$}}}}
+\newcommand{\fphi}{\ensuremath{\mathbin{\ccircled{\scriptsize$\phi$}}}}
+\newcommand{\funzip}{\ensuremath{\mathbin{\triangleleft}}}
+\newcommand{\fcomb}{\oplus}
+\newcommand{\fdelay}{\mathbin{\Delta}}
 
-\newcommand{\fpre}{\mathbin{pre}}
-\newcommand{\fphi}{\mathbin{\phi}}
+
 \newcommand{\ffilt}{\mathbin{\#}}
 \newcommand{\fresf}{\mathbin{\rho}}
 
-\newcommand{\funzip}{\mathbin{\prec}}
-
-
-\newcommand{\fcomb}{\oplus}
-\newcommand{\fdelay}{\mathbin{\Delta}}
 
 \newcommand\finter[2]{\ensuremath{\mathbin{\monecirc{$#1$}{-2pt}{.4}\mkern-4mu\monecirc{$#2$}{2pt}{.4}}}}
 

@@ -39,7 +39,7 @@ infixr 3 :-
 -- deadlock in case a self-referential calls occurs (i.e. a zero-delay
 -- feedback loop). This can be translated into:
 --
--- [design rule #1] all process network paths associated with a
+-- [design rule #2] all process network paths associated with a
 -- feedback loop must contain (at least) one delay process to ensure
 -- an initial event.
 --
@@ -47,12 +47,16 @@ infixr 3 :-
 -- the simulation of network structures that otherwise might be sane
 -- or synthesizable, is often featured in the execution model for many
 -- systems based on the data flow assumption (e.g. Kahn Process
--- Networks <#kahn76 [4]>). The data flow model inferred from the
--- Bird-Merteens formalism also imposes an uninterrupted stream of
--- data in order to have an evaluatable kernel every time a new token
--- is produced (i.e. to avoid deadlocks). Thus we can enunciate:
+-- Networks <#kahn76 [4]>). It is no wonder that the inherent
+-- execution model of ForSyDe process networks is data flow, as
+-- this has been already shown by Reekie in his
+-- <http://ptolemy.eecs.berkeley.edu/~johnr/papers/thesis.html process nets>,
+-- and we follow precisely the same model. It imposes an uninterrupted
+-- stream of data in order to have an evaluatable kernel every time a
+-- new token is produced (i.e. to avoid deadlocks). Thus we can
+-- enunciate:
 --
--- [design rule #2] all processes are forbidden to "clean up" any
+-- [design rule #3] all processes are forbidden to "clean up" any
 -- produced tokens. In other words, for each new input at any instant
 -- in time, a process must produce /at least/ one output event.
 --

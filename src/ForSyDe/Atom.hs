@@ -32,14 +32,40 @@
 -- processes to their basic core and recreating them using a minimal
 -- language of primitive "building blocks".
 --  
--- Before diving into the library's entrails, we do require a gentler
--- introduction into the basic usage and some notions that build up
--- the theoretical foundation for this library. The user is
--- recommended to read this page as it exposes some key ideas while
--- for in-depth knowledge she should follow the documentation links
--- for the modules associated with each section It is also recommended
--- to consult the source code whenever hinted since it contains
--- valuable information.
+-- Before diving into the library's entrails, we are compelled to
+-- provide a gentler introduction into the basic usage and some
+-- notions that build up the theoretical foundation for this
+-- library. The user is recommended to read this page as it exposes
+-- some key ideas while for in-depth knowledge she should follow the
+-- documentation links for the modules associated with each section It
+-- is also recommended to consult the source code whenever hinted
+-- since it contains valuable information.
+--
+-- For the documentation of the library's user API, you can just jump
+-- to the modules you are interested in importing and using:
+--
+-- * "ForSyDe.Atom.MoC.SY" exporting process constructors and
+-- utilities for the synchronous model of computation.
+--
+-- * "ForSyDe.Atom.MoC.DE" exporting process constructors and
+-- utilities for the discrete event model of computation.
+--
+-- * "ForSyDe.Atom.MoC.CT" exporting process constructors and
+-- utilities for the continuous time model of computation.
+--
+-- * "ForSyDe.Atom.MoC.SDF" exporting process constructors and
+-- utilities for the synchronous data flow model of computation.
+--
+-- * "ForSyDe.Atom.MoC.Utility" (re-exported by "ForSyDe.Atom")
+-- containing general purpose utility functions.
+--
+-- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
+-- provided by the library API are named along the lines of
+-- @functionMN@ where @M@ represents the number of __/curried/__
+-- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
+-- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
+-- repetition we shall only provide documentation for functions with 2
+-- inputs and 2 outputs (i.e. @function22@).
 -----------------------------------------------------------------------------
 module ForSyDe.Atom (
 
@@ -120,11 +146,12 @@ module ForSyDe.Atom (
   -- head.
   --
   -- Now let us synchronize two signals and apply a combinatorial
-  -- function on them. 'ForSyDe.Atom.MoC.SY.comb21' does this for us,
-  -- and, as you can guess, the @2@ stands for the number of inputs
-  -- whereas the @1@ stands for the number of outputs. The SY
-  -- semantics take care of trimming the tail of the infinite signal
-  -- @s2@ during the synchronization phase.
+  -- function on them. 'ForSyDe.Atom.MoC.SY.comb21' (check
+  -- 'ForSyDe.Atom.MoC.SY.comb22') does this for us, and, as you can
+  -- guess, the @2@ stands for the number of inputs whereas the @1@
+  -- stands for the number of outputs. The SY semantics take care of
+  -- trimming the tail of the infinite signal @s2@ during the
+  -- synchronization phase.
   --
   -- >>> :t SY.comb21
   -- SY.comb21 :: (a1 -> a2 -> b1) -> SY.Sig a1 -> SY.Sig a2 -> SY.Sig b1
@@ -159,12 +186,14 @@ module ForSyDe.Atom (
   --
   -- Well, that's because @ pnetwork2 @ and @ SY.generate1 (+1) 3 @
   -- are one and the same thing. The 'ForSyDe.Atom.MoC.SY.generate1'
-  -- helper instantiates a 'ForSyDe.Atom.MoC.AtomLib.stated01' process
-  -- constructor which in fact is a network pattern formed by feeding
-  -- back a delayed signal into a "next state" decoder
-  -- ('ForSyDe.Atom.MoC.comb11'). Actually all process
-  -- constructors create networks of elementary processes called
-  -- /"atoms"/, but more on that later.
+  -- (check 'ForSyDe.Atom.MoC.SY.generate2') helper instantiates a
+  -- 'ForSyDe.Atom.MoC.AtomLib.stated01' (check
+  -- 'ForSyDe.Atom.MoC.AtomLib.stated22') process constructor which in
+  -- fact is a network pattern formed by feeding back a delayed signal
+  -- into a "next state" decoder ('ForSyDe.Atom.MoC.comb11', check
+  -- 'ForSyDe.Atom.MoC.comb22'). Actually all process constructors
+  -- create networks of elementary processes called /"atoms"/, but
+  -- more on that later.
   --
   -- Up till now we only created networks of 'ForSyDe.Atom.MoC.SY'
   -- processes. Let us play a bit with the 'ForSyDe.Atom.MoC.DE' MoC
@@ -250,9 +279,9 @@ module ForSyDe.Atom (
   -- > deOut         = { 0 @0, 6 @7, 6 @10, 8 @14, 8 @17, 10 @20, 12 @21, 12 @24, 10 @27, 14 @28, ... }
   --
   -- Jst as a fun fact, the library actually provides a "hybrid"
-  -- process constructor ('ForSyDe.Atom.DE.syMachine21') process which
-  -- performs exactly this action: it wraps a SY process inside a DE
-  -- environment.
+  -- process constructor 'ForSyDe.Atom.DE.syMachine21' (check
+  -- ('ForSyDe.Atom.DE.syMachine22') whose process performs exactly
+  -- this action: it wraps a SY process inside a DE environment.
   --
   -- >>> :t syMachine21
   -- > syMachine21 :: (SY.Sig a -> SY.Sig b -> SY.Sig a1) -> DE.Sig a -> DE.Sig b -> DE.Sig a1
@@ -273,9 +302,10 @@ module ForSyDe.Atom (
 
   -- ** Signals
 
-  -- | In ForSyDe a signal is represented as a (partially or totally)
-  -- /ordered/ sequence of events that enables processes to
-  -- communicate and synchronize.
+  -- | As defined in the tagged signal model <#lee98 [2]>, in ForSyDe a
+  -- signal is represented as a (partially or totally) /ordered/
+  -- sequence of events that enables processes to communicate and
+  -- synchronize.
   --
   -- [signals] are sets of events composed of tags /T/ and values /V/,
   -- where signal /s/ contains a set of events /e/&#11388;.
@@ -285,8 +315,14 @@ module ForSyDe.Atom (
   --
   -- In other words, we can state that through its tag system, a
   -- signal is /bound/ to a MoC. The tag system in this library is
-  -- embedded in the event /type/ (see the <#synch MoC section>).
-
+  -- embedded in the event /type/ (check the definition of 'MoC').
+  --
+  -- An important property derived from this model requires the
+  -- processes to be /monotonic/ (order-preserving) in order to
+  -- preserve determinancy. Thus we can state:
+  --
+  -- [design rule #1] a signal's tags (if explicit) /must be/ a
+  -- partial or total order and all tag alterations must be monotonic.
   
   Signal(..),
 
@@ -360,7 +396,7 @@ module ForSyDe.Atom (
 
   -- | #mocs#
   
-  -- ** Models of Computation (MoCs)
+  -- ** Models of Computation
   
   -- | As mentioned in the introduction, /MoCs/ are classes of behaviors
   -- dictating the semantics of execution and concurrency in a network
@@ -510,39 +546,38 @@ module ForSyDe.Atom (
   -- this is a design feature which was demanded by Haskell's strict
   -- type system. Consequently, we can now enunciate:
   --
-  -- [design rule #3] for each newly consumed input data token at any
+  -- [design rule #4] for each newly consumed input data token at any
   -- instant in time, a process must produce /exactly/ one output data
   -- token (i.e. @ Event [V]@).
   --
-  -- One last implementation feature considers the static environment
-  -- inside which some MoC atom patterns are acting. Some MoCs
-  -- (e.g. 'ForSyDe.Atom.MoC.SDF') imply that a context is provided to
-  -- the process constructors (e.g. consumption and production
-  -- rates). This is especially difficult to satisfy in the condition
-  -- that we claim that atoms are self-sufficient and
-  -- independent. Using a global/partially local environment variables
-  -- would clash with the assumption that ForSyDe processes (and
-  -- Haskell functions for that matter) are side-effect-free. Among
-  -- many alternative implementations to satisfy this requirement, we
-  -- chose the best trade-off that both enforces the idea of atom
-  -- independence /AND/ is flexible enough to host all known MoCs.
+  -- One last implementation feature considers the environment inside
+  -- which some MoC atom patterns are acting. Some MoCs
+  -- (e.g. 'ForSyDe.Atom.MoC.SDF') imply that, apart from a function
+  -- on values, a context is also provided to the process constructors
+  -- (e.g. consumption and production rates). This is especially
+  -- difficult to satisfy in the condition that we claim that atoms
+  -- are self-sufficient and independent. Among many alternative
+  -- implementations to satisfy this requirement, we chose the best
+  -- trade-off that both enforces the idea of atom independence /AND/
+  -- is flexible enough to host all (known) MoCs. 
   --
-  -- For the above reasons you will see that some atoms (e.g. '-$-',
-  -- '-*-') take both a function and a context tupled together and
-  -- apply it to a signal. Since we have been takling about /patterns/
-  -- sharing a context space, it is most appropriate that the atoms'
-  -- type signature features both the result and the context tupled
-  -- together. This way, future stages of the composition (i.e. the
-  -- following processes in the network) can make use of this context
-  -- space. Of course, this demands the usage of a /utility/ to
-  -- extract the needed result signal and ignore the passed context,
-  -- but this is a workaround which we can gladly assume since it does
-  -- not affect the formalism in any way.
+  -- For the above reason you will see that some atoms (e.g. '-$-',
+  -- '-*-') take both a function and a context (e.g parameter) tupled
+  -- together in order to apply the function on the signal's values in
+  -- accordance with the context. As the atoms are defined as binary
+  -- operators, we /insisted/ that the LHS determines atom arguments
+  -- (ergo are dependent on the MoC), while the RHS are pure signals
+  -- (as being the objects of composition). This was one step in
+  -- proving that atom composition is completely independent of the
+  -- MoC they implement. These atoms (internally called
+  -- synchronization atoms) will be defined along the lines of:
   --
-  -- [utility] function without any semantical value thus not an
-  -- atom. It operates upon and might alter the /structure/ (i.e. type
-  -- constructor, form) of some datum, but it does not affect its
-  -- state.
+  -- <<includes/figs/atom-form1.png>>
+  --
+  -- or, for MoC atoms which do not take a /context/ (e.g
+  -- 'ForSyDe.Atom.MoC.SY') the formal notation ignores it altogether:
+  --
+  -- <<includes/figs/atom-form2.png>>
   --
   -- Finally, in order to compare atom implementations to their formal
   -- notation, we shall consider the type function /S/ as defined
@@ -584,8 +619,10 @@ module ForSyDe.Atom (
   -- constructors if we regard process networks as graphs and
   -- meaningful compositions of atoms as graph patterns.
   --
-  -- __/Extended documentation with all the provided process/__
-  -- __/constructors is in "ForSyDe.Core.MoC"/__
+  -- __/The @forsyde-atom@ library provides common atom networks used/__
+  -- __/in embedded systems design as process constructors following the/__
+  -- __/naming convention @process[M]N@. For extended documentation/__
+  -- __/consult the "ForSyDe.Atom.MoC" module./__
   --
   -- ==== Unzip
   --
@@ -597,26 +634,30 @@ module ForSyDe.Atom (
   -- with an applicative style), we cannot do so for return types. For
   -- the latter we must rely on tuples.
   --
-  -- Working with tuples of data wrapped as @Event@ which is also
-  -- wrapped in a 'Signal' structure becomes extremely
-  -- cumbersome. Take for example the case of a process constructed
-  -- with /pc/ in equation (1) below. Using only the provided atoms to
-  -- implement /pc/ would give us a process which returns only one
-  -- signal of a tuple and not, as we would like, a tuple of signals
-  -- of events.
+  --
+  -- Working with tuples of data wrapped in several layers of
+  -- structures becomes extremely cumbersome. Take for example the
+  -- case of a process constructed with /pc/ in equation (1)
+  -- below. Using only the provided atoms to implement /pc/ would give
+  -- us a process which returns only one signal of a tuple and not, as
+  -- we would like, a tuple of signals of events.
   --
   -- <<includes/figs/unzip-example.png>>
   --
-  -- Therefore, by implementing the data types associated with signals
+  -- [utility] function without any semantical value thus not an
+  -- atom. It operates upon and might alter the /structure/ (i.e. type
+  -- constructor, form) of some datum, but it does not affect its
+  -- state.
+  --
+  -- Therefore, by implementing all data types associated with signals
   -- and events as instances of 'Functor', we were able to provide a
-  -- (set of) /unzip/ process(es) defined as in equation (2) above, as
-  -- part of the "ForSyDe.Core.Utility" module.  Mind that we call
-  -- /unzip/ a utility process and not an atom, since it has no
+  -- (set of) /unzip/ utility functions defined as in equation (2)
+  -- above, in the "ForSyDe.Atom.Utility" module.  Mind that we call
+  -- /unzip/ a utility and not an atom, since it has no
   -- sinchronization nor behavior semantic. It just conveniently
   -- "lifts" the wrapped tuples in order to create "collections" of
   -- events and signals, and it is imposed by the mechanisms of the
   -- type system in the host language.
-
   
   -- ** Behavior layer
 

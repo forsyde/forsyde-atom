@@ -18,10 +18,25 @@
 % #3 = position
 % #4 = label
 \newcommand{\primitive}[4][]{
-	\pgfkeys{/primitive keys, default, #1}%
-	\node[draw,circle,inner sep=0pt, minimum size=15pt, fill=white] (#2) at (#3) {#4};
-	\node[func\pNFunc, font=\funcStyle, anchor=south] 
-		(#2-f)    at (#2.north)  {\functionlabels{\pNFunc}{\pFunc}{}{}{}};
+  \pgfkeys{/primitive keys, default, #1}%
+  \node[draw,circle,inner sep=0pt, minimum size=15pt, fill=white] (#2) at (#3) {#4};
+  \node[func\pNFunc, font=\funcStyle, anchor=south] 
+     (#2-f)    at (#2.north)  {\functionlabels{\pNFunc}{\pFunc}{}{}{}};
+}
+
+% Primitiven
+
+% Tupled custom leaf process primitive
+% #1 = keys
+% #2 = name
+% #3 = position
+% #4 = label
+\newcommand{\primitiven}[4][]{
+  \pgfkeys{/primitive keys, default, #1}%
+  \node[draw,double distance=1pt,circle,
+        outer sep=.6pt, inner sep=0pt, minimum size=15pt, fill=white] (#2) at (#3) {#4};
+  \node[func\pNFunc, font=\funcStyle, anchor=south] 
+     (#2-f)    at (#2.north)  {\functionlabels{\pNFunc}{\pFunc}{}{}{}};
 }
 
 % Applicative
@@ -182,12 +197,12 @@
 %%%%%%%%%
 % PATHS %
 %%%%%%%%%
-\def\signal[#1] (#2) #3 (#4);{
-        \draw (#2) edge[#1, #3, s=\MoC,] (#4);
-}
-\def\vector[#1] (#2) #3 (#4);{
-        \draw (#2) edge[#1, #3, v=\MoC,] (#4);
-}
-\def\function[#1] (#2) #3 (#4);{
-        \draw (#2) edge[#1, #3, f,] (#4);
-}
+% \def\signal[#1] (#2) #3 (#4);{
+%         \draw (#2) edge[#1, #3, s=\MoC,] (#4);
+% }
+% \def\vector[#1] (#2) #3 (#4);{
+%         \draw (#2) edge[#1, #3, v=\MoC,] (#4);
+% }
+% \def\function[#1] (#2) #3 (#4);{
+%         \draw (#2) edge[#1, #3, f,] (#4);
+% }
