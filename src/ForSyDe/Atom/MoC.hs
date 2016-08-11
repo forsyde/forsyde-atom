@@ -213,7 +213,7 @@ class MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-$-) :: (Context e, [Value a] -> b) -> Signal (e [Value a]) -> (Context e, Signal (e b))
+  (-$-) :: (Context e, [Value a] -> b) -> Signal (e [Value a]) -> Signal (e b)
 
   -- | This is a rough equivalent of the @(\<*\>)@ applicative functor
   -- operator, used for synchronizing and applying a signal of
@@ -225,7 +225,7 @@ class MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: (Context e, Signal (e ([Value a] -> b))) -> Signal (e [Value a]) -> (Context e, Signal (e b))
+  (-*-) :: (Signal (e (Context e, [Value a] -> b))) -> Signal (e [Value a]) -> Signal (e b)
 
   -- | Since ForSyDe signals are modeled similar to
   -- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird lists>, the
@@ -264,15 +264,15 @@ instance (Eq a, MoC e)  => Eq (Signal (e [a])) where
     where flat = concat . map fromEvent . fromSignal
 
 infixl 3 -¤, -<, -<<, -<<<, -<<<<, -<<<<<, -<<<<<<, -<<<<<<<, -<<<<<<<<
-(-¤)        (_,s) =  s
-(-<)        (_,s) = (s ||<)
-(-<<)       (_,s) = (s ||<<)
-(-<<<)      (_,s) = (s ||<<<)
-(-<<<<)     (_,s) = (s ||<<<<)
-(-<<<<<)    (_,s) = (s ||<<<<<)
-(-<<<<<<)   (_,s) = (s ||<<<<<<)
-(-<<<<<<<)  (_,s) = (s ||<<<<<<<)
-(-<<<<<<<<) (_,s) = (s ||<<<<<<<<)
+(-¤)        (s) =  s
+(-<)        (s) = (s ||<)
+(-<<)       (s) = (s ||<<)
+(-<<<)      (s) = (s ||<<<)
+(-<<<<)     (s) = (s ||<<<<)
+(-<<<<<)    (s) = (s ||<<<<<)
+(-<<<<<<)   (s) = (s ||<<<<<<)
+(-<<<<<<<)  (s) = (s ||<<<<<<<)
+(-<<<<<<<<) (s) = (s ||<<<<<<<<)
 
 
 
