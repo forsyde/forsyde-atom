@@ -23,11 +23,14 @@ import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
-
-
--- | Type alias for a CT signal
-type Sig a       = S.Signal (Partition a)
+-- | Type synonym for a "partitions of SDF events", It also hides the
+-- reverse implementation of the previous statement (but with the same
+-- semantic).
 type Partition a = SDF [Value a]
+
+-- | Type synonym for a SDF signal, i.e. "a signal of partitions of
+-- SDF events"
+type Sig a       = S.Signal (Partition a)
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
@@ -77,13 +80,21 @@ instance (Show a) => Show (SDF [a]) where
       showEvent x             = shows x
 
 -----------------------------------------------------------------------------
-
+-- | Transforms a list of values into a SDF signal with only one
+-- partition, i.e. all events share the same (initial) tag.
 signal :: [a] -> Sig a
 signal l = S.signal [part l]
 
 part :: [a] -> Partition a
 part l = SDF (Value <$> l)
 
+-- | Wraps a (tuple of) value list(s) into the equivalent event
+-- partitions form.
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > part, part2, part3, part4,
 part2 (l1,l2) = (part l1, part l2)
 part3 (l1,l2,l3) = (part l1, part l2, part l3)
 part4 (l1,l2,l3,l4) = (part l1, part l2, part l3, part l4)
@@ -95,6 +106,26 @@ check p Undef     = take p $ repeat Undef
 check p (Value x) | length x /= p = error "Wrong production"
                   | otherwise     = Value <$> x
 
+-- | Wraps a function on extended values into the format needed by the
+-- MoC atoms.
+--
+-- <<includes/figs/untimed-wrapper-formula1.png>>
+--
+-- "ForSyDe.Atom.MoC.DE" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
+-- > wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
+-- > wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
+-- > wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
+wrap22 :: (Int, Int)  -- ^ production rates
+       -> (Int, Int)  -- ^ consumption rates
+       -> (Value [a3] -> Value [a2] -> (Value [a], Value [a1]))
+          -- ^ behvioural function on partitions to be wrapped
+       -> (Int, [Value a3] -> (Int, [Value a2] -> ([Value a], [Value a1])))
+          -- ^ wrapped form, as required by the atom constructor.
+
+wrap :: Int -> ([Value a] -> b) -> (Int, [Value a] -> b)
 wrap c f = (c, \x -> f x)
 
 wrap11 (c1)                      p f = wrap c1 $ check p . f . sequenceA
