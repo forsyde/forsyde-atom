@@ -4,8 +4,7 @@
 \usepackage{forsyde-math}
 \begin{document}
 \begin{align*}
-  \texttt{state} &: \wrapdf{V^m_{st} \times V^n \rightarrow V^m} \times E^m_{st}
-                   \times S^n \rightarrow S^m \\
+  \texttt{state} &: (\wrapdf{V^m_{st} \times V^n \rightarrow V^m}) \times E^m_{st} \rightarrow S^n \rightarrow S^m \\
   \texttt{state} &(ns,i^m)(s^n) = ns \oplus (st^m, s^n) \\
                  &\text{where}\ st^m = i^m \fdelay ns \oplus (st^m, s^n) 
 \end{align*}

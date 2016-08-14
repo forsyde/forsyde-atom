@@ -60,7 +60,7 @@ instance MoC CT where
   ---------------------
   (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
   ---------------------
-  fromEvent (CT t f) = f t
+  --fromEvent (CT t f) = f t
     
 
 -- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@

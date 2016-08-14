@@ -49,7 +49,8 @@
 }
 
 \begin{tikzpicture}
-  \combII[moc=sy,f1=$(+)$]{p1}{0,0}{P};
+  \leafstd[moc=sy, ni=2, no=1, nf=1, f1=$(+)$, type=
+comb]{p1}{0,0}{P};
   \node (t1) at ($(p1-p.i1)-(3,-.5)$) {\usebox{\insignal}};
   \node (t2) at ($(p1-p.i2)-(3,.5)$) {\usebox{\insignal}}; 
   \node (t3) at ($(p1-p.o1)+(3,0)$) {\usebox{\outsignal}}; 

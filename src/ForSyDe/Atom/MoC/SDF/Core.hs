@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.MoC.SDF
@@ -59,7 +60,6 @@ instance MoC SDF where
   ---------------------
   (-&-) _ a = a
   ---------------------
-  fromEvent = fromSDF
 
 -- | Needed for the implementation of the '-$-' atom and also the
 -- @unzip@ utilities.

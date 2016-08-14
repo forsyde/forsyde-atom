@@ -1,4 +1,5 @@
 \newcommand{\getmoclabel}[1]{\ifthenelse{\equal{#1}{sy}}{SY}{\ifthenelse{\equal{#1}{de}}{DE}{\ifthenelse{\equal{#1}{ct}}{CT}{\ifthenelse{\equal{#1}{sdf}}{SDF}{}}}}}
+\newcommand{\getmocfill}[1]{\ifthenelse{\equal{#1}{sy}}{\sycolor}{\ifthenelse{\equal{#1}{de}}{\decolor}{\ifthenelse{\equal{#1}{ct}}{\ctcolor}{\ifthenelse{\equal{#1}{sdf}}{\sdfcolor}{}}}}}
 \newcommand{\functionlabels}[5]{ %#1=nf, #2... = functions
 	\ifnum #1>0 \nodepart{fa} #2\else\fi
 	\ifnum #1>1 \nodepart{fb} #3\else\fi
@@ -90,6 +91,23 @@
 		\node[ports i1o1, rotate=\rot, inner sep=0pt, fit=(#2-shape),] (#2-p) {};
 	\end{scope}
 }
+
+% Embedding (hybrid) processes
+% #1 = keys
+% #2 = name
+% #3 = list of nodes clustered
+% #4 = label
+\newcommand\embed[4][]{
+	\pgfkeys{/embedded moc keys, default, #1}%
+	\pgfmathtruncatemacro\rot{\iftoggle{/standard leaf keys/reverse}{180}{0}}
+	\begin{scope}[on background layer, local bounding box= #2]
+		\node[leaf shape, draw, inner xsep=\innerXSep, inner ysep=\innerYSep, moc=\pMoc,
+                      fit=#3] (#2-shape) {};
+		\node[anchor=south east] (#2-label) at (#2-shape.south east) {\footnotesize\labelStyle{#4}}; 
+		\node[ports i\pNIn o\pNOut, rotate=\rot, inner sep=0pt, fit=(#2-shape),] (#2-p) {};
+	\end{scope}
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % COMPOSITE PROCESSES %

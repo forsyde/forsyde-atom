@@ -22,18 +22,23 @@ import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 import Numeric.Natural
 
+-- | Type alias for timestamps. They are natural numbers to ensure /t/ &#8805; 0.
 type Tag = Natural
 
--- | Type alias for a DE signal
+-- | Type synonym for a DE event, i.e. "a constructed event of
+-- partitioned extended values, where the partition size is always 1"
 type Event a = DE ([Value a])
+
+-- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Sig a   = S.Signal (Event a)
 
--- | The DE type, identifying a discrete time event and implementing an
--- instance of the 'MoC' class. A discrete event explicitates its tag
--- which is represented as an integer.
-data DE a  = DE { tag :: Tag, val :: a }
+-- | The DE event. It identifies a discrete event signal.
+data DE a  = DE { tag :: Tag,  -- ^ timestamp
+                  val :: a     -- ^ the value
+                }
 
--- | Implenents the DE semantics for the MoC atoms
+-- | Implenents the execution and synchronization semantics for the DE
+-- MoC through its atoms.
 instance MoC DE where
   type Context DE = ()
   ---------------------
@@ -58,25 +63,27 @@ instance MoC DE where
   ---------------------
   (DE t _) -&- xs = (\(DE t1 v) -> DE (t1 + t) v) <$> xs
   ---------------------
-  fromEvent = val
 
 
--- | Shows the event with tag @t@ and value @v@ as @v\@t@
+-- | Shows the event with tag @t@ and value @v@ as @ v \@t@. It hides the partition (the singleton list constructor).
 instance Show a => Show (DE [a]) where
   showsPrec _ (DE t [x]) = (++) ( " " ++ show x ++ " @" ++ show t )
 
--- | Reads the string for a normal tuple @(Tag,Value a)@ as an event @DE a@
-instance (Read a) => Read (DE a) where
-  readsPrec _ x     = [(DE t v, x) | ((t,v), x) <- reads x]
+-- | Reads the string for a normal tuple @(Tag,Value a)@ as an event @DE a@, already partitioned.
+instance (Read a) => Read (DE [a]) where
+  readsPrec _ x     = [(DE t [v], x) | ((t,v), x) <- reads x]
 
+
+-- | A more efficient instatiation since we /know/ that the partition
+-- size is always 1.
 instance Eq a => Eq (DE [a]) where
   DE t1 [a] == DE t2 [b] = t1 == t2 && a == b 
 
--- | Needed to implement the @unzip@ utilities
+-- | Allows for mapping of functions on a DE event.
 instance Functor (DE) where
   fmap f (DE t a) = DE t (f a)
 
--- | Needed to implement the @unzip@ utilities
+-- | Allows for lifting functions on a pair of SY events.
 instance Applicative (DE) where
   pure = DE 0
   (DE tf f) <*> (DE _ x) = DE tf (f x)
@@ -104,6 +111,15 @@ extractFunction (DE t (_,f)) = DE t f
 -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
 event  :: (Tag, a) -> Event a 
 event (t,v) = part (t, pure v)
+
+
+-- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
+-- event container(s).
+--
+-- "ForSyDe.Atom.MoC.DE" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > event, event2, event3, event4,
 event2 = ($$) (event,event)
 event3 = ($$$) (event,event,event)
 event4 = ($$$$) (event,event,event,event)
@@ -114,6 +130,22 @@ signal   :: [(Tag, a)] -> Sig a
 signal l = S.signal (event <$> l)
 
 ----------------------------------------------------------------------------- 
+
+-- | Wraps a function on extended values into the format needed by the
+-- MoC atoms.
+--
+-- <<includes/figs/timed-wrapper-formula1.png>>
+--
+-- "ForSyDe.Atom.MoC.DE" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
+-- > wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
+-- > wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
+-- > wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
+wrap22 :: (Value a1 -> Value a2 -> (Value b1, Value b2))
+       -> ((), [Value a1] -> ((), [Value a2] -> ([Value b1], [Value b2])))
+
 wrap f = ((), \x -> f x)
 
 wrap11 f = wrap $ (map f)

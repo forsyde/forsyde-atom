@@ -100,6 +100,24 @@
 	reverse/.is toggle,
 }
 
+\pgfkeys{/embedded moc keys/.is family, /embedded moc keys,
+ 	moc/.estore in            = \pMoc,
+	ni/.estore in             = \pNIn,
+	no/.estore in             = \pNOut,
+ 	inner xsep/.estore in = \innerXSep,
+ 	inner ysep/.estore in = \innerYSep,
+	reverse/.is toggle,
+	reverse shape/.is toggle,
+	default/.style = {
+		moc=none, 
+		ni=1, no=1, 
+		inner xsep = 15pt, 
+		inner ysep = 15pt,
+		reverse = false,
+		reverse shape = false
+	}
+}
+
 
 \pgfkeys{/composite keys/.is family, /composite keys,
 	ni/.estore in         = \pNIn,

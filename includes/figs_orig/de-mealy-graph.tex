@@ -1,0 +1,45 @@
+\documentclass{standalone}
+\usepackage{forsyde-plot}
+\usepackage{forsyde-tikz}
+
+\begin{document}
+\newsavebox\insig
+\sbox{\insig}{
+  \begin{de-signal}[%
+    timestamps=5,tag scale=.1]{24}
+    \tiny
+    \nextsignal{$S_{i}$} \present{9}{2} \present{15}{3} \infinity 
+  \end{de-signal}
+}
+\newsavebox\outsig
+\sbox{\outsig}{
+  \begin{de-signal}[%
+    timestamps=5, tag scale=.3]{24}
+    \tiny
+    \nextsignal{$S_{o}$}\present{5}{0} \present{4}{2} \present{1}{1} 
+        \present{4}{3} \present{1}{4} \present{4}{6} 
+        \present{1}{7} \present{4}{9} 
+  \end{de-signal}
+}
+
+% { 2 @0, 3 @9}
+% { 3 @0, 5 @5,       7 @10, 8 @14, 10 @15, 11 @19, 13 @20, 14 @24,}
+% { 0 @0, 2 @5, 1 @9, 3 @10, 4 @14,  6 @15, 7 @19,  9 @20, 10 @24, 12 @25}
+
+
+
+
+\begin{tikzpicture}[]
+  \leafstd[moc=de, ni=1, no=1, nf=3, f1={$(+)$}, f2={$(-)$}, f3={$(5,2)$}, type=mealy]{c1} {0,0} {};
+  \node[anchor=east] (i) at ($(c1.west)-(1,0)$) {\usebox{\insig}};
+  \node[anchor=west] (o) at ($(c1.east)+(1,0)$) {\usebox{\outsig}};
+
+  \signal[-|-=.8] (i) -> (c1-p.i1);
+  \signal[] (c1-p.o1) -> (o);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

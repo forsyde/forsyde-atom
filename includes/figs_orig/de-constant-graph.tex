@@ -1,0 +1,28 @@
+\documentclass{standalone}
+\usepackage{forsyde-tikz}
+\usepackage{forsyde-plot}
+\begin{document}
+
+\newsavebox\outsig
+\sbox{\outsig}{
+  \begin{de-signal}[tag scale=.7]{4}
+    \scriptsize
+    \nextsignal{$S_{o,1}$}  \present{4}{1} \infinity 
+    \nextsignal{$S_{o,2}$}  \present{4}{2} \infinity 
+    \end{de-signal}
+}
+
+
+\begin{tikzpicture}[]
+  \leafstd[moc=de, no=2, nf=1, f1={$(1,2)$}, type=constant]{c1} {0,0} {};
+  \node[anchor=west] (so) at ($(c1.east)+(1,0)$) {\usebox{\outsig}};
+
+  \signal[] (c1-p.o1) -> ($(c1-p.o1)+(1,0)$);
+  \signal[] (c1-p.o2) -> ($(c1-p.o2)+(1,0)$);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

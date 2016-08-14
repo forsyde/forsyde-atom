@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.SY
@@ -13,7 +14,13 @@
 -- for properly instantiating process network patterns as process
 -- constructors.
 --
--- 
+-- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
+-- provided by the library API are named along the lines of
+-- @functionMN@ where @M@ represents the number of __/curried/__
+-- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
+-- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
+-- repetition we shall only provide documentation for functions with 2
+-- inputs and 2 outputs (i.e. @function22@).
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.SY (
@@ -42,139 +49,102 @@ module ForSyDe.Atom.MoC.SY (
   -- <<includes/figs/sy-example.png>>
   --
   -- Implementing the SY tag system is straightforward if we consider
-  -- signals as infinite lists. In this case the tags are implicitly
-  -- defined by the position of events in a signal. In this case
-  -- /t&#8320;/ would correspond with the event at the head of a
-  -- signal /t&#8321;/ with the second event, and so on. Thus we do
-  -- not need to explicitate tags, the only explicit argument passed
-  -- to a SY event constructor being its value &#8712;
-  -- /V&#8337;/. Thus we have the definition of the SY event
-  -- implementing (among others) the 'MoC' class:
+  -- the 'ForSyDe.Atom.Signal.Signal' as an infinite list. In this
+  -- case the tags are implicitly defined by the position of events in
+  -- a signal: /t&#8320;/ would correspond with the event at the head
+  -- of a signal /t&#8321;/ with the following event, etc... Thus the
+  -- only explicit parameter passed to a SY event constructor is its
+  -- value &#8712; /V&#8337;/. As such, we can state the following
+  -- particularities:
+  --
+  -- 1. tags are implicit by the position in the signal, thus they are
+  -- completely ignored in this type constructor.
+  --
+  -- 1. the type constructor wraps only a value
+  --
+  -- 1. the full structure used by the MoC atoms is @(SY [Value a])@,
+  -- i. e. SY events of partitioned extended values, where the
+  -- partition is always 1 since for the SY MoC, /T/ is a total order
+  -- (check __design rule #4__ in the documentation of "ForSyDe.Atom")
+  --
+  -- 1. SY atoms do not require any additional context, apart from a
+  -- function on values thus by definition
+  --
+  -- > type Context SY = ()
+  --
+  -- From @3.@ and @4.@ we can safely assume that:
+  --
+  -- <<includes/figs/timed-wrapper-formula.png>>
+
+  SY(..),
+
+  -- * Aliases & utilities
+
+  -- | For convenience we also provide a set of type synonyms and
+  -- utilities to ease in the design of systems. The API type
+  -- signatures will feature these aliases to hide the cumbersome
+  -- construction of atoms and atom patters as seen in
+  -- "ForSyDe.Atom.MoC".
+
+  Event, Sig, event2, signal,
+
+  wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
+  wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
+  wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
+  wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
   
-  SY(..), Event,
-
-  -- | For convenience we also provide a type alias for a SY signal
-  -- which stands for "signal of synchronous events where the values
-  -- are extended", and a couple of utilities:
-
-  Sig, event, signal, 
-
   -- * @SY@ process constuctors
 
   -- | These SY-specific process constructors are basically
   -- specific instantiations of the network patterns defined in
-  -- "ForSyDe.Core.MoC" also wrapping functions in a behavioural
-  -- model as defined in "ForSyDe.Core.ValueExt".
+  -- "ForSyDe.Atom.MoC", also wrapping functions in a behavioural
+  -- model.
+
+  -- ** Default behavior
+
+  -- | These processes manifest a default behavior as defined in
+  -- "ForSyDe.MoC.Behavior", when it comes to dealing with special
+  -- events.
   
-  -- ** @comb@
-
-  -- | @comb@ processes map combinatorial functions on signals and
-  -- take care of synchronization between input signals. It
-  -- instantiates the @combXY@ process constructor
-  -- (eg. 'ForSyDe.Core.MoC.comb11').
-  --
-  -- <<includes/figs/sy-comb-graph.png>>
-
   comb11, comb12, comb13, comb14,
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
 
-  -- ** @delay@
-
-  -- | The @delay@ process "delays" a signal with one event. It is an
-  -- instantiation of the 'ForSyDe.Core.MoC.delay' constructor.
-  --
-  -- <<includes/figs/sy-delay-graph.png>>
   delay,
-
-
-  -- ** @constant@
-
-  -- | A signal generator which keeps a value constant. It
-  -- is actually an instantiation of the @stated0X@ constructor
-  -- (eg. 'ForSyDe.Core.MoC.stated01').
-  --
-  -- <<includes/figs/sy-constant-graph.png>>
   
   constant1, constant2, constant3, constant4,
-  
-  -- ** @generate@
 
-  -- | A signal generator based on a function and a kernel value. It
-  -- is actually an instantiation of the @stated0X@ constructor
-  -- (eg. 'ForSyDe.Core.MoC.stated01').
-  --
-  -- <<includes/figs/sy-generate-graph.png>>
-  
   generate1, generate2, generate3, generate4,
-  
-  -- ** @stated@
-
-  -- | @stated@ is a state machine without an output decoder. It is an
-  -- instantiation of the @scanXY@ MoC constructor
-  -- (eg. 'ForSyDe.Core.MoC.stated11').
-  --
-  -- <<includes/figs/sy-stated-graph.png>>
 
   stated11, stated12, stated13, stated14,
   stated21, stated22, stated23, stated24,
   stated31, stated32, stated33, stated34,
   stated41, stated42, stated43, stated44,
 
-  -- ** @state@
-
-  -- | @state@ is a state machine without an output decoder. It is an
-  -- instantiation of the @scanXY@ MoC constructor
-  -- (eg. 'ForSyDe.Core.MoC.state11').
-  --
-  -- <<includes/figs/sy-state-graph.png>>
-
   state11, state12, state13, state14,
   state21, state22, state23, state24,
   state31, state32, state33, state34,
   state41, state42, state43, state44,
-
-  
-  -- ** @moore@
-
-  -- | @moore@ processes model Moore state machines. It is an
-  -- instantiation of the @mooreXY@ MoC constructor
-  -- (eg. 'ForSyDe.Core.MoC.moore11').
-  --
-  -- <<includes/figs/sy-moore-graph.png>>
 
   moore11, moore12, moore13, moore14,
   moore21, moore22, moore23, moore24,
   moore31, moore32, moore33, moore34,
   moore41, moore42, moore43, moore44,
 
-  -- ** @mealy@
-
-  -- | @mealy@ processes model Mealy state machines. It is an
-  -- instantiation of the @mealyXY@ MoC constructor
-  -- (eg. 'ForSyDe.Core.MoC.mealy11').
-  --
-  -- <<includes/figs/sy-mealy-graph.png>>
-
   mealy11, mealy12, mealy13, mealy14,
   mealy21, mealy22, mealy23, mealy24,
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
-  -- ** @buffer@
-
-  -- | @buffer@ processes roughly implement a memory model which
-  -- stores all input present and known values.
-  --
-  -- <<includes/figs/sy-buffer-graph.png>>
-
-  -- buffer1, buffer2, buffer3, buffer4,
+  -- ** Storing behavior
   
-  -- -- ** Predicate processes
+  buffer1, buffer2, buffer3, buffer4,
+  
+  -- ** Predicate behavior
 
-  -- -- | These processes manipulate the behavior of a signal based on
-  -- -- predicates on their status.
+  -- | These processes manipulate the behavior of a signal based on
+  -- predicates on their status.
 
   when, filter, fill,
   hold,

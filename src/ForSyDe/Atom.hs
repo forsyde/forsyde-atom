@@ -279,13 +279,13 @@ module ForSyDe.Atom (
   -- > deOut         = { 0 @0, 6 @7, 6 @10, 8 @14, 8 @17, 10 @20, 12 @21, 12 @24, 10 @27, 14 @28, ... }
   --
   -- Jst as a fun fact, the library actually provides a "hybrid"
-  -- process constructor 'ForSyDe.Atom.DE.syMachine21' (check
-  -- ('ForSyDe.Atom.DE.syMachine22') whose process performs exactly
+  -- process constructor 'ForSyDe.Atom.DE.embedSY21' (check
+  -- ('ForSyDe.Atom.DE.embedSY22') whose process performs exactly
   -- this action: it wraps a SY process inside a DE environment.
   --
-  -- >>> :t syMachine21
-  -- > syMachine21 :: (SY.Sig a -> SY.Sig b -> SY.Sig a1) -> DE.Sig a -> DE.Sig b -> DE.Sig a1
-  -- >>> takeS 10 $ DE.syMachine21 (SY.mealy21 (\st a b -> a + b) (\st a b -> st) 0) <> twoDESigs
+  -- >>> :t embedSY21
+  -- > embedSY21 :: (SY.Sig a -> SY.Sig b -> SY.Sig a1) -> DE.Sig a -> DE.Sig b -> DE.Sig a1
+  -- >>> takeS 10 $ DE.embedSY21 (SY.mealy21 (\st a b -> a + b) (\st a b -> st) 0) <> twoDESigs
   -- > { 0 @0, 6 @7, 6 @10, 8 @14, 8 @17, 10 @20, 12 @21, 12 @24, 10 @27, 14 @28}
   --
   -- This was but an appetizer for getting used to the @forsyde-atom@
@@ -574,8 +574,10 @@ module ForSyDe.Atom (
   --
   -- <<includes/figs/atom-form1.png>>
   --
-  -- or, for MoC atoms which do not take a /context/ (e.g
-  -- 'ForSyDe.Atom.MoC.SY') the formal notation ignores it altogether:
+  -- where we indicate though an overline the fact that the function
+  -- was wrapped inside a /context/. In most cases where MoC atoms do
+  -- not take a context (e.g 'ForSyDe.Atom.MoC.SY') the formal
+  -- notation ignores it altogether:
   --
   -- <<includes/figs/atom-form2.png>>
   --

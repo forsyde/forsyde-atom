@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleInstances #-}
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK hide, prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.SY.Core
@@ -21,20 +21,19 @@ import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Utility
 
--- | Type alias for a SY signal
+-- | Type synonym for a SY event, i.e. "a constructed event of
+-- partitioned extended values, where the partition size is always 1"
 type Event a = SY ([Value a])
+
+-- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Sig a   = S.Signal (Event a)
 
 
--- | The SY event. It identifies a synchronous signal and implemets an
--- instance of the 'MoC' class. Since SY tags are implicit, this data
--- type only wraps values inside a constructor that identifies it as a
--- "synchronous event".
-newtype SY a  = SY { fromSY :: a }
------------------------------------------------------------------------------
-
+-- | The SY event. It identifies a synchronous signal.
+newtype SY a  = SY { val :: a }
   
--- | Implenents the SY semantics for the MoC atoms.
+-- | Implenents the execution and synchronization semantics for the SY
+-- MoC through its atoms.
 instance MoC SY where
   type Context SY = ()
   ---------------------
@@ -46,15 +45,10 @@ instance MoC SY where
   ---------------------
   (-&-) _ a = a
   ---------------------
-  fromEvent = fromSY
 
--- | Shows the (extended) value wrapped
--- instance Show a => Show (SY a) where
---   showsPrec _ (SY x) = (++) (show x)
-
--- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
+-- | 'Show' instance. Hides the partition of values (the list wrapper).
 instance (Show a) => Show (SY [a]) where
-  showsPrec p = showParen (p>1) . showSignal . fromSY
+  showsPrec p = showParen (p>1) . showSignal . val
     where
       showSignal (x : xs)  = showEvent x . showSignal' xs
       showSignal ([])      = showChar ' ' . showChar '\b'
@@ -62,19 +56,20 @@ instance (Show a) => Show (SY [a]) where
       showSignal' ([])     = showChar ' ' . showChar '\b'
       showEvent x          = shows x
 
--- | Reads the (extended) value wrapped
+-- | Reads the extended values and wraps them in a partitioned SY event, with the partition size of 1.
 instance Read a => Read (SY [a]) where
   readsPrec _ s       = [(SY [x], r) | (x, r) <- reads s]
 
+-- | A more efficient instatiation since we /know/ that the partition
+-- size is always 1.
 instance Eq a => Eq (SY [a]) where
   SY [a] == SY [b] = a == b
 
--- | Needed for the implementation of the '-$-' atom and also the
--- @unzip@ utilities.
+-- | Allows for mapping of functions on a SY event.
 instance Functor (SY) where
   fmap f (SY a) = SY (f a)
 
--- | Needed for the implementation of the '-*-' atom
+-- | Allows for lifting functions on a pair of SY events.
 instance Applicative (SY) where
   pure = SY 
   (SY a) <*> (SY b) = SY (a b)
@@ -95,15 +90,38 @@ extractFunction (SY (_,f)) = SY f
 
 event  :: a -> Event a
 event  = part . pure
+
+-- | Wraps a (tuple of) value(s) into the equivalent event form.
+--
+-- "ForSyDe.Atom.MoC.SY" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > event, event2, event3, event4,
 event2 = ($$) (event, event)
 event3 = ($$$) (event, event, event)
 event4 = ($$$$) (event, event, event, event)
 
--- | Wraps a list into a SY signal
+-- | Transforms a list of values into a SY signal
 signal   :: [a] -> Sig a
 signal l = S.signal (event <$> l)
 
 -----------------------------------------------------------------------------
+-- | Wraps a function on extended values into the format needed by the
+-- MoC atoms.
+--
+-- <<includes/figs/timed-wrapper-formula1.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
+-- > wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
+-- > wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
+-- > wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
+wrap22 :: (Value a1 -> Value a2 -> (Value b1, Value b2))
+       -> ((), [Value a1] -> ((), [Value a2] -> ([Value b1], [Value b2])))
+
+wrap :: ([Value a] -> b) -> ((), [Value a] -> b)
 wrap f = ((), \x -> f x)
 
 wrap11 f = wrap $ (map f)
