@@ -35,14 +35,14 @@ type Sig a       = S.Signal (Partition a)
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-newtype SDF a = SDF { fromSDF :: a }
+newtype SDF a = SDF { partition :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC SDF where
   type Context SDF = Int
   ---------------------
   _ -$- NullS = NullS
-  (c,f) -$- s = (comb c f . concat . map fromSDF . fromSignal) s
+  (c,f) -$- s = (comb c f . concat . map partition . fromSignal) s
     where comb c f l = let x'  = take c l
                            xs' = drop c l
                        in if   length x' == c
@@ -51,7 +51,7 @@ instance MoC SDF where
   ---------------------
   _  -*- NullS = NullS
   NullS -*- _  = NullS
-  cfs -*- s = (comb2 cfs . concat . map fromSDF . fromSignal) s
+  cfs -*- s = (comb2 cfs . concat . map partition . fromSignal) s
     where comb2 NullS           _ = NullS
           comb2 (SDF (c,f):-fs) l = let x'  = take c l
                                         xs' = drop c l
@@ -64,14 +64,19 @@ instance MoC SDF where
   (-&-) _ a = a
   ---------------------
 
--- | Needed for the implementation of the '-$-' atom and also the
--- @unzip@ utilities.
+-- | A more efficient instatiation since we /know/ that the partition
+-- size is always 1.
 instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
+
+-- | Allows for comparing signals with different partitions
+instance Eq a => Eq (Signal (SDF [a])) where
+  a ==b = flatten a == flatten b
+    where flatten = concat . map partition . fromSignal
   
 -- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (SDF [a]) where
-  showsPrec p = showParen (p>1) . showPartition . fromSDF
+  showsPrec p = showParen (p>1) . showPartition . partition
     where
       showPartition (x : xs)  = showEvent x . showPartition' xs 
       showPartition ([])      = showChar ' ' . showChar '\b'

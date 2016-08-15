@@ -50,9 +50,11 @@ module ForSyDe.Atom.MoC.SDF (
   -- where the production and the consumption is fixed. 
   --
   -- Below is a /possible/ behavior in time of the input and the
-  -- output signals of a SDF process, to illustrate these semantics:
+  -- output signals of a SDF process, to illustrate these
+  -- semantics. We mark with an overbrace the events sharing the same
+  -- tag and consumed during one firing:
   --
-  -- <<includes/figs/sy-example.png>>
+  -- <<includes/figs/sdf-example1.png>>
   --
   -- Implementing the SDF tag system implied a series of engineering
   -- decisions which lead to formulating __design rule #4__ (see
@@ -105,7 +107,7 @@ module ForSyDe.Atom.MoC.SDF (
   -- construction of atoms and atom patters as seen in
   -- "ForSyDe.Atom.MoC".
 
-  Partition, Sig, part2, signal,
+  Partition, Sig, Prod, Cons, part2, signal,
 
   wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
   wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
@@ -155,6 +157,8 @@ module ForSyDe.Atom.MoC.SDF (
   mealy21, mealy22, mealy23, mealy24,
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
+
+  -- ** Interfaces
 
 
   -- * Bibliography

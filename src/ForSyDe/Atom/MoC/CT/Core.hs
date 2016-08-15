@@ -67,6 +67,10 @@ instance MoC CT where
 instance Show a => Show (CT a) where
   showsPrec _ (CT t x) = (++) ( show (x t) ++ "@" ++ (showFFloat Nothing $ fromRat t) "" )
 
+-- | A more efficient instatiation since we /know/ that the partition
+-- size is always 1.
+instance Eq a => Eq (CT a) where
+  (CT t1 a) == (CT t2 b) = a t1 == b t2
 
 -- | Needed to implement the @unzip@ utilities
 instance Functor (CT) where

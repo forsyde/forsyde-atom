@@ -135,164 +135,6 @@ class (Functor e) => MoC e where
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
 
------------------ DOCUMENTATION -----------------
-
--- | The @delay@ process provides both an initial token and shifts the
--- phase of the signal. In other words, it "delays" a signal with
--- one event. 
---
--- <<includes/figs/delay-formula.png>>
--- <<includes/figs/delay-graph.png>>
---
--- "ForSyDe.Atom.MoC" also exports an infix variant (@infixl 3@)
---
--- > delay, (-&>-),
-delay :: MoC e => e a -> Signal (e a) -> Signal (e a)
-
--- | 
--- #comb22f# /(*) actually/ @[Value a1] -> [Value a2] -> (b1, b2)@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @comb@ processes takes care of synchronization between signals and
--- maps combinatorial functions on their event values.
---
--- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
--- > comb51, comb52, comb53, comb54,
-
-comb22 :: (MoC e)
-          => (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2)))
-          -- ^ (<#comb22f *>)
-          -> Signal (e [Value a1])          -- ^ first input signal
-          -> Signal (e [Value a2])          -- ^ second input signal
-          -> (Signal (e b1), Signal (e b2)) -- ^ two output signals
-
--- | 
--- #state22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @state@ processes model generates the process network corresponding
--- to a simple state machine like in the following graph.
---
--- <<includes/figs/scanl-formula.png>>
--- <<includes/figs/scanl-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
-state22 :: MoC e
-           => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
-           -- ^ (<#state22f *>) 
-           -> (e [Value st1], e [Value st2])  -- ^ initial states
-           -> Signal (e [Value a1])
-           -> Signal (e [Value a2])
-           -> (Signal (e [Value st1]), Signal (e [Value st2]))
-
--- | 
--- #stated22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @stated@ processes model generates the graph shown below. There
--- exists a variant with 0 input signals, in which case the process
--- is a signal generator.
---
--- <<includes/figs/stated-formula.png>>
--- <<includes/figs/stated-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > stated01, stated02, stated03, stated04,
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
-stated22 :: MoC e
-            => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
-            -- ^ (<#stated22f *>) 
-            -> (e [Value st1], e [Value st2])  -- ^ initial states
-            -> Signal (e [Value a1])
-            -> Signal (e [Value a2])
-            -> (Signal (e [Value st1]), Signal (e [Value st2])) 
-
--- | 
--- #moore22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- #moore22od# (**) @[Value st] -> ([Value b1], [Value b2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @moore@ processes model Moore state machines.
---
--- <<includes/figs/moore-formula.png>>
--- <<includes/figs/moore-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---  
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
-moore22 :: MoC e
-           => (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> [Value st])))
-           -- ^ next state (<#moore22ns *>)
-           -> (Context e, [Value st] -> (b1, b2))
-           -- ^ output decoder (<#moore22od **>) 
-           -> e [Value st]                    -- ^ initial state
-           -> Signal (e [Value a1])           -- ^ first input signal
-           -> Signal (e [Value a2])           -- ^ second input signal
-           -> (Signal (e b1), Signal (e b2))  -- ^ two output signals
-
-
--- | 
--- #mealy22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- #mealy22od# (**) @[Value st] -> [Value a1] -> [Value a2] -> ([Value b1], [Value b2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @mealy@ processes model Mealy state machines.
---
--- <<includes/figs/mealy-formula.png>>
--- <<includes/figs/mealy-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---  
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
-mealy22 :: MoC e
-           => (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> [Value st])))
-           -- ^ next state (<#mealy22ns *>)
-           -> (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2))))
-           -- ^ output decoder (<#mealy22ns *>)
-           -> e [Value st]                    -- ^ initial state
-           -> Signal (e [Value a1])           -- ^ first input
-           -> Signal (e [Value a2])           -- ^ second input
-           -> (Signal (e b1), Signal (e b2))  -- ^ two output signals
---------------- END DOCUMENTATION ---------------
-
 infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)
 i -&>- xs = delay i xs          
@@ -507,3 +349,163 @@ mealy43 ns od i s1 s2 s3 s4 =        comb53 od st s1 s2 s3 s4
 mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
   where st                  = i -&>- comb51 ns st s1 s2 s3 s4
 
+
+
+----------------- DOCUMENTATION -----------------
+
+-- | The @delay@ process provides both an initial token and shifts the
+-- phase of the signal. In other words, it "delays" a signal with
+-- one event. 
+--
+-- <<includes/figs/delay-formula.png>>
+-- <<includes/figs/delay-graph.png>>
+--
+-- "ForSyDe.Atom.MoC" also exports an infix variant (@infixl 3@)
+--
+-- > delay, (-&>-),
+delay :: MoC e => e a -> Signal (e a) -> Signal (e a)
+
+-- | 
+-- #comb22f# /(*) actually/ @[Value a1] -> [Value a2] -> (b1, b2)@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @comb@ processes takes care of synchronization between signals and
+-- maps combinatorial functions on their event values.
+--
+-- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
+--
+-- "ForSyDe.Atom.MoC" exports the constructors below. To create your
+-- own constructors please follow the examples set in the source code.
+--
+-- > comb11, comb12, comb13, comb14,
+-- > comb21, comb22, comb23, comb24,
+-- > comb31, comb32, comb33, comb34,
+-- > comb41, comb42, comb43, comb44,
+-- > comb51, comb52, comb53, comb54,
+
+comb22 :: (MoC e)
+          => (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2)))
+          -- ^ (<#comb22f *>)
+          -> Signal (e [Value a1])          -- ^ first input signal
+          -> Signal (e [Value a2])          -- ^ second input signal
+          -> (Signal (e b1), Signal (e b2)) -- ^ two output signals
+
+-- | 
+-- #state22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @state@ processes model generates the process network corresponding
+-- to a simple state machine like in the following graph.
+--
+-- <<includes/figs/scanl-formula.png>>
+-- <<includes/figs/scanl-graph.png>>
+--
+-- "ForSyDe.Atom.MoC" exports the constructors below. To create your
+-- own constructors please follow the examples set in the source code.
+--
+-- > state11, state12, state13, state14,
+-- > state21, state22, state23, state24,
+-- > state31, state32, state33, state34,
+-- > state41, state42, state43, state44,
+state22 :: MoC e
+           => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
+           -- ^ (<#state22f *>) 
+           -> (e [Value st1], e [Value st2])  -- ^ initial states
+           -> Signal (e [Value a1])
+           -> Signal (e [Value a2])
+           -> (Signal (e [Value st1]), Signal (e [Value st2]))
+
+-- | 
+-- #stated22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @stated@ processes model generates the graph shown below. There
+-- exists a variant with 0 input signals, in which case the process
+-- is a signal generator.
+--
+-- <<includes/figs/stated-formula.png>>
+-- <<includes/figs/stated-graph.png>>
+--
+-- "ForSyDe.Atom.MoC" exports the constructors below. To create your
+-- own constructors please follow the examples set in the source code.
+--
+-- > stated01, stated02, stated03, stated04,
+-- > stated11, stated12, stated13, stated14,
+-- > stated21, stated22, stated23, stated24,
+-- > stated31, stated32, stated33, stated34,
+-- > stated41, stated42, stated43, stated44,
+stated22 :: MoC e
+            => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
+            -- ^ (<#stated22f *>) 
+            -> (e [Value st1], e [Value st2])  -- ^ initial states
+            -> Signal (e [Value a1])
+            -> Signal (e [Value a2])
+            -> (Signal (e [Value st1]), Signal (e [Value st2])) 
+
+-- | 
+-- #moore22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- #moore22od# (**) @[Value st] -> ([Value b1], [Value b2])@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @moore@ processes model Moore state machines.
+--
+-- <<includes/figs/moore-formula.png>>
+-- <<includes/figs/moore-graph.png>>
+--
+-- "ForSyDe.Atom.MoC" exports the constructors below. To create your
+-- own constructors please follow the examples set in the source code.
+--  
+-- > moore11, moore12, moore13, moore14,
+-- > moore21, moore22, moore23, moore24,
+-- > moore31, moore32, moore33, moore34,
+-- > moore41, moore42, moore43, moore44,
+moore22 :: MoC e
+           => (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> [Value st])))
+           -- ^ next state (<#moore22ns *>)
+           -> (Context e, [Value st] -> (b1, b2))
+           -- ^ output decoder (<#moore22od **>) 
+           -> e [Value st]                    -- ^ initial state
+           -> Signal (e [Value a1])           -- ^ first input signal
+           -> Signal (e [Value a2])           -- ^ second input signal
+           -> (Signal (e b1), Signal (e b2))  -- ^ two output signals
+
+
+-- | 
+-- #mealy22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- #mealy22od# (**) @[Value st] -> [Value a1] -> [Value a2] -> ([Value b1], [Value b2])@
+-- /where each argument is individually wrapped with a/
+-- /context. Each MoC instance defines its own wrappers./
+--
+-- @mealy@ processes model Mealy state machines.
+--
+-- <<includes/figs/mealy-formula.png>>
+-- <<includes/figs/mealy-graph.png>>
+--
+-- "ForSyDe.Atom.MoC" exports the constructors below. To create your
+-- own constructors please follow the examples set in the source code.
+--  
+-- > mealy11, mealy12, mealy13, mealy14,
+-- > mealy21, mealy22, mealy23, mealy24,
+-- > mealy31, mealy32, mealy33, mealy34,
+-- > mealy41, mealy42, mealy43, mealy44,
+mealy22 :: MoC e
+           => (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> [Value st])))
+           -- ^ next state (<#mealy22ns *>)
+           -> (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2))))
+           -- ^ output decoder (<#mealy22ns *>)
+           -> e [Value st]                    -- ^ initial state
+           -> Signal (e [Value a1])           -- ^ first input
+           -> Signal (e [Value a2])           -- ^ second input
+           -> (Signal (e b1), Signal (e b2))  -- ^ two output signals
+
+--------------- END DOCUMENTATION ---------------

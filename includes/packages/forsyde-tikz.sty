@@ -5,6 +5,7 @@
 % Date: 2015/05/20
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{pgfplots}
+  \pgfplotsset{compat=1.9}
 \RequirePackage{pgfkeys}
 \RequirePackage{xparse,l3regex}
 \RequirePackage{todonotes} % WHA?!
@@ -60,4 +61,31 @@
 % #3 = false-statement
 \long\def\ifnodedefined#1#2#3{%
     \@ifundefined{pgf@sh@ns@#1}{#3}{#2}%
+}
+
+% Decorate process ports with info
+% #1 = node label
+\newcounter{iportnum}
+\newcounter{oportnum}
+\newcommand\portinfo[1]{
+  \setcounter{iportnum}{0}\setcounter{oportnum}{0}
+  \def\currentport{#1-p}
+  \def\iportinfoanchy{south east}
+  \def\oportinfoanchy{south west}
+  \def\iportinfoshift{1mm}
+  \def\oportinfoshift{1mm}
+}
+\newcommand\consumption[1]{
+  \addtocounter{iportnum}{1}
+  \node[anchor=\iportinfoanchy, xshift=-1mm, yshift=\iportinfoshift] 
+      at (\currentport.i\theiportnum) {\tiny #1};
+  \def\iportinfoanchy{north east}
+  \def\iportinfoshift{-1mm}
+}
+\newcommand\production[1]{
+  \addtocounter{oportnum}{1}
+  \node[anchor=\oportinfoanchy, xshift=1mm, yshift=\oportinfoshift] 
+      at (\currentport.o\theoportnum) {\tiny #1};
+  \def\oportinfoanchy{north west}
+  \def\oportinfoshift{-1mm}
 }
