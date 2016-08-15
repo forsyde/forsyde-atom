@@ -74,10 +74,15 @@ instance (Read a) => Read (DE [a]) where
   readsPrec _ x     = [(DE t [v], x) | ((t,v), x) <- reads x]
 
 
--- | A more efficient instatiation since we /know/ that the partition
--- size is always 1.
-instance Eq a => Eq (DE [a]) where
-  DE t1 [a] == DE t2 [b] = t1 == t2 && a == b 
+-- -- | A more efficient instatiation since we /know/ that the partition
+-- -- size is always 1.
+-- instance Eq a => Eq (DE [a]) where
+--   DE t1 [a] == DE t2 [b] = t1 == t2 && a == b 
+
+-- | Defines the equality operator between two SY signals.
+instance Eq a => Eq (Signal (DE [a])) where
+  a == b = flatten a == flatten b
+    where flatten = concat . map (\x -> ((,) (tag x)) <$> val x) . fromSignal
 
 -- | Allows for mapping of functions on a DE event.
 instance Functor (DE) where

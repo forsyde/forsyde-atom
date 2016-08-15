@@ -106,10 +106,10 @@ constant1 :: ([b1])                   -> (Sig b1)
 constant3 :: ([b1], [b2], [b3])       -> (Sig b1, Sig b2, Sig b3)                      
 constant4 :: ([b1], [b2], [b3], [b4]) -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 
-constant1 i = MoC.stated01 (wrap11  1         1        (psi11 id1)) (part  i)
-constant2 i = MoC.stated02 (wrap22 (1,1)     (1,1)     (psi22 id2)) (part2 i)
-constant3 i = MoC.stated03 (wrap33 (1,1,1)   (1,1,1)   (psi33 id3)) (part3 i)
-constant4 i = MoC.stated04 (wrap44 (1,1,1,1) (1,1,1,1) (psi44 id4)) (part4 i)
+constant1 i = MoC.stated01 (wrap11  1         1        (psi11 id)) (part  i)
+constant2 i = MoC.stated02 (wrap22 (1,1)     (1,1)     (psi22 (,))) (part2 i)
+constant3 i = MoC.stated03 (wrap33 (1,1,1)   (1,1,1)   (psi33 (,,))) (part3 i)
+constant4 i = MoC.stated04 (wrap44 (1,1,1,1) (1,1,1,1) (psi44 (,,,))) (part4 i)
 
 ------- GENERATE -------
 

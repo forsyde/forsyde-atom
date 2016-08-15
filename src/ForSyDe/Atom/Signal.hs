@@ -69,7 +69,6 @@ infixr 3 :-
 data Signal e = NullS         -- ^ terminates a signal
               | e :- Signal e -- ^ the default constructor appends an
                               -- event to the head of the stream
-                deriving (Eq)
 
 -- | allows for the mapping of an arbitrary function @(a -> b)@ upon
 -- all the events of a @('Signal' a)@.

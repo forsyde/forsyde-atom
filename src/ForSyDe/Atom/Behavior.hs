@@ -1,4 +1,5 @@
 {-# LANGUAGE PostfixOperators #-}
+{-# OPTIONS_HADDOCK prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Behavior
@@ -11,6 +12,20 @@
 --
 -- This module implements the atoms and wrappers for the behavior
 -- layer in ForSyDe processes.
+--
+-- __DISCLAIMER:__ the behavior layer was only superficially studied,
+-- and the current module provides just a few empirical examples, for
+-- the sake of completness of the framework. It is most probable that
+-- future iterations of the @forsyde-atom@ library will heavily alter
+-- this module.
+--
+-- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
+-- provided by the library API are named along the lines of
+-- @functionMN@ where @M@ represents the number of __/curried/__
+-- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
+-- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
+-- repetition we shall only provide documentation for functions with 2
+-- inputs and 2 outputs (i.e. @function22@).
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.Behavior(
 
@@ -33,68 +48,20 @@ module ForSyDe.Atom.Behavior(
   (>$), (>*), (>%), (>%!), (>#), (>#!),
 
   -- * Behavior wrappers
-  
-  -- ** @psi@
-  
-  -- | The @psi@/XY/ wrapper wraps a function with /X/ inputs and /Y/
-  -- outputs in a default ForSyDe behavior. E.g.:
-  --
-  -- >>> let (v,u,a)=(Value 1, Undef, Abst)
-  -- >>> (v,u,a)
-  -- (1,?,⟂)
-  -- >>> let f a b c = (a+b,b-c)
-  -- >>> let wf = psi32 f
-  -- >>> t: wf
-  -- wf :: Num b => Value b -> Value b -> Value b -> (Value b, Value b)
-  -- >>> wf v v v
-  -- (2,0)
-  -- >>> wf v u v
-  -- (?,?)
-  -- >>> wf v a v
-  -- (*** Exception: Illegal occurrence of an absent and present event
-  
 
-  csi11, csi12, csi13, csi14, csi15, csi16, csi17, csi18,
-  csi21, csi22, csi23, csi24, csi25, csi26, csi27, csi28,
-  csi31, csi32, csi33, csi34, csi35, csi36, csi37, csi38,
-  csi41, csi42, csi43, csi44, csi45, csi46, csi47, csi48,
-  csi51, csi52, csi53, csi54, csi55, csi56, csi57, csi58,
-  csi61, csi62, csi63, csi64, csi65, csi66, csi67, csi68,
-  csi71, csi72, csi73, csi74, csi75, csi76, csi77, csi78,
-  csi81, csi82, csi83, csi84, csi85, csi86, csi87, csi88,
+  psi11, psi12, psi13, psi14, psi15, psi16, psi17, psi18,
+  psi21, psi22, psi23, psi24, psi25, psi26, psi27, psi28,
+  psi31, psi32, psi33, psi34, psi35, psi36, psi37, psi38,
+  psi41, psi42, psi43, psi44, psi45, psi46, psi47, psi48,
+  psi51, psi52, psi53, psi54, psi55, psi56, psi57, psi58,
+  psi61, psi62, psi63, psi64, psi65, psi66, psi67, psi68,
+  psi71, psi72, psi73, psi74, psi75, psi76, psi77, psi78,
+  psi81, psi82, psi83, psi84, psi85, psi86, psi87, psi88,
 
-  -- ** @store@
-
-  -- | The @store@/X/ wrapper pushes the present defined values into a
-  -- given list (e.g. FIFO) buffer.
-  --
-  -- >>> store5 (Value [1,2]) (Value 3) Undef (Value 4) Abst Undef
-  -- [4,3,1,2]
-  -- >>> store5 Undef         (Value 3) Undef (Value 4) Abst Undef
-  -- ?
-  -- >>> store5 Abst          (Value 3) Undef (Value 4) Abst Undef
-  -- *** Exception: Illegal occurrence of an absent and present event
-  
   store1, store2, store3, store4, store5, store6, store7, store8,
-
-  -- ** @reduce@
-
-  -- | The @reduce@/X/ merges the values belonging to multiple signals
-  -- based on a given rule
-  --
-  -- >>> reduce5 (+) (Value 3) (Value 4) Abst (Value 1) Abst
-  -- 8
-  -- >>> reduce5 (+) (Value 3) (Value 4) Abst (Value 1) Undef
-  -- ?
 
   reduce2, reduce3, reduce4, reduce5, reduce6, reduce7, reduce8,
 
-  -- ** @replace@
-
-  -- | The @replace@/X/ class of wrappers replaces a value with an
-  -- @[ V - another value | U - undefined value | A - absent event ]@
-  -- based on a boolean predicate.
-  
   replaceV, replaceU, replaceA, unsafeReplaceV, unsafeReplaceU,
   
   ) where
@@ -149,10 +116,10 @@ instance Applicative Value where
 -----------------------------------------------------------------------------
 
 infixl 4 >$, >*, >%, >%!, >#, >#!
--- | The exact equivalent of the 'fmap' function or the '<$>' infix
--- operator for extended values. It bypasses the special values and
--- maps a function @f@ to a wrapped value. It may be regarded as the
--- "default behavior" of a process.
+-- | A replacement for the 'fmap' function or the '<$>' infix operator
+-- for extended values. It bypasses the special values and maps a
+-- function @f@ to a wrapped value. It may be regarded as the "default
+-- behavior" of a process.
 --
 -- >>> let (a,u,v)=(Abst,Undef,Value 1)
 -- >>> (a,u,v)
@@ -168,10 +135,10 @@ infixl 4 >$, >*, >%, >%!, >#, >#!
 (>$) :: (a -> b) -> Value a -> Value b
 (>$) = fmap
 
--- | The exact equivalent of the applicative operator '<*>' for
--- extended values. It may be regarded as the default behavior in case
--- two events interact with each other. Check the source source code
--- for the Applicative instance to see the lifting rules.
+-- | A replacement for the applicative operator '<*>' for extended
+-- values. It may be regarded as the default behavior in case two
+-- events interact with each other. Check the source source code for
+-- the Applicative instance to see the lifting rules.
 --
 -- >>> let (a,u,v)=(Abst,Undef,Value 1)
 -- >>> (a,u,v)
@@ -288,74 +255,122 @@ isNotPresent a      = not <$> isPresent a
 -- Behavior wrappers
 -----------------------------------------------------------------------------
 
-csi11 f a1                      = (f >$ a1)
-csi12 f a1                      = (f >$ a1 |<)
-csi13 f a1                      = (f >$ a1 |<<)
-csi14 f a1                      = (f >$ a1 |<<<)
-csi15 f a1                      = (f >$ a1 |<<<<)
-csi16 f a1                      = (f >$ a1 |<<<<<)
-csi17 f a1                      = (f >$ a1 |<<<<<<)
-csi18 f a1                      = (f >$ a1 |<<<<<<<)
-csi21 f a1 a2                   = (f >$ a1 >* a2)
-csi22 f a1 a2                   = (f >$ a1 >* a2 |<)
-csi23 f a1 a2                   = (f >$ a1 >* a2 |<<)
-csi24 f a1 a2                   = (f >$ a1 >* a2 |<<<)
-csi25 f a1 a2                   = (f >$ a1 >* a2 |<<<<)
-csi26 f a1 a2                   = (f >$ a1 >* a2 |<<<<<)
-csi27 f a1 a2                   = (f >$ a1 >* a2 |<<<<<<)
-csi28 f a1 a2                   = (f >$ a1 >* a2 |<<<<<<<)
-csi31 f a1 a2 a3                = (f >$ a1 >* a2 >* a3)
-csi32 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<)
-csi33 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<)
-csi34 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<)
-csi35 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<)
-csi36 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<)
-csi37 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<<)
-csi38 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<<<)
-csi41 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4)
-csi42 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<)
-csi43 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<)
-csi44 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<)
-csi45 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<)
-csi46 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<)
-csi47 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<<)
-csi48 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<<<)
-csi51 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5)
-csi52 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<)
-csi53 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<)
-csi54 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<)
-csi55 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<)
-csi56 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<)
-csi57 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<<)
-csi58 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<<<)
-csi61 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
-csi62 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<)
-csi63 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<)
-csi64 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<)
-csi65 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<)
-csi66 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<)
-csi67 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<<)
-csi68 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<<<)
-csi71 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
-csi72 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<)
-csi73 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<)
-csi74 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<)
-csi75 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<)
-csi76 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<)
-csi77 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<<)
-csi78 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<<<)
-csi81 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
-csi82 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<)
-csi83 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<)
-csi84 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<)
-csi85 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<)
-csi86 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<)
-csi87 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<<)
-csi88 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<<<)
 
+  
+-- | The @psi@/XY/ wrapper wraps a function with /X/ inputs and /Y/
+-- outputs in a default ForSyDe behavior. E.g.:
+--
+-- "ForSyDe.Atom.Behavior" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > psi11, psi12, psi13, psi14, psi15, psi16, psi17, psi18,
+-- > psi21, psi22, psi23, psi24, psi25, psi26, psi27, psi28,
+-- > psi31, psi32, psi33, psi34, psi35, psi36, psi37, psi38,
+-- > psi41, psi42, psi43, psi44, psi45, psi46, psi47, psi48,
+-- > psi51, psi52, psi53, psi54, psi55, psi56, psi57, psi58,
+-- > psi61, psi62, psi63, psi64, psi65, psi66, psi67, psi68,
+-- > psi71, psi72, psi73, psi74, psi75, psi76, psi77, psi78,
+-- > psi81, psi82, psi83, psi84, psi85, psi86, psi87, psi88,
+--
+-- Example:
+--
+-- >>> let (v,u,a)=(Value 1, Undef, Abst)
+-- >>> (v,u,a)
+-- (1,?,⟂)
+-- >>> let f a b c = (a+b,b-c)
+-- >>> let wf = psi32 f
+-- >>> t: wf
+-- wf :: Num b => Value b -> Value b -> Value b -> (Value b, Value b)
+-- >>> wf v v v
+-- (2,0)
+-- >>> wf v u v
+-- (?,?)
+-- >>> wf v a v
+-- (*** Exception: Illegal occurrence of an absent and present event
+psi22 :: (a1 -> a2 -> (b1, b2)) -> Value a1 -> Value a2 -> (Value b1, Value b2)
+psi11 f a1                      = (f >$ a1)
+psi12 f a1                      = (f >$ a1 |<)
+psi13 f a1                      = (f >$ a1 |<<)
+psi14 f a1                      = (f >$ a1 |<<<)
+psi15 f a1                      = (f >$ a1 |<<<<)
+psi16 f a1                      = (f >$ a1 |<<<<<)
+psi17 f a1                      = (f >$ a1 |<<<<<<)
+psi18 f a1                      = (f >$ a1 |<<<<<<<)
+psi21 f a1 a2                   = (f >$ a1 >* a2)
+psi22 f a1 a2                   = (f >$ a1 >* a2 |<)
+psi23 f a1 a2                   = (f >$ a1 >* a2 |<<)
+psi24 f a1 a2                   = (f >$ a1 >* a2 |<<<)
+psi25 f a1 a2                   = (f >$ a1 >* a2 |<<<<)
+psi26 f a1 a2                   = (f >$ a1 >* a2 |<<<<<)
+psi27 f a1 a2                   = (f >$ a1 >* a2 |<<<<<<)
+psi28 f a1 a2                   = (f >$ a1 >* a2 |<<<<<<<)
+psi31 f a1 a2 a3                = (f >$ a1 >* a2 >* a3)
+psi32 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<)
+psi33 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<)
+psi34 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<)
+psi35 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<)
+psi36 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<)
+psi37 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<<)
+psi38 f a1 a2 a3                = (f >$ a1 >* a2 >* a3 |<<<<<<<)
+psi41 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4)
+psi42 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<)
+psi43 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<)
+psi44 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<)
+psi45 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<)
+psi46 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<)
+psi47 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<<)
+psi48 f a1 a2 a3 a4             = (f >$ a1 >* a2 >* a3 >* a4 |<<<<<<<)
+psi51 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5)
+psi52 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<)
+psi53 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<)
+psi54 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<)
+psi55 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<)
+psi56 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<)
+psi57 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<<)
+psi58 f a1 a2 a3 a4 a5          = (f >$ a1 >* a2 >* a3 >* a4 >* a5 |<<<<<<<)
+psi61 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6)
+psi62 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<)
+psi63 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<)
+psi64 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<)
+psi65 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<)
+psi66 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<)
+psi67 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<<)
+psi68 f a1 a2 a3 a4 a5 a6       = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 |<<<<<<<)
+psi71 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7)
+psi72 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<)
+psi73 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<)
+psi74 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<)
+psi75 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<)
+psi76 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<)
+psi77 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<<)
+psi78 f a1 a2 a3 a4 a5 a6 a7    = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 |<<<<<<<)
+psi81 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8)
+psi82 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<)
+psi83 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<)
+psi84 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<)
+psi85 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<)
+psi86 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<)
+psi87 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<<)
+psi88 f a1 a2 a3 a4 a5 a6 a7 a8 = (f >$ a1 >* a2 >* a3 >* a4 >* a5 >* a6 >* a7 >* a8 |<<<<<<<)
 
-store1 buff a1                      = at22 $ ((:), buff) >%! a1
+-- | The @store@/X/ wrapper pushes the present defined values into a
+-- given list (e.g. FIFO) buffer.
+--
+-- "ForSyDe.Atom.Behavior" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > store1, store2, store3, store4, store5, store6, store7, store8,
+--
+-- Example:
+--
+-- >>> store5 (Value [1,2]) (Value 3) Undef (Value 4) Abst Undef
+-- [4,3,1,2]
+-- >>> store5 Undef         (Value 3) Undef (Value 4) Abst Undef
+-- ?
+-- >>> store5 Abst          (Value 3) Undef (Value 4) Abst Undef
+-- *** Exception: Illegal occurrence of an absent and present event
 store2 buff a1 a2                   = at22 $ ((:), buff) >%! a1 >%! a2
+store1 buff a1                      = at22 $ ((:), buff) >%! a1
 store3 buff a1 a2 a3                = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3
 store4 buff a1 a2 a3 a4             = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4
 store5 buff a1 a2 a3 a4 a5          = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4 >%! a5
@@ -364,6 +379,20 @@ store7 buff a1 a2 a3 a4 a5 a6 a7    = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%
 store8 buff a1 a2 a3 a4 a5 a6 a7 a8 = at22 $ ((:), buff) >%! a1 >%! a2 >%! a3 >%! a4 >%! a5 >%! a6 >%! a7 >%! a8
 
 
+-- | The @reduce@/X/ merges the values belonging to multiple signals
+-- based on a given rule
+--
+-- "ForSyDe.Atom.Behavior" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > reduce1, reduce2, reduce3, reduce4, reduce5, reduce6, reduce7, reduce8,
+--
+-- Example:
+--
+-- >>> reduce5 (+) (Value 3) (Value 4) Abst (Value 1) Abst
+-- 8
+-- >>> reduce5 (+) (Value 3) (Value 4) Abst (Value 1) Undef
+-- ?
 reduce2 f a1 a2                   = at22 $ (f, a1) >% a2
 reduce3 f a1 a2 a3                = at22 $ (f, a1) >% a2 >% a3
 reduce4 f a1 a2 a3 a4             = at22 $ (f, a1) >% a2 >% a3 >% a4
@@ -373,6 +402,16 @@ reduce7 f a1 a2 a3 a4 a5 a6 a7    = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6
 reduce8 f a1 a2 a3 a4 a5 a6 a7 a8 = at22 $ (f, a1) >% a2 >% a3 >% a4 >% a5 >% a6 >% a7 >% a8
 
 
+-- | The @replace@/X/ class of wrappers replaces a value with an
+-- @[ V - another value | U - undefined value | A - absent event ]@
+-- based on a boolean predicate.
+--
+-- "ForSyDe.Atom.Behavior" exports the constructors below:
+--
+-- > replaceV, replaceU, replaceA, unsafeReplaceV, unsafeReplaceU,
+--
+-- The "safe" versions do not interfere with the 'Absent' event, while
+-- the "unsafe" ones overríde 'Absent's
 replaceV       v p x = p >#  (x,v)
 replaceU         p x = p >#  (x,Undef)
 replaceA         p x = p >#  (x,Abst)

@@ -82,10 +82,10 @@ constant1 :: b1 -> Sig b1
 constant3 :: (b1, b2, b3) -> (Sig b1, Sig b2, Sig b3)
 constant4 :: (b1, b2, b3, b4) -> (Sig b1, Sig b2, Sig b3, Sig b4)
 
-constant1 i = MoC.stated01 (wrap11 (psi11 id1)) (event  i)
-constant2 i = MoC.stated02 (wrap22 (psi22 id2)) (event2 i)
-constant3 i = MoC.stated03 (wrap33 (psi33 id3)) (event3 i)
-constant4 i = MoC.stated04 (wrap44 (psi44 id4)) (event4 i)
+constant1 i = MoC.stated01 (wrap11 (psi11 id)) (event  i)
+constant2 i = MoC.stated02 (wrap22 (psi22 (,))) (event2 i)
+constant3 i = MoC.stated03 (wrap33 (psi33 (,,))) (event3 i)
+constant4 i = MoC.stated04 (wrap44 (psi44 (,,,))) (event4 i)
 
 
 generate1 :: (b1 -> b1) -> b1

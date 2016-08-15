@@ -60,10 +60,14 @@ instance (Show a) => Show (SY [a]) where
 instance Read a => Read (SY [a]) where
   readsPrec _ s       = [(SY [x], r) | (x, r) <- reads s]
 
--- | A more efficient instatiation since we /know/ that the partition
--- size is always 1.
+-- | Efficient implementation since we /know/ that the partition is 1.
 instance Eq a => Eq (SY [a]) where
   SY [a] == SY [b] = a == b
+
+-- | Defines the equality operator between two SY signals.
+instance Eq a => Eq (Signal (SY [a])) where
+  a == b = flatten a == flatten b
+    where flatten = concat . map val . fromSignal
 
 -- | Allows for mapping of functions on a SY event.
 instance Functor (SY) where

@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -67,10 +67,16 @@ instance MoC CT where
 instance Show a => Show (CT a) where
   showsPrec _ (CT t x) = (++) ( show (x t) ++ "@" ++ (showFFloat Nothing $ fromRat t) "" )
 
--- | A more efficient instatiation since we /know/ that the partition
--- size is always 1.
-instance Eq a => Eq (CT a) where
-  (CT t1 a) == (CT t2 b) = a t1 == b t2
+-- -- | A more efficient instatiation since we /know/ that the partition
+-- -- size is always 1.
+-- instance Eq a => Eq (CT a) where
+--   (CT t1 a) == (CT t2 b) = a t1 == b t2
+
+-- | Defines the equality operator between two SY signals. __TODO!__ incomplete definition.
+instance Eq a => Eq (Signal (CT [a])) where
+  a == b = flatten a == flatten b
+    where flatten = concat . map (\(CT t f) -> f t) . fromSignal
+
 
 -- | Needed to implement the @unzip@ utilities
 instance Functor (CT) where

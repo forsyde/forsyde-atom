@@ -69,7 +69,7 @@ instance MoC SDF where
 instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
 
--- | Allows for comparing signals with different partitions
+-- | Allows for comparing signals with different partitions. __TODO!__ incomplete definition.
 instance Eq a => Eq (Signal (SDF [a])) where
   a ==b = flatten a == flatten b
     where flatten = concat . map partition . fromSignal
