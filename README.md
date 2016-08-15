@@ -5,7 +5,8 @@ forsyde-atom
 
 Reimplementation of the ForSyDe-Haskell modelling library in an
 applicative manner using the concept of atoms, and a layered process
-model.
+model. For an extended technical report, generate and check the API
+documentation.
 
 ---- 
 
@@ -17,25 +18,22 @@ Ungureanu), `forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe. library
 Installation and usage
 ----------------------
 
-The project is equipped with a makefile. To install the Haskell
-library inside a sandbox type:
+This package is _Cabal_ized, thus one shoud use `cabal` to install
+it. It is recommended to install and test inside a sandbox:
 
-    make sandbox
+    cabal sandbox init    # initializes the sandbox
+    cabal install --dependencies-only # installs dependencies inside the sandbox
+    cabal configure       # condfigures the package
+    cabal install         # installs the library inside the sandbox
+    cabal repl            # starts GHCi with the sandbox loaded
+    cabal sandbox delete  # deletes the sandbox and everything in it
 
 To generate the haddock extended API + technical report documentation
-type:
+one should use the provided `Makefile` instead:
 
-    make doc
-
-To clean the documentation and the intermediate files generated for it
-type:
-
-    make clean
+    make doc              # compiles the documentation and the LaTeX figures
+    make clean            # removes all the generated documentation files
     
-To delete the sandbox, use `cabal` instead:
-
-    cabal sandbox delete
-
 There are a number of dependencies to be taken care of:
 
  * Haskell dependencies: check `forsyde-atom.cabal` for the libraries

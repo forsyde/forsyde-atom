@@ -20,7 +20,7 @@
 # make view 
 # make clean
 
-STYDIR          = ./packages
+STYDIR          = ./forsyde-tikz/forsyde-tikz
 FIGS_ORIG_DIR   = ./figs_orig
 FIGS_DIR        = ./figs
 
