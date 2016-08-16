@@ -79,7 +79,7 @@ instance (Read a) => Read (DE [a]) where
 -- instance Eq a => Eq (DE [a]) where
 --   DE t1 [a] == DE t2 [b] = t1 == t2 && a == b 
 
--- | Defines the equality operator between two SY signals.
+-- | Defines the equality operator between two DE signals.
 instance Eq a => Eq (Signal (DE [a])) where
   a == b = flatten a == flatten b
     where flatten = concat . map (\x -> ((,) (tag x)) <$> val x) . fromSignal

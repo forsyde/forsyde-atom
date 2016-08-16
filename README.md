@@ -18,7 +18,7 @@ Ungureanu), `forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe. library
 Installation and usage
 ----------------------
 
-This package is _Cabal_ized, thus one shoud use `cabal` to install
+This package is *cabal*ized, thus one shoud use `cabal` to install
 it. It is recommended to install and test inside a sandbox:
 
     cabal sandbox init    # initializes the sandbox

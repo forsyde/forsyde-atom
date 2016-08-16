@@ -72,7 +72,7 @@ instance Show a => Show (CT a) where
 -- instance Eq a => Eq (CT a) where
 --   (CT t1 a) == (CT t2 b) = a t1 == b t2
 
--- | Defines the equality operator between two SY signals. __TODO!__ incomplete definition.
+-- | Defines the equality operator between two CT signals. __TODO!__ incomplete definition.
 instance Eq a => Eq (Signal (CT [a])) where
   a == b = flatten a == flatten b
     where flatten = concat . map (\(CT t f) -> f t) . fromSignal
