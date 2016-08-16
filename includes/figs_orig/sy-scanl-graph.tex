@@ -2,11 +2,9 @@
 \usepackage{forsyde-pc}
 \usepackage{forsyde-math}
 \begin{document}
-\newsavebox{\hack}
-\savebox{\hack}{$\ostar$}
 
 \begin{tikzpicture}[]
-  \leafstd[moc=sy, ni=1, no=1, nf=2, f1={$(+)$},f2=1, type=scanl]{c1} {0,0} {};
+  \leafstd[moc=sy, ni=1, no=1, nf=2, f1={$(+)$},f2=1, type=state]{c1} {0,0} {};
   \node[anchor=south west] (i1) at ($(c1)-(3,0)$) {$1, 2, 3, 4, 5$};
   \node[anchor=south east] (o1) at ($(c1)+(3,0)$) {$2, 4, 7, 11, 16$};
 

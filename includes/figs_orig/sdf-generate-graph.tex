@@ -1,0 +1,27 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\begin{document}
+
+
+\def\un{\underline}
+\def\func{$f\ a\ b\ = ([a_{1}, b_{4}+1], [a_{3} + 2])$}
+\begin{tikzpicture}[]
+  \leafstd[moc=sdf, ni=1, no=2, nf=2, f1={$\overline{(1,1),(2,1),\ f}$}, 
+           f2={$([1,1],[2,2,2])$}, type=generate]{c1} {0,0} {};
+  \portinfo{c1}\production{2}\production{1}
+  \node[anchor=south west] (o1) at ($(c1-p.o1)+(1,0)$) {%
+    $\un{1,1},\un{1,3},\un{1,3},\un{1,3},\un{3,4},\un{1,4},\un{3,4},\un{1,6},\un{3,4},...$};
+  \node[anchor=north west] (o2) at ($(c1-p.o2)+(1,0)$) {%
+    $\un{2},\un{2},\un{2},\un{3},\un{3},\un{3},\un{5},\un{3},\un{5},...$};
+
+  \signal[] (c1-p.o1) -> (o1.south east);
+  \signal[] (c1-p.o2) -> (o2.north east);
+
+  \node[anchor=north] at (c1.south) {\scriptsize\func};
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

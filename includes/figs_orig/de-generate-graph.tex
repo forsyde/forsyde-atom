@@ -1,0 +1,30 @@
+\documentclass{standalone}
+\usepackage{forsyde-tikz}
+\usepackage{forsyde-plot}
+\begin{document}
+
+\newsavebox\outsig
+\sbox{\outsig}{
+  \begin{de-signal}[timestamps=5, grid=5, tag scale=.2]{34}
+    \scriptsize
+    \designal{$S_{o,1}$}  \present{9}{2} \present{9}{3}  \present{9}{4}  \present{6}{5} \present{2}{5} \infinity 
+    \designal{$S_{o,2}$}  \present{24}{5} \present{9}{7}  \present{2}{7} \infinity
+    \end{de-signal}
+}
+
+% [(0,2),(9,3),(18,4),(27,5),(33,5)],                -- delta 9
+% [(0,5),(24,7),(33,7),(42,7),(48,9),(51,9),(57,9)]) -- delta 24
+
+\begin{tikzpicture}[]
+  \leafstd[moc=de, no=2, nf=2, f1={$\lambda a\ b \rightarrow (a+1,b+2)$}, f2={$(9,2),(24,5)$}, type=generate]{c1} {0,0} {};
+  \node[anchor=west] (so) at ($(c1.east)+(1,0)$) {\usebox{\outsig}};
+
+  \signal[] (c1-p.o1) -> ($(c1-p.o1)+(1,0)$);
+  \signal[] (c1-p.o2) -> ($(c1-p.o2)+(1,0)$);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

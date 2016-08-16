@@ -1,0 +1,43 @@
+\documentclass{standalone}
+\usepackage{forsyde-plot}
+\usepackage{forsyde-tikz}
+
+\begin{document}
+\newsavebox\insigs
+\sbox{\insigs}{
+  \begin{de-signal}[%
+    show timestamps, grid=2, tag scale=.5, signal sep=1.2]{11}
+    \scriptsize
+    \designal{$S_{i,1}$} \undefined{2} \present{1}{1} 
+        \present{3}{2} \present{2}{3} \present{3}{4} \present{1}{5}
+        \infinity 
+    \designal{$S_{i,2}$} \present{5}{1} \present{3}{2}
+        \undefined{2} \present{2}{3} \infinity
+  \end{de-signal}
+}
+\newsavebox\outsig
+\sbox{\outsig}{
+  \begin{de-signal}[%
+    timestamps=2, tag scale=.5, signal sep=1.2]{11}
+    \scriptsize
+    \designal{$S_{o}$}  \undefined{2} \present{1}{2}
+        \present{2}{3} \present{1}{4} \present{2}{5} \undefined{2}
+        \present{1}{7} \present{1}{8} \infinity 
+    \end{de-signal}
+}
+
+\begin{tikzpicture}
+  \leafstd[moc=de, ni=2, no=1, nf=1, f1=$+$, type=comb]{p1}{0,0}{P};
+  \node[anchor=east] (si) at ($(p1.west)-(1,0)$) {\usebox{\insigs}};
+  \node[anchor=west] (so) at ($(p1.east)+(1,0)$) {\usebox{\outsig}};
+  \signal[] ($(si.north east)!.37!(si.south east)$) -> (p1-p.i1);
+  \signal[-|-] ($(si.north east)!.75!(si.south east)$) -> (p1-p.i2);
+  \signal[-|-] (p1-p.o1) -> ($(so.north west)!.6!(so.south west)$);
+\end{tikzpicture}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

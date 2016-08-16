@@ -17,7 +17,7 @@ checkProd l NullS         = True
 checkProd l (SDF x :- xs) = length x == l && checkProd l xs
 
 countToks :: SDF.Sig a -> Int
-countToks = foldr (\y x -> x + length y) 0 . fmap fromSDF
+countToks = foldr (\y x -> x + length y) 0 . fmap partition
 
 -- Properties
 

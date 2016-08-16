@@ -17,19 +17,18 @@
 module ForSyDe.Atom.MoC.SDF.Lib where
 
 import           ForSyDe.Atom.Behavior hiding (value)
-import qualified ForSyDe.Atom.MoC.AtomLib as MoC
+import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.SDF.Core
 import           ForSyDe.Atom.Utility
 
-
--- GHC doesn't yet support impredicative polymorphism <=> illegal poolymorphic type if not explicit result
-
+-- | Type alias for production rate
 type Prod = Int
+
+-- | Type alias for consumption rate
 type Cons = Int
 
 ------- DELAY -------
 
-delay :: [a] -> Sig a -> Sig a
 delay i = MoC.delay (part i)
 
 ------- COMB -------
@@ -50,9 +49,6 @@ comb41 :: ((Cons,Cons,Cons,Cons), Prod,
 comb12 :: (Cons, (Prod,Prod),
            [a1] -> ([b1], [b2]))
        -> Sig a1 -> (Sig b1, Sig b2)
-comb22 :: ((Cons,Cons), (Prod,Prod),
-           [a1] -> [a2] -> ([b1], [b2]))
-       -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 comb32 :: ((Cons,Cons,Cons), (Prod,Prod),
            [a1] -> [a2] -> [a3] -> ([b1], [b2]))
        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)
@@ -106,24 +102,20 @@ comb44 (c,p,f) s1 s2 s3 s4 = MoC.comb44 (wrap44 c p (psi44 f)) s1 s2 s3 s4
 
 ------- CONSTANT -------
 
-constant1 :: ([b1])                   -> (Sig b1)                                
-constant2 :: ([b1], [b2])             -> (Sig b1, Sig b2)                          
+constant1 :: ([b1])                   -> (Sig b1)                                  
 constant3 :: ([b1], [b2], [b3])       -> (Sig b1, Sig b2, Sig b3)                      
 constant4 :: ([b1], [b2], [b3], [b4]) -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
 
-constant1 i = MoC.stated01 (wrap11  1         1        (psi11 id1)) (part  i)
-constant2 i = MoC.stated02 (wrap22 (1,1)     (1,1)     (psi22 id2)) (part2 i)
-constant3 i = MoC.stated03 (wrap33 (1,1,1)   (1,1,1)   (psi33 id3)) (part3 i)
-constant4 i = MoC.stated04 (wrap44 (1,1,1,1) (1,1,1,1) (psi44 id4)) (part4 i)
+constant1 i = MoC.stated01 (wrap11  1         1        (psi11 id)) (part  i)
+constant2 i = MoC.stated02 (wrap22 (1,1)     (1,1)     (psi22 (,))) (part2 i)
+constant3 i = MoC.stated03 (wrap33 (1,1,1)   (1,1,1)   (psi33 (,,))) (part3 i)
+constant4 i = MoC.stated04 (wrap44 (1,1,1,1) (1,1,1,1) (psi44 (,,,))) (part4 i)
 
 ------- GENERATE -------
 
 generate1 :: (Cons, Prod,
               [b1] -> [b1])
           -> [b1] -> Sig b1                                
-generate2 :: ((Cons,Cons), (Prod,Prod),
-              [b1] -> [b2] -> ([b1], [b2]))
-          -> ([b1], [b2]) -> (Sig b1, Sig b2)                          
 generate3 :: ((Cons,Cons,Cons), (Prod,Prod,Prod),
               [b1] -> [b2] -> [b3] -> ([b1], [b2], [b3]))
           -> ([b1], [b2], [b3]) -> (Sig b1, Sig b2, Sig b3)                      
@@ -155,9 +147,6 @@ state14 :: ((Cons,Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
 state21 :: ((Cons,Cons,Cons), Prod,
              [b1] -> [a1] -> [a2] -> [b1])
          ->  [b1] -> Sig a1 -> Sig a2 -> Sig b1
-state22 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
-             [b1] -> [b2] -> [a1] -> [a2] -> ([b1], [b2]))
-         -> ([b1], [b2]) -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 state23 :: ((Cons,Cons,Cons,Cons,Cons), (Prod,Prod,Prod),
              [b1] -> [b2] -> [b3] -> [a1] -> [a2] -> ([b1], [b2], [b3]))
          -> ([b1], [b2], [b3]) -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
@@ -226,9 +215,6 @@ stated14 :: ((Cons,Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
 stated21 :: ((Cons,Cons,Cons), Prod,
              [b1] -> [a1] -> [a2] -> [b1])
          ->  [b1] -> Sig a1 -> Sig a2 -> Sig b1
-stated22 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
-             [b1] -> [b2] -> [a1] -> [a2] -> ([b1], [b2]))
-         -> ([b1], [b2]) -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 stated23 :: ((Cons,Cons,Cons,Cons,Cons), (Prod,Prod,Prod),
              [b1] -> [b2] -> [b3] -> [a1] -> [a2] -> ([b1], [b2], [b3]))
          -> ([b1], [b2], [b3]) -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
@@ -297,9 +283,6 @@ moore14 :: ((Cons,Cons),  Prod,                 [st] -> [a1] -> [st])
 moore21 :: ((Cons,Cons,Cons), Prod,                 [st] -> [a1] -> [a2] -> [st])
         -> ( Cons,        Prod,                     [st] -> [b1])
         -> [st] -> Sig a1 -> Sig a2 -> Sig b1                          
-moore22 :: ((Cons,Cons,Cons), Prod,                 [st] -> [a1] -> [a2] -> [st])
-        -> ( Cons,           (Prod,Prod),           [st] -> ([b1], [b2]))
-        -> [st] -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)                    
 moore23 :: ((Cons,Cons,Cons), Prod,                 [st] -> [a1] -> [a2] -> [st])
         -> ( Cons,           (Prod,Prod,Prod),      [st] -> ([b1], [b2], [b3]))
         -> [st] -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
@@ -369,9 +352,6 @@ mealy14 :: ((Cons,Cons),  Prod,                 [st] -> [a1] -> [st])
 mealy21 :: ((Cons,Cons,Cons),  Prod,                 [st] -> [a1] -> [a2] -> [st])
         -> ((Cons,Cons,Cons),  Prod,                 [st] -> [a1] -> [a2] -> [b1])
         -> [st] -> Sig a1 -> Sig a2 -> Sig b1                          
-mealy22 :: ((Cons,Cons,Cons),  Prod,                 [st] -> [a1] -> [a2] -> [st])
-        -> ((Cons,Cons,Cons), (Prod,Prod),           [st] -> [a1] -> [a2] -> ([b1], [b2]))
-        -> [st] -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)                    
 mealy23 :: ((Cons,Cons,Cons),  Prod,                 [st] -> [a1] -> [a2] -> [st])
         -> ((Cons,Cons,Cons), (Prod,Prod,Prod),      [st] -> [a1] -> [a2] -> ([b1], [b2], [b3]))
         -> [st] -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
@@ -425,3 +405,166 @@ mealy44 (cns,pns,ns) (cod,pod,od) i = MoC.mealy44 (wrap51 cns pns (psi51 ns)) (w
 
 
 --tst1 a b = [head a + head b, last a - last b]
+
+
+----------------- DOCUMENTATION -----------------
+
+-- | The @delay@ process "delays" a signal with a partition of
+-- events. It is an instantiation of the 'ForSyDe.Atom.MoC.delay'
+-- constructor.
+--
+-- <<includes/figs/sdf-delay-graph.png>>
+delay :: [a]   -- ^ list of initial values
+      -> Sig a -- ^ input signal
+      -> Sig a -- ^ output signal
+
+-- | @comb@ processes map combinatorial functions on signals and take
+-- care of sdfnchronization between input signals. It instantiates the
+-- @comb@ atom pattern (see 'ForSyDe.Atom.MoC.comb22').
+--
+-- <<includes/figs/sdf-comb-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > comb11, comb12, comb13, comb14,
+-- > comb21, comb22, comb23, comb24,
+-- > comb31, comb32, comb33, comb34,
+-- > comb41, comb42, comb43, comb44,
+comb22 :: ((Cons,Cons), (Prod,Prod),
+           [a1] -> [a2] -> ([b1], [b2]))
+          -- ^ function on lists of values, tupled with consumption /
+          -- production rates
+       -> Sig a1                 -- ^ first input signal
+       -> Sig a2                 -- ^ second input signal
+       -> (Sig b1, Sig b2)       -- ^ two output signals
+
+-- | A signal generator which keeps a value constant. It
+-- is actually an instantiation of the @stated0X@ constructor
+-- (check 'ForSyDe.Atom.MoC.stated22').
+--
+-- <<includes/figs/sdf-constant-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > constant1, constant2, constant3, constant4,
+constant2 :: ([b1], [b2])         -- ^ values to be repeated
+          -> (Sig b1, Sig b2) -- ^ generated signals
+
+-- | A signal generator based on a function and a kernel value. It
+-- is actually an instantiation of the @stated0X@ constructor
+-- (check 'ForSyDe.Atom.MoC.stated22').
+--
+-- <<includes/figs/sdf-generate-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > generate1, generate2, generate3, generate4,
+generate2 :: ((Cons,Cons), (Prod,Prod),
+              [b1] -> [b2] -> ([b1], [b2]))
+             -- ^ function to generate next value, tupled with
+             -- consumption / production rates
+             -> ([b1], [b2])
+             -- ^ kernel partitions of values
+             -> (Sig b1, Sig b2) -- ^ generated signals
+
+-- | @stated@ is a state machine without an output decoder. It is an
+-- instantiation of the @state@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.stated22').
+--
+-- <<includes/figs/sdf-stated-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > stated11, stated12, stated13, stated14,
+-- > stated21, stated22, stated23, stated24,
+-- > stated31, stated32, stated33, stated34,
+-- > stated41, stated42, stated43, stated44,
+
+stated22 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
+             [b1] -> [b2] -> [a1] -> [a2] -> ([b1], [b2]))
+            -- ^ next state function, tupled with
+            -- consumption / production rates
+            -> ([b1], [b2])
+            -- ^ initial state partitions of values
+            -> Sig a1
+            -- ^ first input signal
+            -> Sig a2
+            -- ^ second input signal
+            -> (Sig b1, Sig b2) -- ^ output signals
+                 
+-- | @state@ is a state machine without an output decoder. It is an
+-- instantiation of the @stated@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.state22').
+--
+-- <<includes/figs/sdf-state-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > state11, state12, state13, state14,
+-- > state21, state22, state23, state24,
+-- > state31, state32, state33, state34,
+-- > state41, state42, state43, state44,
+state22 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
+            [b1] -> [b2] -> [a1] -> [a2] -> ([b1], [b2]))
+           -- ^ next state function, tupled with consumption /
+           -- production rates
+           -> ([b1], [b2])
+           -- ^ initial partitions of values
+           -> Sig a1
+           -- ^ first input signal
+           -> Sig a2
+           -- ^ second input signal
+           -> (Sig b1, Sig b2) -- ^ output signals
+                 
+-- | @moore@ processes model Moore state machines. It is an
+-- instantiation of the @moore@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.moore22').
+--
+-- <<includes/figs/sdf-moore-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > moore11, moore12, moore13, moore14,
+-- > moore21, moore22, moore23, moore24,
+-- > moore31, moore32, moore33, moore34,
+-- > moore41, moore42, moore43, moore44,
+moore22 :: ((Cons,Cons,Cons), Prod, [st] -> [a1] -> [a2] -> [st])
+           -- ^ next state function, tupled with
+             -- consumption / production rates
+           -> (Cons, (Prod,Prod), [st] -> ([b1], [b2]))
+           -- ^ output decoder, tupled with consumption / production
+           -- rates
+           -> [st]
+           -- ^ initial state values
+           -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
+
+-- | @mealy@ processes model Mealy state machines. It is an
+-- instantiation of the @mealy@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.mealy22').
+--
+-- <<includes/figs/sdf-mealy-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > mealy11, mealy12, mealy13, mealy14,
+-- > mealy21, mealy22, mealy23, mealy24,
+-- > mealy31, mealy32, mealy33, mealy34,
+-- > mealy41, mealy42, mealy43, mealy44,
+mealy22 :: ((Cons,Cons,Cons), Prod, [st] -> [a1] -> [a2] -> [st])
+           -- ^ next state function, tupled with consumption /
+           -- production rates
+           -> ((Cons,Cons,Cons), (Prod,Prod), [st] -> [a1] -> [a2] -> ([b1], [b2]))
+           -- ^ outpt decoder, tupled with
+             -- consumption / production rates
+           -> [st]
+           -- ^ initial state values
+           -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)           
+
+--------------- END DOCUMENTATION ---------------

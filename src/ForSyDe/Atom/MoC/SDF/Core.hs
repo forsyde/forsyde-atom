@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.MoC.SDF
@@ -17,58 +18,65 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.SDF.Core where
 
-import ForSyDe.Atom.MoC.AtomLib
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
-
-
--- | Type alias for a CT signal
-type Sig a       = S.Signal (Partition a)
+-- | Type synonym for a "partitions of SDF events", It also hides the
+-- reverse implementation of the previous statement (but with the same
+-- semantic).
 type Partition a = SDF [Value a]
+
+-- | Type synonym for a SDF signal, i.e. "a signal of partitions of
+-- SDF events"
+type Sig a       = S.Signal (Partition a)
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
-newtype SDF a = SDF { fromSDF :: a }
+newtype SDF a = SDF { partition :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance MoC SDF where
-  type Param SDF = [Int]
+  type Context SDF = Int
   ---------------------
-  (c:cs,_) -$- NullS = (cs, NullS)
-  (c:cs,f) -$- s = (cs, comb c f $ concat $ map fromSDF $ fromSignal s)
+  _ -$- NullS = NullS
+  (c,f) -$- s = (comb c f . concat . map partition . fromSignal) s
     where comb c f l = let x'  = take c l
                            xs' = drop c l
                        in if   length x' == c
                           then SDF (f x') :- comb c f xs'
                           else NullS
   ---------------------
-  (c:cs,_)  -*- NullS = (cs, NullS)
-  (c:cs,NullS) -*- _  = (cs, NullS)
-  (c:cs,fs) -*- s = (cs, comb2 c fs $ concat $ map fromSDF $ fromSignal s)
-    where comb2 c (SDF f:-fs) l = let x'  = take c l
-                                      xs' = drop c l
-                                  in if   length x' == c
-                                     then SDF (f x') :- comb2 c fs xs'
-                                     else NullS
-          comb2 _ NullS       _ = NullS
+  _  -*- NullS = NullS
+  NullS -*- _  = NullS
+  cfs -*- s = (comb2 cfs . concat . map partition . fromSignal) s
+    where comb2 NullS           _ = NullS
+          comb2 (SDF (c,f):-fs) l = let x'  = take c l
+                                        xs' = drop c l
+                                    in if   length x' == c
+                                       then SDF (f x') :- comb2 fs xs'
+                                       else NullS
   ---------------------
   (->-) = (:-) 
   ---------------------
   (-&-) _ a = a
   ---------------------
-  fromEvent = fromSDF
 
--- | Needed for the implementation of the '-$-' atom and also the
--- @unzip@ utilities.
+-- | A more efficient instatiation since we /know/ that the partition
+-- size is always 1.
 instance Functor (SDF) where
   fmap f (SDF a) = SDF (f a)
+
+-- | Allows for comparing signals with different partitions. __TODO!__ incomplete definition.
+instance Eq a => Eq (Signal (SDF [a])) where
+  a ==b = flatten a == flatten b
+    where flatten = concat . map partition . fromSignal
   
 -- | 'Show' instance. The signal 1 :- 2 :- NullS is represented as \{1,2\}.
 instance (Show a) => Show (SDF [a]) where
-  showsPrec p = showParen (p>1) . showPartition . fromSDF
+  showsPrec p = showParen (p>1) . showPartition . partition
     where
       showPartition (x : xs)  = showEvent x . showPartition' xs 
       showPartition ([])      = showChar ' ' . showChar '\b'
@@ -77,13 +85,21 @@ instance (Show a) => Show (SDF [a]) where
       showEvent x             = shows x
 
 -----------------------------------------------------------------------------
-
+-- | Transforms a list of values into a SDF signal with only one
+-- partition, i.e. all events share the same (initial) tag.
 signal :: [a] -> Sig a
 signal l = S.signal [part l]
 
 part :: [a] -> Partition a
 part l = SDF (Value <$> l)
 
+-- | Wraps a (tuple of) value list(s) into the equivalent event
+-- partitions form.
+--
+-- "ForSyDe.Atom.MoC.SDF" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > part, part2, part3, part4,
 part2 (l1,l2) = (part l1, part l2)
 part3 (l1,l2,l3) = (part l1, part l2, part l3)
 part4 (l1,l2,l3,l4) = (part l1, part l2, part l3, part l4)
@@ -94,81 +110,64 @@ check p Abst      = take p $ repeat Abst
 check p Undef     = take p $ repeat Undef
 check p (Value x) | length x /= p = error "Wrong production"
                   | otherwise     = Value <$> x
---check p (Value x) = Value <$> x
 
-check11 p f x1                      = check p $ sequenceA1 f x1
-check21 p f x1 x2                   = check p $ sequenceA2 f x1 x2
-check31 p f x1 x2 x3                = check p $ sequenceA3 f x1 x2 x3 
-check41 p f x1 x2 x3 x4             = check p $ sequenceA4 f x1 x2 x3 x4  
-check51 p f x1 x2 x3 x4 x5          = check p $ sequenceA5 f x1 x2 x3 x4 x5   
-check61 p f x1 x2 x3 x4 x5 x6       = check p $ sequenceA6 f x1 x2 x3 x4 x5 x6
-check71 p f x1 x2 x3 x4 x5 x6 x7    = check p $ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
-check81 p f x1 x2 x3 x4 x5 x6 x7 x8 = check p $ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
+-- | Wraps a function on extended values into the format needed by the
+-- MoC atoms.
+--
+-- <<includes/figs/untimed-wrapper-formula1.png>>
+--
+-- "ForSyDe.Atom.MoC.DE" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
+-- > wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
+-- > wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
+-- > wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
+wrap22 :: (Int, Int)  -- ^ production rates
+       -> (Int, Int)  -- ^ consumption rates
+       -> (Value [a3] -> Value [a2] -> (Value [a], Value [a1]))
+          -- ^ behvioural function on partitions to be wrapped
+       -> (Int, [Value a3] -> (Int, [Value a2] -> ([Value a], [Value a1])))
+          -- ^ wrapped form, as required by the atom constructor.
 
-check12 ps f x1                      = (check,check) $$ ps $$ sequenceA1 f x1
-check22 ps f x1 x2                   = (check,check) $$ ps $$ sequenceA2 f x1 x2
-check32 ps f x1 x2 x3                = (check,check) $$ ps $$ sequenceA3 f x1 x2 x3 
-check42 ps f x1 x2 x3 x4             = (check,check) $$ ps $$ sequenceA4 f x1 x2 x3 x4  
-check52 ps f x1 x2 x3 x4 x5          = (check,check) $$ ps $$ sequenceA5 f x1 x2 x3 x4 x5   
-check62 ps f x1 x2 x3 x4 x5 x6       = (check,check) $$ ps $$ sequenceA6 f x1 x2 x3 x4 x5 x6
-check72 ps f x1 x2 x3 x4 x5 x6 x7    = (check,check) $$ ps $$ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
-check82 ps f x1 x2 x3 x4 x5 x6 x7 x8 = (check,check) $$ ps $$ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
+wrap :: Int -> ([Value a] -> b) -> (Int, [Value a] -> b)
+wrap c f = (c, \x -> f x)
 
-check13 ps f x1                      = (check,check,check) $$$ ps $$$ sequenceA1 f x1
-check23 ps f x1 x2                   = (check,check,check) $$$ ps $$$ sequenceA2 f x1 x2
-check33 ps f x1 x2 x3                = (check,check,check) $$$ ps $$$ sequenceA3 f x1 x2 x3 
-check43 ps f x1 x2 x3 x4             = (check,check,check) $$$ ps $$$ sequenceA4 f x1 x2 x3 x4  
-check53 ps f x1 x2 x3 x4 x5          = (check,check,check) $$$ ps $$$ sequenceA5 f x1 x2 x3 x4 x5   
-check63 ps f x1 x2 x3 x4 x5 x6       = (check,check,check) $$$ ps $$$ sequenceA6 f x1 x2 x3 x4 x5 x6
-check73 ps f x1 x2 x3 x4 x5 x6 x7    = (check,check,check) $$$ ps $$$ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
-check83 ps f x1 x2 x3 x4 x5 x6 x7 x8 = (check,check,check) $$$ ps $$$ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
+wrap11 (c1)                      p f = wrap c1 $ check p . f . sequenceA
+wrap21 (c1,c2)                   p f = wrap c1 $ wrap11  c2 p . f . sequenceA
+wrap31 (c1,c2,c3)                p f = wrap c1 $ wrap21 (c2,c3) p . f . sequenceA
+wrap41 (c1,c2,c3,c4)             p f = wrap c1 $ wrap31 (c2,c3,c4) p . f . sequenceA
+wrap51 (c1,c2,c3,c4,c5)          p f = wrap c1 $ wrap41 (c2,c3,c4,c5) p . f . sequenceA
+wrap61 (c1,c2,c3,c4,c5,c6)       p f = wrap c1 $ wrap51 (c2,c3,c4,c5,c6) p . f . sequenceA
+wrap71 (c1,c2,c3,c4,c5,c6,c7)    p f = wrap c1 $ wrap61 (c2,c3,c4,c5,c6,c7) p . f . sequenceA
+wrap81 (c1,c2,c3,c4,c5,c6,c7,c8) p f = wrap c1 $ wrap71 (c2,c3,c4,c5,c6,c7,c8) p . f . sequenceA
 
-check14 ps f x1                      = (check,check,check,check) $$$$ ps $$$$ sequenceA1 f x1
-check24 ps f x1 x2                   = (check,check,check,check) $$$$ ps $$$$ sequenceA2 f x1 x2
-check34 ps f x1 x2 x3                = (check,check,check,check) $$$$ ps $$$$ sequenceA3 f x1 x2 x3 
-check44 ps f x1 x2 x3 x4             = (check,check,check,check) $$$$ ps $$$$ sequenceA4 f x1 x2 x3 x4  
-check54 ps f x1 x2 x3 x4 x5          = (check,check,check,check) $$$$ ps $$$$ sequenceA5 f x1 x2 x3 x4 x5   
-check64 ps f x1 x2 x3 x4 x5 x6       = (check,check,check,check) $$$$ ps $$$$ sequenceA6 f x1 x2 x3 x4 x5 x6
-check74 ps f x1 x2 x3 x4 x5 x6 x7    = (check,check,check,check) $$$$ ps $$$$ sequenceA7 f x1 x2 x3 x4 x5 x6 x7
-check84 ps f x1 x2 x3 x4 x5 x6 x7 x8 = (check,check,check,check) $$$$ ps $$$$ sequenceA8 f x1 x2 x3 x4 x5 x6 x7 x8
+wrap12 (c1)                 (p1,p2) f = wrap c1 $ ($$) (check p1, check p2) . f . sequenceA
+wrap22 (c1,c2)                   ps f = wrap c1 $ wrap12  c2 ps . f . sequenceA
+wrap32 (c1,c2,c3)                ps f = wrap c1 $ wrap22 (c2,c3) ps . f . sequenceA
+wrap42 (c1,c2,c3,c4)             ps f = wrap c1 $ wrap32 (c2,c3,c4) ps . f . sequenceA
+wrap52 (c1,c2,c3,c4,c5)          ps f = wrap c1 $ wrap42 (c2,c3,c4,c5) ps . f . sequenceA
+wrap62 (c1,c2,c3,c4,c5,c6)       ps f = wrap c1 $ wrap52 (c2,c3,c4,c5,c6) ps . f . sequenceA
+wrap72 (c1,c2,c3,c4,c5,c6,c7)    ps f = wrap c1 $ wrap62 (c2,c3,c4,c5,c6,c7) ps . f . sequenceA
+wrap82 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = wrap c1 $ wrap72 (c2,c3,c4,c5,c6,c7,c8) ps . f . sequenceA
 
+wrap13 (c1)              (p1,p2,p3) f = wrap c1 $ ($$$) (check p1, check p2, check p3) . f . sequenceA
+wrap23 (c1,c2)                   ps f = wrap c1 $ wrap13  c2 ps . f . sequenceA
+wrap33 (c1,c2,c3)                ps f = wrap c1 $ wrap23 (c2,c3) ps . f . sequenceA
+wrap43 (c1,c2,c3,c4)             ps f = wrap c1 $ wrap33 (c2,c3,c4) ps . f . sequenceA
+wrap53 (c1,c2,c3,c4,c5)          ps f = wrap c1 $ wrap43 (c2,c3,c4,c5) ps . f . sequenceA
+wrap63 (c1,c2,c3,c4,c5,c6)       ps f = wrap c1 $ wrap53 (c2,c3,c4,c5,c6) ps . f . sequenceA
+wrap73 (c1,c2,c3,c4,c5,c6,c7)    ps f = wrap c1 $ wrap63 (c2,c3,c4,c5,c6,c7) ps . f . sequenceA
+wrap83 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = wrap c1 $ wrap73 (c2,c3,c4,c5,c6,c7,c8) ps . f . sequenceA
 
-wrap11 (c1)                      ps = (,) [c1]                      . check11 ps
-wrap21 (c1,c2)                   ps = (,) [c1,c2]                   . check21 ps
-wrap31 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check31 ps
-wrap41 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check41 ps
-wrap51 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check51 ps
-wrap61 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check61 ps
-wrap71 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check71 ps
-wrap81 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check81 ps
-
-wrap12 (c1)                      ps = (,) [c1]                      . check12 ps
-wrap22 (c1,c2)                   ps = (,) [c1,c2]                   . check22 ps
-wrap32 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check32 ps
-wrap42 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check42 ps
-wrap52 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check52 ps
-wrap62 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check62 ps
-wrap72 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check72 ps
-wrap82 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check82 ps
-
-wrap13 (c1)                      ps = (,) [c1]                      . check13 ps
-wrap23 (c1,c2)                   ps = (,) [c1,c2]                   . check23 ps
-wrap33 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check33 ps
-wrap43 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check43 ps
-wrap53 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check53 ps
-wrap63 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check63 ps
-wrap73 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check73 ps
-wrap83 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check83 ps
-
-wrap14 (c1)                      ps = (,) [c1]                      . check14 ps
-wrap24 (c1,c2)                   ps = (,) [c1,c2]                   . check24 ps
-wrap34 (c1,c2,c3)                ps = (,) [c1,c2,c3]                . check34 ps
-wrap44 (c1,c2,c3,c4)             ps = (,) [c1,c2,c3,c4]             . check44 ps
-wrap54 (c1,c2,c3,c4,c5)          ps = (,) [c1,c2,c3,c4,c5]          . check54 ps
-wrap64 (c1,c2,c3,c4,c5,c6)       ps = (,) [c1,c2,c3,c4,c5,c6]       . check64 ps
-wrap74 (c1,c2,c3,c4,c5,c6,c7)    ps = (,) [c1,c2,c3,c4,c5,c6,c7]    . check74 ps
-wrap84 (c1,c2,c3,c4,c5,c6,c7,c8) ps = (,) [c1,c2,c3,c4,c5,c6,c7,c8] . check84 ps
-
+wrap14 (c1)           (p1,p2,p3,p4) f = wrap c1 $ ($$$$) (check p1, check p2, check p3, check p4) . f . sequenceA
+wrap24 (c1,c2)                   ps f = wrap c1 $ wrap14  c2 ps . f . sequenceA
+wrap34 (c1,c2,c3)                ps f = wrap c1 $ wrap24 (c2,c3) ps . f . sequenceA
+wrap44 (c1,c2,c3,c4)             ps f = wrap c1 $ wrap34 (c2,c3,c4) ps . f . sequenceA
+wrap54 (c1,c2,c3,c4,c5)          ps f = wrap c1 $ wrap44 (c2,c3,c4,c5) ps . f . sequenceA
+wrap64 (c1,c2,c3,c4,c5,c6)       ps f = wrap c1 $ wrap54 (c2,c3,c4,c5,c6) ps . f . sequenceA
+wrap74 (c1,c2,c3,c4,c5,c6,c7)    ps f = wrap c1 $ wrap64 (c2,c3,c4,c5,c6,c7) ps . f . sequenceA
+wrap84 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = wrap c1 $ wrap74 (c2,c3,c4,c5,c6,c7,c8) ps . f . sequenceA
 
 -- s = ForSyDe.Atom.MoC.SDF.Core.signal [1,2,3,4,5,6,7,8,9]
 

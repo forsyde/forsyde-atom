@@ -1,0 +1,40 @@
+\documentclass{standalone}
+\usepackage{forsyde-plot}
+\usepackage{forsyde-tikz}
+
+\begin{document}
+\newsavebox\insig
+\sbox{\insig}{
+  \begin{de-signal}[%
+    timestamps=2,tag scale=.5, signal sep=1.2]{11}
+    \scriptsize
+    \designal{$S_{i}$} \undefined{2} \present{1}{1} 
+        \present{3}{2} \present{2}{3} \present{3}{4} \present{1}{5}
+        \infinity 
+  \end{de-signal}
+}
+\newsavebox\outsig
+\sbox{\outsig}{
+  \begin{de-signal}[%
+    timestamps=2, grid=2, tag scale=.5, signal sep=1.2]{11}
+    \scriptsize
+    \designal{$S_{o}$}  \present{2}{5} \undefined{2} 
+        \present{1}{1} \present{3}{2} \present{2}{3} \present{2}{4} 
+        \infinity 
+  \end{de-signal}
+}
+
+\begin{tikzpicture}[]
+  \leafstd[moc=de, ni=1, no=1, nf=2, f1=2, f2=5, type=delay]{c1} {0,0} {};
+  \node[anchor=east] (i) at ($(c1.west)-(1,0)$) {\usebox{\insig}};
+  \node[anchor=west] (o) at ($(c1.east)+(1,0)$) {\usebox{\outsig}};
+
+  \signal[-|-=.8] (i) -> (c1-p.i1);
+  \signal[] (c1-p.o1) -> (o);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

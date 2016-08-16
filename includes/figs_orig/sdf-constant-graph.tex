@@ -1,0 +1,19 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+
+\begin{tikzpicture}[]
+  \leafstd[moc=sdf, ni=2, no=2, nf=1, f1={$(1,2)$}, type=constant]{c1} {0,0} {};
+  \node[anchor=south west] (o1) at ($(c1-p.o1)+(1,0)$)  {$1, 1, 1, 1, ...$};
+  \node[anchor=north west] (o2) at ($(c1-p.o2)+(1,0)$) {$2, 2, 2, 2, ...$};
+
+  \signal[-|-=.2] (c1-p.o1) -> (o1.south east);
+  \signal[-|-=.2] (c1-p.o2) -> (o2.north east);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

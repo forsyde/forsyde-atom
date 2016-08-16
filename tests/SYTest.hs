@@ -17,16 +17,16 @@ countEvent a (x :- xs) | a == x    = 1 + countEvent a xs
 
 -- Properties
 
-prop_delay_1 xs = 1 + S.lengthS xs == S.lengthS (SY.delay 1 xs)
+prop_delay_1 xs = 1 + length xs == length (SY.delay 1 xs)
   where types = xs :: SY.Sig Int
 
-prop_delay_comb_1 xs = S.lengthS xs == S.lengthS (SY.mealy11 (+) (-) 1 xs)
+prop_delay_comb_1 xs = length xs == length (SY.mealy11 (+) (-) 1 xs)
   where types = xs :: SY.Sig Int
 
-prop_comb_1 xs = S.lengthS xs == S.lengthS (SY.comb11 (+1) xs)
+prop_comb_1 xs = length xs == length (SY.comb11 (+1) xs)
   where types = xs :: SY.Sig Int
 
-prop_comb_2 xs ys = min (S.lengthS xs) (S.lengthS ys) == S.lengthS (SY.comb21 (+) xs ys)
+prop_comb_2 xs ys = min (length xs) (length ys) == length (SY.comb21 (+) xs ys)
   where types = (xs :: SY.Sig Int, ys :: SY.Sig Int)
 
 prop_comb_psi_1 xs = inputAbst xs == outputAbst xs

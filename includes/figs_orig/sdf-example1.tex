@@ -1,0 +1,28 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+
+
+\def\func{$\lambda a\ b\ \rightarrow [a_{1} + a_{3}, a_{2} - b_{2}]$}
+\begin{document}
+
+\begin{tikzpicture}[]
+  \leafstd[moc=sdf, ni=2, no=1, nf=1, f1={\func}, type=comb]{c1} {0,0} {};
+  \node[anchor=south east] (i1) at ($(c1-p.i1)-(1,0)$) {%
+    $\underline{2, 3, 4}, \underline{5, ?, 7}, 8, 9$};
+  \node[anchor=north east] (i2) at ($(c1-p.i2)-(1,0)$) {%
+    $\underline{1, 2}, \underline{3, 4}, \underline{5, 6}, 7$};
+  \node[anchor=south west] (o1) at ($(c1-p.o1)+(1,0)$) {%
+    $\underline{6, 1}, \underline{?, ?}$};
+
+  \portinfo{c1}\consumption{3}\consumption{2}\production{2}
+
+  \signal[-|-=.8] (i1.south west) -> (c1-p.i1);
+  \signal[-|-=.8] (i2.north west) -> (c1-p.i2);
+  \signal[-|-=.2] (c1-p.o1) -> (o1.south east);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

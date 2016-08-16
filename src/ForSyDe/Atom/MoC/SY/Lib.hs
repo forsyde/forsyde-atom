@@ -16,14 +16,14 @@
 module ForSyDe.Atom.MoC.SY.Lib where
 
 import           ForSyDe.Atom.Behavior    hiding (value)
-import qualified ForSyDe.Atom.MoC.AtomLib as MoC
+import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.SY.Core
 import           ForSyDe.Atom.Utility
 import           Prelude                  hiding (filter)
 
+
 ------- DELAY -------
 
-delay :: a -> Sig a -> Sig a
 delay i = MoC.delay (event i)
 
 ------- COMB -------
@@ -38,8 +38,6 @@ comb14 :: (a1 -> (b1, b2, b3, b4))
        -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 comb21 :: (a1 -> a2 -> b1)
        -> Sig a1 -> Sig a2 -> Sig b1
-comb22 :: (a1 -> a2 -> (b1, b2))
-       -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 comb23 :: (a1 -> a2 -> (b1, b2, b3))
        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
 comb24 :: (a1 -> a2 -> (b1, b2, b3, b4))
@@ -81,20 +79,17 @@ comb44 f = MoC.comb44 (wrap44 (psi44 f))
 ------- CONSTANT -------
 
 constant1 :: b1 -> Sig b1
-constant2 :: (b1, b2) -> (Sig b1, Sig b2)
 constant3 :: (b1, b2, b3) -> (Sig b1, Sig b2, Sig b3)
 constant4 :: (b1, b2, b3, b4) -> (Sig b1, Sig b2, Sig b3, Sig b4)
 
-constant1 i = MoC.stated01 (wrap11 (psi11 id1)) (event  i)
-constant2 i = MoC.stated02 (wrap22 (psi22 id2)) (event2 i)
-constant3 i = MoC.stated03 (wrap33 (psi33 id3)) (event3 i)
-constant4 i = MoC.stated04 (wrap44 (psi44 id4)) (event4 i)
+constant1 i = MoC.stated01 (wrap11 (psi11 id)) (event  i)
+constant2 i = MoC.stated02 (wrap22 (psi22 (,))) (event2 i)
+constant3 i = MoC.stated03 (wrap33 (psi33 (,,))) (event3 i)
+constant4 i = MoC.stated04 (wrap44 (psi44 (,,,))) (event4 i)
 
 
 generate1 :: (b1 -> b1) -> b1
           -> Sig b1
-generate2 :: (b1 -> b2 -> (b1, b2)) -> (b1, b2)
-          -> (Sig b1, Sig b2)
 generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3)) -> (b1, b2, b3)
           -> (Sig b1, Sig b2, Sig b3)
 generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
@@ -116,8 +111,6 @@ stated14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 stated21 :: (b1 -> a1 -> a2 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig b1
-stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 stated23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
 stated24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
@@ -167,8 +160,6 @@ state14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 state21 :: (b1 -> a1 -> a2 -> b1) -> b1
         -> Sig a1 -> Sig a2 -> Sig b1
-state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> (b1, b2)
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 state23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) -> (b1, b2, b3)
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
 state24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) -> (b1, b2, b3, b4)
@@ -218,8 +209,6 @@ moore14 :: (st -> a1 -> st) -> (st -> (b1, b2, b3, b4)) -> st
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 moore21 :: (st -> a1 -> a2 -> st) -> (st -> b1) -> st
         -> Sig a1 -> Sig a2 -> Sig b1
-moore22 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2)) -> st
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 moore23 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2, b3)) -> st
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
 moore24 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2, b3, b4)) -> st
@@ -269,8 +258,6 @@ mealy14 :: (st -> a1 -> st) -> (st -> a1 -> (b1, b2, b3, b4)) -> st
         -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)
 mealy21 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> b1) -> st
         -> Sig a1 -> Sig a2 -> Sig b1
-mealy22 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> (b1, b2)) -> st
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
 mealy23 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> (b1, b2, b3)) -> st
         -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)
 mealy24 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> (b1, b2, b3, b4)) -> st
@@ -311,7 +298,6 @@ mealy44 ns od i = MoC.mealy44 (wrap51 (psi51 ns)) (wrap54 (psi54 od)) (event i)
 
 
 buffer1 :: [a] -> Sig a -> Sig [a]
-buffer2 :: [a] -> Sig a -> Sig a -> Sig [a]
 buffer3 :: [a] -> Sig a -> Sig a -> Sig a -> Sig [a]
 buffer4 :: [a] -> Sig a -> Sig a -> Sig a -> Sig a -> Sig [a]
 
@@ -321,54 +307,204 @@ buffer3 i = MoC.state31 (wrap41 store3) (event i)
 buffer4 i = MoC.state41 (wrap51 store4) (event i)
 
 
--- FILTER, FILL, HOLD
+------- WHEN, FILTER, FILL, HOLD -------
+
+when = MoC.comb21 (wrap21 (replaceA . psi11 not))
+
+filter p s = MoC.comb21 (wrap21 replaceU) (comb11 p s) s
+
+fill x s = MoC.comb21 (wrap21 (unsafeReplaceV (Value x))) (MoC.comb11 (wrap11 isNotPresent) s) s
+
+hold init = MoC.state11 (wrap21 fillF) (event init)
+  where fillF st inp = (unsafeReplaceV st) (isNotPresent inp) inp
+
+
+
+----------------- DOCUMENTATION -----------------
+
+-- | The @delay@ process "delays" a signal with one event. It is an
+-- instantiation of the 'ForSyDe.Atom.MoC.delay' constructor.
+--
+-- <<includes/figs/sy-delay-graph.png>>
+delay :: a     -- ^ initial value
+      -> Sig a -- ^ input signal
+      -> Sig a -- ^ output signal
+
+-- | @comb@ processes map combinatorial functions on signals and take
+-- care of synchronization between input signals. It instantiates the
+-- @comb@ atom pattern (see 'ForSyDe.Atom.MoC.comb22').
+--
+-- <<includes/figs/sy-comb-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > comb11, comb12, comb13, comb14,
+-- > comb21, comb22, comb23, comb24,
+-- > comb31, comb32, comb33, comb34,
+-- > comb41, comb42, comb43, comb44,
+comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
+       -> Sig a1                 -- ^ first input signal
+       -> Sig a2                 -- ^ second input signal
+       -> (Sig b1, Sig b2)       -- ^ two output signals
+
+-- | A signal generator which keeps a value constant. It
+-- is actually an instantiation of the @stated0X@ constructor
+-- (check 'ForSyDe.Atom.MoC.stated22').
+--
+-- <<includes/figs/sy-constant-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > constant1, constant2, constant3, constant4,
+constant2 :: (b1, b2)         -- ^ values to be repeated
+          -> (Sig b1, Sig b2) -- ^ generated signals
+
+-- | A signal generator based on a function and a kernel value. It
+-- is actually an instantiation of the @stated0X@ constructor
+-- (check 'ForSyDe.Atom.MoC.stated22').
+--
+-- <<includes/figs/sy-generate-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > generate1, generate2, generate3, generate4,
+generate2 :: (b1 -> b2 -> (b1, b2))
+             -- ^ function to generate next value
+             -> (b1, b2)
+             -- ^ kernel values
+             -> (Sig b1, Sig b2) -- ^ generated signals
+
+-- | @stated@ is a state machine without an output decoder. It is an
+-- instantiation of the @state@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.stated22').
+--
+-- <<includes/figs/sy-stated-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > stated11, stated12, stated13, stated14,
+-- > stated21, stated22, stated23, stated24,
+-- > stated31, stated32, stated33, stated34,
+-- > stated41, stated42, stated43, stated44,
+stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
+            -- ^ next state function
+            -> (b1, b2)
+            -- ^ initial state values
+            -> Sig a1
+            -- ^ first input signal
+            -> Sig a2
+            -- ^ second input signal
+            -> (Sig b1, Sig b2) -- ^ output signals
+                 
+-- | @state@ is a state machine without an output decoder. It is an
+-- instantiation of the @stated@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.state22').
+--
+-- <<includes/figs/sy-scanl-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > state11, state12, state13, state14,
+-- > state21, state22, state23, state24,
+-- > state31, state32, state33, state34,
+-- > state41, state42, state43, state44,
+state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
+           -- ^ next state function
+           -> (b1, b2)
+           -- ^ initial state values
+           -> Sig a1
+           -- ^ first input signal
+           -> Sig a2
+           -- ^ second input signal
+           -> (Sig b1, Sig b2) -- ^ output signals
+
+-- | @moore@ processes model Moore state machines. It is an
+-- instantiation of the @moore@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.moore22').
+--
+-- <<includes/figs/sy-moore-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > moore11, moore12, moore13, moore14,
+-- > moore21, moore22, moore23, moore24,
+-- > moore31, moore32, moore33, moore34,
+-- > moore41, moore42, moore43, moore44,
+moore22 :: (st -> a1 -> a2 -> st)
+           -- ^ next state function
+           -> (st -> (b1, b2))
+           -- ^ output decoder
+           -> st
+           -- ^ initial state
+           -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
+
+-- | @mealy@ processes model Mealy state machines. It is an
+-- instantiation of the @mealy@ MoC constructor
+-- (see 'ForSyDe.Atom.MoC.mealy22').
+--
+-- <<includes/figs/sy-mealy-graph.png>>
+--
+-- "ForSyDe.Atom.MoC.SY" exports the constructors below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > mealy11, mealy12, mealy13, mealy14,
+-- > mealy21, mealy22, mealy23, mealy24,
+-- > mealy31, mealy32, mealy33, mealy34,
+-- > mealy41, mealy42, mealy43, mealy44,
+mealy22 :: (st -> a1 -> a2 -> st)
+           -- ^ next state function
+           -> (st -> a1 -> a2 -> (b1, b2))
+           -- ^ outpt decoder
+           -> st
+           -- ^ initial state
+           -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
+
+-- | @buffer@ processes roughly implement a memory model which stores
+-- all input present and known values. The atom pattern instantiated
+-- is @state@ (see 'ForSyDe.Atom.MoC.state22'), while the behavior is
+-- @store@ (see 'ForSyDe.Atom.Behavior.store2')
+--
+-- <<includes/figs/sy-buffer-graph.png>>
+buffer2 :: [a] -> Sig a -> Sig a -> Sig [a]
+
 
 -- | This process predicates the existence of events in a signal based
 -- on a signal of boolean values (conditions). It is similar to the
 -- @when@ construct in the synchronous language Lustre <#hal91 [2]>,
 -- based on which clock calculus can be performed.
 --
--- >>> let s = signal [1,2,3,4,5,6]
--- >>> let p = comb11 (>3) s
--- >>> s
--- {1,2,3,4,5,6}
--- >>> p
--- {False,False,False,True,True,True}
--- >>> when p s
--- {⟂,⟂,⟂,4,5,6}
+-- <<includes/figs/sy-when-graph.png>>
 when :: Sig Bool    -- ^ Signal of predicates
      -> Sig a       -- ^ Input signal
      -> Sig a       -- ^ Output signal
-when = MoC.comb21 (wrap21 (replaceA . psi11 not))
 
 -- | Filters out values to unknown if they do not fulfill a predicate
 -- function.
 --
--- >>> let s = signal [1,2,3,4,5,6]
--- >>> filter (>3) s
--- {1,2,3,?,?,?}
+-- <<includes/figs/sy-filter-graph.png>>
 filter :: (a -> Bool) -- ^ Predicate function
        -> Sig a       -- ^ Input signal
        -> Sig a       -- ^ Output signal
-filter p s = MoC.comb21 (wrap21 replaceU) (comb11 p s) s
 
 -- | Fills absent events with a pre-defined value.
 --
--- >>> let s = filter (>3) $ signal [1,2,3,4,5,6]
--- >>> fill 5 s
--- {1,2,3,5,5,5}
-fill :: a -> Sig a -> Sig a
-fill x s = MoC.comb21 (wrap21 (unsafeReplaceV (Value x))) (MoC.comb11 (wrap11 isNotPresent) s) s
-
+-- <<includes/figs/sy-fill-graph.png>>
+fill :: a     -- ^ Value to fill with
+     -> Sig a -- ^ Input
+     -> Sig a -- ^ Output
 
 -- | Similar to 'fill', but holds the last non-absent value if there
--- was one.
+-- was one. It implements a @state@ pattern (see 'ForSyDe.Atom.MoC.state22').
 --
--- >>> let s = filter (<3) $ signal [1,2,3,4,5,6]
--- >>> holf 5 s
--- {1,2,3,3,3,3}
-hold :: a -> Sig a -> Sig a
-hold init = MoC.state11 (wrap21 fillF) (event init)
-  where fillF st inp = (unsafeReplaceV st) (isNotPresent inp) inp
-
-
+-- <<includes/figs/sy-hold-graph.png>>
+hold :: a     -- ^ Value to fill with in case there was no previous value
+     -> Sig a -- ^ Input
+     -> Sig a -- ^ Output
+     
+--------------- END DOCUMENTATION ---------------
