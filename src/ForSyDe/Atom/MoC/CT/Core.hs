@@ -24,18 +24,26 @@ import ForSyDe.Atom.Utility
 import Numeric
 import Data.Ratio
 
+-- | Type alias for the tag type to represent metric time. Underneath
+-- we use 'Rational' that is able to represent any /t/ between
+-- /t&#8321;/ < /t&#8322;/ &#8712; /T/.
 type Time = Rational
 
--- | Type alias for a CT signal
-type Sig   a = S.Signal (Event a)
+-- | Type synonym for a CT event, i.e. "a constructed event of
+-- partitioned function on 'Time' returning extended values, where the
+-- partition size is always 1"
 type Event a = CT ([Value a])
+
+-- | Type synonym for a CT signal, i.e. "a signal of CT events"
+type Sig   a = S.Signal (Event a)
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
 -- which is represented as an integer.
 data CT a  = CT { tag :: Time, func :: Time -> a }
 
--- | Implenents the CT semantics for the MoC atoms
+-- | Implenents the execution and synchronization semantics for the CT
+-- MoC through its atoms.
 instance MoC CT where
   type Context CT = ()
   ---------------------
@@ -60,13 +68,11 @@ instance MoC CT where
   ---------------------
   (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
   ---------------------
-  --fromEvent (CT t f) = f t
     
-
--- | Shows the event with tag @t@ and value @v@ as @(\@t:v)@
-instance Show a => Show (CT a) where
-  showsPrec _ (CT t x) = (++) ( show (x t) ++ "@" ++ (showFFloat Nothing $ fromRat t) "" )
-
+-- | Shows the event starting from tag @t@ with value @v = f t@  @ v \@t@. It hides the partition (the singleton list constructor).
+instance Show a => Show (CT [a]) where
+  showsPrec _ (CT t f) = (++) ( " " ++ show (head $ f t) ++ " @" ++ (showFFloat Nothing $ fromRat t) "" )
+  
 -- -- | A more efficient instatiation since we /know/ that the partition
 -- -- size is always 1.
 -- instance Eq a => Eq (CT a) where
@@ -77,12 +83,11 @@ instance Eq a => Eq (Signal (CT [a])) where
   a == b = flatten a == flatten b
     where flatten = concat . map (\(CT t f) -> f t) . fromSignal
 
-
--- | Needed to implement the @unzip@ utilities
+-- | Allows for mapping of functions on a CT event.
 instance Functor (CT) where
   fmap f (CT t a) = CT t (f <$> a)
 
--- | Needed to implement the @unzip@ utilities
+-- | Allows for lifting functions on a pair of CT events.
 instance Applicative (CT) where
   pure a = CT 0.0 (\_ -> a)
   (CT t f) <*> (CT _ x) = CT t (\a -> (f a) (x a))
@@ -105,9 +110,17 @@ extractFunction (CT t f) = CT t (snd . f)
 -- end of testbench functions
 -----------------------------------------------------------------------------
 
--- | Wraps a tuple @(tag, value)@ into a CT event of extended values
+-- -- | Wraps a tuple @(tag, value)@ into a CT event of extended values
 event  :: (Time, Time -> a) -> Event a 
 event (t,f) = CT t (pure . Value . f)
+
+-- | Wraps a (tuple of) pair(s) @(tag, function)@ into the equivalent
+-- event container(s).
+--
+-- "ForSyDe.Atom.MoC.CT" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > event, event2, event3, event4,
 event2 = ($$) (event,event)
 event3 = ($$$) (event,event,event)
 event4 = ($$$$) (event,event,event,event)
@@ -117,16 +130,26 @@ event4 = ($$$$) (event,event,event,event)
 signal   :: [(Time, Time -> a)] -> Sig a
 signal l = S.signal (event <$> l)
 
-partition :: Rational -> Sig a -> Sig a 
-partition _    NullS     = NullS
-partition sample (x:-xs) = chunk x xs
+-- | Discretizes a signal by splitting the events into multiple events
+-- of constant duration. The return signal has an infinite number of
+-- events.
+split :: Time -- ^ resolution
+         -> Sig a -> Sig a 
+split _    NullS     = NullS
+split sample (x:-xs) = chunk x xs
   where chunk (CT t f) s@(CT nt nf :- fs)
           | t < nt    = CT t f :- chunk (CT (t+sample) f) s
           | otherwise = CT nt nf :- chunk (CT nt nf) fs
         chunk _ NullS = NullS
 
-partitionUntil _ _ NullS = NullS
-partitionUntil until sample (x:-xs) = chunk x xs
+
+-- | Discretizes a signal by splitting the events into multiple events
+-- of constant duration, until a given time.
+splitUntil :: Time -- ^ end time
+           -> Time -- ^ resolution
+           -> Signal (CT a) -> Signal (CT a) 
+splitUntil _ _ NullS = NullS
+splitUntil until sample (x:-xs) = chunk x xs
   where chunk (CT t f) s@(CT nt nf :- fs)
           | t <= until && t < nt  = CT t f :- chunk (CT (t+sample) f) s
           | t <= until && t >= nt = CT nt nf :- chunk (CT nt nf) fs
@@ -138,6 +161,23 @@ partitionUntil until sample (x:-xs) = chunk x xs
 eval s = (\(CT t f) -> f t) <$> s
 
 ----------------------------------------------------------------------------- 
+
+-- | Wraps a function on extended values into the format needed by the
+-- MoC atoms.
+--
+-- <<includes/figs/timed-wrapper-formula1.png>>
+--
+-- "ForSyDe.Atom.MoC.DE" exports the helper functions below. Please
+-- follow the examples in the source code if they do not suffice:
+--
+-- > wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
+-- > wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
+-- > wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
+-- > wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
+wrap22 :: (Value a1 -> Value a2 -> (Value b1, Value b2))
+       -> ((), [Value a1] -> ((), [Value a2] -> ([Value b1], [Value b2])))
+
+
 wrap f = ((), \x -> f x)
 
 wrap11 f = wrap $ (map f)

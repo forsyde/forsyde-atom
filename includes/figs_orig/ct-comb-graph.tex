@@ -1,0 +1,53 @@
+\documentclass{standalone}
+\usepackage{forsyde-tikz}
+\usepackage{forsyde-plot}
+\usepackage{pgfplots}
+
+\def\sigsin(#1){sin(deg(#1))}
+\def\sigsinp1(#1){sin(deg(#1))+1} 
+\def\sigsinm1(#1){sin(deg(#1))-1} 
+
+\begin{document}
+
+\newsavebox\insig
+\begin{lrbox}{\insig}
+  \begin{ct-signal}[xmin=0, xmax=10, ymin=-1.5, ymax=1.5]{2}
+    \ctsignal{$S_{i,1}$}\ctf{0}{11}{\sigsin}\ctend
+    \ctsignal{$S_{i,2}$}\ctct{0}{2}{1}\ctct{2}{5}{-1}\ctct{5}{8}{1}\ctct{8}{11}{-1}\ctend
+  \end{ct-signal} 
+\end{lrbox}
+
+
+\newsavebox\outsig
+\begin{lrbox}{\outsig}
+  \begin{ct-signal}[xmin=0, xmax=10, ymin=-2, ymax=2]{2}
+    \ctsignal{$S_{o,1}$}\ctf{0}{2}{\sigsin}\ctf{2}{5}{-\sigsin}
+                       \ctf{5}{8}{\sigsin}\ctf{8}{11}{-\sigsin}\ctend
+    \ctsignal{$S_{o,2}$}\ctf{0}{2}{\sigsinp1}\ctf{2}{5}{\sigsinm1}
+                       \ctf{5}{8}{\sigsinp1}\ctf{8}{11}{\sigsinm1}\ctend
+    \end{ct-signal} 
+\end{lrbox}
+
+
+\begin{tikzpicture}[]
+  \leafstd[moc=ct, ni=2, no=2, nf=1, f1={$\lambda\ a\ b \rightarrow (a\times b, a+b)$},
+           type=comb]{c1} {0,0} {}; 
+  \node[anchor=east, scale=.7] (i1) at ($(c1)-(3,0)$) {\usebox{\insig}}; 
+  \node[anchor=west, scale=.7] (o1) at ($(c1)+(3,0)$) {\usebox{\outsig}};
+  \node[anchor=east] (i1l) at ($(c1-p.i1)-(1,0)$) {$S_{i,1}$};
+  \node[anchor=east] (i2l) at ($(c1-p.i2)-(1,0)$) {$S_{i,2}$};
+  \node[anchor=west] (o1l) at ($(c1-p.o1)+(1,0)$) {$S_{o,1}$};
+  \node[anchor=west] (o2l) at ($(c1-p.o2)+(1,0)$) {$S_{o,2}$};
+
+  \signal[] (i1l) -> (c1-p.i1); 
+  \signal[] (i2l) -> (c1-p.i2);
+  \signal[] (c1-p.o1) -> (o1l);
+  \signal[] (c1-p.o2) -> (o2l);
+  % \signal[-|-=.2] (c1-p.o2) -> (o2.north east);
+\end{tikzpicture}  
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

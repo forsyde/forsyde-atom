@@ -150,7 +150,7 @@ module ForSyDe.Atom.MoC.DE (
   -- ** Default behavior
 
   -- | These processes manifest a default behavior as defined in
-  -- "ForSyDe.MoC.Behavior", when it comes to dealing with special
+  -- "ForSyDe.Atom.Behavior", when it comes to dealing with special
   -- events.
   
   delay,

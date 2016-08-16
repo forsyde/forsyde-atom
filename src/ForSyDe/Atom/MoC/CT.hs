@@ -49,31 +49,41 @@ module ForSyDe.Atom.MoC.CT (
   --
   -- <<includes/figs/ct-example1.png>>
   --
-  -- Implementing the SY tag system is straightforward if we consider
-  -- the 'ForSyDe.Atom.Signal.Signal' as an infinite list. In this
-  -- case the tags are implicitly defined by the position of events in
-  -- a signal: /t&#8320;/ would correspond with the event at the head
-  -- of a signal /t&#8321;/ with the following event, etc... Thus the
-  -- only explicit parameter passed to a SY event constructor is its
-  -- value &#8712; /V&#8337;/. As such, we can state the following
-  -- particularities:
+  -- The implementation of the CT MoC mirrors the 'ForSyDe.MoC.DE.DE'
+  -- almost completely with two small differences:
+  -- 1. 'ForSyDe.MoC.DE.tag's are not discrete values any more
+  -- (order-isomorphic with integers), but 'Rational's instead to be
+  -- able to fuly cover a continuous metric span, and 2. events,
+  -- instead of carrying 'ForSyDe.MoC.DE.val's, now carry functions on
+  -- this 'Time' system ('Rational' &#8594; /V/). This subtle change
+  -- has a deep impact on the execution semantics:
   --
-  -- 1. tags are implicit by the position in the signal, thus they are
-  -- completely ignored in this type constructor.
+  -- 1. while the execution engine is still discrete (similar to a KPN
+  -- <#kahn76 [2]>, check the 'ForSyDe.MoC.DE.DE' MoC),
+  -- i. e. evaluation is performed each time a new event arrives, the
+  -- systems described are continuous reactive.
   --
-  -- 1. the type constructor wraps only a value
+  -- 1. for each /t/ &#8712; /T/, a signal is able to return
+  -- (e.g. plot) the exact value /v/ for that particular /t/.
   --
-  -- 1. the full structure used by the MoC atoms is @(SY [Value a])@,
-  -- i. e. SY events of partitioned extended values, where the
-  -- partition is always 1 since for the SY MoC, /T/ is a total order
-  -- (check __design rule #4__ in the documentation of "ForSyDe.Atom")
+  -- 1. Haskell's lazy evaluation system computes values only when
+  -- needed. This implies that a simulator will evaluate/execute
+  -- computation for values only when asked, i.e. for the
+  -- discretization points. As a consequence, a designer can trade
+  -- precision for simulation speed.
   --
-  -- 1. SY atoms do not require any additional context, apart from a
+  -- 1. as all timed tag systems, the full structure used by the MoC
+  -- atoms is @(CT [Value a])@, i. e. CT events of partitioned
+  -- extended values, where the partition is always 1 since for the CT
+  -- MoC, /T/ is a total order (check __design rule #4__ in the
+  -- documentation of "ForSyDe.Atom")
+  --
+  -- 1. CT atoms do not require any additional context, apart from a
   -- function on values thus by definition
   --
-  -- > type Context SY = ()
+  -- > type Context CT = ()
   --
-  -- From @3.@ and @4.@ we can safely assume that:
+  -- From @4.@ and @5.@ we can safely assume that:
   --
   -- <<includes/figs/timed-wrapper-formula.png>>
 
@@ -87,16 +97,16 @@ module ForSyDe.Atom.MoC.CT (
   -- construction of atoms and atom patters as seen in
   -- "ForSyDe.Atom.MoC".
 
-  Time, Event, Sig, event2, signal,
+  Time, Event, Sig, event2, signal, split, splitUntil,
 
   wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
   wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
   wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
   wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
   
-  -- * @SY@ process constuctors
+  -- * @CT@ process constuctors
 
-  -- | These SY-specific process constructors are basically
+  -- | These CT-specific process constructors are basically
   -- specific instantiations of the network patterns defined in
   -- "ForSyDe.Atom.MoC", also wrapping functions in a behavioural
   -- model.
@@ -104,7 +114,7 @@ module ForSyDe.Atom.MoC.CT (
   -- ** Default behavior
 
   -- | These processes manifest a default behavior as defined in
-  -- "ForSyDe.MoC.Behavior", when it comes to dealing with special
+  -- "ForSyDe.Atom.Behavior", when it comes to dealing with special
   -- events.
   
   comb11, comb12, comb13, comb14,
@@ -137,7 +147,17 @@ module ForSyDe.Atom.MoC.CT (
   mealy21, mealy22, mealy23, mealy24,
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
- 
+
+  -- ** Interfaces
+
+
+  -- * Bibliography
+  
+
+  -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229.
+  
+  -- | #kahn76# [2] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
+  
   ) where
 
 import ForSyDe.Atom.MoC.CT.Core
