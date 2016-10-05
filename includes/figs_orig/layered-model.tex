@@ -1,0 +1,124 @@
+\documentclass{standalone}
+\usepackage{amsmath} 
+\usepackage{amssymb} 
+\usepackage{tikz}
+\usetikzlibrary{arrows,calc,shapes,fit,decorations.text,through,intersections}
+
+\begin{document}
+\newsavebox{\event}
+\savebox{\event}{
+  \begin{tikzpicture}[el/.style={shape=ellipse, draw, ultra thin},]
+    \node [el, draw, inner sep=2pt] (v) {$v$};
+    \node [anchor=south] (e) at (v.north) {$\bot, ?$};
+    \node [el, fit=(v)(e), inner sep=-3pt] (ve) {};   
+    \node [anchor=west,inner sep=2pt] (d1) at (ve.east) {};
+    \node [anchor=east,inner sep=2pt] (d2) at (ve.west) {};
+    \node [anchor=south] (t) at (ve.north) {$t$};
+    \node [el, fit=(ve)(t)(d1)(d2), inner sep=-5pt] {}; 
+  \end{tikzpicture}
+}
+\newsavebox{\extvalue}
+\savebox{\extvalue}{
+  \begin{tikzpicture}[el/.style={shape=ellipse, draw, ultra thin},]
+    \node [el, draw, inner sep=2pt] (v) {$v$};
+    \node [anchor=south] (e) at (v.north) {$\bot, ?$};
+    \node [el, fit=(v)(e), inner sep=-3pt] (ve) {};   
+  \end{tikzpicture}
+}
+
+\begin{tikzpicture}[scale=0.8, every node/.style={scale=0.8}]
+  \node (e1) at (0,5) {\usebox{\event}};
+  \node (e2) at (1.5,5) {\usebox{\event}};
+  \node (e3) at (3,5) {\usebox{\event}};
+
+  \path[draw]  (e1.west) |- (e3.north east) --++(2,-2) --++(.5,.5) --++(0,-2) 
+              coordinate (synchl) {}; 
+  \path[draw] (synchl) --++(-2,0) --++(.5, .5) -- (e3.south east) -| (e1.west);
+  \node[anchor=north] at ($(e1.south)!.4!(e3.south)-(0,.2)$) {\emph{Regular structure of signals}};
+
+  \def\myshift#1{\raisebox{-3ex}}
+  \draw[postaction={decorate, decoration={
+      text along path, 
+      text align=right,
+      text={|\sffamily\LARGE\myshift|MoC layer}}}
+  ] (synchl) arc (135:80:10cm); 
+  \draw[postaction={decorate, decoration={
+      text along path,
+      text align={left,left indent=.5cm}, reverse path, raise={1.5ex},
+      text={|\sffamily\it|Process}}}
+  ] (synchl) arc (135:180:10cm) coordinate (synchend);
+  \node (mocd) at ($(synchl)+(1,-1)$) {\usebox{\event}};
+  \node[anchor=west, text width=5em, font=\small] at (mocd.north east) {enabled by events};
+  \node[anchor=north , text width=8em, yshift=-30pt, xshift=-23pt, font=\small] at (mocd.south west) {Describes: \\ 
+    $\bullet$ MoC semantics \\ 
+    $\bullet$ time behavior \\ 
+    $\bullet$ synchronization};
+
+   \draw[postaction={decorate, decoration={
+      text along path,
+      text align=right,
+      text={|\sffamily\LARGE\myshift|Skeleton layer}}},
+      name path=layer_path,
+  ] ($(synchend)-(3cm,0)$) arc (180:80:12.55cm); 
+  \path[postaction={decorate, decoration={
+      text along path,
+      text align={left,left indent=.5cm}, raise={1.5ex},
+      text={|\sffamily\it|Process Network}}}
+  ] ($(synchend)-(3cm,0)$) arc (180:80:12.55cm); 
+  \node (behd) at ($(mocd)+(2,-2)$) {\usebox{\extvalue}};
+  \node[anchor=west, text width=4.5em, font=\small] at ($(e3.north east)+(2.5,-1)$) {operates on the structures around signals};
+  \node[anchor=north , text width=8em, yshift=-15pt, xshift=-95pt, font=\small] at (mocd.west) {Describes: \\ 
+    $\bullet$ recursive patterns of processes \\ 
+    $\bullet$ inherently parallel networks};
+
+  \path[fill=white, name path=signal_path]  (e3.north east) --++(2,-2) --++(-1,-1) -- (e3.south east) -- cycle;
+  \path[draw, name intersections={of=layer_path and signal_path}]% 
+      ($(e1.north west)+(.1,0)$) |- ($(e2.north)+(.1,.1)$) -- ($(e3.north east)+(.1,.1)$) -- ($(intersection-1)+(.1,.1)$);
+  \path[draw, name intersections={of=layer_path and signal_path}]% 
+      ($(e1.north west)+(.2,0)$) |- ($(e2.north)+(.2,.2)$) -- ($(e3.north east)+(.2,.2)$) -- ($(intersection-1)+(.2,.18)$);
+  \path[fill=white] ($(e1.north west)+(.05,0)$) |- ($(e2.north west)$) -- ($(e1.north east)$) -- cycle;
+  \path[fill=white] ($(e1.north west)+(.15,0)$) |- ($(e2.north west)+(.09,.09)$) -- ($(e1.north east)$) -- cycle;
+  \path[draw] (e1.north west) |- (e2.north);
+  \path[draw] (e3.north east) --++(2,-2);
+
+
+  \draw[postaction={decorate, decoration={
+      text along path,
+      text align=right,
+      text={|\sffamily\LARGE\myshift|Behavior layer}}}
+  ] ($(synchend)+(3cm,0)$) arc (180:80:7.45cm); 
+  \path[postaction={decorate, decoration={
+      text along path,
+      text align={left,left indent=.3cm}, raise={1.5ex},
+      text={|\sffamily\it|Wrapper}}}
+  ] ($(synchend)+(3cm,0)$) arc (180:80:7.45cm); 
+  \node (behd) at ($(mocd)+(2,-2)$) {\usebox{\extvalue}};
+  \node[anchor=west, text width=5.5em, font=\small] at (behd.north east) {operates on extended values};
+  \node[anchor=north , text width=7.5em, yshift=-14pt, xshift=-10pt, font=\small] at (behd.south west) {Describes: \\ 
+    $\bullet$ extended value semantics \\ 
+    $\bullet$ behavior in case of special events};
+
+   \draw[postaction={decorate, decoration={
+      text along path,
+      text align=right,
+      text={|\sffamily\LARGE\myshift|Function layer}}}
+  ] ($(synchend)+(6cm,0)$) arc (180:80:4.9cm); 
+   \path[postaction={decorate, decoration={
+      text along path,
+      text align={left,left indent=.3cm}, raise={.9ex},
+      text={|\sffamily\it|Function}}}
+  ] ($(synchend)+(6cm,0)$) arc (180:80:4.9cm); 
+  \node [shape=ellipse, draw, ultra thin, inner sep=2pt] (fcd) at ($(behd)+(2,-2)$) {$v$};
+  \node[anchor=west, text width=5.5em, xshift=5pt, font=\small] at (fcd.east) {operates on values};
+  \node[anchor=north west, text width=9.5em, yshift=-18pt, font=\small] at (fcd.south west) {Exposes functionality};
+\end{tikzpicture}
+
+\end{document}
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-command-default: "Make"
+%%% TeX-master: "../date2016"
+%%% End:

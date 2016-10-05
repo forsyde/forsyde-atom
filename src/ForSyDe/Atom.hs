@@ -489,7 +489,7 @@ module ForSyDe.Atom (
   -- can be seen in the picture below:
   --
   -- #3layer#
-  -- <<includes/figs/3-layered-process.png>>
+  -- <<includes/figs/layered-model.png>>
   -- #synch#
   
   -- ** Synchronization layer

@@ -4,7 +4,7 @@
 \begin{document}
 \begin{tikzpicture}[nomoccolor]
   \primitive[moc=sy,f=$ns$]{ns}{0,0}{$\fcomb$};
-  \primitiven[moc=sy,f={$i^m$}]{mem}{0,1}{$\fdelay$};
+  \primitiven[moc=sy,f={$i^m$}]{mem}{0,1}{$\delayM$};
   \node[anchor=north] (a) at (1,0) {$st^m$};
   \node[] (sn) at ($(ns.205)-(1,0)$) {$s^n$};
   \node[] (sm) at ($(ns)+(2,0)$) {$s^m$};

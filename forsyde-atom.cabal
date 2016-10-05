@@ -82,6 +82,7 @@ library
                        ForSyDe.Atom.MoC.SDF,
                        ForSyDe.Atom.MoC.SDF.Core,
                        ForSyDe.Atom.MoC.SDF.Lib,
+                       ForSyDe.Atom.Skeleton,
                        ForSyDe.Atom.Utility
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators, FlexibleInstances
