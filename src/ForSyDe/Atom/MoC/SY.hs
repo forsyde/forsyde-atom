@@ -103,7 +103,7 @@ module ForSyDe.Atom.MoC.SY (
   -- ** Default behavior
 
   -- | These processes manifest a default behavior as defined in
-  -- "ForSyDe.MoC.Behavior", when it comes to dealing with special
+  -- "ForSyDe.Atom.Behavior", when it comes to dealing with special
   -- events.
   
   comb11, comb12, comb13, comb14,

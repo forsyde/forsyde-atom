@@ -88,7 +88,7 @@ instance Eq a => Eq (Signal (DE [a])) where
 instance Functor (DE) where
   fmap f (DE t a) = DE t (f a)
 
--- | Allows for lifting functions on a pair of SY events.
+-- | Allows for lifting functions on a pair of DE events.
 instance Applicative (DE) where
   pure = DE 0
   (DE tf f) <*> (DE _ x) = DE tf (f x)
@@ -113,7 +113,7 @@ extractFunction (DE t (_,f)) = DE t f
 -----------------------------------------------------------------------------
 
 
--- | Wraps a tuple @(tag, value)@ into a DE event of extended values
+-- -- | Wraps a tuple @(tag, value)@ into a DE event of extended values
 event  :: (Tag, a) -> Event a 
 event (t,v) = part (t, pure v)
 
