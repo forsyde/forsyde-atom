@@ -74,6 +74,9 @@ scanV NullV   = pure NullV
 scanV (x:>xs) = (:>) <$> x . pipeV xs <*> scanV xs
 
 
+scanQ (x:>xs) = (<+>) <$> unitV . x . pipeV xs <*> scanV xs
+
+
 -- | The function 'vector' converts a list into a vector.
 vector     :: [a] -> Vector a
 
