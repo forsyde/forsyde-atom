@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators #-}
+ {-# LANGUAGE PostfixOperators #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -17,8 +17,10 @@
 module ForSyDe.Atom.Skeleton.Vector where
 
 import ForSyDe.Atom.Skeleton
+import ForSyDe.Atom.Utility
+import Data.Maybe
 
-import Prelude hiding (head, last, init, tail, map)
+import Prelude hiding (head, last, init, tail, map, reverse, length, concat, take, drop)
 
 infixr 3 :>
 infixl 5 <:
@@ -75,6 +77,9 @@ vector (x:xs) = x :> (vector xs)
 fromVector Null    = []
 fromVector (x:>xs) = x : fromVector xs
 
+indexes = ixf 1
+  where ixf n = n :> ixf (n+1)
+
 -- "Constructors"
 
 unit a = a :> Null
@@ -85,22 +90,82 @@ Null    <++> ys = ys
 xs <: x = xs <++> unit x         
 
 -- Skeletons
+a = vector [1,2,3,4,5,6]
 
 map :: (a -> b) -> Vector a -> Vector b
-map = (=$=)
-
 red :: (a -> a -> a) -> Vector a -> a
+map = (=$=)
 red = (=\=)
 
-last  :: Vector a -> a
-first :: Vector a -> a
-inits :: Vector a -> Vector (Vector a)
-tails :: Vector a -> Vector (Vector a)
 
-first = red (\x y -> x)
-last  = red (\x y -> y)
-inits = red (\x y -> x <++> ((last  x <++>) =$=) y) . map (unit . unit)
-tails = red (\x y -> ((<++> first y) =$=) x <++> y) . map (unit . unit)
+map11 p v1                      = (p =$= v1)
+map21 p v1 v2                   = (p =$= v1 =*= v2)
+map31 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3)
+map41 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4)
+map51 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5)
+map61 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6)
+map71 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7)
+map81 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8)
+
+map12 p v1                      = (p =$= v1 |<)
+map22 p v1 v2                   = (p =$= v1 =*= v2 |<)
+map32 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<)
+map42 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<)
+map52 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<)
+map62 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<)
+map72 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<)
+map82 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v5 =*= v8 |<)
+
+map13 p v1                      = (p =$= v1 |<<)
+map23 p v1 v2                   = (p =$= v1 =*= v2 |<<)
+map33 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<<)
+map43 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<<)
+map53 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<)
+map63 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<)
+map73 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<)
+map83 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v5 =*= v8 |<<)
+
+map14 p v1                      = (p =$= v1 |<<<)
+map24 p v1 v2                   = (p =$= v1 =*= v2 |<<<)
+map34 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<<<)
+map44 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<<<)
+map54 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<<)
+map64 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<<)
+map74 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<<)
+map84 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8 |<<<)
+
+-- red1 p v1                      = p =\= v1
+-- red2 p v1 v2                   = map21 
+-- red3 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<<<)
+-- red4 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<<<)
+-- red5 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<<)
+-- red6 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<<)
+-- red7 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<<)
+-- red8 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8 |<<<)
+
+
+
+last    :: Vector a -> a
+first   :: Vector a -> a
+reverse :: Vector a -> Vector a
+inits   :: Vector a -> Vector (Vector a)
+tails   :: Vector a -> Vector (Vector a)
+length  :: Vector a -> Int
+
+
+length  = red (+) . map (\_ -> 1)
+concat  = red (<++>)
+first   = red (\x y -> x)
+last    = red (\x y -> y)
+reverse = red (\x y -> y <++> x)                             . map unit
+take n  = red (\x y -> if length x < n then x <++> y else x) . map unit
+inits   = red (\x y -> x <++> (map (last  x <++>)) y)        . map (unit . unit)
+tails   = red (\x y -> (map (<++> first y)) x <++> y)        . map (unit . unit)
+
+v <@> ix  = map21 (\i x y -> if i == ix then Just x else y) indexes v =<<= Nothing
+v <@!> ix = fromJust $ v <@> ix
+tail      = (<@!> 2) . tails
+init      = (<@!> 2) . reverse . inits
 
 
 -- -- | The function 'vector' converts a list into a vector.
@@ -190,7 +255,6 @@ tails = red (\x y -> ((<++> first y) =$=) x <++> y) . map (unit . unit)
 
 -- -- | The function 'shiftlV' shifts a value from the left into a vector. 
 -- shiftlV :: Vector a -> a-> Vector a 
-
 -- -- | The function 'shiftrV' shifts a value from the right into a vector. 
 -- shiftrV :: Vector a -> a -> Vector a
 
