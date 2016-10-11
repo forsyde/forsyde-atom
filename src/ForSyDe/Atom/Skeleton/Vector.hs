@@ -1,5 +1,6 @@
- {-# LANGUAGE PostfixOperators #-}
+{-# LANGUAGE PostfixOperators #-}
 {-# OPTIONS_HADDOCK hide #-}
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Skeleton.Vector
@@ -24,7 +25,7 @@ import Prelude hiding (head, last, init, tail, map, reverse, length, concat, tak
 
 infixr 3 :>
 infixl 5 <:
--- infixr 5 <++>
+infixr 5 <++>
 
 -- | The data type 'Vector' is modeled similar to a list.
 data Vector a = Null
@@ -55,9 +56,9 @@ instance (Show a) => Show (Vector a) where
   showsPrec p = showParen (p>1) . showVector
     where
       showVector (x :> xs)  = showChar '<' . showEvent x . showVector' xs
-      showVector (Null)   = showChar '<' . showChar '>'
+      showVector (Null)     = showChar '<' . showChar '>'
       showVector' (x :> xs) = showChar ',' . showEvent x . showVector' xs
-      showVector' (Null)  = showChar '>'
+      showVector' (Null)    = showChar '>'
       showEvent x           = shows x
 
 -- | The vector 1 :> 2 >- Null is read using the string \"\<1,2\>\".
@@ -65,9 +66,9 @@ instance (Read a) => Read (Vector a) where
   readsPrec d = readParen (d>1) readVecSigtart
     where
       readVecSigtart = (\ a -> [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b])
-      readVector r    = readEvent r ++ readNull r
-      readEvent a     = [(x :> xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readVector c]
-      readNull a      = [(Null,b) | (">",b) <- lex a]
+      readVector r   = readEvent r ++ readNull r
+      readEvent a    = [(x :> xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readVector c]
+      readNull a     = [(Null,b) | (">",b) <- lex a]
 
 -- Utilities
 
@@ -80,6 +81,11 @@ fromVector (x:>xs) = x : fromVector xs
 indexes = ixf 1
   where ixf n = n :> ixf (n+1)
 
+fanout x = x :> fanout x
+
+fanoutn n x | n == 0    = Null
+            | otherwise = x :> fanoutn (n-1) x
+
 -- "Constructors"
 
 unit a = a :> Null
@@ -90,13 +96,12 @@ Null    <++> ys = ys
 xs <: x = xs <++> unit x         
 
 -- Skeletons
-a = vector [1,2,3,4,5,6]
+a = vector [1,2,3,4,5,6,7,8,9]
 
 map :: (a -> b) -> Vector a -> Vector b
 red :: (a -> a -> a) -> Vector a -> a
 map = (=$=)
 red = (=\=)
-
 
 map11 p v1                      = (p =$= v1)
 map21 p v1 v2                   = (p =$= v1 =*= v2)
@@ -134,16 +139,36 @@ map64 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |
 map74 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<<)
 map84 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8 |<<<)
 
--- red1 p v1                      = p =\= v1
--- red2 p v1 v2                   = map21 
--- red3 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<<<)
--- red4 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<<<)
--- red5 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<<)
--- red6 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<<)
--- red7 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<<)
--- red8 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8 |<<<)
+red1 p v1                      = p =\= v1
+red2 p v1 v2                   = map21 p v1 (tail v2) =<<= first v2
+red3 p v1 v2 v3                = map31 p v1 v2 (tail v3) =<<= first v3
+red4 p v1 v2 v3 v4             = map41 p v1 v2 v3 (tail v4) =<<= first v4
+red5 p v1 v2 v3 v4 v5          = map51 p v1 v2 v3 v4 (tail v5) =<<= first v5
+red6 p v1 v2 v3 v4 v5 v6       = map61 p v1 v2 v3 v4 v5 (tail v6) =<<= first v6
+red7 p v1 v2 v3 v4 v5 v6 v7    = map71 p v1 v2 v3 v4 v5 v6 (tail v7) =<<= first v7
+red8 p v1 v2 v3 v4 v5 v6 v7 v8 = map81 p v1 v2 v3 v4 v5 v6 v7 (tail v8) =<<= first v8
 
+red1' p i v1                      = p =\= v1 <: i 
+red2' p i v1 v2                   = map21 p v1 v2 =<<= i
+red3' p i v1 v2 v3                = map31 p v1 v2 v3 =<<= i
+red4' p i v1 v2 v3 v4             = map41 p v1 v2 v3 v4 =<<= i
+red5' p i v1 v2 v3 v4 v5          = map51 p v1 v2 v3 v4 v5 =<<= i
+red6' p i v1 v2 v3 v4 v5 v6       = map61 p v1 v2 v3 v4 v5 v6 =<<= i
+red7' p i v1 v2 v3 v4 v5 v6 v7    = map71 p v1 v2 v3 v4 v5 v6 v7 =<<= i
+red8' p i v1 v2 v3 v4 v5 v6 v7 v8 = map81 p v1 v2 v3 v4 v5 v6 v7 v8 =<<= i
 
+pref1 ps s = map11 (=<<= s) (inits ps)
+
+-- Skeletons proven by injectivity (equivalent factorized forms exist)
+
+tail Null    = error "tail: Vector is empty"
+tail (x:>xs) = xs
+
+init Null      = error "init: Vector is empty"
+init (_:>Null) = Null
+init (v:>vs)   = v :> init vs
+
+-- Permutators
 
 last    :: Vector a -> a
 first   :: Vector a -> a
@@ -152,20 +177,92 @@ inits   :: Vector a -> Vector (Vector a)
 tails   :: Vector a -> Vector (Vector a)
 length  :: Vector a -> Int
 
-
 length  = red (+) . map (\_ -> 1)
 concat  = red (<++>)
 first   = red (\x y -> x)
 last    = red (\x y -> y)
-reverse = red (\x y -> y <++> x)                             . map unit
-take n  = red (\x y -> if length x < n then x <++> y else x) . map unit
-inits   = red (\x y -> x <++> (map (last  x <++>)) y)        . map (unit . unit)
-tails   = red (\x y -> (map (<++> first y)) x <++> y)        . map (unit . unit)
+reverse = red (\x y -> y <++> x)                      . map unit
+inits   = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
+tails   = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
 
-v <@> ix  = map21 (\i x y -> if i == ix then Just x else y) indexes v =<<= Nothing
-v <@!> ix = fromJust $ v <@> ix
-tail      = (<@!> 2) . tails
-init      = (<@!> 2) . reverse . inits
+-- Index-based selectors
+
+get ix  = red2' (\i x y -> if i == ix then Just x else y) Nothing indexes 
+take n  = red2' (\i x y -> if i < n then x <++> y else x) Null    indexes . map unit
+drop n  = red2' (\i x y -> if i > n then x <++> y else y) Null    indexes . map unit
+
+v <@>  ix = get v ix
+v <@!> ix = fromJust $ get v ix
+
+
+group n v = map (take n) $ pref1 dropseries v
+  where dropseries = unit id <++> fanoutn nstages (drop n)
+        nstages    = ceiling $ fromIntegral (length v) / fromIntegral n - 1
+
+
+-- tail      = (<@!> 2) . tails
+-- init      = (<@!> 2) . reverse . inits
+-- group n  = red2' (\i x y -> if i `mod` n == 0 then x <++> y else x <++> y ) Null indexes . map (unit . unit)
+
+
+-- nullV Null   = True
+-- nullV _             = False
+
+-- replaceV vs n x 
+--     | n <= lengthV vs && n >= 0 = takeV n vs <+> unitV x 
+--      <+> dropV (n+1) vs
+--     | otherwise                 =  vs
+
+-- selectV f s n vs | n <= 0               
+--                      = Null
+--                  | (f+s*n-1) > lengthV vs 
+--                     = error "selectV: Vector has not enough elements"
+--                  | otherwise            
+--                     = atV vs f :> selectV (f+s) s (n-1) vs
+
+
+-- foldlV _ a Null   = a
+-- foldlV f a (x:>xs) = foldlV f (f a x) xs
+
+-- foldrV _ a Null   = a 
+-- foldrV f a (x:>xs) = f x (foldrV f a xs)
+
+-- filterV _ Null   = Null
+-- filterV p (v:>vs) = if (p v) then
+--                      v :> filterV p vs
+--                   else 
+--                      filterV p vs
+
+-- shiftlV vs v = v :> initV vs
+
+-- shiftrV vs v = tailV vs <: v
+
+-- rotrV Null = Null
+-- rotrV vs    = tailV vs <: headV vs
+
+-- rotlV Null = Null
+-- rotlV vs    = lastV vs :> initV vs
+
+-- generateV 0 _ _ = Null
+-- generateV n f a = x :> generateV (n-1) f x 
+--                 where x = f a
+
+-- iterateV 0 _ _ = Null
+-- iterateV n f a = a :> iterateV (n-1) f (f a)
+
+-- copyV k x = iterateV k id x 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- -- | The function 'vector' converts a list into a vector.
@@ -292,125 +389,3 @@ init      = (<@!> 2) . reverse . inits
 -- -- 
 -- -- > <5,5,5,5,5,5,5> :: Vector Integer
 -- copyV     :: (Num a, Eq a) => a -> b -> Vector b
-
-
-
--- unitV x = x :> Null
-
--- nullV Null   = True
--- nullV _             = False
-
--- lengthV Null   = 0
--- lengthV (_:>xs) = 1 + lengthV xs
-
--- replaceV vs n x 
---     | n <= lengthV vs && n >= 0 = takeV n vs <+> unitV x 
---      <+> dropV (n+1) vs
---     | otherwise                 =  vs
-
--- Null   `atV` _ = error "atV: Vector has not enough elements"
--- (x:>_)  `atV` 0 = x
--- (_:>xs) `atV` n = xs `atV` (n-1)
-
--- getV a b = atV b a
-
--- headV Null   = error "headV: Vector is empty"
--- headV (v:>_) = v
-
--- tailV Null   = error "tailV: Vector is empty"
--- tailV (_:>vs) = vs
-
--- lastV Null      = error "lastV: Vector is empty"
--- lastV (v:>Null) = v
--- lastV (_:>vs)    = lastV vs
-
--- initV Null      = error "initV: Vector is empty"
--- initV (_:>Null) = Null
--- initV (v:>vs)    = v :> initV vs
-
--- takeV 0 _                   = Null
--- takeV _ Null               = Null
--- takeV n (v:>vs) | n <= 0    = Null
---                 | otherwise = v :> takeV (n-1) vs
-
--- dropV 0 vs                  = vs
--- dropV _ Null               = Null
--- dropV n (v:>vs) | n <= 0    = v :> vs
---                 | otherwise = dropV (n-1) vs
-
--- selectV f s n vs | n <= 0               
---                      = Null
---                  | (f+s*n-1) > lengthV vs 
---                     = error "selectV: Vector has not enough elements"
---                  | otherwise            
---                     = atV vs f :> selectV (f+s) s (n-1) vs
-
--- groupV n v 
---       | lengthV v < n = Null
---       | otherwise     = selectV 0 1 n v 
---                         :> groupV n (selectV n 1 (lengthV v-n) v)
-
-
--- mapV _ Null   = Null
--- mapV f (x:>xs) = f x :> mapV f xs
-
--- zipWithV f (x:>xs) (y:>ys) = f x y :> (zipWithV f xs ys)
--- zipWithV _ _       _       = Null
-
--- foldlV _ a Null   = a
--- foldlV f a (x:>xs) = foldlV f (f a x) xs
-
--- foldrV _ a Null   = a 
--- foldrV f a (x:>xs) = f x (foldrV f a xs)
-
--- filterV _ Null   = Null
--- filterV p (v:>vs) = if (p v) then
---                      v :> filterV p vs
---                   else 
---                      filterV p vs
-
--- zipV (x:>xs) (y:>ys) = (x, y) :> zipV xs ys
--- zipV _       _       = Null
-
--- unzipV Null           = (Null, Null)
--- unzipV ((x, y) :> xys) = (x:>xs, y:>ys) 
---  where (xs, ys) = unzipV xys
-
--- shiftlV vs v = v :> initV vs
-
--- shiftrV vs v = tailV vs <: v
-
--- rotrV Null = Null
--- rotrV vs    = tailV vs <: headV vs
-
--- rotlV Null = Null
--- rotlV vs    = lastV vs :> initV vs
-
--- concatV = foldrV (<+>) Null
-
--- reverseV Null   = Null
--- reverseV (v:>vs) = reverseV vs <: v
-
--- generateV 0 _ _ = Null
--- generateV n f a = x :> generateV (n-1) f x 
---                 where x = f a
-
--- iterateV 0 _ _ = Null
--- iterateV n f a = a :> iterateV (n-1) f (f a)
-
--- copyV k x = iterateV k id x 
-
-
--- -- | The 'pipe' function constructs a serial composition from a vector of functions.
--- --
--- -- __OBS__: composition is right associative thus the input vector should contain functions from right to left
--- pipeV         :: Vector (b -> b) -> b -> b
--- pipeV Null   = id
--- pipeV (v:>vs) = v . pipeV vs 
-
--- -- | The 'scan' function constructs a parallel prefix vector from a vector of functions.
--- --
--- -- __OBS__: composition is right associative thus the input vector should contain functions from right to left
--- scanV         :: Vector (b -> b) -> b -> Vector b
--- scanV Null   = pure Null  
--- scanV (x:>xs) = (:>) <$> x . pipeV xs <*> scanV xs
