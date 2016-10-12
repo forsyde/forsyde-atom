@@ -49,7 +49,7 @@ instance Foldable Vector where
 instance Skeleton Vector where
   (=$=) = (<$>)
   (=*=) = (<*>)
-  (=\=) = foldl1
+  (=\=) = foldr1
 
 -- | The vector 1 :> 2 :> Null is represented as \<1,2\>.
 instance (Show a) => Show (Vector a) where
@@ -86,6 +86,7 @@ fanout x = x :> fanout x
 fanoutn n x | n == 0    = Null
             | otherwise = x :> fanoutn (n-1) x
 
+
 -- "Constructors"
 
 unit a = a :> Null
@@ -98,10 +99,13 @@ xs <: x = xs <++> unit x
 -- Skeletons
 a = vector [1,2,3,4,5,6,7,8,9]
 
-map :: (a -> b) -> Vector a -> Vector b
-red :: (a -> a -> a) -> Vector a -> a
-map = (=$=)
-red = (=\=)
+map  :: (a -> b) -> Vector a -> Vector b
+red  :: (a -> a -> a) -> Vector a -> a
+pipe :: Vector (a -> a) -> a -> a
+map  = (=$=)
+red  = (=\=)
+pipe = (=<<=)
+scan ps s = map (=<<= s) (inits ps)
 
 map11 p v1                      = (p =$= v1)
 map21 p v1 v2                   = (p =$= v1 =*= v2)
@@ -157,16 +161,71 @@ red6' p i v1 v2 v3 v4 v5 v6       = map61 p v1 v2 v3 v4 v5 v6 =<<= i
 red7' p i v1 v2 v3 v4 v5 v6 v7    = map71 p v1 v2 v3 v4 v5 v6 v7 =<<= i
 red8' p i v1 v2 v3 v4 v5 v6 v7 v8 = map81 p v1 v2 v3 v4 v5 v6 v7 v8 =<<= i
 
-pref1 ps s = map11 (=<<= s) (inits ps)
+pref1 p                   = map11 (red1 p) . inits
+pref2 p v1 v2             = map21 (red2 p) (unit v1) (inits v2)
+pref3 p v1 v2 v3          = map31 (red3 p) (unit v1) (unit v2) (inits v3)
+pref4 p v1 v2 v3 v4       = map41 (red4 p) (unit v1) (unit v2) (unit v3) (inits v4)
+pref5 p v1 v2 v3 v4 v5    = map51 (red5 p) (unit v1) (unit v2) (unit v3) (unit v4) (inits v5)
+pref6 p v1 v2 v3 v4 v5 v6 = map61 (red6 p) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (inits v6)
+
+pref1' p i                   = map11 (red1' p i) . inits
+pref2' p i v1 v2             = map21 (red2' p i) (unit v1) (inits v2)
+pref3' p i v1 v2 v3          = map31 (red3' p i) (unit v1) (unit v2) (inits v3)
+pref4' p i v1 v2 v3 v4       = map41 (red4' p i) (unit v1) (unit v2) (unit v3) (inits v4)
+pref5' p i v1 v2 v3 v4 v5    = map51 (red5' p i) (unit v1) (unit v2) (unit v3) (unit v4) (inits v5)
+pref6' p i v1 v2 v3 v4 v5 v6 = map61 (red6' p i) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (inits v6)
+
+suf1 p                   = map11 (red1 p) . tails
+suf2 p v1 v2             = map21 (red2 p) (unit v1) (tails v2)
+suf3 p v1 v2 v3          = map31 (red3 p) (unit v1) (unit v2) (tails v3)
+suf4 p v1 v2 v3 v4       = map41 (red4 p) (unit v1) (unit v2) (unit v3) (tails v4)
+suf5 p v1 v2 v3 v4 v5    = map51 (red5 p) (unit v1) (unit v2) (unit v3) (unit v4) (tails v5)
+suf6 p v1 v2 v3 v4 v5 v6 = map61 (red6 p) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (tails v6)
+
+suf1' p i                   = map11 (red1' p i) . tails
+suf2' p i v1 v2             = map21 (red2' p i) (unit v1) (tails v2)
+suf3' p i v1 v2 v3          = map31 (red3' p i) (unit v1) (unit v2) (tails v3)
+suf4' p i v1 v2 v3 v4       = map41 (red4' p i) (unit v1) (unit v2) (unit v3) (tails v4)
+suf5' p i v1 v2 v3 v4 v5    = map51 (red5' p i) (unit v1) (unit v2) (unit v3) (unit v4) (tails v5)
+suf6' p i v1 v2 v3 v4 v5 v6 = map61 (red6' p i) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (tails v6)
+
+pipe1 p v1 s                      = map11 p v1 `pipe` s
+pipe2 p v1 v2 s                   = map21 p v1 v2 `pipe` s
+pipe3 p v1 v2 v3 s                = map31 p v1 v2 v3 `pipe` s
+pipe4 p v1 v2 v3 v4 s             = map41 p v1 v2 v3 v4 `pipe` s
+pipe5 p v1 v2 v3 v4 v5 s          = map51 p v1 v2 v3 v4 v5 `pipe` s
+pipe6 p v1 v2 v3 v4 v5 v6 s       = map61 p v1 v2 v3 v4 v5 v6 `pipe` s
+pipe7 p v1 v2 v3 v4 v5 v6 v7 s    = map71 p v1 v2 v3 v4 v5 v6 v7 `pipe` s
+pipe8 p v1 v2 v3 v4 v5 v6 v7 v8 s = map81 p v1 v2 v3 v4 v5 v6 v7 v8 `pipe` s
+
+systolic1 p v1 s                      = map11 p v1 `scan` s
+systolic2 p v1 v2 s                   = map21 p v1 v2 `scan` s
+systolic3 p v1 v2 v3 s                = map31 p v1 v2 v3 `scan` s
+systolic4 p v1 v2 v3 v4 s             = map41 p v1 v2 v3 v4 `scan` s
+systolic5 p v1 v2 v3 v4 v5 s          = map51 p v1 v2 v3 v4 v5 `scan` s
+systolic6 p v1 v2 v3 v4 v5 v6 s       = map61 p v1 v2 v3 v4 v5 v6 `scan` s
+systolic7 p v1 v2 v3 v4 v5 v6 v7 s    = map71 p v1 v2 v3 v4 v5 v6 v7 `scan` s
+systolic8 p v1 v2 v3 v4 v5 v6 v7 v8 s = map81 p v1 v2 v3 v4 v5 v6 v7 v8 `scan` s
+
+-- cascade1 p vv1 vs1 vs2 = map21 (\v s1 s2 -> map21 p v s1 `scan` s2) vv1 vs2 `pipe` vs1
 
 -- Skeletons proven by injectivity (equivalent factorized forms exist)
 
 tail Null    = error "tail: Vector is empty"
 tail (x:>xs) = xs
+-- tail      = (<@!> 2) . tails
 
 init Null      = error "init: Vector is empty"
 init (_:>Null) = Null
 init (v:>vs)   = v :> init vs
+-- init      = (<@!> 2) . reverse . inits
+
+shiftr vs v = v :> init vs
+shiftl vs v = tail vs <: v
+rotl   Null = Null
+rotl   vs   = tail vs <: first vs
+rotr   Null = Null
+rotr   vs   = last vs :> init vs
 
 -- Permutators
 
@@ -181,28 +240,38 @@ length  = red (+) . map (\_ -> 1)
 concat  = red (<++>)
 first   = red (\x y -> x)
 last    = red (\x y -> y)
-reverse = red (\x y -> y <++> x)                      . map unit
+reverse = red (\x y -> y <++> x)                    . map unit
 inits   = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
 tails   = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
 
+first' Null = Null
+first' xs   = first xs
+last'  Null = Null
+last'  xs   = last xs
+init'  Null = Null
+init'  xs   = init xs
+tail'  Null = Null
+tail'  xs   = tail xs
+
 -- Index-based selectors
 
-get ix  = red2' (\i x y -> if i == ix then Just x else y) Nothing indexes 
-take n  = red2' (\i x y -> if i < n then x <++> y else x) Null    indexes . map unit
-drop n  = red2' (\i x y -> if i > n then x <++> y else y) Null    indexes . map unit
+get     ix  = red2' (\i x y -> if i == ix then Just x else y) Nothing indexes 
+tak     n   = red2' (\i x y -> if i < n then x <++> y else x) Null indexes . map unit
+drop    n   = red2' (\i x y -> if i > n then x <++> y else y) Null indexes . map unit
+replace n r = red2' (\i x y -> if i == n then r :> y else x <++> y) Null indexes . map unit
+group   n   = red2' (\i x y -> if i `mod` n == 0
+                               then x <++> y
+                               else (first x <++> first' y) :> tail' y) Null indexes
+              . map (unit . unit)
+
 
 v <@>  ix = get v ix
 v <@!> ix = fromJust $ get v ix
 
 
-group n v = map (take n) $ pref1 dropseries v
-  where dropseries = unit id <++> fanoutn nstages (drop n)
-        nstages    = ceiling $ fromIntegral (length v) / fromIntegral n - 1
-
-
--- tail      = (<@!> 2) . tails
--- init      = (<@!> 2) . reverse . inits
--- group n  = red2' (\i x y -> if i `mod` n == 0 then x <++> y else x <++> y ) Null indexes . map (unit . unit)
+-- group n v = map (take n) $ pref1 dropseries v
+--   where dropseries = unit id <++> fanoutn nstages (drop n)
+--         nstages    = ceiling $ fromIntegral (length v) / fromIntegral n - 1
 
 
 -- nullV Null   = True
@@ -233,15 +302,7 @@ group n v = map (take n) $ pref1 dropseries v
 --                   else 
 --                      filterV p vs
 
--- shiftlV vs v = v :> initV vs
 
--- shiftrV vs v = tailV vs <: v
-
--- rotrV Null = Null
--- rotrV vs    = tailV vs <: headV vs
-
--- rotlV Null = Null
--- rotlV vs    = lastV vs :> initV vs
 
 -- generateV 0 _ _ = Null
 -- generateV n f a = x :> generateV (n-1) f x 
