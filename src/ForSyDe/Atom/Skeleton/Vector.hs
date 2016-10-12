@@ -21,7 +21,7 @@ import ForSyDe.Atom.Skeleton
 import ForSyDe.Atom.Utility
 import Data.Maybe
 
-import Prelude hiding (head, last, init, tail, map, reverse, length, concat, take, drop)
+import Prelude hiding (head, last, init, tail, map, reverse, length, concat, take, drop, filter)
 
 infixr 3 :>
 infixl 5 <:
@@ -86,6 +86,8 @@ fanout x = x :> fanout x
 fanoutn n x | n == 0    = Null
             | otherwise = x :> fanoutn (n-1) x
 
+isNull Null = True
+isNull _    = False
 
 -- "Constructors"
 
@@ -97,11 +99,11 @@ Null    <++> ys = ys
 xs <: x = xs <++> unit x         
 
 -- Skeletons
-a = vector [1,2,3,4,5,6,7,8,9]
 
 map  :: (a -> b) -> Vector a -> Vector b
 red  :: (a -> a -> a) -> Vector a -> a
 pipe :: Vector (a -> a) -> a -> a
+scan :: Vector (a -> a) -> a -> Vector a
 map  = (=$=)
 red  = (=\=)
 pipe = (=<<=)
@@ -207,7 +209,17 @@ systolic6 p v1 v2 v3 v4 v5 v6 s       = map61 p v1 v2 v3 v4 v5 v6 `scan` s
 systolic7 p v1 v2 v3 v4 v5 v6 v7 s    = map71 p v1 v2 v3 v4 v5 v6 v7 `scan` s
 systolic8 p v1 v2 v3 v4 v5 v6 v7 v8 s = map81 p v1 v2 v3 v4 v5 v6 v7 v8 `scan` s
 
--- cascade1 p vv1 vs1 vs2 = map21 (\v s1 s2 -> map21 p v s1 `scan` s2) vv1 vs2 `pipe` vs1
+cascade  p                 vs1 vs2 = map11 (\            s2 s1 -> map11 p             s1 `scan` s2)                 vs2 `pipe` vs1
+cascade1 p vv1             vs1 vs2 = map21 (\v1          s2 s1 -> map21 p v1          s1 `scan` s2) vv1             vs2 `pipe` vs1
+cascade2 p vv1 vv2         vs1 vs2 = map31 (\v1 v2       s2 s1 -> map31 p v1 v2       s1 `scan` s2) vv1 vv2         vs2 `pipe` vs1
+cascade3 p vv1 vv2 vv3     vs1 vs2 = map41 (\v1 v2 v3    s2 s1 -> map41 p v1 v2 v3    s1 `scan` s2) vv1 vv2 vv3     vs2 `pipe` vs1
+cascade4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 v4 s1 `scan` s2) vv1 vv2 vv3 vv4 vs2 `pipe` vs1
+
+mesh  p                 vs1 vs2 = map11 (\            s2 s1 -> map11 p             s1 `scan` s2)                 vs2 `scan` vs1
+mesh1 p vv1             vs1 vs2 = map21 (\v1          s2 s1 -> map21 p v1          s1 `scan` s2) vv1             vs2 `scan` vs1
+mesh2 p vv1 vv2         vs1 vs2 = map31 (\v1 v2       s2 s1 -> map31 p v1 v2       s1 `scan` s2) vv1 vv2         vs2 `scan` vs1
+mesh3 p vv1 vv2 vv3     vs1 vs2 = map41 (\v1 v2 v3    s2 s1 -> map41 p v1 v2 v3    s1 `scan` s2) vv1 vv2 vv3     vs2 `scan` vs1
+mesh4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 v4 s1 `scan` s2) vv1 vv2 vv3 vv4 vs2 `scan` vs1
 
 -- Skeletons proven by injectivity (equivalent factorized forms exist)
 
@@ -236,13 +248,14 @@ inits   :: Vector a -> Vector (Vector a)
 tails   :: Vector a -> Vector (Vector a)
 length  :: Vector a -> Int
 
-length  = red (+) . map (\_ -> 1)
-concat  = red (<++>)
-first   = red (\x y -> x)
-last    = red (\x y -> y)
-reverse = red (\x y -> y <++> x)                    . map unit
-inits   = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
-tails   = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
+length   = red (+) . map (\_ -> 1)
+concat   = red (<++>)
+first    = red (\x y -> x)
+last     = red (\x y -> y)
+reverse  = red (\x y -> y <++> x)                    . map unit
+inits    = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
+tails    = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
+-- filter f = red1' (\x y -> if f (first x) then x <++> y else y) Null . map unit
 
 first' Null = Null
 first' xs   = first xs
@@ -256,51 +269,41 @@ tail'  xs   = tail xs
 -- Index-based selectors
 
 get     ix  = red2' (\i x y -> if i == ix then Just x else y) Nothing indexes 
-tak     n   = red2' (\i x y -> if i < n then x <++> y else x) Null indexes . map unit
+take    n   = red2' (\i x y -> if i < n then x <++> y else x) Null indexes . map unit
 drop    n   = red2' (\i x y -> if i > n then x <++> y else y) Null indexes . map unit
+filterIdx f = red2' (\i x y -> if f i   then x <++> y else y) Null indexes . map unit
 replace n r = red2' (\i x y -> if i == n then r :> y else x <++> y) Null indexes . map unit
-group   n   = red2' (\i x y -> if i `mod` n == 0
-                               then x <++> y
-                               else (first x <++> first' y) :> tail' y) Null indexes
-              . map (unit . unit)
+stride  f s = let stridef i x y | i `mod` s == f = x <++> y
+                                | otherwise      = y
+              in  red2' stridef Null indexes . map unit                  
+group   n   = let groupf i x y  | i `mod` n == 0 = x <++> y
+                                | otherwise      = (first x <++> first' y) :> tail' y
+              in  red2' groupf Null indexes . map (unit . unit)
 
 
-v <@>  ix = get v ix
-v <@!> ix = fromJust $ get v ix
+v <@>  ix = get ix v
+v <@!> ix = fromJust $ get ix v
+odds      = filterIdx odd
+evens     = filterIdx even
+
+bitrev (x:>Null) = unit x
+bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
+duals   v = let k = length v `div` 2
+            in  map21 (,) (take k v) (drop k v)
+unduals v = let (x,y) = (v |<) 
+            in  x <++> y
+
+gather  ix v      =  (=$=)                          (v <@!>) ix
+gather2 ix vv     = ((=$=).(=$=))                   (vv <@!>) ix
+gather3 ix vvv    = ((=$=).(=$=).(=$=))             (vvv <@!>) ix
+gather4 ix vvvv   = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!>) ix
+gather5 ix vvvvv  = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
 
 
 -- group n v = map (take n) $ pref1 dropseries v
 --   where dropseries = unit id <++> fanoutn nstages (drop n)
 --         nstages    = ceiling $ fromIntegral (length v) / fromIntegral n - 1
 
-
--- nullV Null   = True
--- nullV _             = False
-
--- replaceV vs n x 
---     | n <= lengthV vs && n >= 0 = takeV n vs <+> unitV x 
---      <+> dropV (n+1) vs
---     | otherwise                 =  vs
-
--- selectV f s n vs | n <= 0               
---                      = Null
---                  | (f+s*n-1) > lengthV vs 
---                     = error "selectV: Vector has not enough elements"
---                  | otherwise            
---                     = atV vs f :> selectV (f+s) s (n-1) vs
-
-
--- foldlV _ a Null   = a
--- foldlV f a (x:>xs) = foldlV f (f a x) xs
-
--- foldrV _ a Null   = a 
--- foldrV f a (x:>xs) = f x (foldrV f a xs)
-
--- filterV _ Null   = Null
--- filterV p (v:>vs) = if (p v) then
---                      v :> filterV p vs
---                   else 
---                      filterV p vs
 
 
 
@@ -310,8 +313,6 @@ v <@!> ix = fromJust $ get v ix
 
 -- iterateV 0 _ _ = Null
 -- iterateV n f a = a :> iterateV (n-1) f (f a)
-
--- copyV k x = iterateV k id x 
 
 
 
@@ -450,3 +451,6 @@ v <@!> ix = fromJust $ get v ix
 -- -- 
 -- -- > <5,5,5,5,5,5,5> :: Vector Integer
 -- copyV     :: (Num a, Eq a) => a -> b -> Vector b
+
+
+a = vector [1,2,3,4,5,6,7,8,9]
