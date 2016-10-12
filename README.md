@@ -5,8 +5,9 @@ forsyde-atom
 
 Reimplementation of the ForSyDe-Haskell modelling library in an
 applicative manner using the concept of atoms, and a layered process
-model. For an extended technical report, generate and check the API
-documentation.
+model. For an extended technical report, check the extended API
+documentation at [forsyde.github.io/forsyde-atom](forsyde.github.io/forsyde-atom),
+which was generated with Haddock.
 
 ---- 
 
