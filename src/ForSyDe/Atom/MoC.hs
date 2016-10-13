@@ -135,6 +135,9 @@ class (Functor e) => MoC e where
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
 
+  sniff :: e a -> a
+
+
 infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)
 i -&>- xs = delay i xs          

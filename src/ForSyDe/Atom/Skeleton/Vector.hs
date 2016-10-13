@@ -27,7 +27,7 @@ import ForSyDe.Atom.Behavior
 
 import qualified ForSyDe.Atom.MoC.SY as SY
 
-import Prelude hiding (head, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile)
+import Prelude hiding (last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
 
 infixr 3 :>
 infixl 5 <:
@@ -113,7 +113,8 @@ scan :: Vector (a -> a) -> a -> Vector a
 map  = (=$=)
 red  = (=\=)
 pipe = (=<<=)
-scan ps s = map (=<<= s) (inits ps)
+scan  ps s = map (=<<= s) (inits ps)
+scan' ps s = map (=<<= s) (inits $ unit id <++> ps)
 
 map11 p v1                      = (p =$= v1)
 map21 p v1 v2                   = (p =$= v1 =*= v2)
@@ -303,73 +304,35 @@ duals   v = let k = length v `div` 2
 unduals v = let (x,y) = (v |<) 
             in  x <++> y
 
-gather  ix v      =  (=$=)                          (v <@!>) ix
-gather2 ix vv     = ((=$=).(=$=))                   (vv <@!>) ix
-gather3 ix vvv    = ((=$=).(=$=).(=$=))             (vvv <@!>) ix
-gather4 ix vvvv   = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!>) ix
-gather5 ix vvvvv  = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
+generate n f i = fanoutn n f `scan` i
+iterate  n f i = fanoutn (n-1) f `scan'` i
 
+gather  ix v     =  (=$=)                          (v <@!>) ix
+gather2 ix vv    = ((=$=).(=$=))                   (vv <@!>) ix
+gather3 ix vvv   = ((=$=).(=$=).(=$=))             (vvv <@!>) ix
+gather4 ix vvvv  = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!>) ix
+gather5 ix vvvvv = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
+
+scatter ix hv = red2' (\i h r -> replace i (first r) h) hv ix . map unit
+
+
+-- TODO: Not fully correct, since <{1,2},{3,_}> would become {<1,3>, _}.
+-- This is because the MoC class explicitly asks for `Value`s. This might
+-- be fixable once the Behavior Layer is described as a type class
 zipx   w21 w11 = red catEv . map unitEv
   where catEv  = (comb21 . w21 . psi21) (<++>)
         unitEv = (comb11 . w11 . psi11) unit
 
-unzipx n = map (SY.comb11 first) . scan (unit id <++> fanoutn n selfun)
-  where selfun = SY.comb11 tail
+-- TODO: not fully correct. See zipx. Extremely unsafe even!!!
+unzipx w1 w2 sv = (map getFst . scan' selFun) sv
+  where getFst = (comb11 . w1 . psi11) first
+        selFun = fanoutn n ((comb11 . w2 . psi11) tail)
+        n      = (length . unsafeFromValue . head . sniff . headS) sv - 1 
 
-
----- EX SY
-
---  -- zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
---     zipx = zippx
-
---  -- unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
---     unzipx  = (§>) fromS . unzippx . toS
-
--- zippx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
--- zippx _ Null    = (fromS . pure . pure) Null
--- zippx w (x:>xs) = w ((<$>).(:>)) §- x -§- zippx xs
-
--- unzippx :: Stream (AbstExt (Vector (AbstExt a))) -> Vector (Stream (AbstExt a))
--- unzippx NullS            = pure NullS
--- unzippx (Abst :- xs)     = (:-) §> pure Abst <§> unzippx xs
--- unzippx ((Prst x) :- xs) = (:-) §> x <§> unzippx xs
-
----- EX SDF
-
--- -- zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
--- zipx = fromS . takeWhileS (anyV isPresent) . zippx . (§>) toS
-
--- -- unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
--- unzipx  = (§>) fromS . unzippx . toS
-
-
--- zippx :: Vector (Stream a) -> Stream (Vector (AbstExt a))
--- zippx NullV         = pure NullV
--- zippx (x:>xs)       = (:>) <$> padS Abst (pure <$> x) <*> zippx xs
-
--- unzippx :: Stream (Vector (AbstExt a)) -> Vector (Stream a)
--- unzippx NullS     = pure NullS
--- unzippx (x :- xs) = fromPadded §> x <§> unzippx xs
---   where fromPadded Abst as     = as
---         fromPadded (Prst a) as = a :- as  
-
--- anyV c = any c . fromVector 
 
 -- group n v = map (take n) $ pref1 dropseries v
 --   where dropseries = unit id <++> fanoutn nstages (drop n)
 --         nstages    = ceiling $ fromIntegral (length v) / fromIntegral n - 1
-
-
-
-
--- generateV 0 _ _ = Null
--- generateV n f a = x :> generateV (n-1) f x 
---                 where x = f a
-
--- iterateV 0 _ _ = Null
--- iterateV n f a = a :> iterateV (n-1) f (f a)
-
-
 
 
 
@@ -508,5 +471,5 @@ unzipx n = map (SY.comb11 first) . scan (unit id <++> fanoutn n selfun)
 -- copyV     :: (Num a, Eq a) => a -> b -> Vector b
 
 
-a = vector [1,2,3,4,5,6,7,8,9]
-b = a <++> fanout 15
+-- a = vector [1,2,3,4,5,6,7,8,9]
+-- b = a <++> fanout 15

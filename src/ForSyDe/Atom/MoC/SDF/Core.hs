@@ -63,6 +63,7 @@ instance MoC SDF where
   ---------------------
   (-&-) _ a = a
   ---------------------
+  sniff (SDF a) = a
 
 -- | A more efficient instatiation since we /know/ that the partition
 -- size is always 1.
