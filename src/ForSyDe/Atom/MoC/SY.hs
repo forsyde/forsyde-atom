@@ -86,7 +86,7 @@ module ForSyDe.Atom.MoC.SY (
   -- construction of atoms and atom patters as seen in
   -- "ForSyDe.Atom.MoC".
 
-  Event, Sig, event2, signal,
+  Event, Sig, event, event2, signal,
 
   wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
   wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 

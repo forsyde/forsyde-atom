@@ -17,11 +17,17 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.Skeleton.Vector where
 
+import Data.Maybe
+import ForSyDe.Atom.MoC
+import ForSyDe.Atom.Signal
 import ForSyDe.Atom.Skeleton
 import ForSyDe.Atom.Utility
-import Data.Maybe
+import ForSyDe.Atom.Behavior
 
-import Prelude hiding (head, last, init, tail, map, reverse, length, concat, take, drop, filter)
+
+import qualified ForSyDe.Atom.MoC.SY as SY
+
+import Prelude hiding (head, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile)
 
 infixr 3 :>
 infixl 5 <:
@@ -200,6 +206,7 @@ pipe6 p v1 v2 v3 v4 v5 v6 s       = map61 p v1 v2 v3 v4 v5 v6 `pipe` s
 pipe7 p v1 v2 v3 v4 v5 v6 v7 s    = map71 p v1 v2 v3 v4 v5 v6 v7 `pipe` s
 pipe8 p v1 v2 v3 v4 v5 v6 v7 v8 s = map81 p v1 v2 v3 v4 v5 v6 v7 v8 `pipe` s
 
+systolic                              = scan
 systolic1 p v1 s                      = map11 p v1 `scan` s
 systolic2 p v1 v2 s                   = map21 p v1 v2 `scan` s
 systolic3 p v1 v2 v3 s                = map31 p v1 v2 v3 `scan` s
@@ -256,7 +263,10 @@ reverse  = red (\x y -> y <++> x)                    . map unit
 inits    = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
 tails    = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
 -- filter f = red1' (\x y -> if f (first x) then x <++> y else y) Null . map unit
+takeWhile f = concat . red1 selfunc . map (unit . unit)
+  where selfunc x y = if f (first (first y)) && (not . isNull . last) x then x <++> y else x
 
+        
 first' Null = Null
 first' xs   = first xs
 last'  Null = Null
@@ -275,7 +285,7 @@ filterIdx f = red2' (\i x y -> if f i   then x <++> y else y) Null indexes . map
 replace n r = red2' (\i x y -> if i == n then r :> y else x <++> y) Null indexes . map unit
 stride  f s = let stridef i x y | i `mod` s == f = x <++> y
                                 | otherwise      = y
-              in  red2' stridef Null indexes . map unit                  
+              in  red2' stridef Null indexes . map unit
 group   n   = let groupf i x y  | i `mod` n == 0 = x <++> y
                                 | otherwise      = (first x <++> first' y) :> tail' y
               in  red2' groupf Null indexes . map (unit . unit)
@@ -299,6 +309,51 @@ gather3 ix vvv    = ((=$=).(=$=).(=$=))             (vvv <@!>) ix
 gather4 ix vvvv   = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!>) ix
 gather5 ix vvvvv  = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
 
+zipx   w21 w11 = red catEv . map unitEv
+  where catEv  = (comb21 . w21 . psi21) (<++>)
+        unitEv = (comb11 . w11 . psi11) unit
+
+unzipx n = map (SY.comb11 first) . scan (unit id <++> fanoutn n selfun)
+  where selfun = SY.comb11 tail
+
+
+---- EX SY
+
+--  -- zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
+--     zipx = zippx
+
+--  -- unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
+--     unzipx  = (§>) fromS . unzippx . toS
+
+-- zippx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
+-- zippx _ Null    = (fromS . pure . pure) Null
+-- zippx w (x:>xs) = w ((<$>).(:>)) §- x -§- zippx xs
+
+-- unzippx :: Stream (AbstExt (Vector (AbstExt a))) -> Vector (Stream (AbstExt a))
+-- unzippx NullS            = pure NullS
+-- unzippx (Abst :- xs)     = (:-) §> pure Abst <§> unzippx xs
+-- unzippx ((Prst x) :- xs) = (:-) §> x <§> unzippx xs
+
+---- EX SDF
+
+-- -- zipx :: Vector (Signal a) -> Signal (Vector (AbstExt a))
+-- zipx = fromS . takeWhileS (anyV isPresent) . zippx . (§>) toS
+
+-- -- unzipx :: Signal (Vector (AbstExt a)) -> Vector (Signal a)
+-- unzipx  = (§>) fromS . unzippx . toS
+
+
+-- zippx :: Vector (Stream a) -> Stream (Vector (AbstExt a))
+-- zippx NullV         = pure NullV
+-- zippx (x:>xs)       = (:>) <$> padS Abst (pure <$> x) <*> zippx xs
+
+-- unzippx :: Stream (Vector (AbstExt a)) -> Vector (Stream a)
+-- unzippx NullS     = pure NullS
+-- unzippx (x :- xs) = fromPadded §> x <§> unzippx xs
+--   where fromPadded Abst as     = as
+--         fromPadded (Prst a) as = a :- as  
+
+-- anyV c = any c . fromVector 
 
 -- group n v = map (take n) $ pref1 dropseries v
 --   where dropseries = unit id <++> fanoutn nstages (drop n)
@@ -454,3 +509,4 @@ gather5 ix vvvvv  = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
 
 
 a = vector [1,2,3,4,5,6,7,8,9]
+b = a <++> fanout 15
