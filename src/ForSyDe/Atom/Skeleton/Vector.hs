@@ -1,345 +1,132 @@
-{-# LANGUAGE PostfixOperators #-}
-{-# OPTIONS_HADDOCK hide #-}
-
+{-# OPTIONS_HADDOCK prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Skeleton.Vector
--- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
--- Maintainer  :  forsyde-dev@ict.kth.se
+-- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module defines the data type 'Vector' and the
--- corresponding functions. It is a development of the module
--- defined by Reekie.
+-- This module defines the data type 'Vector' as a categorical type,
+-- implementing the atoms for the 'ForSyDe.MoC.Skeleton.Skeleton'
+-- class. Algorithmic skeletons are mostly described for 'Vector' in
+-- their factorized form (i.e. as a /map-reduce/ pattern, using
+-- skeleton layer atoms), assuring that they are catamorphisms. Where
+-- practical matters, or efficience are a concern, some skeletons are
+-- implemented as recurrences. One can still prove that they are
+-- catamorphisms through alternative theorems (e.g. by proving that
+-- they have an inverse over 'Vector').
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector where
+module ForSyDe.Atom.Skeleton.Vector (
+
+  -- * Vector data type
+
+  Vector(..),
+
+  -- * \"Constructors\"
+
+  -- | According to <#bird96 [2]>, 'Vector' should be implemented as
+  -- following:
+  --
+  -- > data Vector a = Null                   -- null element
+  -- >               | Unit a                 -- singleton vector
+  -- >               | Vector a <++> Vector a -- concatenate two vectors
+  --
+  -- This construction suggests the possibility of splitting a
+  -- 'Vector' into multiple parts and evaluating it in parallel. While
+  -- due to practical considerations we have chosen another
+  -- implementation (see above), when defining skeletons on vectors we
+  -- shall use this particular interpretation. Therefore @Null@,
+  -- @Unit@ and @\<++\>@ are provided as functions.
+  null, unit, (<++>),
+
+  -- * Utilities
+
+  vector, fromVector, indexes, isNull, (<:),
+
+  -- * Skeletons
+
+  -- | Algorithmic skeletons on vectors are mainly presented in terms
+  -- of compositions of the atoms associated with the
+  -- 'Skeleton' Layer. When defining them,
+  -- we use the following operators:
+  --
+  -- <<includes/figs/skel-operators-formula.png>>
+  --
+  -- where:
+  --
+  -- * (1) is the 'unit' constructor, constructing a singleton vector.
+  -- * (2) is the '<++>' constructor, concatenating two vectors.
+  -- * (3) is the '<@!>' selector. The subscript notation is used to
+  -- denote element at position /n/ in a vector.
+  -- * (4) suggests an arbitrary selector which returns a vector with
+  -- another one's elements, based on some indices. The shown example
+  -- is an alternative notation for the 'tail' skeleton.
+  
+  -- ** Functional
+
+  -- | This sub-category denotes skeletons (i.e. Skeleton Layer
+  -- patterns) which are capable of constructing parallel process
+  -- networks from processes (i.e. MoC layer entities) passed as
+  -- arguments. Using the applicative mechanism, the designer has a
+  -- high degree of freedom when customizing process networks through
+  -- systematic partial application, rendering numerous possible
+  -- usages for the same patterns. To avoid over-encumberating our
+  -- examples with otherwise optional details, only 'map22' and 'red2'
+  -- depict a somewhat complete scenario, the rest of the patterns
+  -- assuming fully-applied processes as arguments.
+  --
+  -- Due to Haskell's strict type system and the implementation
+  -- mechanisms, we need to provide separate constructors @skelXY@,
+  -- where @skel@ is the process network constructor type, @X@ is the
+  -- number of inputs and @Y@ is the number of outputs. This module
+  -- provides constructors with @ X = [0..8]@ and @ Y = [1..4]@. If
+  -- needed, the designer is free to implement her own constructor by
+  -- following the atom composition rules in the source code.
+
+  map11, map12, map13, map14,
+  map21, map22, map23, map24,
+  map31, map32, map33, map34,
+  map41, map42, map43, map44,
+  map51, map52, map53, map54,
+  map61, map62, map63, map64,
+  map71, map72, map73, map74,
+  map81, map82, map83, map84,
+
+  red1,  red2,  red3,  red4,  red5,  red6,  red7,  red8,
+  red1', red2', red3', red4', red5', red6', red7', red8',
+
+  pref1,  pref2,  pref3,  pref4,  pref5,  pref6, 
+  pref1', pref2', pref3', pref4', pref5', pref6',
+
+  suf1,  suf2,  suf3,  suf4,  suf5,  suf6,  
+  suf1', suf2', suf3', suf4', suf5', suf6',
+
+  pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8,
+  
+  
+  -- ** Transitional
+
+  -- ** Interfaces
+  
+  -- * Bibliography
+  
+  -- | #gorlatch03# <http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [1]> Fischer, J., Gorlatch, S., & Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.
+  
+  -- | #bird96# [2] Bird, R., & De Moor, O. (1996, January). The algebra of programming. In /NATO ASI DPD/ (pp. 167-203).
+  
+  -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [3]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
+
+  -- | #reekie95# <http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [4]> Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.
+  ) where
 
-import Data.Maybe
-import ForSyDe.Atom.MoC
-import ForSyDe.Atom.Signal
-import ForSyDe.Atom.Skeleton
-import ForSyDe.Atom.Utility
-import ForSyDe.Atom.Behavior
-
-
-import qualified ForSyDe.Atom.MoC.SY as SY
-
-import Prelude hiding (last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
-
-infixr 3 :>
-infixl 5 <:
-infixr 5 <++>
-
--- | The data type 'Vector' is modeled similar to a list.
-data Vector a = Null
-              | a :> (Vector a) deriving (Eq)
-
-instance Functor Vector where
-  fmap _ Null   = Null
-  fmap f (x:>xs) = f x :> fmap f xs
-
-instance Applicative Vector where
-  pure x = x :> pure x
-  _         <*> Null      = Null
-  Null      <*> _         = Null
-  (f :> fs) <*> (x :> xs) = f x :> fs <*> xs
-
-instance Foldable Vector where
-  foldr k z = go
-    where go Null    = z
-          go (y:>ys) = y `k` go ys
-
-instance Skeleton Vector where
-  (=$=) = (<$>)
-  (=*=) = (<*>)
-  (=\=) = foldr1
-
--- | The vector 1 :> 2 :> Null is represented as \<1,2\>.
-instance (Show a) => Show (Vector a) where
-  showsPrec p = showParen (p>1) . showVector
-    where
-      showVector (x :> xs)  = showChar '<' . showEvent x . showVector' xs
-      showVector (Null)     = showChar '<' . showChar '>'
-      showVector' (x :> xs) = showChar ',' . showEvent x . showVector' xs
-      showVector' (Null)    = showChar '>'
-      showEvent x           = shows x
-
--- | The vector 1 :> 2 >- Null is read using the string \"\<1,2\>\".
-instance (Read a) => Read (Vector a) where
-  readsPrec d = readParen (d>1) readVecSigtart
-    where
-      readVecSigtart = (\ a -> [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b])
-      readVector r   = readEvent r ++ readNull r
-      readEvent a    = [(x :> xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readVector c]
-      readNull a     = [(Null,b) | (">",b) <- lex a]
-
--- Utilities
-
-vector []     = Null
-vector (x:xs) = x :> (vector xs)
-
-fromVector Null    = []
-fromVector (x:>xs) = x : fromVector xs
-
-indexes = ixf 1
-  where ixf n = n :> ixf (n+1)
-
-fanout x = x :> fanout x
-
-fanoutn n x | n == 0    = Null
-            | otherwise = x :> fanoutn (n-1) x
-
-isNull Null = True
-isNull _    = False
-
--- "Constructors"
-
-unit a = a :> Null
-
-Null    <++> ys = ys
-(x:>xs) <++> ys = x :> (xs <++> ys) 
-
-xs <: x = xs <++> unit x         
-
--- Skeletons
-
-map  :: (a -> b) -> Vector a -> Vector b
-red  :: (a -> a -> a) -> Vector a -> a
-pipe :: Vector (a -> a) -> a -> a
-scan :: Vector (a -> a) -> a -> Vector a
-map  = (=$=)
-red  = (=\=)
-pipe = (=<<=)
-scan  ps s = map (=<<= s) (inits ps)
-scan' ps s = map (=<<= s) (inits $ unit id <++> ps)
-
-map11 p v1                      = (p =$= v1)
-map21 p v1 v2                   = (p =$= v1 =*= v2)
-map31 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3)
-map41 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4)
-map51 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5)
-map61 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6)
-map71 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7)
-map81 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8)
-
-map12 p v1                      = (p =$= v1 |<)
-map22 p v1 v2                   = (p =$= v1 =*= v2 |<)
-map32 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<)
-map42 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<)
-map52 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<)
-map62 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<)
-map72 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<)
-map82 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v5 =*= v8 |<)
-
-map13 p v1                      = (p =$= v1 |<<)
-map23 p v1 v2                   = (p =$= v1 =*= v2 |<<)
-map33 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<<)
-map43 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<<)
-map53 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<)
-map63 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<)
-map73 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<)
-map83 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v5 =*= v8 |<<)
-
-map14 p v1                      = (p =$= v1 |<<<)
-map24 p v1 v2                   = (p =$= v1 =*= v2 |<<<)
-map34 p v1 v2 v3                = (p =$= v1 =*= v2 =*= v3 |<<<)
-map44 p v1 v2 v3 v4             = (p =$= v1 =*= v2 =*= v3 =*= v4 |<<<)
-map54 p v1 v2 v3 v4 v5          = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<<)
-map64 p v1 v2 v3 v4 v5 v6       = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<<)
-map74 p v1 v2 v3 v4 v5 v6 v7    = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<<)
-map84 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =$= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8 |<<<)
-
-red1 p v1                      = p =\= v1
-red2 p v1 v2                   = map21 p v1 (tail v2) =<<= first v2
-red3 p v1 v2 v3                = map31 p v1 v2 (tail v3) =<<= first v3
-red4 p v1 v2 v3 v4             = map41 p v1 v2 v3 (tail v4) =<<= first v4
-red5 p v1 v2 v3 v4 v5          = map51 p v1 v2 v3 v4 (tail v5) =<<= first v5
-red6 p v1 v2 v3 v4 v5 v6       = map61 p v1 v2 v3 v4 v5 (tail v6) =<<= first v6
-red7 p v1 v2 v3 v4 v5 v6 v7    = map71 p v1 v2 v3 v4 v5 v6 (tail v7) =<<= first v7
-red8 p v1 v2 v3 v4 v5 v6 v7 v8 = map81 p v1 v2 v3 v4 v5 v6 v7 (tail v8) =<<= first v8
-
-red1' p i v1                      = p =\= v1 <: i 
-red2' p i v1 v2                   = map21 p v1 v2 =<<= i
-red3' p i v1 v2 v3                = map31 p v1 v2 v3 =<<= i
-red4' p i v1 v2 v3 v4             = map41 p v1 v2 v3 v4 =<<= i
-red5' p i v1 v2 v3 v4 v5          = map51 p v1 v2 v3 v4 v5 =<<= i
-red6' p i v1 v2 v3 v4 v5 v6       = map61 p v1 v2 v3 v4 v5 v6 =<<= i
-red7' p i v1 v2 v3 v4 v5 v6 v7    = map71 p v1 v2 v3 v4 v5 v6 v7 =<<= i
-red8' p i v1 v2 v3 v4 v5 v6 v7 v8 = map81 p v1 v2 v3 v4 v5 v6 v7 v8 =<<= i
-
-pref1 p                   = map11 (red1 p) . inits
-pref2 p v1 v2             = map21 (red2 p) (unit v1) (inits v2)
-pref3 p v1 v2 v3          = map31 (red3 p) (unit v1) (unit v2) (inits v3)
-pref4 p v1 v2 v3 v4       = map41 (red4 p) (unit v1) (unit v2) (unit v3) (inits v4)
-pref5 p v1 v2 v3 v4 v5    = map51 (red5 p) (unit v1) (unit v2) (unit v3) (unit v4) (inits v5)
-pref6 p v1 v2 v3 v4 v5 v6 = map61 (red6 p) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (inits v6)
-
-pref1' p i                   = map11 (red1' p i) . inits
-pref2' p i v1 v2             = map21 (red2' p i) (unit v1) (inits v2)
-pref3' p i v1 v2 v3          = map31 (red3' p i) (unit v1) (unit v2) (inits v3)
-pref4' p i v1 v2 v3 v4       = map41 (red4' p i) (unit v1) (unit v2) (unit v3) (inits v4)
-pref5' p i v1 v2 v3 v4 v5    = map51 (red5' p i) (unit v1) (unit v2) (unit v3) (unit v4) (inits v5)
-pref6' p i v1 v2 v3 v4 v5 v6 = map61 (red6' p i) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (inits v6)
-
-suf1 p                   = map11 (red1 p) . tails
-suf2 p v1 v2             = map21 (red2 p) (unit v1) (tails v2)
-suf3 p v1 v2 v3          = map31 (red3 p) (unit v1) (unit v2) (tails v3)
-suf4 p v1 v2 v3 v4       = map41 (red4 p) (unit v1) (unit v2) (unit v3) (tails v4)
-suf5 p v1 v2 v3 v4 v5    = map51 (red5 p) (unit v1) (unit v2) (unit v3) (unit v4) (tails v5)
-suf6 p v1 v2 v3 v4 v5 v6 = map61 (red6 p) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (tails v6)
-
-suf1' p i                   = map11 (red1' p i) . tails
-suf2' p i v1 v2             = map21 (red2' p i) (unit v1) (tails v2)
-suf3' p i v1 v2 v3          = map31 (red3' p i) (unit v1) (unit v2) (tails v3)
-suf4' p i v1 v2 v3 v4       = map41 (red4' p i) (unit v1) (unit v2) (unit v3) (tails v4)
-suf5' p i v1 v2 v3 v4 v5    = map51 (red5' p i) (unit v1) (unit v2) (unit v3) (unit v4) (tails v5)
-suf6' p i v1 v2 v3 v4 v5 v6 = map61 (red6' p i) (unit v1) (unit v2) (unit v3) (unit v4) (unit v5) (tails v6)
-
-pipe1 p v1 s                      = map11 p v1 `pipe` s
-pipe2 p v1 v2 s                   = map21 p v1 v2 `pipe` s
-pipe3 p v1 v2 v3 s                = map31 p v1 v2 v3 `pipe` s
-pipe4 p v1 v2 v3 v4 s             = map41 p v1 v2 v3 v4 `pipe` s
-pipe5 p v1 v2 v3 v4 v5 s          = map51 p v1 v2 v3 v4 v5 `pipe` s
-pipe6 p v1 v2 v3 v4 v5 v6 s       = map61 p v1 v2 v3 v4 v5 v6 `pipe` s
-pipe7 p v1 v2 v3 v4 v5 v6 v7 s    = map71 p v1 v2 v3 v4 v5 v6 v7 `pipe` s
-pipe8 p v1 v2 v3 v4 v5 v6 v7 v8 s = map81 p v1 v2 v3 v4 v5 v6 v7 v8 `pipe` s
-
-systolic                              = scan
-systolic1 p v1 s                      = map11 p v1 `scan` s
-systolic2 p v1 v2 s                   = map21 p v1 v2 `scan` s
-systolic3 p v1 v2 v3 s                = map31 p v1 v2 v3 `scan` s
-systolic4 p v1 v2 v3 v4 s             = map41 p v1 v2 v3 v4 `scan` s
-systolic5 p v1 v2 v3 v4 v5 s          = map51 p v1 v2 v3 v4 v5 `scan` s
-systolic6 p v1 v2 v3 v4 v5 v6 s       = map61 p v1 v2 v3 v4 v5 v6 `scan` s
-systolic7 p v1 v2 v3 v4 v5 v6 v7 s    = map71 p v1 v2 v3 v4 v5 v6 v7 `scan` s
-systolic8 p v1 v2 v3 v4 v5 v6 v7 v8 s = map81 p v1 v2 v3 v4 v5 v6 v7 v8 `scan` s
-
-cascade  p                 vs1 vs2 = map11 (\            s2 s1 -> map11 p             s1 `scan` s2)                 vs2 `pipe` vs1
-cascade1 p vv1             vs1 vs2 = map21 (\v1          s2 s1 -> map21 p v1          s1 `scan` s2) vv1             vs2 `pipe` vs1
-cascade2 p vv1 vv2         vs1 vs2 = map31 (\v1 v2       s2 s1 -> map31 p v1 v2       s1 `scan` s2) vv1 vv2         vs2 `pipe` vs1
-cascade3 p vv1 vv2 vv3     vs1 vs2 = map41 (\v1 v2 v3    s2 s1 -> map41 p v1 v2 v3    s1 `scan` s2) vv1 vv2 vv3     vs2 `pipe` vs1
-cascade4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 v4 s1 `scan` s2) vv1 vv2 vv3 vv4 vs2 `pipe` vs1
-
-mesh  p                 vs1 vs2 = map11 (\            s2 s1 -> map11 p             s1 `scan` s2)                 vs2 `scan` vs1
-mesh1 p vv1             vs1 vs2 = map21 (\v1          s2 s1 -> map21 p v1          s1 `scan` s2) vv1             vs2 `scan` vs1
-mesh2 p vv1 vv2         vs1 vs2 = map31 (\v1 v2       s2 s1 -> map31 p v1 v2       s1 `scan` s2) vv1 vv2         vs2 `scan` vs1
-mesh3 p vv1 vv2 vv3     vs1 vs2 = map41 (\v1 v2 v3    s2 s1 -> map41 p v1 v2 v3    s1 `scan` s2) vv1 vv2 vv3     vs2 `scan` vs1
-mesh4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 v4 s1 `scan` s2) vv1 vv2 vv3 vv4 vs2 `scan` vs1
-
--- Skeletons proven by injectivity (equivalent factorized forms exist)
-
-tail Null    = error "tail: Vector is empty"
-tail (x:>xs) = xs
--- tail      = (<@!> 2) . tails
-
-init Null      = error "init: Vector is empty"
-init (_:>Null) = Null
-init (v:>vs)   = v :> init vs
--- init      = (<@!> 2) . reverse . inits
-
-shiftr vs v = v :> init vs
-shiftl vs v = tail vs <: v
-rotl   Null = Null
-rotl   vs   = tail vs <: first vs
-rotr   Null = Null
-rotr   vs   = last vs :> init vs
-
--- Permutators
-
-last    :: Vector a -> a
-first   :: Vector a -> a
-reverse :: Vector a -> Vector a
-inits   :: Vector a -> Vector (Vector a)
-tails   :: Vector a -> Vector (Vector a)
-length  :: Vector a -> Int
-
-length   = red (+) . map (\_ -> 1)
-concat   = red (<++>)
-first    = red (\x y -> x)
-last     = red (\x y -> y)
-reverse  = red (\x y -> y <++> x)                    . map unit
-inits    = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
-tails    = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
--- filter f = red1' (\x y -> if f (first x) then x <++> y else y) Null . map unit
-takeWhile f = concat . red1 selfunc . map (unit . unit)
-  where selfunc x y = if f (first (first y)) && (not . isNull . last) x then x <++> y else x
-
-        
-first' Null = Null
-first' xs   = first xs
-last'  Null = Null
-last'  xs   = last xs
-init'  Null = Null
-init'  xs   = init xs
-tail'  Null = Null
-tail'  xs   = tail xs
-
--- Index-based selectors
-
-get     ix  = red2' (\i x y -> if i == ix then Just x else y) Nothing indexes 
-take    n   = red2' (\i x y -> if i < n then x <++> y else x) Null indexes . map unit
-drop    n   = red2' (\i x y -> if i > n then x <++> y else y) Null indexes . map unit
-filterIdx f = red2' (\i x y -> if f i   then x <++> y else y) Null indexes . map unit
-replace n r = red2' (\i x y -> if i == n then r :> y else x <++> y) Null indexes . map unit
-stride  f s = let stridef i x y | i `mod` s == f = x <++> y
-                                | otherwise      = y
-              in  red2' stridef Null indexes . map unit
-group   n   = let groupf i x y  | i `mod` n == 0 = x <++> y
-                                | otherwise      = (first x <++> first' y) :> tail' y
-              in  red2' groupf Null indexes . map (unit . unit)
-
-
-v <@>  ix = get ix v
-v <@!> ix = fromJust $ get ix v
-odds      = filterIdx odd
-evens     = filterIdx even
-
-bitrev (x:>Null) = unit x
-bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
-duals   v = let k = length v `div` 2
-            in  map21 (,) (take k v) (drop k v)
-unduals v = let (x,y) = (v |<) 
-            in  x <++> y
-
-generate n f i = fanoutn n f `scan` i
-iterate  n f i = fanoutn (n-1) f `scan'` i
-
-gather  ix v     =  (=$=)                          (v <@!>) ix
-gather2 ix vv    = ((=$=).(=$=))                   (vv <@!>) ix
-gather3 ix vvv   = ((=$=).(=$=).(=$=))             (vvv <@!>) ix
-gather4 ix vvvv  = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!>) ix
-gather5 ix vvvvv = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
-
-scatter ix hv = red2' (\i h r -> replace i (first r) h) hv ix . map unit
-
-
--- TODO: Not fully correct, since <{1,2},{3,_}> would become {<1,3>, _}.
--- This is because the MoC class explicitly asks for `Value`s. This might
--- be fixable once the Behavior Layer is described as a type class
-zipx   w21 w11 = red catEv . map unitEv
-  where catEv  = (comb21 . w21 . psi21) (<++>)
-        unitEv = (comb11 . w11 . psi11) unit
-
--- TODO: not fully correct. See zipx. Extremely unsafe even!!!
-unzipx w1 w2 sv = (map getFst . scan' selFun) sv
-  where getFst = (comb11 . w1 . psi11) first
-        selFun = fanoutn n ((comb11 . w2 . psi11) tail)
-        n      = (length . unsafeFromValue . head . sniff . headS) sv - 1 
-
-
--- group n v = map (take n) $ pref1 dropseries v
---   where dropseries = unit id <++> fanoutn nstages (drop n)
---         nstages    = ceiling $ fromIntegral (length v) / fromIntegral n - 1
+import ForSyDe.Atom.Skeleton.Vector.Core
+import ForSyDe.Atom.Skeleton.Vector.Lib
+import ForSyDe.Atom.Skeleton.Vector.Interface
 
-
-
-
-
-
-
+import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
 
 
 
