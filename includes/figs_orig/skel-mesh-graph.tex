@@ -1,0 +1,109 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+
+\newsavebox\formula
+\begin{lrbox}{\formula}
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+  \primitive[f=pc]{p1}{0,1} {$\fMapS$};
+  \primitive[]    {p2}{0,0} {$\scanS$};
+  \primitive[]    {p3}{0,-2}{$\scanS$};
+  \vector[] (p1.center) -> (p2);
+  \vector[token=(scalar), token pos=.6] (p2.center) - (0,-1);
+  \vector[token=vector] (p3.center) -> (1.5,-2);
+  \primitive[f=pc]{p1}{0,1} {$\fMapS$};
+  \primitive[]    {p2}{0,0} {$\scanS$};
+  \primitive[]    {p3}{0,-2}{$\scanS$};
+
+  \node[anchor=east] (a) at (-1.5,.5) {$ \lambda\ s_1 $};
+  \node[anchor=north east] () at (1,2) {$ \fmap $};
+  \node[] (f)  at (-3,1.5) {$ \fopt{\vect{\vect{f}^n}} $};        
+  \node[] (s)  at (-3,1)   {$ \fopt{\vect{\vect{s_x}^n}} $};  
+  \node[] (s2) at (-3,0)   {$ \vect{s}_2 $};
+  \node[] (s1) at (-3,-2)  {$ \vect{s}_1 $};
+
+  \vectorn[] (f) - (-1.5,1.5);
+  \vectorn[] (s) - (-1.5,1);
+  \vector[token=scalar] (s2) - (-1.5,0);
+  \vectorn[] (-1.5,1.5) -> (p1);
+  \vectorn[token=scalar] (-1.5,1) -> (p1);
+  \vector[token=scalar] (a) -> (p1);
+  \signal[token=scalar] (-1.5,0) -> (p2);
+  \draw[dashed] (-1.5,2) rectangle (1,-1);
+  \vector[token=(vector)] (0,-1) -> (p3);        
+  \vector[] (s1) -> (p3);
+\end{tikzpicture}
+\end{lrbox}
+
+
+\newsavebox\network
+\begin{lrbox}{\network}
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt, global scale =.9]
+   \pgfmathsetmacro\c{2}
+   \pgfmathsetmacro\d{2.5}
+   \pgfmathsetmacro{\w}{\d * 2 - \c};
+   \foreach \i in {1,2}{
+     \foreach \j in {1,2}{
+       \pgfmathsetmacro{\y}{-\i * \c};
+       \pgfmathsetmacro{\x}{\j * 2 * \d + \c * \i };
+       \ifthenelse{\j=2}{
+         \leafstd[ni=3, no=1, nf=1, f1=$ f_{\i n}^n $, type=pc]{p\i\j}{\x,\y}{$p_{\i n}$};
+         \node[] (s\i\j) at ($(p\i\j -p.i1)-(1,0)$) {$s_{x,\i n}$};
+       }{
+         \leafstd[ni=3, no=1, nf=1, f1=$ f_{\i\j}^n $, type=pc]{p\i\j}{\x,\y}{$p_{\i\j}$};
+         \node[] (s\i\j) at ($(p\i\j -p.i1)-(1,0)$) {$s_{x,\i\j}$};
+       }
+       \signaln[] (s\i\j) -> (p\i\j -p.i1);
+     }
+     \node[] at ($(p\i 1-p.o1)!.4!(p\i 2-p.o1)$) {$\cdots$};
+   } 
+   \coordinate (a) at ($(p11-p.i1)+(-.4,1)$); \coordinate (b) at ($(p12-p.i1)+(-.4,1)$);
+   \signal[|-] (a) -> (p11-p.i2); \signal[-|-] (p11-p.o1) -> (p21-p.i2); 
+   \signal[|-] (b) -> (p12-p.i2); \signal[-|-] (p12-p.o1) -> (p22-p.i2); 
+   \signal[-|-] (p21-p.o1) -> ($(p21-p.i2) + (\c,-\c)$); 
+   \signal[-|-] (p22-p.o1) -> ($(p22-p.i2) + (\c,-\c)$);
+   \signal[-|-] (p11-p.o1) -> ($(p12-p.i3) - (\w,0)$); 
+   \signal[-|-] (p21-p.o1) -> ($(p22-p.i3) - (\w,0)$); 
+   \signal[-|-=.2] ($(p11-p.o1)+(\w,0)$) -> (p12-p.i3); 
+   \signal[-|-=.2] ($(p21-p.o1)+(\w,0)$) -> (p22-p.i3); 
+
+   \coordinate (c) at ($(p21-p.o1)+(\d,-\w)$); \coordinate (d) at ($(p22-p.o1)+(\d,-\w)$);
+   \vector[shorten <= -1pt] (c) -> ($(d)+(.5,0)$);
+   \signal[shorten >= 2pt] ($(c)+(0,.5)$) -> (c); 
+   \signal[shorten >= 2pt] ($(d)+(0,.5)$) -> (d);
+   \node[] at ($(c)!.35!(d)+(0,.9)$) {$\ddots$};
+   \node[] at ($(c)+(-.5,.9)$) {$\ddots$};
+   \node[] at ($(d)+(-.5,.9)$) {$\ddots$};
+
+   \node[anchor=east] (v1) at ($(s11)+(0,1)$) {$\vect{s}_1$};
+   \vector[shorten >= -1pt] (v1) - (b);
+
+   \coordinate (e) at ($(p11-p.i3)-(1,0)$);
+   \coordinate (f) at ($(p21-p.i3)-(\w,0)$);
+   \coordinate (g) at ($(f)-(0,\d)$);
+
+   \signal[] (e) -> (p11-p.i3);
+   \signal[] (f) -> (p21-p.i3);
+   \vector[shorten <= -1pt] (e) - (g);
+   \node[anchor=east] (v2) at ($(e)!.5!(g)$) {$\vect{s}_2$};
+   % \vector[] (v2) -> ($(e)!.5!(g)$);
+
+   \vector[] ($(p11-p.i2)!.5!(p21-p.i2)$) -> ($(p12-p.i2)!.5!(p22-p.i2)+(4.8,0)$);
+   \vector[] ($(p21-p.i2)+(1,-1)$) -> ($(p22-p.i2)+(1,-1)+(2.8,0)$);
+   \vector[] ($(p12-p.i2)!.5!(p22-p.i2)+(4.8,0)$) - ($(p12-p.i2)!.5!(p22-p.i2)+(4.8,-4)$);
+
+\end{tikzpicture}
+\end{lrbox}
+
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+  \node[anchor=east] (f) at (0,0) {\usebox{\formula}};
+  \node[anchor=west] (n) at (2,0) {\usebox{\network}};
+  \node[anchor=west]     at (1,0) {$\equiv$};
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

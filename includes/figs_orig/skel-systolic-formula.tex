@@ -5,8 +5,8 @@
 
 \begin{document}
 \begin{align*}%
-    \mathit{prefix'_S} &: (S \rightarrow S \rightarrow S) \rightarrow S \rightarrow \vect{S} \rightarrow \vect{S}\\
-    \mathit{prefix'_S} &\ p\ s\ \vect{s} = (p \redS' s) \fMapS \mathit{inits_S} \vect{s}%
+    \mathit{systolic_S} &: \vect{S \rightarrow S} \rightarrow S \rightarrow \vect{S}\\
+    \mathit{systolic_S} &\ \vect{ps}\ s = (\pipeS s) \fMapS \mathit{inits_S} \vect{ps}%
 \end{align*}
 \end{document}
 

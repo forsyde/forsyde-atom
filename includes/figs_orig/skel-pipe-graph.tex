@@ -1,0 +1,46 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+
+\newsavebox\formula
+\begin{lrbox}{\formula}
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+  \node[anchor=south] (vm) at (0,2)          {$\vect{s \rightarrow s}$};
+  \primitive[]        {pp}    {0,0}          {$\pipeS$};
+  \node[anchor=east]  (s)  at ($(pp)-(2,0)$) {$s$};
+  \vector[] (vm) -> (pp);
+  \signal[] (s) -> (pp);
+  \signal[] (pp) -> (2,0);
+\end{tikzpicture}
+\end{lrbox}
+
+\newsavebox\network
+\begin{lrbox}{\network}
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+  \foreach \i/\y in {1/0, 2/1.5, q/4} {
+    \leafstd[ni=1, nf=0, inner sep=8pt] {p\i} {\y,0} {$p_\i$};
+    \coordinate (i\i) at ($(p\i -p.i1)-(.5,0)$);
+    \coordinate (o\i) at ($(p\i -p.o1)+(.5,0)$);
+  }
+  \signal[] (i1) -> (p1-p.i1);
+  \signal[] (p1-p.o1) -> (p2-p.i1);
+  \signal[] (p2-p.o1) -> (o2);
+  \signal[] (iq) -> (pq-p.i1);
+  \signal[] (pq-p.o1) -> (oq);
+  \node[] at ($(p2-p.o1)!.5!(pq-p.i1)$) {$\cdots$};
+  
+\end{tikzpicture}
+\end{lrbox}
+
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+  \node[anchor=east] (f) at (0,0) {\usebox{\formula}};
+  \node[anchor=west] (n) at (2,0) {\usebox{\network}};
+  \node[anchor=west]     at (1,0) {$\equiv$};
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

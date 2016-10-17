@@ -95,16 +95,20 @@ module ForSyDe.Atom.Skeleton.Vector (
   map71, map72, map73, map74,
   map81, map82, map83, map84,
 
-  red1,  red2,  red3,  red4,  red5,  red6,  red7,  red8,
-  red1', red2', red3', red4', red5', red6', red7', red8',
+  reduce1,  reduce2,  reduce3,  reduce4,  reduce5,  reduce6,  reduce7,  reduce8,
+  reduce1', reduce2', reduce3', reduce4', reduce5', reduce6', reduce7', reduce8',
+  
+  prefix1,  prefix2,  prefix3,  prefix4,  prefix5,  prefix6, 
+  prefix1', prefix2', prefix3', prefix4', prefix5', prefix6',
+  
+  suffix1,  suffix2,  suffix3,  suffix4,  suffix5,  suffix6,  
+  suffix1', suffix2', suffix3', suffix4', suffix5', suffix6',
 
-  pref1,  pref2,  pref3,  pref4,  pref5,  pref6, 
-  pref1', pref2', pref3', pref4', pref5', pref6',
-
-  suf1,  suf2,  suf3,  suf4,  suf5,  suf6,  
-  suf1', suf2', suf3', suf4', suf5', suf6',
-
-  pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8,
+  pipe0, pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8,
+  systolic0, systolic1, systolic2, systolic3, systolic4, systolic5, systolic6, systolic7, systolic8,
+  
+  cascade0, cascade1, cascade2, cascade3, cascade4, 
+  mesh0, mesh1, mesh2, mesh3, mesh4, 
   
   
   -- ** Transitional
