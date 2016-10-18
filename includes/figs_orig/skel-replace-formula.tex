@@ -1,0 +1,22 @@
+\documentclass[preview]{standalone}
+\usepackage{amsmath} 
+\usepackage{amssymb} 
+\usepackage{forsyde-math}
+
+\begin{document}
+\begin{align*}
+  \mathit{replace}_S &: Int \rightarrow \alpha \rightarrow \vect{\alpha} \rightarrow \vect{\alpha} \\
+  \mathit{replace}_S &\ n\ a = \mathit{replacef} \redS \vect{1,2,...} \cdot \vect{} \fMapS\\
+         & \text{where}\ \ \mathit{replacef}\ i\ x\ y = 
+           \left\{\begin{array}{ll}
+                    \vect{a} \fcat y & \text{ if } i = n\\
+                    x \fcat y & \text{ otherwise}
+                  \end{array}
+           \right.\\
+\end{align*}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

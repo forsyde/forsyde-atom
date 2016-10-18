@@ -65,7 +65,7 @@ module ForSyDe.Atom.Skeleton.Vector (
   -- another one's elements, based on some indices. The shown example
   -- is an alternative notation for the 'tail' skeleton.
   
-  -- ** Functional
+  -- ** Functional networks
 
   -- | This sub-category denotes skeletons (i.e. Skeleton Layer
   -- patterns) which are capable of constructing parallel process
@@ -104,14 +104,37 @@ module ForSyDe.Atom.Skeleton.Vector (
   suffix1,  suffix2,  suffix3,  suffix4,  suffix5,  suffix6,  
   suffix1', suffix2', suffix3', suffix4', suffix5', suffix6',
 
-  pipe0, pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8,
+  pipe0,     pipe1,     pipe2,     pipe3,     pipe4,     pipe5,     pipe6,     pipe7,     pipe8,
   systolic0, systolic1, systolic2, systolic3, systolic4, systolic5, systolic6, systolic7, systolic8,
   
   cascade0, cascade1, cascade2, cascade3, cascade4, 
-  mesh0, mesh1, mesh2, mesh3, mesh4, 
+  mesh0,    mesh1,    mesh2,    mesh3,    mesh4, 
+
+  -- ** Queries
+
+  -- | Queries return various information about a vector. They are
+  -- also built as skeletons.
+
+  length,
   
+  -- ** Generators
+
+  -- | Generators are specific applications of the @prefix@ or
+  -- @suffix@ skeletons.
+
+  fanout, fanoutn, generate, iterate, 
   
-  -- ** Transitional
+  -- ** Permutators
+
+  -- | Permutators perform operations on the very structure of
+  -- vectors, and make heavy use of the vector constructors.
+
+  first, last, init, tail, inits, tails,
+  concat, reverse, group, shiftr, shiftl, rotr, rotl, 
+  take, drop, filterIdx, odds, evens, stride,
+  get, (<@>), (<@!>), gather1, gather2, gather3, gather4, gather5,
+  replace, scatter,
+  -- takeWhile, filter
 
   -- ** Interfaces
   
@@ -135,21 +158,6 @@ import Prelude hiding (null, last, init, tail, map, reverse, length, concat, tak
 
 
 
-
--- -- | The function 'vector' converts a list into a vector.
--- vector     :: [a] -> Vector a
-
--- -- | The function 'fromVector' converts a vector into a list.
--- fromVector :: Vector a -> [a]
-
--- -- | The function 'unitV' creates a vector with one element. 
--- unitV    :: a -> Vector a
-
--- -- | The function 'nullV' returns 'True' if a vector is empty. 
--- nullV    :: Vector a -> Bool
-
--- -- | The function 'lengthV' returns the number of elements in a value. 
--- lengthV  :: Vector a -> Int
 
 -- -- | The function 'atV' returns the n-th element in a vector, starting from zero.
 -- atV      :: (Num a, Eq a) => Vector b -> a -> b
