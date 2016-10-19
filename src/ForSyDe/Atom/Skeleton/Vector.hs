@@ -132,11 +132,15 @@ module ForSyDe.Atom.Skeleton.Vector (
   first, last, init, tail, inits, tails,
   concat, reverse, group, shiftr, shiftl, rotr, rotl, 
   take, drop, filterIdx, odds, evens, stride,
-  get, (<@>), (<@!>), gather1, gather2, gather3, gather4, gather5,
+  get, (<@), (<@!), gather1, gather2, gather3, gather4, gather5,
+  (<@!>), (<<@!>>), (<<<@!>>>), (<<<<@!>>>>), (<<<<<@!>>>>>),
   replace, scatter,
   -- takeWhile, filter
+  bitrev, duals, unduals,
 
   -- ** Interfaces
+
+  zipx, unzipx,
   
   -- * Bibliography
   
@@ -156,119 +160,3 @@ import ForSyDe.Atom.Skeleton.Vector.Interface
 import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
 
 
-
-
-
--- -- | The function 'atV' returns the n-th element in a vector, starting from zero.
--- atV      :: (Num a, Eq a) => Vector b -> a -> b
-
--- -- | The function 'atV' returns the n-th element in a vector, starting from zero.
--- getV   :: (Num a, Eq a) => a -> Vector b -> b
-
--- -- |  The function 'replaceV' replaces an element in a vector.
--- replaceV :: Vector a -> Int -> a -> Vector a
-
--- -- | The functions 'headV' returns the first element of a vector.
--- headV :: Vector a -> a
-
--- -- | The function 'lastV' returns the last element of a vector.
--- lastV :: Vector a -> a
-
--- -- | The functions 'tailV' returns all, but the first element of a vector.
--- tailV :: Vector a -> Vector a 
-
--- -- | The function 'initV' returns all but the last elements of a vector.
--- initV :: Vector a -> Vector a 
-
--- -- | The function 'takeV' returns the first n elements of a vector.
--- takeV :: (Num a, Ord a) => a -> Vector b -> Vector b
-
--- -- | The function 'dropV' drops the first n elements of a vector.
--- dropV :: (Num a, Ord a) => a -> Vector b -> Vector b
-
-
-
--- -- | The function 'selectV' selects elements in the vector. The first argument gives the initial element, starting from zero, the second argument gives the stepsize between elements and the last argument gives the number of elements. 
--- selectV :: Int -> Int -> Int -> Vector a -> Vector a
-
-
--- -- | The function 'groupV' groups a vector into a vector of vectors of size n.
--- groupV :: Int -> Vector a -> Vector (Vector a)
-
--- -- | The operator '(<:)' adds an element at the end of a vector.
--- (<:)  :: Vector a -> a -> Vector a
-
--- -- | The operator '(<+>)' concatinates two vectors.
--- (<+>) :: Vector a -> Vector a -> Vector a
-
-
-
-
--- -- | The higher-order function 'mapV' applies a function on all elements of a vector.
--- mapV :: (a -> b) -> Vector a -> Vector b    
-
-
--- -- | The higher-order function 'zipWithV' applies a function pairwise on to vectors.
--- zipWithV :: (a -> b -> c) -> Vector a -> Vector b -> Vector c
-
-
--- -- | The higher-order functions 'foldlV' folds a function from the right to the left  over a vector using an initial value.
--- foldlV :: (a -> b -> a) -> a -> Vector b -> a 
-
--- -- | The higher-order functions 'foldrV' folds a function from the left to the right over a vector using an initial value.
--- foldrV :: (b -> a -> a) -> a -> Vector b -> a
-
--- -- | The higher-function 'filterV' takes a predicate function and a vector and creates a new vector with the elements for which the predicate is true. 
--- filterV :: (a -> Bool) -> Vector a -> Vector a
-
--- -- | The function 'zipV' zips two vectors into a vector of tuples.
--- zipV   :: Vector a -> Vector b -> Vector (a, b)
-
--- -- | The function 'unzipV' unzips a vector of tuples into two vectors.
--- unzipV :: Vector (a, b) -> (Vector a, Vector b)
-
-
-
--- -- | The function 'shiftlV' shifts a value from the left into a vector. 
--- shiftlV :: Vector a -> a-> Vector a 
--- -- | The function 'shiftrV' shifts a value from the right into a vector. 
--- shiftrV :: Vector a -> a -> Vector a
-
--- -- | The function 'rotlV' rotates a vector to the left. Note that this fuctions does not change the size of a vector.
--- rotlV   :: Vector a -> Vector a
-
--- -- | The function 'rotrV' rotates a vector to the right. Note that this fuction does not change the size of a vector.
--- rotrV   :: Vector a -> Vector a
-
-
--- -- | The function 'concatV' transforms a vector of vectors to a single vector. 
--- concatV   :: Vector (Vector a) -> Vector a
-
--- -- | The function 'reverseV' reverses the order of elements in a vector. 
--- reverseV  :: Vector a -> Vector a
-
-
--- -- | The function 'iterateV' generates a vector with a given number of elements starting from an initial element using a supplied function for the generation of elements. 
--- --
--- -- > Vector> iterateV 5 (+1) 1
--- --
--- -- > <1,2,3,4,5> :: Vector Integer
--- iterateV :: (Num a, Eq a) => a -> (b -> b) -> b -> Vector b
-
--- -- | The function 'generateV' behaves in the same way, but starts with the application of the supplied function to the supplied value. 
--- --
--- -- > Vector> generateV 5 (+1) 1
--- -- 
--- -- > <2,3,4,5,6> :: Vector Integer
--- generateV :: (Num a, Eq a) => a -> (b -> b) -> b -> Vector b
-
--- -- | The function 'copyV' generates a vector with a given number of copies of the same element. 
--- --
--- -- > Vector> copyV 7 5 
--- -- 
--- -- > <5,5,5,5,5,5,5> :: Vector Integer
--- copyV     :: (Num a, Eq a) => a -> b -> Vector b
-
-
--- a = vector [1,2,3,4,5,6,7,8,9]
--- b = a <++> fanout 15

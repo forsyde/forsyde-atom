@@ -68,7 +68,7 @@ instance MoC CT where
   ---------------------
   (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
   ---------------------
-  sniff (CT t a) = a t
+  -- sniff (CT t a) = a t
     
 -- | Shows the event starting from tag @t@ with value @v = f t@  @ v \@t@. It hides the partition (the singleton list constructor).
 instance Show a => Show (CT [a]) where

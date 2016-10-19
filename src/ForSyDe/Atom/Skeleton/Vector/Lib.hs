@@ -578,6 +578,9 @@ takeWhile f = concat . reduce1 selfunc . map (unit . unit)
 --
 -- <<includes/figs/skel-stride-formula.png>>
 -- <<includes/figs/skel-stride-graph.png>>
+stride :: Integer -- ^ first index
+       -> Integer -- ^ stride length
+       -> Vector a -> Vector a
 stride  f s = let stridef i x y | i `mod` s == f = x <++> y
                                 | otherwise      = y
               in  reduce2' stridef Null indexes . map unit
@@ -598,29 +601,29 @@ shiftr vs v = v :> init vs
 
 -- | left-shifts a vector with an element.
 --
--- <<includes/figs/skel-shiftl-graph.png>>
+-- <<includes/figs/skel-shiftrl-graph.png>>
 shiftl vs v = tail vs <: v
 
 -- | rotates a vector to the left.
 --
--- <<includes/figs/skel-rotr-graph.png>>
+-- <<includes/figs/skel-rotl-graph.png>>
 rotl   Null = Null
 rotl   vs   = tail vs <: first vs
 
 -- | rotates a vector to the right.
 --
--- <<includes/figs/skel-rotl-graph.png>>
+-- <<includes/figs/skel-rotr-graph.png>>
 rotr   Null = Null
 rotr   vs   = last vs :> init vs
 
 
 -- | the same as 'get' but with flipped arguments.
-v <@>  ix = get ix v
+v <@  ix = get ix v
 
 -- | unsafe version of '<@>'. Throws an exception if /n > l/.
 --
 -- <<includes/figs/skel-get-formula.png>>
-v <@!> ix = fromJust $ get ix v
+v <@! ix = fromJust $ get ix v
 
 -- | > = filterIdx odd
 odds      = filterIdx odd
@@ -630,26 +633,67 @@ evens     = filterIdx even
 
 -- | selects the elements in a vector at the incexes contained by another vector.
 --
--- <<includes/figs/skel-gather-formula.png>>
--- <<includes/figs/skel-gather-graph.png>>
-gather1 ix v     =  (=$=)                          (v <@!>) ix
-gather2 ix vv    = ((=$=).(=$=))                   (vv <@!>) ix
-gather3 ix vvv   = ((=$=).(=$=).(=$=))             (vvv <@!>) ix
-gather4 ix vvvv  = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!>) ix
-gather5 ix vvvvv = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!>) ix
+-- The following versions of this skeleton are available, the number
+-- suggesting how many nested vectors it is operating upon.
+--
+-- > gather1, gather2, gather3, gather4, gather5
+gather1 :: Vector Integer -- ^ vector of indexes
+       -> Vector a       -- ^ input vector
+       -> Vector a
+gather1 ix v     =  map                          (v <@!) ix
+gather2 ix vv    = ((=$=).(=$=))                   (vv <@!) ix
+gather3 ix vvv   = ((=$=).(=$=).(=$=))             (vvv <@!) ix
+gather4 ix vvvv  = ((=$=).(=$=).(=$=).(=$=))       (vvvv <@!) ix
+gather5 ix vvvvv = ((=$=).(=$=).(=$=).(=$=).(=$=)) (vvvvv <@!) ix
 
--- | scatters the elements in a vector based on the indexes contained by another vector.
+-- | the same as 'gather1' but with flipped arguments
 --
 -- <<includes/figs/skel-gather-formula.png>>
 -- <<includes/figs/skel-gather-graph.png>>
-scatter ix hv = reduce2' (\i h r -> replace i (first r) h) hv ix . map unit
+--
+-- The following versions of this skeleton are available, the number
+-- suggesting how many nested vectors it is operating upon.
+--
+-- > (<@!>), (<<@!>>), (<<<@!>>>), (<<<<@!>>>>), (<<<<<@!>>>>>),
+(<@!>) :: Vector a        -- ^ input vector
+       -> Vector Integer  -- ^ vector of indexes
+       -> Vector a
+v     <@!>     ix = gather1 ix v
+v    <<@!>>    ix = gather2 ix v    
+v   <<<@!>>>   ix = gather3 ix v   
+v  <<<<@!>>>>  ix = gather4 ix v  
+v <<<<<@!>>>>> ix = gather5 ix v 
 
--- bitrev (x:>Null) = unit x
--- bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
--- duals   v = let k = length v `div` 2
---             in  map21 (,) (take k v) (drop k v)
--- unduals v = let (x,y) = (v |<) 
---             in  x <++> y
+
+-- | scatters the elements in a vector based on the indexes contained by another vector.
+--
+-- <<includes/figs/skel-scatter-formula.png>>
+-- <<includes/figs/skel-scatter-graph.png>>
+--
+-- >>> scatter (vector [2,4,5]) (vector [0,0,0,0,0,0,0,0]) (vector [1,1,1])
+-- > <0,1,0,1,1,0,0,0>
+scatter ix hv = reduce2' (\i r h -> replace i (first r) h) hv ix . map unit
+
+-- | performs a bit-reverse permutation.
+--
+-- <<includes/figs/skel-bitrev-graph.png>>
+--
+-- >>> bitrev $ vector ["000","001","010","011","100","101","110","111"]
+-- >                   <"111","011","101","001","110","010","100","000">
+bitrev (x:>Null) = unit x
+bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
+
+-- | splits a vector in two equal parts.
+--
+-- <<includes/figs/skel-duals-graph.png>>
+duals   v = let k = length v `div` 2
+            in  map21 (,) (take k v) (drop k v)
+
+-- | concatenates a previously split vector. See also 'duals'
+--
+-- <<includes/figs/skel-unduals-graph.png>>
+unduals v = let (x,y) = (v |<) 
+            in  x <++> y
 
 
 

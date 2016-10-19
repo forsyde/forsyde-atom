@@ -6,7 +6,7 @@
 \begin{document}
 \begin{align*}
   drop_S &: Int \rightarrow \vect{\alpha} \rightarrow \vect{\alpha} \\
-  drop_S &\ n = \mathit{dropf} \redS \vect{1,2,...} \cdot \vect{} \fMapS\\
+  drop_S &\ n = \mathit{dropf} \redS \vect{1,2,...} \circ \vect{} \fMapS\\
          & \text{where}\ \ \mathit{dropf}\ i\ x\ y = 
            \left\{\begin{array}{ll}
                     x \fcat y & \text{ if } i > n\\

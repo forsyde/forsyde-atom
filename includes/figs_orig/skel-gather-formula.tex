@@ -5,8 +5,8 @@
 
 \begin{document}
 \begin{align*}
-  \mathit{group}_S &: Int \rightarrow \vect{\alpha} \rightarrow \vect{\vect{\alpha}} \\
-  \mathit{group}_S &\ n = (\mathit{take}\ n) \fMapS \circ (\mathit{drop}\ n) \scanS
+  _{@\vect{}} &: \vect{\alpha} \rightarrow Int \rightarrow \alpha \\
+  v_{@\vect{n}} & = (\lambda\ n \rightarrow v_{@n}) \fMapS \vect{n} 
 \end{align*}
 \end{document}
 

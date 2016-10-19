@@ -6,7 +6,7 @@
 \begin{document}
 \begin{align*}
   \mathit{takeWhile}_S &: (\alpha \rightarrow Bool) \rightarrow \vect{\alpha} \rightarrow \vect{\alpha} \\
-  \mathit{takeWhile}_S &\ f = concat \cdot \mathit{takewhilef} \redS \cdot \vect{\vect{}} \fMapS\\
+  \mathit{takeWhile}_S &\ f = concat \circ \mathit{takewhilef} \redS \circ \vect{\vect{}} \fMapS\\
          & \text{where}\ \ \mathit{takewhilef}\ x\ y = 
            \left\{\begin{array}{ll}
                     x & \text{ if } (f\ y_{@1}) \wedge (x_{@l} \neq \varnothing)\\

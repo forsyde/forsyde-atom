@@ -5,8 +5,8 @@
 
 \begin{document}
 \begin{align*}
-  \mathit{group}_S &: Int \rightarrow \vect{\alpha} \rightarrow \vect{\vect{\alpha}} \\
-  \mathit{group}_S &\ n = (\mathit{take}\ n) \fMapS \circ (\mathit{drop}\ n) \scanS
+  zipx_S &: \vect{\mathcal{S}(\alpha)} \rightarrow \mathcal{S}(\vect{\alpha}) \\
+  zipx_S & = (\wrapdf{\fcat} \combM) \redS \circ (\wrapdf{\vect{}} \combM) \fMapS
 \end{align*}
 \end{document}
 

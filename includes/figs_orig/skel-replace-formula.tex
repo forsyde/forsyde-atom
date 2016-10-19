@@ -6,7 +6,7 @@
 \begin{document}
 \begin{align*}
   \mathit{replace}_S &: Int \rightarrow \alpha \rightarrow \vect{\alpha} \rightarrow \vect{\alpha} \\
-  \mathit{replace}_S &\ n\ a = \mathit{replacef} \redS \vect{1,2,...} \cdot \vect{} \fMapS\\
+  \mathit{replace}_S &\ n\ a = \mathit{replacef} \redS \vect{1,2,...} \circ \vect{} \fMapS\\
          & \text{where}\ \ \mathit{replacef}\ i\ x\ y = 
            \left\{\begin{array}{ll}
                     \vect{a} \fcat y & \text{ if } i = n\\
@@ -15,7 +15,7 @@
            \right.\\
 \end{align*}
 \end{document}
-
+ 
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t

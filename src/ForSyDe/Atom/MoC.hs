@@ -135,7 +135,7 @@ class (Functor e) => MoC e where
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
 
-  sniff :: e a -> a
+  -- sniff :: e a -> a
 
 
 infixl 3 -&>-
@@ -386,7 +386,6 @@ delay :: MoC e => e a -> Signal (e a) -> Signal (e a)
 -- > comb31, comb32, comb33, comb34,
 -- > comb41, comb42, comb43, comb44,
 -- > comb51, comb52, comb53, comb54,
-
 comb22 :: (MoC e)
           => (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2)))
           -- ^ (<#comb22f *>)

@@ -477,7 +477,7 @@ module ForSyDe.Atom (
   -- 1. layers /l>1/ are instantiated using library-provided
   -- /constructors/ which are in fact specific compositions of
   -- /atoms/.
---
+  --
   -- 1. constructors are meaningful and can be associated with /known/
   -- implementations on some target platforms. In this sense they are
   -- both analyzable and synthesizable.
@@ -491,8 +491,42 @@ module ForSyDe.Atom (
   -- #3layer#
   -- <<includes/figs/layered-model.png>>
   -- #synch#
+
+  -- ** Skeleton layer
+
+  -- | The skeleton layer describes recursive and regular composition
+  -- of processes which expose inherent potential for parallelism. As
+  -- such, it wraps lower layer entities (i.e. processes, signals),
+  -- into regular structures called /categorical types/. Most of the
+  -- ground work for this layer is based on the categorical type
+  -- theory <#bird96 [6]>, which enable the description of algorithmic
+  -- skeletons as high-level constructs encapsulating parallelism and
+  -- communication with an associated cost complexity.
+  --
+  -- This layer provides:
+  --
+  -- * 3 atoms as infix operators which, as demonstrated in
+  -- <#bird96 [6]> and <#skillicorn05 [7]>, are enough to describe
+  -- /all/ algorithmic skeletons.
+  --
+  -- * a set of different categorical types which implement these
+  -- atoms, and provide patterns as meaningful compositions of them.
+  --
+  -- ==== Atoms
+
+  Skeleton(..),
+
+  -- | ==== Patterns. Algorithmic skeletons
+  --
+  -- The patterns for the skeleton layer are defined as compositions
+  -- of the atoms above, and instantiate meaningful process
+  -- networks.
+  --
+  -- __/All instances of 'Skeleton' define skeleton layer patterns as/__
+  -- __/algorithmic skeletons. Please refer to each respective module/__
+  -- __/for an extensive documentation on process network patterns./__
   
-  -- ** Synchronization layer
+  -- ** MoC layer
 
   -- | The synchronization layer abstracts timing semantics as defined
   -- by a chosen MoC. It provides:
@@ -722,12 +756,16 @@ module ForSyDe.Atom (
 
   -- | #reekie95# <http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [5]> Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.
 
+  -- | #bird96# [6] Bird, R., & De Moor, O. (1996, January). The algebra of programming. In /NATO ASI DPD/ (pp. 167-203).
+
+  -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [7]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
 
   
 ) where
 
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Signal
+import ForSyDe.Atom.Skeleton
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Utility
 

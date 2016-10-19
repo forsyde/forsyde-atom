@@ -45,7 +45,7 @@ instance MoC SY where
   ---------------------
   (-&-) _ a = a
   ---------------------
-  sniff (SY a) = a
+  -- sniff (SY a) = a
 
 -- | 'Show' instance. Hides the partition of values (the list wrapper).
 instance (Show a) => Show (SY [a]) where

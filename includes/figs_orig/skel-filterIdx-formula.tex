@@ -6,7 +6,7 @@
 \begin{document}
 \begin{align*}
   \mathit{filterIdx}_S &: (Int \rightarrow Bool) \rightarrow \vect{\alpha} \rightarrow \vect{\alpha} \\
-  \mathit{filterIdx}_S &\ f = \mathit{filterf} \redS \vect{1,2,...} \cdot \vect{} \fMapS\\
+  \mathit{filterIdx}_S &\ f = \mathit{filterf} \redS \vect{1,2,...} \circ \vect{} \fMapS\\
          & \text{where}\ \ \mathit{filterf}\ i\ x\ y = 
            \left\{\begin{array}{ll}
                     x \fcat y & \text{ if } f\ i\\
