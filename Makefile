@@ -8,6 +8,8 @@ doc:
 
 	cabal configure
 	cabal haddock --hyperlink-source --css=includes/styles/ocean.css
+#	$(eval ODIR := $(shell cabal haddock --hyperlink-source --css=includes/styles/ocean.css | tail -1 | grep -oE '[^ ]+$$' | sed 's:/[^/]*$$::'))
+#	mv $(ODIR) docs
 
 sandbox:
 	cabal sandbox init

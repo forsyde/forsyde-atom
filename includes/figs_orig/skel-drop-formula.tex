@@ -1,0 +1,22 @@
+\documentclass[preview]{standalone}
+\usepackage{amsmath} 
+\usepackage{amssymb} 
+\usepackage{forsyde-math}
+
+\begin{document}
+\begin{align*}
+  drop_S &: Int \rightarrow \vect{\alpha} \rightarrow \vect{\alpha} \\
+  drop_S &\ n = \mathit{dropf} \redS \vect{1,2,...} \circ \vect{} \fMapS\\
+         & \text{where}\ \ \mathit{dropf}\ i\ x\ y = 
+           \left\{\begin{array}{ll}
+                    x \fcat y & \text{ if } i > n\\
+                    y & \text{ otherwise}
+                  \end{array}
+           \right.\\
+\end{align*}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

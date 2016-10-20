@@ -5,8 +5,8 @@
 
 
 \begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
-  \primitive[f=$e$]{p4}{2,0}{$\fphi$};
-  \primitive[f=$e$]{p3}{0,0}{$\fpre$};
+  \primitive[f=$e$]{p4}{2,0}{$\phiM$};
+  \primitive[f=$e$]{p3}{0,0}{$\preM$};
   \node[] (in3) at ($(p3)-(1.5,0)$) {$s_{i}$};
   \node[] (ou3) at ($(p4)+(1.5,0)$) {$s_{o}$};
   \signal[] (in3) -> (p3);
@@ -15,7 +15,7 @@
   
   \node[] (eq) at ($(ou3)+(1,0)$) {$\equiv$};
 
-  \primitive[f=$e$]{c1} {$(eq)+(2,0)$} {$\fdelay$};
+  \primitive[f=$e$]{c1} {$(eq)+(2,0)$} {$\delayM$};
   \node[anchor=south west] (ci) at ($(c1)-(1.5,0)$) {$s_{i}$};
   \node[anchor=south east] (co) at ($(c1)+(1.5,0)$) {$s_{o}$};
   \signal[] (ci.south west) -> (c1);

@@ -63,7 +63,7 @@ instance MoC DE where
   ---------------------
   (DE t _) -&- xs = (\(DE t1 v) -> DE (t1 + t) v) <$> xs
   ---------------------
-
+  -- sniff (DE _ a) = a
 
 -- | Shows the event with tag @t@ and value @v@ as @ v \@t@. It hides the partition (the singleton list constructor).
 instance Show a => Show (DE [a]) where

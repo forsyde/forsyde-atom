@@ -7,20 +7,20 @@
 \usepackage{forsyde-math}
 \begin{document}
 \newsavebox{\hack}
-\savebox{\hack}{$\ostar$}
+\savebox{\hack}{$\applM$}
 
 \begin{tabular}[t]{m{6cm}m{9cm}}
   \vbox{\begin{align*}
-    p_1(s_1) &= (+) \star s_1 \\
-    p_2(s_1,s_2) &= s_1 \ostar s_2 \\
+    p_1(s_1) &= (+) \mapM s_1 \\
+    p_2(s_1,s_2) &= s_1 \applM s_2 \\
     pn(s_1,s_2) &= (p_2(s_2) \circ p_1)(s_1) \\    
-    pc'(f)(s_1, s_2) &= (\ostar\, s_2) \circ (f \star s_1) \\
+    pc'(f)(s_1, s_2) &= (\applM\, s_2) \circ (f \mapM s_1) \\
     p'(s_1,s_2) &= pc'\, (+) (s_1,s_2) \\
     pn &\equiv p'
   \end{align*}}
   &
   \begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
-    \primitive[moc=sy,f=$(\alpha\rightarrow\beta\rightarrow\gamma)$]{p1}{0,1}{$\star$};
+    \primitive[moc=sy,f=$(\alpha\rightarrow\beta\rightarrow\gamma)$]{p1}{0,1}{$\mapM$};
     \primitive[moc=sy]{p2}{1,0}{\usebox{\hack}};
     \node[anchor=south east] (in1) at ($(p1)-(1,0)$) {$\mathcal{S}(\alpha)$};
     \node[anchor=south east] (in2) at ($(p2)-(2,0)$) {$\mathcal{S}(\beta)$};

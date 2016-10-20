@@ -1,337 +1,162 @@
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK prune #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Vector
--- Copyright   :  (c) SAM Group, KTH/ICT/ECS 2007-2008
+-- Module      :  ForSyDe.Atom.Skeleton.Vector
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
--- Maintainer  :  forsyde-dev@ict.kth.se
+-- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module defines the data type 'Vector' and the
--- corresponding functions. It is a development of the module
--- defined by Reekie.
+-- This module defines the data type 'Vector' as a categorical type,
+-- implementing the atoms for the 'ForSyDe.MoC.Skeleton.Skeleton'
+-- class. Algorithmic skeletons are mostly described for 'Vector' in
+-- their factorized form (i.e. as a /map-reduce/ pattern, using
+-- skeleton layer atoms), assuring that they are catamorphisms. Where
+-- practical matters, or efficience are a concern, some skeletons are
+-- implemented as recurrences. One can still prove that they are
+-- catamorphisms through alternative theorems (e.g. by proving that
+-- they have an inverse over 'Vector').
 -----------------------------------------------------------------------------
-module ForSyDe.Core.Vector ( 
-  Vector (..), 
-  -- ** Basic operators
-  (§>), (<§>), pipeV, scanV,
-  -- ** functions
-  vector, fromVector, unitV, nullV, lengthV,
-  atV, getV, replaceV, headV, tailV, lastV, initV, takeV, dropV, 
-  selectV, groupV, (<+>), (<:), mapV, foldlV, foldrV, 
-  zipWithV, filterV, zipV, unzipV, 
-  concatV, reverseV, shiftlV, shiftrV, rotrV, rotlV, 
-  generateV, iterateV, copyV 
-) where
+module ForSyDe.Atom.Skeleton.Vector (
+
+  -- * Vector data type
+
+  Vector(..),
+
+  -- * \"Constructors\"
+
+  -- | According to <#bird96 [2]>, 'Vector' should be implemented as
+  -- following:
+  --
+  -- > data Vector a = Null                   -- null element
+  -- >               | Unit a                 -- singleton vector
+  -- >               | Vector a <++> Vector a -- concatenate two vectors
+  --
+  -- This construction suggests the possibility of splitting a
+  -- 'Vector' into multiple parts and evaluating it in parallel. While
+  -- due to practical considerations we have chosen another
+  -- implementation (see above), when defining skeletons on vectors we
+  -- shall use this particular interpretation. Therefore @Null@,
+  -- @Unit@ and @\<++\>@ are provided as functions.
+  null, unit, (<++>),
+
+  -- * Utilities
+
+  vector, fromVector, indexes, isNull, (<:),
+
+  -- * Skeletons
+
+  -- | Algorithmic skeletons on vectors are mainly presented in terms
+  -- of compositions of the atoms associated with the
+  -- 'Skeleton' Layer. When defining them,
+  -- we use the following operators:
+  --
+  -- <<includes/figs/skel-operators-formula.png>>
+  --
+  -- where:
+  --
+  -- * (1) is the 'unit' constructor, constructing a singleton vector.
+  -- * (2) is the '<++>' constructor, concatenating two vectors.
+  -- * (3) is the '<@!>' selector. The subscript notation is used to
+  -- denote element at position /n/ in a vector.
+  -- * (4) suggests an arbitrary selector which returns a vector with
+  -- another one's elements, based on some indices. The shown example
+  -- is an alternative notation for the 'tail' skeleton.
+  
+  -- ** Functional networks
+
+  -- | This sub-category denotes skeletons (i.e. Skeleton Layer
+  -- patterns) which are capable of constructing parallel process
+  -- networks from processes (i.e. MoC layer entities) passed as
+  -- arguments. Using the applicative mechanism, the designer has a
+  -- high degree of freedom when customizing process networks through
+  -- systematic partial application, rendering numerous possible
+  -- usages for the same patterns. To avoid over-encumberating our
+  -- examples with otherwise optional details, only 'map22' and 'red2'
+  -- depict a somewhat complete scenario, the rest of the patterns
+  -- assuming fully-applied processes as arguments.
+  --
+  -- Due to Haskell's strict type system and the implementation
+  -- mechanisms, we need to provide separate constructors @skelXY@,
+  -- where @skel@ is the process network constructor type, @X@ is the
+  -- number of inputs and @Y@ is the number of outputs. This module
+  -- provides constructors with @ X = [0..8]@ and @ Y = [1..4]@. If
+  -- needed, the designer is free to implement her own constructor by
+  -- following the atom composition rules in the source code.
+
+  map11, map12, map13, map14,
+  map21, map22, map23, map24,
+  map31, map32, map33, map34,
+  map41, map42, map43, map44,
+  map51, map52, map53, map54,
+  map61, map62, map63, map64,
+  map71, map72, map73, map74,
+  map81, map82, map83, map84,
+
+  reduce1,  reduce2,  reduce3,  reduce4,  reduce5,  reduce6,  reduce7,  reduce8,
+  reduce1', reduce2', reduce3', reduce4', reduce5', reduce6', reduce7', reduce8',
+  
+  prefix1,  prefix2,  prefix3,  prefix4,  prefix5,  prefix6, 
+  prefix1', prefix2', prefix3', prefix4', prefix5', prefix6',
+  
+  suffix1,  suffix2,  suffix3,  suffix4,  suffix5,  suffix6,  
+  suffix1', suffix2', suffix3', suffix4', suffix5', suffix6',
+
+  pipe0,     pipe1,     pipe2,     pipe3,     pipe4,     pipe5,     pipe6,     pipe7,     pipe8,
+  systolic0, systolic1, systolic2, systolic3, systolic4, systolic5, systolic6, systolic7, systolic8,
+  
+  cascade0, cascade1, cascade2, cascade3, cascade4, 
+  mesh0,    mesh1,    mesh2,    mesh3,    mesh4, 
+
+  -- ** Queries
+
+  -- | Queries return various information about a vector. They are
+  -- also built as skeletons.
+
+  length,
+  
+  -- ** Generators
+
+  -- | Generators are specific applications of the @prefix@ or
+  -- @suffix@ skeletons.
+
+  fanout, fanoutn, generate, iterate, 
+  
+  -- ** Permutators
+
+  -- | Permutators perform operations on the very structure of
+  -- vectors, and make heavy use of the vector constructors.
+
+  first, last, init, tail, inits, tails,
+  concat, reverse, group, shiftr, shiftl, rotr, rotl, 
+  take, drop, filterIdx, odds, evens, stride,
+  get, (<@), (<@!), gather1, gather2, gather3, gather4, gather5,
+  (<@!>), (<<@!>>), (<<<@!>>>), (<<<<@!>>>>), (<<<<<@!>>>>>),
+  replace, scatter,
+  -- takeWhile, filter
+  bitrev, duals, unduals,
+
+  -- ** Interfaces
+
+  zipx, unzipx,
+  
+  -- * Bibliography
+  
+  -- | #gorlatch03# <http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [1]> Fischer, J., Gorlatch, S., & Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.
+  
+  -- | #bird96# [2] Bird, R., & De Moor, O. (1996, January). The algebra of programming. In /NATO ASI DPD/ (pp. 167-203).
+  
+  -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [3]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
+
+  -- | #reekie95# <http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [4]> Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.
+  ) where
+
+import ForSyDe.Atom.Skeleton.Vector.Core
+import ForSyDe.Atom.Skeleton.Vector.Lib
+import ForSyDe.Atom.Skeleton.Vector.Interface
+
+import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
 
-
-infixr 3 :>
-infixl 5 <:
-infixr 5 <+>
-infixl 4 §>, <§>
-
--- | The data type 'Vector' is modeled similar to a list. As described in the core library,
---   it is only a data container. When 'ForSyDe.Patterns.Patterns' is loaded, it enables 
---   signals to be bundled in arbitrary forms and has methods for exploiting process network
---   patterns.
-data Vector a = NullV
-              | a :> (Vector a) deriving (Eq)
-
-
-instance Functor Vector where
-  fmap _ NullV   = NullV
-  fmap f (x:>xs) = f x :> fmap f xs
-
-instance Applicative Vector where
-  pure x = x :> pure x
-  _         <*> NullV     = NullV
-  NullV     <*> _         = NullV
-  (f :> fs) <*> (x :> xs) = f x :> fs <*> xs
-
--- | operator for functional application on vectors
-(§>) :: (a -> b) -> Vector a -> Vector b 
-(§>) = (<$>)
-
--- | operator for zip-applying (zapp) two vectors
-(<§>) :: Vector (a -> b) -> Vector a -> Vector b 
-(<§>) = (<*>)
-
-
--- | The 'pipe' function constructs a serial composition from a vector of functions.
---
--- __OBS__: composition is right associative thus the input vector should contain functions from right to left
-pipeV         :: Vector (b -> b) -> b -> b
-pipeV NullV   = id
-pipeV (v:>vs) = v . pipeV vs 
-
--- | The 'scan' function constructs a parallel prefix vector from a vector of functions.
---
--- __OBS__: composition is right associative thus the input vector should contain functions from right to left
-scanV         :: Vector (b -> b) -> b -> Vector b
-scanV NullV   = pure NullV  
-scanV (x:>xs) = (:>) <$> x . pipeV xs <*> scanV xs
-
-
--- | The function 'vector' converts a list into a vector.
-vector     :: [a] -> Vector a
-
--- | The function 'fromVector' converts a vector into a list.
-fromVector :: Vector a -> [a]
-
--- | The function 'unitV' creates a vector with one element. 
-unitV    :: a -> Vector a
-
--- | The function 'nullV' returns 'True' if a vector is empty. 
-nullV    :: Vector a -> Bool
-
--- | The function 'lengthV' returns the number of elements in a value. 
-lengthV  :: Vector a -> Int
-
--- | The function 'atV' returns the n-th element in a vector, starting from zero.
-atV      :: (Num a, Eq a) => Vector b -> a -> b
-
--- | The function 'atV' returns the n-th element in a vector, starting from zero.
-getV   :: (Num a, Eq a) => a -> Vector b -> b
-
--- |  The function 'replaceV' replaces an element in a vector.
-replaceV :: Vector a -> Int -> a -> Vector a
-
--- | The functions 'headV' returns the first element of a vector.
-headV :: Vector a -> a
-
--- | The function 'lastV' returns the last element of a vector.
-lastV :: Vector a -> a
-
--- | The functions 'tailV' returns all, but the first element of a vector.
-tailV :: Vector a -> Vector a 
-
--- | The function 'initV' returns all but the last elements of a vector.
-initV :: Vector a -> Vector a 
-
--- | The function 'takeV' returns the first n elements of a vector.
-takeV :: (Num a, Ord a) => a -> Vector b -> Vector b
-
--- | The function 'dropV' drops the first n elements of a vector.
-dropV :: (Num a, Ord a) => a -> Vector b -> Vector b
-
-
-
--- | The function 'selectV' selects elements in the vector. The first argument gives the initial element, starting from zero, the second argument gives the stepsize between elements and the last argument gives the number of elements. 
-selectV :: Int -> Int -> Int -> Vector a -> Vector a
-
-
--- | The function 'groupV' groups a vector into a vector of vectors of size n.
-groupV :: Int -> Vector a -> Vector (Vector a)
-
--- | The operator '(<:)' adds an element at the end of a vector.
-(<:)  :: Vector a -> a -> Vector a
-
--- | The operator '(<+>)' concatinates two vectors.
-(<+>) :: Vector a -> Vector a -> Vector a
-
-
-
-
--- | The higher-order function 'mapV' applies a function on all elements of a vector.
-mapV :: (a -> b) -> Vector a -> Vector b    
-
-
--- | The higher-order function 'zipWithV' applies a function pairwise on to vectors.
-zipWithV :: (a -> b -> c) -> Vector a -> Vector b -> Vector c
-
-
--- | The higher-order functions 'foldlV' folds a function from the right to the left  over a vector using an initial value.
-foldlV :: (a -> b -> a) -> a -> Vector b -> a 
-
--- | The higher-order functions 'foldrV' folds a function from the left to the right over a vector using an initial value.
-foldrV :: (b -> a -> a) -> a -> Vector b -> a
-
--- | The higher-function 'filterV' takes a predicate function and a vector and creates a new vector with the elements for which the predicate is true. 
-filterV :: (a -> Bool) -> Vector a -> Vector a
-
--- | The function 'zipV' zips two vectors into a vector of tuples.
-zipV   :: Vector a -> Vector b -> Vector (a, b)
-
--- | The function 'unzipV' unzips a vector of tuples into two vectors.
-unzipV :: Vector (a, b) -> (Vector a, Vector b)
-
-
-
--- | The function 'shiftlV' shifts a value from the left into a vector. 
-shiftlV :: Vector a -> a-> Vector a 
-
--- | The function 'shiftrV' shifts a value from the right into a vector. 
-shiftrV :: Vector a -> a -> Vector a
-
--- | The function 'rotlV' rotates a vector to the left. Note that this fuctions does not change the size of a vector.
-rotlV   :: Vector a -> Vector a
-
--- | The function 'rotrV' rotates a vector to the right. Note that this fuction does not change the size of a vector.
-rotrV   :: Vector a -> Vector a
-
-
--- | The function 'concatV' transforms a vector of vectors to a single vector. 
-concatV   :: Vector (Vector a) -> Vector a
-
--- | The function 'reverseV' reverses the order of elements in a vector. 
-reverseV  :: Vector a -> Vector a
-
-
--- | The function 'iterateV' generates a vector with a given number of elements starting from an initial element using a supplied function for the generation of elements. 
---
--- > Vector> iterateV 5 (+1) 1
---
--- > <1,2,3,4,5> :: Vector Integer
-iterateV :: (Num a, Eq a) => a -> (b -> b) -> b -> Vector b
-
--- | The function 'generateV' behaves in the same way, but starts with the application of the supplied function to the supplied value. 
---
--- > Vector> generateV 5 (+1) 1
--- 
--- > <2,3,4,5,6> :: Vector Integer
-generateV :: (Num a, Eq a) => a -> (b -> b) -> b -> Vector b
-
--- | The function 'copyV' generates a vector with a given number of copies of the same element. 
---
--- > Vector> copyV 7 5 
--- 
--- > <5,5,5,5,5,5,5> :: Vector Integer
-copyV     :: (Num a, Eq a) => a -> b -> Vector b
-
-
--- | The vector 1 :> 2 :> NullV is represented as \<1,2\>.
-instance (Show a) => Show (Vector a) where
-  showsPrec p = showParen (p>1) . showVector
-    where
-      showVector (x :> xs)  = showChar '<' . showEvent x . showVector' xs
-      showVector (NullV)   = showChar '<' . showChar '>'
-      showVector' (x :> xs) = showChar ',' . showEvent x . showVector' xs
-      showVector' (NullV)  = showChar '>'
-      showEvent x           = shows x
-
--- | The vector 1 :> 2 >- NullV is read using the string \"\<1,2\>\".
-instance (Read a) => Read (Vector a) where
-  readsPrec d = readParen (d>1) readVecSigtart
-    where
-      readVecSigtart = (\ a -> [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b])
-      readVector r    = readEvent r ++ readNull r
-      readEvent a     = [(x :> xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readVector c]
-      readNull a      = [(NullV,b) | (">",b) <- lex a]
-
-vector []     = NullV
-vector (x:xs) = x :> (vector xs)
-
-fromVector NullV   = []
-fromVector (x:>xs) = x : fromVector xs
-
-unitV x = x :> NullV
-
-nullV NullV   = True
-nullV _             = False
-
-lengthV NullV   = 0
-lengthV (_:>xs) = 1 + lengthV xs
-
-replaceV vs n x 
-    | n <= lengthV vs && n >= 0 = takeV n vs <+> unitV x 
-     <+> dropV (n+1) vs
-    | otherwise                 =  vs
-
-NullV   `atV` _ = error "atV: Vector has not enough elements"
-(x:>_)  `atV` 0 = x
-(_:>xs) `atV` n = xs `atV` (n-1)
-
-getV a b = atV b a
-
-headV NullV   = error "headV: Vector is empty"
-headV (v:>_) = v
-
-tailV NullV   = error "tailV: Vector is empty"
-tailV (_:>vs) = vs
-
-lastV NullV      = error "lastV: Vector is empty"
-lastV (v:>NullV) = v
-lastV (_:>vs)    = lastV vs
-
-initV NullV      = error "initV: Vector is empty"
-initV (_:>NullV) = NullV
-initV (v:>vs)    = v :> initV vs
-
-takeV 0 _                   = NullV
-takeV _ NullV               = NullV
-takeV n (v:>vs) | n <= 0    = NullV
-                | otherwise = v :> takeV (n-1) vs
-
-dropV 0 vs                  = vs
-dropV _ NullV               = NullV
-dropV n (v:>vs) | n <= 0    = v :> vs
-                | otherwise = dropV (n-1) vs
-
-selectV f s n vs | n <= 0               
-                     = NullV
-                 | (f+s*n-1) > lengthV vs 
-                    = error "selectV: Vector has not enough elements"
-                 | otherwise            
-                    = atV vs f :> selectV (f+s) s (n-1) vs
-
-groupV n v 
-      | lengthV v < n = NullV
-      | otherwise     = selectV 0 1 n v 
-                        :> groupV n (selectV n 1 (lengthV v-n) v)
-
-NullV <+> ys   = ys
-(x:>xs) <+> ys = x :> (xs <+> ys) 
-
-xs <: x = xs <+> unitV x         
-
-mapV _ NullV   = NullV
-mapV f (x:>xs) = f x :> mapV f xs
-
-zipWithV f (x:>xs) (y:>ys) = f x y :> (zipWithV f xs ys)
-zipWithV _ _       _       = NullV
-
-foldlV _ a NullV   = a
-foldlV f a (x:>xs) = foldlV f (f a x) xs
-
-foldrV _ a NullV   = a 
-foldrV f a (x:>xs) = f x (foldrV f a xs)
-
-filterV _ NullV   = NullV
-filterV p (v:>vs) = if (p v) then
-                     v :> filterV p vs
-                  else 
-                     filterV p vs
-
-zipV (x:>xs) (y:>ys) = (x, y) :> zipV xs ys
-zipV _       _       = NullV
-
-unzipV NullV           = (NullV, NullV)
-unzipV ((x, y) :> xys) = (x:>xs, y:>ys) 
- where (xs, ys) = unzipV xys
-
-shiftlV vs v = v :> initV vs
-
-shiftrV vs v = tailV vs <: v
-
-rotrV NullV = NullV
-rotrV vs    = tailV vs <: headV vs
-
-rotlV NullV = NullV
-rotlV vs    = lastV vs :> initV vs
-
-concatV = foldrV (<+>) NullV
-
-reverseV NullV   = NullV
-reverseV (v:>vs) = reverseV vs <: v
-
-generateV 0 _ _ = NullV
-generateV n f a = x :> generateV (n-1) f x 
-                where x = f a
-
-iterateV 0 _ _ = NullV
-iterateV n f a = a :> iterateV (n-1) f (f a)
-
-copyV k x = iterateV k id x 
 

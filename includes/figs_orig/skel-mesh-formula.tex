@@ -1,0 +1,17 @@
+\documentclass[preview]{standalone}
+\usepackage{amsmath} 
+\usepackage{amssymb} 
+\usepackage{forsyde-math}
+
+\begin{document}
+\begin{align*}%
+  \mathit{mesh_S} &: (S \rightarrow S \rightarrow S) \rightarrow \vect{S} \rightarrow \vect{S} \rightarrow \vect{\vect{S}}\\
+  \mathit{mesh_S} &\ p\ \vect{s}_1\ \vect{s}_2 = \mathit{scanf} \fMapS \vect{s}_2 \scanS \vect{s}_1 \\
+                     &\text{where}\ \ \mathit{scanf}\ s_2\ \vect{s}_1 = p \fMapS \vect{s}_1 \scanS s_2 %
+\end{align*}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

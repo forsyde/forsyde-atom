@@ -45,6 +45,7 @@ instance MoC SY where
   ---------------------
   (-&-) _ a = a
   ---------------------
+  -- sniff (SY a) = a
 
 -- | 'Show' instance. Hides the partition of values (the list wrapper).
 instance (Show a) => Show (SY [a]) where
@@ -125,7 +126,7 @@ signal l = S.signal (event <$> l)
 wrap22 :: (Value a1 -> Value a2 -> (Value b1, Value b2))
        -> ((), [Value a1] -> ((), [Value a2] -> ([Value b1], [Value b2])))
 
-wrap :: ([Value a] -> b) -> ((), [Value a] -> b)
+wrap :: ([a] -> b) -> ((), [a] -> b)
 wrap f = ((), \x -> f x)
 
 wrap11 f = wrap $ (map f)

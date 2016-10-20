@@ -7,7 +7,7 @@
   \texttt{mealy} &: (V \times V^n \rightarrow V) \times (V \times V^n  \rightarrow V^m) \times E
                    \rightarrow S^n \rightarrow S^m \\
   \texttt{mealy} &(ns,od,i)(s^n) = od \oplus (a,s^n) \\
-                 &\text{where}\ a = i \fdelay ns \oplus (a, s^n)
+                 &\text{where}\ a = i \delayM ns \oplus (a, s^n)
 \end{align*}
 \end{document}
 
