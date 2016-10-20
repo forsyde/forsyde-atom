@@ -433,7 +433,8 @@ mesh4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 
 -- | returns the number of elements in a value.
 --
 -- <<includes/figs/skel-length-formula.png>>
-length   = red (+) . map (\_ -> 1)
+length Null = 0
+length v    = red (+) . map (\_ -> 1) $ v
 
 ----------------
 -- Generators --
@@ -459,7 +460,7 @@ fanout x = x :> fanout x
 
 -- | 'fanoutn' is the same as 'fanout', but the length of the result
 -- is also provided.
-fanoutn n x | n == 0    = Null
+fanoutn n x | n <= 0    = Null
             | otherwise = x :> fanoutn (n-1) x
 
 -- | 'generate' creates a vector based on a kernel function (see also
@@ -469,14 +470,16 @@ fanoutn n x | n == 0    = Null
 -- > <2,3,4,5,6>
 --
 -- <<includes/figs/skel-generate-formula.png>>
-generate n f i = fanoutn n f `scan` i
+generate n f i | n <= 0    = Null
+               | otherwise = fanoutn n f `scan` i
 
 -- | 'iterate' is a version of 'generate' which keeps the initial
 -- element as well (see also 'systolic0').  E.g.:
 --
 -- >>> iterate 5 (+1) 1
 -- > <1,2,3,4,5,6>
-iterate  n f i = fanoutn (n-1) f `scan'` i
+iterate n f i | n <= 0     = Null
+              | otherwise = fanoutn (n-1) f `scan'` i
 
 ---------------
 -- Selectors --
@@ -503,36 +506,43 @@ init (v:>vs)   = v :> init vs
 -- | concatenates a vector of vectors.
 --
 -- <<includes/figs/skel-concat-formula.png>>
-concat   = red (<++>)
+concat Null = Null
+concat v    = red (<++>) v
 
 -- | returns the first element in a vector. Implemented as a reduction
 -- (see source code).
-first    = red (\x y -> x)
+first Null = error "first: empty vector"
+first v    = red (\x y -> x) v
 
 -- | returns the last element in a vector. Implemented as a reduction
 -- (see source code).
-last     = red (\x y -> y)
+last Null = error "last: empty vector"
+last  v   = red (\x y -> y) v
 
 -- | reverses the elements in a vector.
 --
 -- <<includes/figs/skel-reverse-formula.png>>
 -- <<includes/figs/skel-reverse-graph.png>>
-reverse  = red (\x y -> y <++> x)                    . map unit
+reverse Null = Null
+reverse v    = red (\x y -> y <++> x) . map unit $ v
 
 -- | creates a vector of all the initial segments in a vector.
 --
 -- <<includes/figs/skel-inits-formula.png>>
 -- <<includes/figs/skel-inits-graph.png>>
-inits    = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit)
+inits Null = error "inits: null vector"
+inits v    = red (\x y -> x <++> map (last  x <++>) y) . map (unit . unit) $ v
 
 -- | creates a vector of all the final segments in a vector.
 --
 -- <<includes/figs/skel-tails-formula.png>>
 -- <<includes/figs/skel-tails-graph.png>>
-tails    = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit)
+tails Null = error "inits: null vector"
+tails v    = red (\x y -> map (<++> first y) x <++> y) . map (unit . unit) $ v
 
 -- | returns the /n/-th element in a vector, or @Nothing@ if /n > l/.
-get     n   = reduce2' (\i x y -> if i == n then x else y) Nothing indexes . map Just
+get _ Null = Nothing
+get n v    = reduce2' (\i x y -> if i == n then x else y) Nothing indexes . map Just $ v
 
 -- | takes the first /n/ elements of a vector.
 --
@@ -540,7 +550,8 @@ get     n   = reduce2' (\i x y -> if i == n then x else y) Nothing indexes . map
 --
 -- >>> take 5 $ vector [1,2,3,4,5,6,7,8,9]
 -- > <1,2,3,4,5>
-take    n   = reduce2' (\i x y -> if i < n then x <++> y else x) Null indexes . map unit
+take _ Null = Null
+take n v    = reduce2' (\i x y -> if i < n then x <++> y else x) Null indexes . map unit $ v
 
 -- | drops the first /n/ elements of a vector.
 --
@@ -548,14 +559,16 @@ take    n   = reduce2' (\i x y -> if i < n then x <++> y else x) Null indexes . 
 --
 -- >>> drop 5 $ vector [1,2,3,4,5,6,7,8,9]
 -- > <6,7,8,9>
-drop    n   = reduce2' (\i x y -> if i > n then x <++> y else y) Null indexes . map unit
+drop _ Null = Null
+drop n v    = reduce2' (\i x y -> if i > n then x <++> y else y) Null indexes . map unit $ v
 
 -- | returns a vector containing only the elements of another vector
 -- whose index satisfies a predicate.
 --
 -- <<includes/figs/skel-filterIdx-formula.png>>
 -- <<includes/figs/skel-filterIdx-graph.png>>
-filterIdx f = reduce2' (\i x y -> if f i   then x <++> y else y) Null indexes . map unit
+filterIdx _ Null = Null
+filterIdx f v    = reduce2' (\i x y -> if f i   then x <++> y else y) Null indexes . map unit $ v
 
 -- | replaces the /n/-th element in a vector with another.
 --
@@ -563,16 +576,19 @@ filterIdx f = reduce2' (\i x y -> if f i   then x <++> y else y) Null indexes . 
 --
 -- >>> replace 5 15 $ vector [1,2,3,4,5,6,7,8,9]
 -- > <1,2,3,4,15,6,7,8,9>
-replace n r = reduce2' (\i x y -> if i == n then r :> y else x <++> y) Null indexes . map unit
+replace _ _ Null = Null
+replace n r v    = reduce2' (\i x y -> if i == n then r :> y else x <++> y) Null indexes . map unit $ v
 
--- | takes the first elements in a vector until a predicate is met.
+-- | takes the first elements in a vector until the first element that
+-- does not fulfill a predicate.
 --
 -- <<includes/figs/skel-takewhile-formula.png>>
 --
--- >>> takeWhile (>5) $ vector [1,2,3,4,5,6,7,8,9]
--- > <1,2,3,4,5>
-takeWhile f = concat . reduce1 selfunc . map (unit . unit)
-  where selfunc x y = if f (first (first y)) && (not . isNull . last) x then x <++> y else x
+-- >>> takeWhile (<5) $ vector [1,2,3,4,5,6,7,8,9]
+-- > <1,2,3,4>
+takeWhile _ Null = Null
+takeWhile f v    = concat . reduce1 selfunc . map (unit . unit) $ v
+  where selfunc x y = if (f . first . first) y && (not . isNull . last) x then x <++> y else x
 
 -- | does a stride-selection on a vector.
 --
@@ -581,18 +597,19 @@ takeWhile f = concat . reduce1 selfunc . map (unit . unit)
 stride :: Integer -- ^ first index
        -> Integer -- ^ stride length
        -> Vector a -> Vector a
-stride  f s = let stridef i x y | i `mod` s == f = x <++> y
-                                | otherwise      = y
-              in  reduce2' stridef Null indexes . map unit
-
+stride _ _ Null = Null
+stride f s v    = let stridef i x y | i >= f && (i-f) `mod` s == 0 = x <++> y
+                                    | otherwise                    = y
+                  in  reduce2' stridef Null indexes . map unit $ v
+                 
 -- | groups a vector into sub-vectors of /n/ elements.
 --
 -- <<includes/figs/skel-group-formula.png>>
--- <<includes/figs/skel-group-graph.png>>                  
-group   n   = let groupf i x y  | i `mod` n == 0 = x <++> y
-                                | otherwise      = (first x <++> first' y) :> tail' y
-              in  reduce2' groupf Null indexes . map (unit . unit)
-
+-- <<includes/figs/skel-group-graph.png>>
+group _ Null = unit Null
+group n v    = let groupf i x y  | i `mod` n == 0 = x <++> y
+                                 | otherwise      = (first x <++> first' y) :> tail' y
+               in  reduce2' groupf Null indexes . map (unit . unit) $ v
 
 -- | right-shifts a vector with an element.
 --
@@ -623,7 +640,9 @@ v <@  ix = get ix v
 -- | unsafe version of '<@>'. Throws an exception if /n > l/.
 --
 -- <<includes/figs/skel-get-formula.png>>
-v <@! ix = fromJust $ get ix v
+v <@! ix | isNothing e = error "get!: index out of bounds"
+         | otherwise   = fromJust e
+  where e = get ix v
 
 -- | > = filterIdx odd
 odds      = filterIdx odd
@@ -672,7 +691,9 @@ v <<<<<@!>>>>> ix = gather5 ix v
 --
 -- >>> scatter (vector [2,4,5]) (vector [0,0,0,0,0,0,0,0]) (vector [1,1,1])
 -- > <0,1,0,1,1,0,0,0>
-scatter ix hv = reduce2' (\i r h -> replace i (first r) h) hv ix . map unit
+scatter Null hv _    = hv
+scatter _    hv Null = hv
+scatter ix   hv v    = reduce2' (\i r h -> replace i (first r) h) hv ix . map unit $ v
 
 -- | performs a bit-reverse permutation.
 --

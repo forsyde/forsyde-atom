@@ -12,6 +12,7 @@ import SYTest  as SY
 import DETest  as DE
 import CTTest  as CT
 import SDFTest as SDF
+import VectorTest as V
 
 
 main = defaultMain tests
@@ -64,7 +65,7 @@ tests = [
       testCase "test mealy"                                  DE.test_mealy
       ],
 
-    testGroup "CT Tests" [
+  testGroup "CT Tests" [
       testProperty "delay adds an initial token"             CT.prop_delay_1,
       testProperty "delay produces increasing tags"          CT.prop_delay_2,
       testProperty "a state-based process produces an infinite sequence"
@@ -83,7 +84,7 @@ tests = [
       testCase "test moore"                                  CT.test_moore,
       testCase "test mealy"                                  CT.test_mealy
       ],
-
+  
   testGroup "SDF Tests" [
       testProperty "the production/consumption rates hold for mealy" SDF.prop_prod_1,
       testProperty "the production/consumption rates hold for comb1" SDF.prop_prod_2,
@@ -97,6 +98,23 @@ tests = [
       testCase "test stated"                                      SDF.test_stated,
       testCase "test moore"                                       SDF.test_moore,
       testCase "test mealy"                                       SDF.test_mealy 
+      ],
+  
+  
+  testGroup "SDF Tests" [
+      testProperty "L of concatenation is equal to the sum of L components" V.prop_concat_1,
+      testProperty "concat . group = id                                   " V.prop_concat_2,
+      testProperty "reverse does not modify the length of a vector        " V.prop_reverse_1,
+      testProperty "get n === last . take n                               " V.prop_get_1,
+      testProperty "L (take n v) <= n                                     " V.prop_take_1,
+      testProperty "L (drop n v) >= L (v) - n                             " V.prop_drop_1,
+      testProperty "replace does not change L                             " V.prop_replace_1,
+      testProperty "stride can be rewritten as gather (===)               " V.prop_stride_1,
+      testProperty "shift does not change L                               " V.prop_shift_1,
+      testProperty "rotr . rotl = id                                      " V.prop_rot_1,
+      testProperty "gather returns as many elements as the index vector   " V.prop_gather_1,
+      testProperty "scatter does not modify the host L                    " V.prop_scatter_1
+
       ]
 
   ] 
