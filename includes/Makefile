@@ -85,7 +85,7 @@ $(EPS_FIGS) : figs/%.pdf : figs_orig/%.eps
 # Rules for Tikz and LaTeX figures
 $(TIKZ_FIGS): figs/%.png: figs_orig/%.tex
 	@echo $(@F)
-	TEXINPUTS=:$(FIGS_ORIG_DIR)/:$(STYDIR)/ pdflatex -interaction=nonstopmode $(*F) #> /dev/null 
+	TEXINPUTS=:$(FIGS_ORIG_DIR)/:$(STYDIR)/ pdflatex -interaction=nonstopmode $(*F) > /dev/null 
 	convert -density 150 $(basename $(*F)).pdf -quality 90 $@
 	rm $(basename $(*F)).pdf
 	rm *.log

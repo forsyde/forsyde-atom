@@ -2,7 +2,6 @@ doc:
 	@if [ ! -d "includes/forsyde-tikz" ]; then \
 		git clone https://github.com/forsyde/forsyde-tikz.git \
 	     	--branch dev --single-branch includes/forsyde-tikz ; \
-		wget http://tug.ctan.org/macros/latex/contrib/stackengine/stackengine.sty -P includes/forsyde-tikz/forsyde-tikz ; \
 	fi
 
 	$(MAKE) -C includes
