@@ -79,7 +79,8 @@ instance Foldable Vector where
 instance Skeleton Vector where
   (=$=) = (<$>)
   (=*=) = (<*>)
-  (=\=) = foldr1
+  _ =\= Null = error "reduce: empty vector" 
+  f =\= v    = foldr1 f v
 
 -- | The vector 1 :> 2 :> Null is represented as \<1,2\>.
 instance (Show a) => Show (Vector a) where
