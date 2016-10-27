@@ -436,6 +436,10 @@ mesh4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 
 length Null = 0
 length v    = red (+) . map (\_ -> 1) $ v
 
+-- | returns a vetor with the indexes from another vector.
+--
+index = map21 (\x _ -> x) indexes
+
 ----------------
 -- Generators --
 ----------------

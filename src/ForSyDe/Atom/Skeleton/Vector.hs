@@ -115,7 +115,7 @@ module ForSyDe.Atom.Skeleton.Vector (
   -- | Queries return various information about a vector. They are
   -- also built as skeletons.
 
-  length,
+  length, index,
   
   -- ** Generators
 

@@ -16,7 +16,7 @@
 
 module ForSyDe.Atom.MoC.DE.Core where
 
-import ForSyDe.Atom.MoC
+import ForSyDe.Atom.MoC hiding (Sig)
 import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
