@@ -1,0 +1,57 @@
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{forsyde-math}
+
+\lstloadlanguages{Haskell}
+
+\lstnewenvironment{interaction}
+{\lstset{basicstyle=\small\ttfamily}}{}
+
+\lstnewenvironment{code}
+{\lstset{}%
+  \csname lst@SetFirstLabel\endcsname}
+{\csname lst@SaveFirstLabel\endcsname}
+\lstset{
+  language=Haskell, 
+  morekeywords={V,MoC},
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{red}, 
+  commentstyle=\color{blue}\textit,
+  stringstyle=\color{magenta}\textit,
+  flexiblecolumns=false,
+  basewidth={0.5em,0.45em},
+  literate={+}{{$+$}}1 
+           {/}{{$/$}}1 
+           {*}{{$\times$}}1 
+           {=}{{$=$}}1
+           {>}{{$>$}}1 
+           {<}{{$<$}}1 
+           {\\}{{$\lambda$}}1
+           {\\\\}{{\char`\\\char`\\}}1
+           {->}{{$\rightarrow$}}2 
+           {>=}{{$\geq$}}2 
+           {<-}{{$\leftarrow$}}2
+           {<=}{{$\leq$}}2 
+           {=>}{{$\Rightarrow$}}2 
+           {\ .}{{$\circ$}}2 
+           {\ .\ }{{$\circ$}}2
+           {\$}{{}}0
+           {>>}{{>>}}2 
+           {>>=}{{>>=}}2
+           {|}{{$\mid$}}1
+           {`div`}{{$/$}}1
+           {`MoC.comb22`}{{$\combM_{22}$}}3
+           {`V.map21`}{{$\fMapS_{21}$}}3
+           {`V.map11`}{{$\fMapS_{11}$}}3
+           {`V.pipe1`}{{$\pipeS_{1}$}}2
+           {.concat}{{.concat}}7
+           {.take}{{.take}}5
+           {.group}{{.group}}6
+           {.iterate}{{.iterate}}8
+           {.length}{{.length}}7
+}
+
+
