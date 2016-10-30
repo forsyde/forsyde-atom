@@ -19,6 +19,9 @@ import           ForSyDe.Atom.Utility
 import           ForSyDe.Atom.MoC
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
+import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
+
+
 
 eventToDE :: SY.Event DE.Tag -> SY.Event a -> DE.Event a
 eventToDE (SY.SY [t]) (SY.SY a) = DE.DE (unsafeFromValue t) a
@@ -30,7 +33,15 @@ toDE3 ts s1 s2 s3    = (toDE ts s1, toDE ts s2, toDE ts s3)
 toDE4 ts s1 s2 s3 s4 = (toDE ts s1, toDE ts s2, toDE ts s3, toDE ts s4)
 
 
-     
+-- Towards skeleton layer
+
+zipx :: V.Vector (SY.Sig a) -> SY.Sig (V.Vector a)
+zipx = V.zipx SY.wrap21 SY.wrap11
+
+unzipx :: SY.Sig (V.Vector a) -> V.Vector (SY.Sig a)
+unzipx = V.unzipx SY.val SY.wrap11 SY.wrap11
+
+       
 ----------------- DOCUMENTATION -----------------
 
 -- | Translates a (set of) SY signal(s) into synchronized DE ones. A

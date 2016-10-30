@@ -1,3 +1,8 @@
+\documentclass{report}
+\usepackage[left=2.5cm,right=2cm,top=2.5cm,bottom=3cm]{geometry}
+\usepackage{cleveref}
+\usepackage{url}
+\usepackage[latin1]{inputenc}
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{amssymb}
@@ -6,6 +11,8 @@
 \usepackage{forsyde-math}
 
 \lstloadlanguages{Haskell}
+
+\long\def\ignore#1{}
 
 \lstnewenvironment{interaction}
 {\lstset{basicstyle=\small\ttfamily}}{}
@@ -16,8 +23,11 @@
 {\csname lst@SaveFirstLabel\endcsname}
 \lstset{
   language=Haskell, 
-  morekeywords={V,MoC},
+  morekeywords={V,SY,CT,DE,SDF},
   basicstyle=\small\ttfamily,
+  numbers=left,
+  frame=l,
+  numberstyle=\tiny\color{black!30},
   keywordstyle=\color{red}, 
   commentstyle=\color{blue}\textit,
   stringstyle=\color{magenta}\textit,
@@ -39,14 +49,18 @@
            {\ .}{{$\circ$}}2 
            {\ .\ }{{$\circ$}}2
            {\$}{{}}0
+           {<>}{{}}0
+           {(<>)}{{}}0
            {>>}{{>>}}2 
            {>>=}{{>>=}}2
            {|}{{$\mid$}}1
            {`div`}{{$/$}}1
            {`MoC.comb22`}{{$\combM_{22}$}}3
            {`V.map21`}{{$\fMapS_{21}$}}3
+           {`V.map22`}{{$\fMapS_{22}$}}3
            {`V.map11`}{{$\fMapS_{11}$}}3
            {`V.pipe1`}{{$\pipeS_{1}$}}2
+           {`V.systolic0`}{{$\scanS$}}1
            {.concat}{{.concat}}7
            {.take}{{.take}}5
            {.group}{{.group}}6
@@ -54,4 +68,26 @@
            {.length}{{.length}}7
 }
 
+\title{ForSyDe-Atom Examples}
+\author{George Ungureanu \\ Kungliga Tekniska H\"{o}gskolan \\ Stockholm, Sweden}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\input{../FFT.lhs}
+
+\bibliographystyle{apalike}
+\bibliography{ref}
+
+\end{document}
+
+
+%%% Local  Variables:
+%%% TeX-command-default: "Make"
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
 

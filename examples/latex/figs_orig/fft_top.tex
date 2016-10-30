@@ -1,0 +1,25 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+
+\begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
+\processbox[ni=1, no=1, nf=1, f1=w] {p1} {0,0} {stage};
+\pipe[nf=1, f1={$\vect{2,4,8,...}$}]{pp1}{(p1)}{};
+\combinator[type=bitrev]{v1v1}      {br1}{2,0};
+\compositestd[nf=1, f1={k}]         {cp1}{(pp1)(br1)}{\texttt{fft}};
+
+\vector[] ($(pp1-p.i1)-(2,0)$) -> (pp1-p.i1);
+\vector[] (pp1-p.i1) -> (p1-p.i1);
+\vector[] (p1-p.o1) -> (pp1-p.o1);
+\vector[] (pp1-p.o1) -> (br1-p.i1);
+\vector[] (br1-p.o1) -> ($(br1-p.o1)+(2,0)$);
+\function[|-|] (cp1-f.o1) -> (pp1-f.i1);
+\function[|-|] (pp1-f.o1) -> (p1-f.i1);
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

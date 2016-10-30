@@ -712,13 +712,12 @@ bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
 --
 -- <<includes/figs/skel-duals-graph.png>>
 duals   v = let k = length v `div` 2
-            in  map21 (,) (take k v) (drop k v)
+            in  map22 (,) (take k v) (drop k v)
 
 -- | concatenates a previously split vector. See also 'duals'
 --
 -- <<includes/figs/skel-unduals-graph.png>>
-unduals v = let (x,y) = (v |<) 
-            in  x <++> y
+unduals = (<++>)
 
 
 
