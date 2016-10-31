@@ -139,7 +139,7 @@ As with the butterfly function, the sampler needs to input the correctly wrapped
 \begin{code}
 samplerSY  = sampler (SY.delay 0)
 samplerDE  = sampler (DE.delay 5 0)
-samplerCT  = sampler (CT.delay 0.5 (\_->0))
+samplerCT  = sampler (CT.delay 0.005 (\_->0))
 samplerSDF = sampler (SDF.delay [0])
 \end{code}
 
@@ -152,7 +152,7 @@ sinkCT  vs = CT.zipx               $ (CT.comb11           magnitude)  `V.map11` 
 sinkSDF vs = SDF.zipx (V.fanout 1) $ (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
 \end{code}
 
-Putting it all together, the testbench and DUT for signals of different MoCs looks as following:
+Putting it all together, the testbench and DUT for signals of different MoCs serializes the simple sampler, the FFT network and sink, as in the following listing. Notice that the parameter \texttt{k} is used both for specifying the number of FFT stages and for providing the right amount of sample signals.
 \begin{code}
 testFFTSY  k = sinkSY  . fft bffuncSY  k . samplerSY  k
 testFFTDE  k = sinkDE  . fft bffuncDE  k . samplerDE  k
@@ -160,8 +160,63 @@ testFFTCT  k = sinkCT  . fft bffuncCT  k . samplerCT  k
 testFFTSDF k = sinkSDF . fft bffuncSDF k . samplerSDF k
 \end{code}
 
+To test the correctness of out FFT network, we shall consider a signal formed of two overlapping sine waves, as plotted below:
+
+\begin{code}
+doublesine t = 3 * sin (30 * (fromRational t)) + 5 * sin (60 * (fromRational t) + 2)
+\end{code}
+
+\begin{tikzpicture}\centering
+\begin{axis}[ticks=none, width=15cm, height=4cm]
+\pgfplotstabletranspose\datatable{data/sine.dat}
+\addplot[mark=none] table {\datatable};
+\end{axis}
+\end{tikzpicture}
+
+First, let us see how the network behaves in continuous time. For this, we create the CT signal \texttt{inputSignalCT} which carries only one event: the function \texttt{doublesine} which starts from time 0.
+
+\begin{code}
+inputSignalCT = CT.signal [(0, doublesine)]
+\end{code}
+
+Feeding the signal to a 128-bin FFT network:
+
+\begin{code}
+outSignalCT = testFFTCT 7 inputSignalCT
+\end{code}
+
+\begin{tikzpicture}\centering
+\begin{axis}[]
+  \addplot3[raw gnuplot,surf]
+  gnuplot[id={surf}]{%
+    set pm3d;
+    splot 'data/outCT.dat' matrix with pm3d;};
+\end{axis}
+\end{tikzpicture}
 
 
+\ignore{
+\begin{code}
+outpath = "examples/latex/data/"
+listToDat   = map (\x -> if x == ',' then ' ' else x ) . filter (not . (`elem` "[]")) . show
+
+sigVecToDat :: Signal [Value (V.Vector Double)] -> String
+sigVecToDat = map replchar . filter (not . (`elem` "{}<[]")) . show
+  where replchar '>' = '\n'
+        replchar ',' = ' '
+        replchar c   = c
+
+saveDoubleSine = do
+  let xaxis    = map (*0.005) [1..300]
+      filepath = outpath ++ "sine.dat"
+    in writeFile filepath $ listToDat $ map doublesine xaxis
+
+saveCtOutput = do
+  let sampledOut = CT.eval $ CT.splitUntil 4 0.05 $ outSignalCT
+      filepath = outpath ++ "outCT.dat"
+    in writeFile filepath $ sigVecToDat $ sampledOut
+\end{code}%"
+}
 
 %-- fft :: Int -> Signal (Vector (Complex Float)) -> Signal (Vector (Complex Float))
 %-- fft k xs | n == 2 ^ k = (zipxPN . bitrevPN . unzipxPN . pipe1PN stage (iterateV k (*2) 2)) xs

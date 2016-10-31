@@ -97,7 +97,7 @@ module ForSyDe.Atom.MoC.CT (
   -- construction of atoms and atom patters as seen in
   -- "ForSyDe.Atom.MoC".
 
-  Time, Event, Sig, event2, signal, split, splitUntil,
+  Time, Event, Sig, event2, signal, split, splitUntil, eval,
 
   wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
   wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
