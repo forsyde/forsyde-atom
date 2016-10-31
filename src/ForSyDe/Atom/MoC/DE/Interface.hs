@@ -7,6 +7,7 @@ import           ForSyDe.Atom.Behavior
 import           ForSyDe.Atom.MoC hiding (comb22, comb33, comb44)
 import           ForSyDe.Atom.MoC.DE.Core (Tag)
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
+import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
 import           ForSyDe.Atom.Utility
 
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
@@ -41,6 +42,26 @@ toCT2 sc s1 s2       = (toCT sc, toCT sc)                   $$   (s1,s2)
 toCT3 sc s1 s2 s3    = (toCT sc, toCT sc, toCT sc)          $$$  (s1,s2,s3)
 toCT4 sc s1 s2 s3 s4 = (toCT sc, toCT sc, toCT sc, toCT sc) $$$$ (s1,s2,s3,s4)
 
+
+-- Towards skeleton layer
+
+-- | Synchronizes all signals inside a vector into one signal carrying
+-- vector events. This is simply an instantiation of the skeleton
+-- 'V.zipx', which passes the DE context wrappers ('DE.wrap22') to
+-- instantiate a 'ForSyDe.Atom.MoC.comb22' properly.
+zipx :: V.Vector (DE.Sig a) -> DE.Sig (V.Vector a)
+zipx = V.zipx DE.wrap21 DE.wrap11
+
+
+-- | Unfolds a signal carrying vector events into a vector of synchronized
+-- signals. This is simply an instantiation of the skeleton 'V.unzipx',
+-- which passes the DE context wrappers ('DE.wrap22') to instantiate a
+-- 'ForSyDe.Atom.MoC.comb22' properly.
+--
+-- __/ATTENTION!/__ this  is a temporary unsafe  implementation, since
+-- it assumes all events are carrying vectors of the same length.
+unzipx :: DE.Sig (V.Vector a) -> V.Vector (DE.Sig a)
+unzipx = V.unzipx DE.val DE.wrap11 DE.wrap11
 
 ----------------- DOCUMENTATION -----------------
 

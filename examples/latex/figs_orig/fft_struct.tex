@@ -1,0 +1,80 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+
+ \begin{tikzpicture}[node distance=1cm, x=1.5cm, y=1.5cm, auto,]
+ \foreach \y/\z in {0/0,1/4,2/2,3/6,4/1,5/5,6/3,7/7} {
+   \pgfmathsetmacro\ydim{\y*.7}
+   \foreach \x in {0,...,2} {
+   \node[draw, rounded corners] (b\x\y) at ($(\x*3,\ydim)$) {$f$};
+   \node[draw, circle, inner sep=0pt] (int\x\y) at ($(\x*3-2,\ydim)$) {};
+   \draw[-latex] (int\x\y) -- (b\x\y);
+  }
+  \node (inp\y) at ($(-3,\ydim)$) {$x(\y)$};
+  \node[anchor=west] (out\y) at ($(7,\ydim)$) {$X(\z)$};
+  \draw[-latex] (inp\y) -- (int0\y);
+  \draw[-latex] (b0\y) -- (int1\y);
+  \draw[-latex] (b1\y) -- (int2\y);
+  \draw[-latex] (b2\y) -- (out\y);
+ }
+ \foreach \x in {0,...,3} {
+  \pgfmathtruncatemacro\ot{\x+4}
+  \draw[-latex] (int0\x) -- (b0\ot);
+  \draw[-latex] (int0\ot) -- (b0\x);
+  \pgfmathtruncatemacro\tt{\x*2}
+  \pgfmathtruncatemacro\ot{\x*2+1}
+  \draw[-latex] (int2\tt) -- (b2\ot);
+  \draw[-latex] (int2\ot) -- (b2\tt);
+ }
+  \draw[-latex] (int10) -- (b12);
+  \draw[-latex] (int11) -- (b13);
+  \draw[-latex] (int12) -- (b10);
+  \draw[-latex] (int13) -- (b11);
+  \draw[-latex] (int14) -- (b16);
+  \draw[-latex] (int15) -- (b17);
+  \draw[-latex] (int16) -- (b14);
+  \draw[-latex] (int17) -- (b15);
+
+  \draw[red,thin,dashed] ($(out0)-(.3,.3)$) rectangle ($(out7)+(.3,.3)$) node[pos=1]{%
+    \tiny\texttt{bitrev}};
+  \foreach \i/\w in {0/8,1/4,2/2} {
+    \draw[red,thin,dashed] ($(int\i 0)-(.45,.3)$) rectangle ($(b\i 7)+(.45,.5)$) node[pos=1]{%
+      \tiny$\mathtt{stage}=\mathtt{concat}\circ\mathtt{map}\ \mathtt{segment}
+      \circ\mathtt{group}\ \w$};  
+    \pgfmathtruncatemacro\seg{8 / \w}
+    \foreach \t in {1,...,\seg} {
+      \pgfmathtruncatemacro\fst{(\t - 1) * \w}
+      \pgfmathtruncatemacro\lst{(\t * \w) - 1}
+      \draw[blue,thin,dashed] ($(int\i\fst)-(.35,.2)$) rectangle ($(b\i\lst)+(.35,.2)$) node[pos=1]{%
+      \tiny$\mathtt{segment}=\mathtt{unduals}%
+      \circ\mathtt{map}\ \mathtt{butterfly}\circ\mathtt{duals}$};
+    }
+  }
+  % \draw<2>[red,thick,dashed] ($(int00)-(.3,.3)$) rectangle ($(b07)+(.3,.3)$);
+  % \draw<2>[red,thick,dashed] ($(int10)-(.3,.3)$) rectangle ($(b17)+(.3,.3)$);
+  % \draw<2>[red,thick,dashed] ($(int20)-(.3,.3)$) rectangle ($(b27)+(.3,.3)$);
+
+  % \draw<3->[red,thick,dashed] ($(int00)-(.3,.3)$) rectangle ($(b07)+(.3,.3)$);
+  % \draw<3->[red,thick,dashed] ($(int10)-(.3,.3)$) rectangle ($(b13)+(.3,.3)$);
+  % \draw<3->[red,thick,dashed] ($(int14)-(.3,.3)$) rectangle ($(b17)+(.3,.3)$);
+  % \draw<3->[red,thick,dashed] ($(int20)-(.3,.3)$) rectangle ($(b21)+(.3,.3)$);
+  % \draw<3->[red,thick,dashed] ($(int22)-(.3,.3)$) rectangle ($(b23)+(.3,.3)$);
+  % \draw<3->[red,thick,dashed] ($(int24)-(.3,.3)$) rectangle ($(b25)+(.3,.3)$);
+  % \draw<3->[red,thick,dashed] ($(int26)-(.3,.3)$) rectangle ($(b27)+(.3,.3)$);
+  % \node<3->[anchor=south, red] (l) at ($(int07)!.5!(b07)+(0,.3)$) {8};
+  % \node<3->[anchor=south, red] (l) at ($(int17)!.5!(b17)+(0,.3)$) {4};
+  % \node<3->[anchor=south, red] (l) at ($(int27)!.5!(b27)+(0,.3)$) {2};
+
+  % \draw<4>[ultra thick, blue]  ($(inp7)!.5!(int07)+(0,.3)$) -- ($(inp0)!.5!(int00)-(0,.3)$);
+  % \draw<4>[ultra thick, blue]  ($(b07)!.5!(int17)+(0,.3)$) -- ($(b00)!.5!(int10)-(0,.3)$);
+  % \draw<4>[ultra thick, blue]  ($(b17)!.5!(int27)+(0,.3)$) -- ($(b10)!.5!(int20)-(0,.3)$);
+  % \draw<4>[ultra thick, blue]  ($(b27)!.5!(out7)+(0,.3)$) -- ($(b20)!.5!(out0)-(0,.3)$);
+ \end{tikzpicture}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

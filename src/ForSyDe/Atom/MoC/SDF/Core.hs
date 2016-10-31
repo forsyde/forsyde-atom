@@ -23,6 +23,12 @@ import ForSyDe.Atom.Signal as S
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
+-- | Type alias for production rate
+type Prod = Int
+
+-- | Type alias for consumption rate
+type Cons = Int
+
 -- | Type synonym for a "partitions of SDF events", It also hides the
 -- reverse implementation of the previous statement (but with the same
 -- semantic).

@@ -16,7 +16,7 @@ Following are the loaded modules. In order to show the generality of this method
 
 \begin{code}
 import           ForSyDe.Atom
-import           ForSyDe.Atom.Behavior       (psi22, psi11)
+import qualified ForSyDe.Atom.Behavior as B  (psi22, psi11)
 import qualified ForSyDe.Atom.MoC     as MoC (comb22, comb11)
 import qualified ForSyDe.Atom.MoC.SY  as SY  
 import qualified ForSyDe.Atom.MoC.DE  as DE  
@@ -109,13 +109,20 @@ bffuncU w [x0] [x1] = let t = w * x1 in ([x0 + t], [x0 - t])
 \end{code}
 and based on these definitions, here is how we properly wrap with a context and a behavior the butterfly function, according to the currently implemented MoCs, so that they fit as an argument to the \texttt{butterfly} process constructor:
 \begin{code}
-bffuncSY  w = SY.wrap22              (psi22 (\x0 x1 -> bffuncT w x0 x1))
-bffuncDE  w = DE.wrap22              (psi22 (\x0 x1 -> bffuncT w x0 x1))
-bffuncCT  w = CT.wrap22              (psi22 (\x0 x1 -> bffuncT w x0 x1))
-bffuncSDF w = SDF.wrap22 (1,1) (1,1) (psi22 (\x0 x1 -> bffuncU w x0 x1))
+bffuncSY  w = SY.wrap22              (B.psi22 (\x0 x1 -> bffuncT w x0 x1))
+bffuncDE  w = DE.wrap22              (B.psi22 (\x0 x1 -> bffuncT w x0 x1))
+bffuncCT  w = CT.wrap22              (B.psi22 (\x0 x1 -> bffuncT w x0 x1))
+bffuncSDF w = SDF.wrap22 (1,1) (1,1) (B.psi22 (\x0 x1 -> bffuncU w x0 x1))
 \end{code}
 
-So let us rewind: we have shown a functional description for the function \texttt{fft} which creates the process network in Figure \ref{fig:fft-complete}. This process network is oblivious to the MoC semantics it executes, but it does require a function properly wrapped with a context for instantiating a process constructor for a specific MoC. In this sense we can consider it a template describing the structure of an FFT butterfly network.
+So let us rewind: we have shown a functional description for the function \texttt{fft} which creates the process network in Figure \ref{fig:fft-complete}. This process network is oblivious to the MoC semantics it executes, but it does require a function properly wrapped with a context for instantiating a process constructor for a specific MoC. In this sense we can consider it a template describing the structure of an FFT butterfly network. For example, Figure \ref{fig:fft-struct} shows an FFT network instance for $k=3$.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[]{figs/fft_struct.pdf}
+  \caption{An example instance of the FFT process network for $k=3$}
+  \label{fig:fft-struct}
+\end{figure}
 
 Further on, we need a testbench for our FFT. As input stage, we provide a signal sampler which feeds the FFT network with $2^k$ signals. To keep the design simple, the sampler does not buffer the samples, rather it streams them through a systolic array of delays, like in Figure \ref{fig:fft-sampler}.
 \begin{code}
@@ -136,13 +143,13 @@ samplerCT  = sampler (CT.delay 0.5 (\_->0))
 samplerSDF = sampler (SDF.delay [0])
 \end{code}
 
-Finally, a sink function has been provided, which extracts the magnitude from the FFT results and synchronizes all output signals into one carrying vector events. 
+Finally, a sink function has been provided, which extracts the magnitude from the FFT results and synchronizes all output signals into one signal carrying vectors. 
 
 \begin{code}
-sinkSY  vs = SY.zipx $ (SY.comb11           magnitude)  `V.map11` vs 
-sinkDE  vs = (DE.comb11           magnitude)  `V.map11` vs 
-sinkCT  vs = (CT.comb11           magnitude)  `V.map11` vs 
-sinkSDF vs = (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
+sinkSY  vs = SY.zipx               $ (SY.comb11           magnitude)  `V.map11` vs 
+sinkDE  vs = DE.zipx               $ (DE.comb11           magnitude)  `V.map11` vs 
+sinkCT  vs = CT.zipx               $ (CT.comb11           magnitude)  `V.map11` vs 
+sinkSDF vs = SDF.zipx (V.fanout 1) $ (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
 \end{code}
 
 Putting it all together, the testbench and DUT for signals of different MoCs looks as following:

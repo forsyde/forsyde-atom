@@ -160,6 +160,7 @@ module ForSyDe.Atom.MoC.SDF (
 
   -- ** Interfaces
 
+  zipx--, unzipx
 
   -- * Bibliography
 
@@ -172,3 +173,4 @@ module ForSyDe.Atom.MoC.SDF (
 import Prelude hiding (filter)
 import ForSyDe.Atom.MoC.SDF.Core
 import ForSyDe.Atom.MoC.SDF.Lib
+import ForSyDe.Atom.MoC.SDF.Interface

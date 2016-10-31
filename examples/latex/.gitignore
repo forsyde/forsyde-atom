@@ -1,0 +1,16 @@
+auto*
+figs/*
+*.toc
+*.gz
+*.log
+*.idx
+*.ilg
+*.ind
+*.blg
+*.out
+*.bbl
+*.pdf
+*.aux
+*~
+*#
+_*

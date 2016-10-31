@@ -190,6 +190,8 @@ module ForSyDe.Atom.MoC.DE (
 
   toSY, toSY2, toSY3, toSY4,
   toCT, toCT2, toCT3, toCT4,
+
+  zipx, unzipx,
   
   -- ** Hybrid processes
 

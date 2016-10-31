@@ -150,6 +150,7 @@ module ForSyDe.Atom.MoC.CT (
 
   -- ** Interfaces
 
+  zipx, unzipx
 
   -- * Bibliography
   
@@ -162,3 +163,4 @@ module ForSyDe.Atom.MoC.CT (
 
 import ForSyDe.Atom.MoC.CT.Core
 import ForSyDe.Atom.MoC.CT.Lib
+import ForSyDe.Atom.MoC.CT.Interface
