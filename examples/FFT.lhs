@@ -1,6 +1,6 @@
 \ignore{
 \begin{code}
-{-# LANGUAGE PostfixOperators #-}  
+{-# LANGUAGE PostfixOperators, TypeFamilies  #-}  
 \end{code}
 }
 
@@ -53,14 +53,14 @@ the actual vector is obtained by mapping the function \texttt{bW} over a vector 
 \begin{code}
 twiddles :: Integer -> V.Vector (Complex Double)
 twiddles bN = (V.reverse . V.bitrev . V.take (bN `div` 2)) (bW `V.map11` V.indexes)
-  where bW x = (cis . negate) (-2 * pi * (fromInteger (x - 1)) / (fromInteger bN))
+  where bW x = (cis . negate) (-2 * pi * fromInteger (x - 1) / fromInteger bN)
 \end{code}
 \begin{code}
 fft :: (Complex Double -> a -> a -> (a, a)) -> Integer -> V.Vector a -> V.Vector a
 fft butterfly k vs = (V.bitrev . (stage `V.pipe1` (V.iterate k (*2) 2))) vs
   where
     stage   w = V.concat . (segment `V.map21` (twiddles n)) . V.group w
-    segment t = (<>)V.unduals . (<>)((butterfly t) `V.map22`) . V.duals
+    segment t = (<>)V.unduals . (<>)(butterfly t `V.map22`) . V.duals
     n         = V.length vs        -- length of input 
 \end{code}
 
@@ -104,7 +104,7 @@ and, as it suggests, it is not concerned in the actual functionality implemented
 
 Figure~\ref{fig:fft-top} draws the top view of the \texttt{fft} function where the vector sequence $\vect{2,4,8,16,...,2^k}$ used to get the butterfly network width for each stage is generated using an \texttt{iterate} skeleton. A pipeline pattern is created by serializing \texttt{stage}, and its result is \texttt{bitrev}ersed. Drawing \texttt{stage} explicitly adds more details, like in Figure~\ref{fig:fft-stage}. Here the width \texttt{w} is used to group the vectors that enter the butterfly segments. Making \texttt{segment} also explicit and assuming that \texttt{butterfly} is a process, grants us the process network from Figure~\ref{fig:fft-complete}, where the $W$ coefficient corresponding to each butterfly segment is extracted from the \texttt{twiddles} vector.
 
-In conclusion, we have shown a parametrizable constructor belonging to the skeleton layer which creates an FFT structure. In this sense we can consider it a template describing the structure of an FFT butterfly network. For example, Figure \ref{fig:fft-struct} shows an FFT network instance for $k=3$.
+So we have just shown a parametrizable constructor belonging to the skeleton layer which creates an FFT structure. In this sense we can consider it a template describing the structure of an FFT butterfly network. For example, Figure \ref{fig:fft-struct} shows an FFT network instance for $k=3$.
 
 \begin{figure}[h]
   \centering
@@ -116,45 +116,131 @@ In conclusion, we have shown a parametrizable constructor belonging to the skele
 \subsection{Case 1: Vector of Signals}
 \label{sec:case-1:-vector}
 
+The first case study treats the \texttt{fft} skeleton as creating a ForSyDe process network. In this sense, we can the $\boxed{f}$ blocks from Figure~\ref{fig:fft-struct} as being processes executing with the semantics inferred by a Model of Computation, and the arrows as being signals. Thus the type signatures for \texttt{fft} and \texttt{butterfly} become:
+\begin{align*}
+\mathtt{fft}& : \mathbb{N} 
+    \rightarrow \vect{\mathcal{S}(\mathbb{C}_e)} 
+    \rightarrow \vect{\mathcal{S}(\mathbb{C}_e)}\\
+\mathtt{butterfly}& : \mathbb{C}
+          \rightarrow \mathcal{S}(\mathbb{C}_e)^2 
+          \rightarrow \mathcal{S}(\mathbb{C}_e)^2\\
+\end{align*}
+The $fft$ skeleton behaves as a process network constructor simply by passing \texttt{butterfly} as a well formed process, having the type signature above. In order to do so, we need to wrap the butterfly function from Figure~\ref{fig:fft-butterfly} with behavioral and timing semantics, i.e. to pass it to MoC/behavior layer constructors.
 
-\begin{equation*}
-\mathtt{fft} : (\wrapdf{\mathbb{C}_e^2 \rightarrow \mathbb{C}_e^2}) 
-               \rightarrow \mathbb{N} 
-               \rightarrow \vect{\mathcal{S}(\mathbb{C}_e)} 
-               \rightarrow \vect{\mathcal{S}(\mathbb{C}_e)}
-\end{equation*}
-
-
-The first argument, $\mathtt{bffunc} : (\wrapdf{\mathbb{C}_e^2 \rightarrow \mathbb{C}_e^2})$ is a 2-input and 2-output behavior-wrapped and context-wrapped function performing the butterfly computation, as taken by the $\combM$ MoC constructor. The second argument $\mathtt{k}:\mathbb{N}$ is the number of stages of the FFT network. The third argument is a vector of signals $\mathtt{vs} : \vect{\mathcal{S}(\mathbb{C}_e)}$ carrying the samples which need to be computed.
-
-\textbf{OBS:} The design assumes that $L(\mathtt{vs}) = 2^{\mathtt{k}}$. The testbench takes care that this condition is satisfied. 
-
-
-Unfortunately, due to Haskell's strict type system and to several library design decisions, apart from a context wrapper, we \emph{do} need to define functions for timed and untimed MoCs differently. While timed MoCs require functions on values directly, untimed MoCs need to specify functions as operating on lists of values, as to mirror the partial order of events. Here is how we define the butterfly functions for timed and untimed MoCs:
+As proposed in the introduction, we intend to test the \texttt{fft} skeleton to execute based on different timing models, i.e. with different MoC semantics. While in theory a process' MoC could be \emph{only} inferred from the tag system of the signal(s) it operates on, in practice we do need to provide slightly different context information for each MoC. Most of these inconsistencies are due to propagated design decisions in the ForSyDe-Atom library in order to satisfy Haskell's strict type system. While we could just use the library-provided helpers for instantiating well-formed processes (i.e. \texttt{[MoC].comb22}), we want to show the different implications of each MoC by individually wrapping functions with behavioral semantics (i.e. the default behavior \texttt{psi22}), a context and passing the result to the generic MoC pattern \texttt{comb22}.
 \begin{code}
-bffuncT w  x0   x1  = let t = w * x1 in ( x0 + t,   x0 - t)
+butterflySY  :: Complex Double ->  SY.Sig (Complex Double) ->  SY.Sig (Complex Double) ->  (SY.Sig (Complex Double),  SY.Sig (Complex Double))
+butterflyDE  :: Complex Double ->  DE.Sig (Complex Double) ->  DE.Sig (Complex Double) ->  (DE.Sig (Complex Double),  DE.Sig (Complex Double))
+butterflyCT  :: Complex Double ->  CT.Sig (Complex Double) ->  CT.Sig (Complex Double) ->  (CT.Sig (Complex Double),  CT.Sig (Complex Double))
+butterflySDF :: Complex Double -> SDF.Sig (Complex Double) -> SDF.Sig (Complex Double) -> (SDF.Sig (Complex Double), SDF.Sig (Complex Double))
+butterflySY  w s0 s1 =  SY.wrap22             (B.psi22 (bffunc  w)) `MoC.comb22` s0 $s1
+butterflyDE  w s0 s1 =  DE.wrap22             (B.psi22 (bffunc  w)) `MoC.comb22` s0 $s1
+butterflyCT  w s0 s1 =  CT.wrap22             (B.psi22 (bffunc  w)) `MoC.comb22` s0 $s1
+butterflySDF w s0 s1 = SDF.wrap22 (1,1) (1,1) (B.psi22 (bffuncU w)) `MoC.comb22` s0 $s1
+\end{code}
+
+The function wrapped by the \texttt{butterfly} network is \texttt{bffunc(U)} and needs to be specified differently depending on whether the MoC is timed or untimed. For timed MoCs, it is simply a function on values, but for untimed MoCs it needs to reflect the fact that it operates on multiple tokens, thus we express this in ForSyDe-Atom as a function on lists of values.
+
+\begin{code}
+bffunc  w  x0   x1  = let t = w * x1 in ( x0 + t,   x0 - t)
 bffuncU w [x0] [x1] = let t = w * x1 in ([x0 + t], [x0 - t])
 \end{code}
-and based on these definitions, here is how we properly wrap with a context and a behavior the butterfly function, according to the currently implemented MoCs, so that they fit as an argument to the \texttt{butterfly} process constructor:
+
+Now we can instantiate \texttt{fft} as a parallel process network with:
+
 \begin{code}
-bffuncSY  w = SY.wrap22              (B.psi22 (\x0 x1 -> bffuncT w x0 x1))
-bffuncDE  w = DE.wrap22              (B.psi22 (\x0 x1 -> bffuncT w x0 x1))
-bffuncCT  w = CT.wrap22              (B.psi22 (\x0 x1 -> bffuncT w x0 x1))
-bffuncSDF w = SDF.wrap22 (1,1) (1,1) (B.psi22 (\x0 x1 -> bffuncU w x0 x1))
+fft1SY  = fft butterflySY
+fft1DE  = fft butterflyDE
+fft1CT  = fft butterflyCT
+fft1SDF = fft butterflySDF
 \end{code}
 
+\subsection{Case 2: Signal of Vectors}
+\label{sec:case-2:-signal}
 
-Further on, we need a testbench for our FFT. As input stage, we provide a signal sampler which feeds the FFT network with $2^k$ signals. To 
-keep the design simple, the sampler does not buffer the samples, rather it streams them through a systolic array of delays, like in Figure \ref{fig:fft-sampler}.
+The second case study treats \texttt{fft} as a function on vectors, executing with the timing semantics dictated by a specified MoC, i.e. wrapped in a MoC process constructor. This way, instead of exposing the parallelism at process network level, it treats it at data level, while synchronization is performed externally, as a block component.
+
+For timed MoCs instantiating a process which performs \texttt{fft} on a vector of values is straightforward: simply pass the \texttt{bffunc} to the \texttt{fft} network, which in turn constitutes the function mapped on a signal by a \texttt{comb11} process constructor. We have shown in Section~\label{sec:case-1:-vector} how to systematically wrap the function on values with different behavior/timing aspects. This time we will use the library-provided helpers to construct \texttt{comb11} processes with a default behavior.
+
+
 \begin{code}
-sampler delta k s = (V.fanoutn (2 ^ k) delta) `V.systolic0` s
+fft2SY k = SY.comb11 (fft bffunc k)
+fft2DE k = DE.comb11 (fft bffunc k)
+fft2CT k = CT.comb11 (fft bffunc k)
 \end{code}
+
+For untimed MoCs though, a more straightforward approach is to make use of the definition of actors as processes with a production/consumption rate for each output/input. In the case of SDF, we would simply have a process which consumes $2^k$ tokens from a signal (the input samples), and apply the \texttt{fft} function over them.
+
+\begin{code}
+fft2SDF k = SDF.comb11 (2^k, 2^k, V.fromVector . fft bffunc k . V.vector)
+\end{code}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[]{figs/fft_one_proc.pdf}
+  \caption{The \texttt{fft} skeleton as a process function}
+  \label{fig:fft-one-proc}
+\end{figure}
+
+
+\subsection{The testbench}
+\label{sec:testbench}
+
+To test the functionality of the FFT network/process, we need to provide (signals of) $N=2^k$ samples from a (multi-tone) wave. The simplest way to do this and to ensure consistency with our design is to take an infinite wave signal, and pass it through a ``sampler'' made of a systolic array of $N$ delays, like in Figure \ref{fig:fft-sampler}. For the timed processes in the second test case, all signals from the \texttt{sampler} stage are synchronized into one signal carrying vectors using the \texttt{zipx} interface.
+
+\begin{code}
+sampler delta k s = (V.fanoutn (2^k) delta) `V.systolic0` s
+\end{code}
+
 \begin{figure}[h]
   \centering
   \includegraphics[]{figs/fft_sampler.pdf}
-  \caption{The input sampler}
+  \caption{The input sampler: for the FFT network \texttt{fft1} (left); for the process performing FFT \texttt{fft2} (right)}
   \label{fig:fft-sampler}
 \end{figure}
+
+Finally, in order to analyze the FFT output, the complex bins need to be converted into real numbers by calculating their magnitude. This way the output of the FFT is expected to see the amplitude of each tone contained by the input wave. We do that for each of our test cases:
+
+\begin{code}
+ampl1SY  vs = ( SY.comb11          magnitude  `V.map11`) vs 
+ampl1DE  vs = ( DE.comb11          magnitude  `V.map11`) vs 
+ampl1CT  vs = ( CT.comb11          magnitude  `V.map11`) vs 
+ampl1SDF vs = (SDF.comb11 (1,1,map magnitude) `V.map11`) vs
+
+ampl2SY  s  =   SY.comb11         (magnitude  `V.map11`) s
+ampl2DE  s  =   DE.comb11         (magnitude  `V.map11`) s
+ampl2CT  s  =   CT.comb11         (magnitude  `V.map11`) s
+ampl2SDF s  =  SDF.comb11 (1,1,map magnitude)      s
+\end{code}
+
+Putting it all together, the testbench and DUT for signals of different MoCs serializes the simple sampler, the FFT network and sink, as in the following listing. Notice that the parameter \texttt{k} is used both for specifying the number of FFT stages and for providing the right amount of sample signals. The test case 2 for SDF does not need an input sampler stage since it consumes the right amount of samples as part of its specification. With the \texttt{delta} process we will control the sampling period, as we shall see in the next section. 
+\begin{code}
+testbench1SY  k delta = ampl1SY  . fft1SY  k . sampler delta k
+testbench1DE  k delta = ampl1DE  . fft1DE  k . sampler delta k
+testbench1CT  k delta = ampl1CT  . fft1CT  k . sampler delta k
+testbench1SDF k delta = ampl1SDF . fft1SDF k . sampler delta k
+
+testbench2SY  k delta = ampl2SY  . fft2SY  k . SY.zipx . sampler delta k
+testbench2DE  k delta = ampl2DE  . fft2DE  k . DE.zipx . sampler delta k
+testbench2CT  k delta = ampl2CT  . fft2CT  k . CT.zipx . sampler delta k
+testbench2SDF k _     = ampl2SDF . fft2SDF k 
+\end{code}
+
+\subsection{Simulation}
+\label{sec:simulation}
+
+To test the correctness of out FFT network, we shall consider a signal formed of two overlapping sine waves, as plotted below:
+
+\begin{tikzpicture}\centering
+\begin{axis}[ticks=none, width=15cm, height=4cm]
+\pgfplotstabletranspose\datatable{data/sine.dat}
+\addplot[mark=none] table {\datatable};
+\end{axis}
+\end{tikzpicture}
+\begin{code}
+wave a1 a2 f1 f2 t = (:+ 0) $ a1 *  sin (2 * pi * f1 * t) + a2 * sin (2 * pi * f2 * t + 2)  
+\end{code}%$
+
 
 As with the butterfly function, the sampler needs to input the correctly wrapped delay process. In this case we shall use the helper constructors provided by each MoC.
 \begin{code}
@@ -164,41 +250,21 @@ samplerCT  = sampler (CT.delay (1/300) (\_->0))
 samplerSDF = sampler (SDF.delay [0])
 \end{code}
 
-Finally, a sink function has been provided, which extracts the magnitude from the FFT results and synchronizes all output signals into one signal carrying vectors. 
+
+
 
 \begin{code}
+
 sinkSY  vs = SY.zipx               $ (SY.comb11           magnitude)  `V.map11` vs 
 sinkDE  vs = DE.zipx               $ (DE.comb11           magnitude)  `V.map11` vs 
 sinkCT  vs = CT.zipx               $ (CT.comb11           magnitude)  `V.map11` vs 
 sinkSDF vs = SDF.zipx (V.fanout 1) $ (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
-\end{code}
 
-Putting it all together, the testbench and DUT for signals of different MoCs serializes the simple sampler, the FFT network and sink, as in the following listing. Notice that the parameter \texttt{k} is used both for specifying the number of FFT stages and for providing the right amount of sample signals.
-\begin{code}
-butterfly bffunc w         = ((bffunc w) `MoC.comb22`)
+testFFTSY  k = sinkSY  . fft butterflySY  k . samplerSY  k
+testFFTDE  k = sinkDE  . fft butterflyDE  k . samplerDE  k
+testFFTCT  k = sinkCT  . fft butterflyCT  k . samplerCT  k
+testFFTSDF k = sinkSDF . fft butterflySDF k . samplerSDF k
 
-testFFTSY  k = sinkSY  . fft (butterfly bffuncSY)  k . samplerSY  k
-testFFTDE  k = sinkDE  . fft (butterfly bffuncDE)  k . samplerDE  k
-testFFTCT  k = sinkCT  . fft (butterfly bffuncCT)  k . samplerCT  k
-testFFTSDF k = sinkSDF . fft (butterfly bffuncSDF) k . samplerSDF k
-\end{code}
-
-\subsection{Case 2: Signal of Vectors}
-\label{sec:case-2:-signal}
-
-\subsection{Case 3: SDF network}
-\label{sec:case-3:-sdf}
-
-
-\subsection{Simulation}
-\label{sec:simulation-results}
-
-
-
-
-To test the correctness of out FFT network, we shall consider a signal formed of two overlapping sine waves, as plotted below:
-
-\begin{code}
 doublesine t = sin (2 * pi * 50 * ((fromRational t) :+ 0)) + 3 * sin (2*pi*90 * (fromRational t) + 2)
 
 inputSignalSY = SY.comb11 ((:+ 0) . (\t->sin (2*pi*freq*t) + 3 * sin (2*pi*90*t + 2)) . (*tau)) samps
@@ -207,13 +273,6 @@ inputSignalSY = SY.comb11 ((:+ 0) . (\t->sin (2*pi*freq*t) + 3 * sin (2*pi*90*t 
         samps = SY.signal [0..299]
 
 \end{code}
-
-\begin{tikzpicture}\centering
-\begin{axis}[ticks=none, width=15cm, height=4cm]
-\pgfplotstabletranspose\datatable{data/sine.dat}
-\addplot[mark=none] table {\datatable};
-\end{axis}
-\end{tikzpicture}
 
 First, let us see how the network behaves in continuous time. For this, we create the CT signal \texttt{inputSignalCT} which carries only one event: the function \texttt{doublesine} which starts from time 0.
 

@@ -4,13 +4,34 @@
 \begin{document}
 
 \begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
-\foreach \i in {0,2,4,9} {
-  \primitive[]{dl\i}{\i,0}{$\delayM$};
-  \signal[-|] (dl\i) -> ($(dl\i)+(1,-1)$);
-  \signal[] ($(dl\i)-(1,0)$) -> (dl\i);
+\foreach \i in {0,1,2,4} {
+  \primitive[]{dl\i}{0,\i}{$\delayM$};
+  \signal[|-] (dl\i) -> ($(dl\i)+(1,-.5)$);
+  \signal[] ($(dl\i)+(0,.7)$) -> (dl\i);
+  \signal[] ($(dl\i)+(3,-.5)$) -> ($(dl\i)+(4,-.5)$);
 }
-\signal[] (dl4) -> ($(dl4)+(2,0)$);
-\node[] at (7,0) {$\cdots$};
+\signal[] (dl4) -> ($(dl4)-(0,.7)$);
+\node[] at (0,3) {$\vdots$};
+\node[anchor=south] at ($(dl4)+(0,.7)$) {$s_{in}$};
+\node[text width = 1cm] at (2,1.5) {\textit{FFT1\\ network}};
+\draw (1,-1) rectangle (3,4);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\foreach \i in {0,1,2,4} {
+  \primitive[]{dl\i}{7,\i}{$\delayM$};
+  \signal[|-] (dl\i) -> ($(dl\i)+(1,-.5)$);
+  \signal[] ($(dl\i)+(0,.8)$) -> (dl\i);
+}
+\signal[] (dl4) -> ($(dl4)-(0,.8)$);
+\node[] at (0,3) {$\vdots$};
+\node[anchor=south] at ($(dl4)+(0,.8)$) {$s_{in}$};
+\vector[] (8,-1) - (8,4);
+\draw [decorate,decoration={brace,amplitude=10pt},xshift=2pt] (8,4) --  (8,-1) coordinate [midway,xshift=10pt] (i1);
+\leafstd[type=comb, nf=1, f1={fft k}, ni=1, no=1] {proc} {$(i1)+(1.5,0)$} {fft2};
+\signal[token=vector] (i1) -> (proc-p.i1);
+\signal[token=vector] (proc-p.o1) -> ($(proc-p.o1)+(1,0)$);
+)
 \end{tikzpicture}
 \end{document}
 

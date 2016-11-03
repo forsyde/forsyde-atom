@@ -1,0 +1,26 @@
+\documentclass{standalone}
+\usepackage{forsyde-pc}
+\usepackage{forsyde-math}
+\begin{document}
+
+\begin{tikzpicture}[type style = \scriptsize\texttt]
+\leafstd[moc=sy, ni=1, no=1, nf=1, f1={fft k}, type=comb] {p1} {0,0} {fft2SY};
+\leafstd[moc=de, ni=1, no=1, nf=1, f1={fft k}, type=comb] {p2} {4,0} {fft2DE};
+\leafstd[moc=ct, ni=1, no=1, nf=1, f1={fft k}, type=comb] {p3} {8,0} {fft2CT};
+\leafstd[moc=sdf, ni=1, no=1, nf=1, f1={fft k}, type=comb] {p4} {12,0} {fft2SDF};
+\foreach \i in {1,2,3} {
+  \signal[token=vector] ($(p\i -p.i1)-(1,0)$) -> (p\i -p.i1);
+  \signal[token=vector] (p\i -p.o1) -> ($(p\i -p.o1)+(1,0)$);
+}
+
+\signal[] ($(p4-p.i1)-(1,0)$) -> (p4-p.i1);
+\signal[] (p4-p.o1) -> ($(p4-p.o1)+(1,0)$);
+\node[anchor=south east] at (p4-p.i1) {\footnotesize $2^k$};
+\node[anchor=south west] at (p4-p.o1) {\footnotesize $2^k$};
+\end{tikzpicture}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

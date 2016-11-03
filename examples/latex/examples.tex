@@ -27,7 +27,7 @@
 {\csname lst@SaveFirstLabel\endcsname}
 \lstset{
   language=Haskell, 
-  morekeywords={V,SY,CT,DE,SDF,B,Vector},
+  morekeywords={V,SY,CT,DE,SDF,B,Vector,Sig},
   basicstyle=\small\ttfamily,
   % numbers=left,
   frame=l,
@@ -39,6 +39,7 @@
   basewidth={0.5em,0.45em},
   literate={+}{{$+$}}1 
            {/}{{$/$}}1 
+           {-}{{$-$}}1 
            {*}{{$\times$}}1 
            {=}{{$=$}}1
            {>}{{$>$}}1 
@@ -72,6 +73,9 @@
            {.iterate}{{.iterate}}8
            {.length}{{.length}}7
            {.reverse}{{.reverse}}8
+           {\(Complex\ Double\)}{{$\mathbb{C}$}}1
+           {Complex\ Double}{{$\mathbb{C}$}}1
+           { Integer}{{ $\mathbb{N}$}}1
 }
 
 \title{ForSyDe-Atom Examples}
