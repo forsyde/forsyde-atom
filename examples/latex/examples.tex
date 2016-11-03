@@ -12,6 +12,7 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
+\usepackage{subcaption}
 
 \lstloadlanguages{Haskell}
 
@@ -26,9 +27,9 @@
 {\csname lst@SaveFirstLabel\endcsname}
 \lstset{
   language=Haskell, 
-  morekeywords={V,SY,CT,DE,SDF,B},
+  morekeywords={V,SY,CT,DE,SDF,B,Vector},
   basicstyle=\small\ttfamily,
-  numbers=left,
+  % numbers=left,
   frame=l,
   numberstyle=\tiny\color{black!30},
   keywordstyle=\color{red}, 
@@ -49,6 +50,7 @@
            {<-}{{$\leftarrow$}}2
            {<=}{{$\leq$}}2 
            {=>}{{$\Rightarrow$}}2 
+           {::}{{$:$}}1 
            {\ .}{{$\circ$}}2 
            {\ .\ }{{$\circ$}}2
            {\$}{{}}0
@@ -69,6 +71,7 @@
            {.group}{{.group}}6
            {.iterate}{{.iterate}}8
            {.length}{{.length}}7
+           {.reverse}{{.reverse}}8
 }
 
 \title{ForSyDe-Atom Examples}
@@ -80,6 +83,12 @@
 
 \tableofcontents
 
+
+
+% \chapter{MoC Examples}
+% \label{cha:moc-examples}
+
+\chapter{Skeleton Examples}
 \input{../FFT.lhs}
 
 \bibliographystyle{apalike}

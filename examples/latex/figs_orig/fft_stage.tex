@@ -4,19 +4,15 @@
 \begin{document}
 
 \begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
-\processbox[ni=1, no=1, nf=1, f1=twid] {p1} {0,0} {segment};
-\def\mpfunc{$\vect{v_i \mid v_i = \frac{2\pi i}{L},\forall i \in [0,\frac{L}{w})}$}
-\mapSG[nf=1, f1={\mpfunc}, inner xsep=25pt]{mp1}{(p1)}{};
-
-\combinator[nf=1, f1={w}, type=group]{v1gv1}{gr1}{$(mp1-p.i1)-(1,0)$};
+\def\ppfunc{$\vect{2,4,8,...,2^k}$}
+\processbox[ni=1, no=1, nf=1, f1=t]           {p1} {0,0}{segment};
+\mapSG[nf=1, f1={twiddles}, inner xsep=25pt]  {mp1}{(p1)}{};
+\combinator[nf=1, f1={w}, type=group]  {v1gv1}{gr1}{$(mp1-p.i1)-(1,0)$};
 \combinator[type=concat, reverse shape]{v1gv1}{ct1}{$(mp1-p.o1)+(1,0)$};
-
-\compositestd[nf=1, f1={w}]         {cp2}{(mp1)(gr1)(ct1)}{stage};
-
-\def\ppfunc{$\vect{v_i \mid v_i = 2^i,\forall i \in [1,k]}$}
-\pipe[nf=1, f1={\ppfunc}]{pp1}{(cp2)}{};
-\combinator[type=bitrev]{v1v1}      {br1}{$(pp1-p.o1)+(1,0)$};
-\compositestd[nf=2, f1={k}, f2={$L(vs)$}]         {cp1}{(pp1)(br1)}{fft};
+\compositestd[nf=1, f1={w}]   {cp2}{(mp1)(gr1)(ct1)}{stage};
+\pipe[nf=1, f1={\ppfunc}]     {pp1}{(cp2)}{};
+\combinator[type=bitrev]{v1v1}{br1}{$(pp1-p.o1)+(1,0)$};
+\compositestd[nf=1, f1={k}]   {cp1}{(pp1)(br1)}{fft};
 
 \vector[] ($(pp1-p.i1)-(2,0)$) -> (pp1-p.i1);
 \vector[] (br1-p.o1) -> ($(br1-p.o1)+(2,0)$);
@@ -28,13 +24,10 @@
 \vector[token=scalar] (mp1-p.i1) -> (p1-p.i1);
 \vector[token=scalar] (p1-p.o1) -> (mp1-p.o1);
 
-
-\function[|-|=.1] (cp1-f.o2) -> ($(mp1-f.i1)+(.5,0)$);
-\function[|-|=.4] (cp2-f.o1) -> ($(mp1-f.i1)-(.5,0)$);
-\function[|-|=.6] (cp1-f.o1) -> (pp1-f.i1);
-\function[|-|=.6] (pp1-f.o1) -> (cp2-f.i1);
-\function[|-|=.6] (cp2-f.o1) -> (gr1-f.i1);
-\function[] (mp1-f.o1) -> (p1-f.i1);
+\function[|-|] (cp1-f.o1) -> (pp1-f.i1);
+\function[|-|] (pp1-f.o1) -> (cp2-f.i1);
+\function[|-|] (cp2-f.o1) -> (gr1-f.i1);
+\function[|-|] (mp1-f.o1) -> (p1-f.i1);
 \end{tikzpicture}
 \end{document}
 

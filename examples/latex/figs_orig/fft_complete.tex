@@ -4,22 +4,19 @@
 \begin{document}
 
 \begin{tikzpicture}[nomoccolor, type style = \scriptsize\texttt]
-\comb[ni=2, no=2, nf=2, f1=bffunc, f2=w, type=comb] {p1}  {0,0} {butterfly};
-\mapSG[ni=2, no=2, nf=0]                            {mp2} {(p1)}{};
-\combinator[ni=1, no=2, type=duals]{v1v2}           {dua1}{$(mp2-p.i1)!.5!(mp2-p.i2)-(1,0)$};
-\combinator[ni=2, no=1, type=unduals]{v2v1}         {udu1}{$(mp2-p.o1)!.5!(mp2-p.o2)+(1,0)$};
-\compositestd[nf=1, f1={twid}]                      {cp3}{(mp2)(dua1)(udu1)}{segment};
-
-\def\mpfunc{$\vect{v_i \mid v_i = \frac{2\pi i}{L},\forall i \in [0,\frac{L}{w})}$}
-\mapSG[nf=1, f1={\mpfunc}]                    {mp1}{(cp3)}{};
-\combinator[nf=1, f1={w}, type=group]{v1gv1}  {gr1}{$(mp1-p.i1)-(1,0)$};
-\combinator[type=concat, reverse shape]{v1gv1}{ct1}{$(mp1-p.o1)+(1,0)$};
-\compositestd[nf=1, f1={w}]                   {cp2}{(mp1)(gr1)(ct1)}{stage};
-
-\def\ppfunc{$\vect{v_i \mid v_i = 2^i,\forall i \in [1,k]}$}
-\pipe[nf=1, f1={\ppfunc}]                 {pp1}{(cp2)}{};
-\combinator[type=bitrev]{v1v1}            {br1}{$(pp1-p.o1)+(1,0)$};
-\compositestd[nf=2, f1={k}, f2={$L(vs)$}] {cp1}{(pp1)(br1)}{fft};
+\def\ppfunc{$\vect{2,4,8,...,2^k}$}
+\comb[ni=2,no=2,nf=2,f1=bffunc,f2=w,type=comb] {p1}  {0,0} {butterfly};
+\mapSG[ni=2, no=2, nf=0]                       {mp2} {(p1)}{};
+\combinator[ni=1, no=2, type=duals]{v1v2}      {dua1}{$(mp2-p.i1)!.5!(mp2-p.i2)-(1,0)$};
+\combinator[ni=2, no=1, type=unduals]{v2v1}    {udu1}{$(mp2-p.o1)!.5!(mp2-p.o2)+(1,0)$};
+\compositestd[nf=1, f1={t}]                    {cp3}{(mp2)(dua1)(udu1)}{segment};
+\mapSG[nf=1, f1={twiddles}]                    {mp1}{(cp3)}{};
+\combinator[nf=1, f1={w}, type=group]{v1gv1}   {gr1}{$(mp1-p.i1)-(1,0)$};
+\combinator[type=concat, reverse shape]{v1gv1} {ct1}{$(mp1-p.o1)+(1,0)$};
+\compositestd[nf=1, f1={w}]                    {cp2}{(mp1)(gr1)(ct1)}{stage};
+\pipe[nf=1, f1={\ppfunc}]                      {pp1}{(cp2)}{};
+\combinator[type=bitrev]{v1v1}                 {br1}{$(pp1-p.o1)+(1,0)$};
+\compositestd[nf=1, f1={k}]                    {cp1}{(pp1)(br1)}{fft};
 
 \vector[] ($(pp1-p.i1)-(2,0)$) -> (pp1-p.i1);
 \vector[] (br1-p.o1) -> ($(br1-p.o1)+(2,0)$);
@@ -39,12 +36,9 @@
 \signal[-|-] (p1-p.o1) -> (mp2-p.o1);
 \signal[-|-] (p1-p.o2) -> (mp2-p.o2);
 
-
-\function[|-|=.1] (cp1-f.o2) -> ($(mp1-f.i1)+(.5,0)$);
-\function[|-|=.4] (cp2-f.o1) -> ($(mp1-f.i1)-(.5,0)$);
-\function[|-|=.6] (cp1-f.o1) -> (pp1-f.i1);
-\function[|-|=.6] (pp1-f.o1) -> (cp2-f.i1);
-\function[|-|=.6] (cp2-f.o1) -> (gr1-f.i1);
+\function[|-|] (cp1-f.o1) -> (pp1-f.i1);
+\function[|-|] (pp1-f.o1) -> (cp2-f.i1);
+\function[|-|] (cp2-f.o1) -> (gr1-f.i1);
 \function[|-|] (mp1-f.o1) -> (cp3-f.i1);
 \function[|-|=.2] (cp3-f.o1) -> (p1-f.i2);
 \end{tikzpicture}
