@@ -3,8 +3,22 @@
 
 module ForSyDe.Atom.MoC.CT.Interface where
 
-import qualified ForSyDe.Atom.MoC.CT.Core as CT 
+import ForSyDe.Atom.Signal 
+import  ForSyDe.Atom.MoC.DE.Core as DE 
+import  ForSyDe.Atom.MoC.CT.Core as CT 
 import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
+
+import Data.Ratio
+
+toDE :: CT.Time -> DE.Sig t -> CT.Sig a -> DE.Sig a
+toDE res carrier s = evaluate s carrier
+  where evaluate NullS _ = NullS
+        evaluate _ NullS = NullS
+        evaluate l@(CT tm f:-NullS) (DE tg _:-ds)
+          = (DE tg (f $ res*(toInteger tg%1))) :- evaluate l ds
+        evaluate l@(CT tm1 f1:-CT tm2 f2:-cs) m@(DE tg _:-ds)
+          | (toInteger tg%1)*res < tm2 = (DE tg (f1 $ res*(toInteger tg%1))) :- evaluate l ds
+          | otherwise    = evaluate (CT tm2 f2:-cs) m 
 
 -- Towards skeleton layer
 

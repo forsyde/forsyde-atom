@@ -31,6 +31,7 @@ import qualified ForSyDe.Atom.Skeleton.Vector as V
 The \texttt{Data.Complex} module is needed for the complex arithmetic computations performed by a ``butterfly'' element. It provides the \texttt{cis} function for conversion towards a complex number, and the \texttt{magnitude} function for extracting the magnitude of a complex number.
 \begin{code}
 import Data.Complex
+import Data.Ratio
 \end{code}
 
 
@@ -160,7 +161,7 @@ fft1SDF = fft butterflySDF
 
 The second case study treats \texttt{fft} as a function on vectors, executing with the timing semantics dictated by a specified MoC, i.e. wrapped in a MoC process constructor. This way, instead of exposing the parallelism at process network level, it treats it at data level, while synchronization is performed externally, as a block component.
 
-For timed MoCs instantiating a process which performs \texttt{fft} on a vector of values is straightforward: simply pass the \texttt{bffunc} to the \texttt{fft} network, which in turn constitutes the function mapped on a signal by a \texttt{comb11} process constructor. We have shown in Section~\label{sec:case-1:-vector} how to systematically wrap the function on values with different behavior/timing aspects. This time we will use the library-provided helpers to construct \texttt{comb11} processes with a default behavior.
+For timed MoCs instantiating a process which performs \texttt{fft} on a vector of values is straightforward: simply pass the \texttt{bffunc} to the \texttt{fft} network, which in turn constitutes the function mapped on a signal by a \texttt{comb11} process constructor. We have shown in Section~\ref{sec:case-1:-vector} how to systematically wrap the function on values with different behavior/timing aspects. This time we will use the library-provided helpers to construct \texttt{comb11} processes with a default behavior.
 
 
 \begin{code}
@@ -192,7 +193,7 @@ To test the functionality of the FFT network/process, we need to provide (signal
 sampler delta k s = (V.fanoutn (2^k) delta) `V.systolic0` s
 \end{code}
 
-\begin{figure}[h]
+\begin{figure}[h!]
   \centering
   \includegraphics[]{figs/fft_sampler.pdf}
   \caption{The input sampler: for the FFT network \texttt{fft1} (left); for the process performing FFT \texttt{fft2} (right)}
@@ -231,142 +232,151 @@ testbench2SDF k _     = ampl2SDF . fft2SDF k
 
 To test the correctness of out FFT network, we shall consider a signal formed of two overlapping sine waves, as plotted below:
 
-\begin{tikzpicture}\centering
-\begin{axis}[ticks=none, width=15cm, height=4cm]
-\pgfplotstabletranspose\datatable{data/sine.dat}
-\addplot[mark=none] table {\datatable};
-\end{axis}
-\end{tikzpicture}
+For this, we provide a sine wave generator function which takes a list of parameters of type \texttt{(Amplitude, Frequency, Phase)} and sums up the resulting sines.
+
 \begin{code}
-wave a1 a2 f1 f2 t = (:+ 0) $ a1 *  sin (2 * pi * f1 * t) + a2 * sin (2 * pi * f2 * t + 2)  
+wave :: [(Double, Double, Double)] -> CT.Time -> Complex Double
+wave param t = (:+0) $ foldl (\ sum (a,f,phi) -> sum + a * sin (2 * pi * f * (fromRational t) + phi)) 0 param
 \end{code}%$
 
+For this experiment, we shall input a two-tone signal having the components $(A_1,f_1,\phi_1)$ into $(A_2,f_2,\phi_2)$ $(A_1,f_1,\phi_1)$ an FFT with $N$ bins. The signal needs to be sampled at $fs$, and to be able to identify the tone components, we have to ensure that $\max (f_1,f_2) \leq fs/2$. Below is the experimental data:
 
-As with the butterfly function, the sampler needs to input the correctly wrapped delay process. In this case we shall use the helper constructors provided by each MoC.
-\begin{code}
-samplerSY  = sampler (SY.delay 0)
-samplerDE  = sampler (DE.delay 5 0)
-samplerCT  = sampler (CT.delay (1/300) (\_->0))
-samplerSDF = sampler (SDF.delay [0])
-\end{code}
-
-
-
-
-\begin{code}
-
-sinkSY  vs = SY.zipx               $ (SY.comb11           magnitude)  `V.map11` vs 
-sinkDE  vs = DE.zipx               $ (DE.comb11           magnitude)  `V.map11` vs 
-sinkCT  vs = CT.zipx               $ (CT.comb11           magnitude)  `V.map11` vs 
-sinkSDF vs = SDF.zipx (V.fanout 1) $ (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
-
-testFFTSY  k = sinkSY  . fft butterflySY  k . samplerSY  k
-testFFTDE  k = sinkDE  . fft butterflyDE  k . samplerDE  k
-testFFTCT  k = sinkCT  . fft butterflyCT  k . samplerCT  k
-testFFTSDF k = sinkSDF . fft butterflySDF k . samplerSDF k
-
-doublesine t = sin (2 * pi * 50 * ((fromRational t) :+ 0)) + 3 * sin (2*pi*90 * (fromRational t) + 2)
-
-inputSignalSY = SY.comb11 ((:+ 0) . (\t->sin (2*pi*freq*t) + 3 * sin (2*pi*90*t + 2)) . (*tau)) samps
-  where freq  = 50
-        tau   = 1/500
-        samps = SY.signal [0..299]
-
-\end{code}
-
-First, let us see how the network behaves in continuous time. For this, we create the CT signal \texttt{inputSignalCT} which carries only one event: the function \texttt{doublesine} which starts from time 0.
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{|c|c|}
+    \hline Parameter       & Value            \\
+    \hline $A_1,f_1,\phi_1$ & 1, 50 Hz, 0 rad  \\
+    \hline $A_2,f_2,\phi_2$ & 3, 120 Hz, 2 rad  \\
+    \hline $fs$            & 900 Hz           \\
+    \hline $k$             & 7 stages         \\
+    \hline $N$             & $2^k =$ 128 bins \\
+    \hline
+  \end{tabular}
+  \caption{Experimental data}
+  \label{tab:in-exp}
+\end{table}
 
 \begin{code}
-inputSignalCT = CT.signal [(0, doublesine)]
+testwave = wave [(1,50,0),(3,120,2)]
+sampFreq = 900
+kStages  = 7
+nBins    = 2^kStages
+sampPer  = 1%sampFreq
 \end{code}
 
-Feeding the signal to a 128-bin FFT network:
+\begin{figure}[h!]\centering
+  \begin{tikzpicture}
+    \begin{axis}[ticks=none, width=15cm, height=4cm]
+      \pgfplotstabletranspose\datatable{data/sine.dat}
+      \addplot[mark=none] table {\datatable};
+    \end{axis}
+  \end{tikzpicture}    
+  \caption{Plotted input signal}
+\end{figure}
+
+Now let us generate the signals for the tested MoCs. For the CT MoC, the signal will only have one event starting at time 0, carrying the function $\mathtt{testwave}(t)$. For the other MoCs though, we need to use a \texttt{generate} process.
+\begin{code}
+testWaveCT  = CT.signal [(0,testwave)]
+testWaveSY  = ( SY.comb11          testwave  .  SY.generate1          (+sampPer))  0
+testWaveDE  = ( DE.comb11          testwave  .  DE.generate1          (+sampPer))  (1, 0)
+testWaveSDF = (SDF.comb11 (1,1,map testwave) . SDF.generate1 (1,1,map (+sampPer))) [0]
+\end{code}
+
+Now we need to provide a delay element as an argument for the sampler array. As suggested in Figure~\ref{fig:fft-sampler}, each pair of neighboring signals will contain the same sine wave phase-shifted with exactly one sampling period ($ts=1/fs$). This is clearly seen in the generation of \texttt{testwave(SY|DE|SDF)} and in the definition of \texttt{delayCT}.
 
 \begin{code}
-outSignalCT = testFFTCT 7 inputSignalCT
-outSignalSY = testFFTSY 7 inputSignalSY
+deltaSY  =  SY.delay               (0.0:+0.0)
+deltaDE  =  DE.delay 1             (0.0:+0.0)
+deltaCT  =  CT.delay (sampPer) (\_->0.0:+0.0)
+deltaSDF = SDF.delay               [0.0:+0.0]
 \end{code}
 
-% \begin{tikzpicture}\centering
-% \begin{axis}[]
-%   \addplot3[raw gnuplot,surf]
-%   gnuplot[id={surf}]{%
-%     set pm3d;
-%     splot 'data/outCT.dat' matrix with pm3d;};
-% \end{axis}
-% \end{tikzpicture}
+We have provided a complete set of testbenches for the test cases presented in Sections~\ref{sec:case-1:-vector}~and~\ref{sec:case-2:-signal}. Since we input infinite signals, we expect to get infinite signals in return, containing the resulting values of the $N$ bins.
 
+\begin{code}
+test1FFTSY  = testbench1SY  kStages deltaSY  testWaveSY
+test1FFTDE  = testbench1DE  kStages deltaDE  testWaveDE
+test1FFTCT  = testbench1CT  kStages deltaCT  testWaveCT
+test1FFTSDF = testbench1SDF kStages deltaSDF testWaveSDF
 
+test2FFTSY  = testbench2SY  kStages deltaSY  testWaveSY
+test2FFTDE  = testbench2DE  kStages deltaDE  testWaveDE
+test2FFTCT  = testbench2CT  kStages deltaCT  testWaveCT
+test2FFTSDF = testbench2SDF kStages deltaSDF testWaveSDF
+\end{code}
 
 
 \ignore{
 \begin{code}
 outpath = "examples/latex/data/"
-listToDat   = map (\x -> if x == ',' then ' ' else x ) . filter (not . (`elem` "[]")) . show
 
-sigVecToDat :: Signal [Value (V.Vector Double)] -> String
-sigVecToDat = map replchar . filter (not . (`elem` "{}<[]")) . show
-  where replchar '>' = '\n'
-        replchar ',' = ' '
-        replchar c   = c
+rmBraces = filter (not . (`elem` "[]{}<\b"))
+comma2spc = map (\x -> if x == ',' then ' ' else x )
+grt2newln = map (\x -> if x == '>' then '\n' else x )
 
-saveDoubleSine = do
-  let xaxis    = map (*(1/500)) [0..299]
+saveInWave fs sig = do
+  let xaxis    = map (*(1 % fs)) [0 .. 150]
       filepath = outpath ++ "sine.dat"
-    in writeFile filepath $ listToDat $ map doublesine xaxis
+    in (writeFile filepath . comma2spc . rmBraces . show . map realPart . map sig) xaxis
 
-saveSVOutput name sig = do
-  let sigVecToDat = map replchar . filter (not . (`elem` "{}<\b")) . show
-        where replchar '>' = '\n'
-              replchar ',' = ' '
-              replchar c   = c
-      filepath = outpath ++ name
-    in writeFile filepath $ sigVecToDat $ sig
+saveVecSigs finalStage name nsamp sig = do
+  let filepath = outpath ++ name
+      outsig   = takeS nsamp $ finalStage $ sig
+    in (writeFile filepath . grt2newln . comma2spc . rmBraces . show) outsig
+
+-- listToDat   = map (\x -> if x == ',' then ' ' else x ) . filter (not . (`elem` "[]")) . show
+
+-- saveDoubleSine = do
+--   let xaxis    = map (*(1/500)) [0..299]
+--       filepath = outpath ++ "sine.dat"
+--     in writeFile filepath $ listToDat $ map doublesine xaxis
 
 
-saveCtOutput = do
-  let sampledOut = CT.eval $ CT.splitUntil 2 0.005 $ outSignalCT
-      filepath = outpath ++ "outCT.dat"
-    in writeFile filepath $ sigVecToDat $ sampledOut
-\end{code}%"
+-- sigVecToDat :: Signal [Value (V.Vector Double)] -> String
+-- sigVecToDat = map replchar . filter (not . (`elem` "{}<[]")) . show
+--   where replchar '>' = '\n'
+--         replchar ',' = ' '
+--         replchar c   = c
+
+
+
+-- saveSVOutput name sig = do
+--   let sigVecToDat = map replchar . filter (not . (`elem` "{}<\b")) . show
+--         where replchar '>' = '\n'
+--               replchar ',' = ' '
+--               replchar c   = c
+--       filepath = outpath ++ name
+--     in writeFile filepath $ sigVecToDat $ sig
+
+
+-- saveCtOutput = do
+--   let sampledOut = CT.eval $ CT.splitUntil 2 0.005 $ outSignalCT
+--       filepath = outpath ++ "outCT.dat"
+--     in writeFile filepath $ sigVecToDat $ sampledOut
+\end{code}%"$
 }
 
-%-- fft :: Int -> Signal (Vector (Complex Float)) -> Signal (Vector (Complex Float))
-%-- fft k xs | n == 2 ^ k = (zipxPN . bitrevPN . unzipxPN . pipe1PN stage (iterateV k (*2) 2)) xs
-%--   where
-%-- 	stage :: Int -> Signal (Vector (Complex Float)) -> Signal (Vector (Complex Float))
-%-- 	stage k = zipxPN . concatPN . (mapV unzipxPN) . farm1PN segment (takeV m twiddles) 
-%--               . (mapV zipxPN) . groupPN k . unzipxPN
-%-- 		where m = n `div` k
-%
-%-- 	segment :: Complex Float -> Signal (Vector (Complex Float)) -> Signal (Vector (Complex %Float))
-%-- 	segment twid = zipxPN . undualsSYPN . farmPN (butterfly twid) . dualsSYPN . unzipxPN
-%
-%-- 	butterfly :: RealFloat a => Complex a -> Signal (Complex  a, Complex a) -> Signal (Complex %a, Complex a)
-%-- 	butterfly w = mapSY (\(x0, x1) -> let t = w * x1 in (x0 + t, x0 - t))
-%
-%-- 	twiddles :: Vector (Complex Float)
-%-- 	twiddles = vector $ (bitrev . map (cis . negate) . halfcycle) (toInteger n)
-%
-%-- 	halfcycle :: Integer -> [Float]
-%-- 	halfcycle n = halfcycle1 0 (fromInteger n / 2) n
-%-- 	  	where halfcycle1 l m n 
-%-- 			           | l == m = []
-%-- 					   | l /= m = -2 * pi * l / (fromInteger n) : halfcycle1 %(l+1) m n
-%
-%-- 	n = lengthV $ unzipxPN xs
-%
-%-- -- helpers
-%
-%-- evens []  = []
-%-- evens [x] = [x]
-%- evens (x:_:xs) = x : evens xs
-%-- odds []  = []
-%-- odds [x] = []
-%-- odds (_:x:xs) = x : odds xs
-%-- bitrev :: [a] -> [a]
-%-- bitrev [x] = [x]
-%-- bitrev xs = bitrev (evens xs) ++ bitrev (odds xs)
+
+\begin{code}
+
+-- sinkSY  vs = SY.zipx               $ (SY.comb11           magnitude)  `V.map11` vs 
+-- sinkDE  vs = DE.zipx               $ (DE.comb11           magnitude)  `V.map11` vs 
+-- sinkCT  vs = CT.zipx               $ (CT.comb11           magnitude)  `V.map11` vs 
+-- sinkSDF vs = SDF.zipx (V.fanout 1) $ (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
+
+-- testFFTSY  k = sinkSY  . fft butterflySY  k . samplerSY  k
+-- testFFTDE  k = sinkDE  . fft butterflyDE  k . samplerDE  k
+-- testFFTCT  k = sinkCT  . fft butterflyCT  k . samplerCT  k
+-- testFFTSDF k = sinkSDF . fft butterflySDF k . samplerSDF k
+
+-- doublesine t = sin (2 * pi * 50 * ((fromRational t) :+ 0)) + 3 * sin (2*pi*90 * (fromRational t) + 2)
+
+-- inputSignalSY = SY.comb11 ((:+ 0) . (\t->sin (2*pi*freq*t) + 3 * sin (2*pi*90*t + 2)) . (*tau)) samps
+--   where freq  = 50
+--         tau   = 1/500
+--         samps = SY.signal [0..299]
+
+\end{code}
 
 
 %%% Local Variables:

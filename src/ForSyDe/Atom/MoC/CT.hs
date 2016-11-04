@@ -150,7 +150,7 @@ module ForSyDe.Atom.MoC.CT (
 
   -- ** Interfaces
 
-  zipx, unzipx
+  zipx, unzipx, toDE
 
   -- * Bibliography
   

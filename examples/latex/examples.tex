@@ -27,7 +27,7 @@
 {\csname lst@SaveFirstLabel\endcsname}
 \lstset{
   language=Haskell, 
-  morekeywords={V,SY,CT,DE,SDF,B,Vector,Sig},
+  morekeywords={V,SY,CT,DE,SDF,B,Vector,Sig,Time},
   basicstyle=\small\ttfamily,
   % numbers=left,
   frame=l,
@@ -39,6 +39,7 @@
   basewidth={0.5em,0.45em},
   literate={+}{{$+$}}1 
            {/}{{$/$}}1 
+           {\%}{{$/$}}1 
            {-}{{$-$}}1 
            {*}{{$\times$}}1 
            {=}{{$=$}}1
@@ -52,6 +53,7 @@
            {<=}{{$\leq$}}2 
            {=>}{{$\Rightarrow$}}2 
            {::}{{$:$}}1 
+           {:+}{{$+i\cdot$}}3 
            {\ .}{{$\circ$}}2 
            {\ .\ }{{$\circ$}}2
            {\$}{{}}0
