@@ -32,6 +32,7 @@ The \texttt{Data.Complex} module is needed for the complex arithmetic computatio
 \begin{code}
 import Data.Complex
 import Data.Ratio
+import System.Process
 \end{code}
 
 
@@ -291,8 +292,7 @@ deltaCT  =  CT.delay (sampPer) (\_->0.0:+0.0)
 deltaSDF = SDF.delay               [0.0:+0.0]
 \end{code}
 
-We have provided a complete set of testbenches for the test cases presented in Sections~\ref{sec:case-1:-vector}~and~\ref{sec:case-2:-signal}. Since we input infinite signals, we expect to get infinite signals in return, containing the resulting values of the $N$ bins.
-
+We have provided a complete set of testbenches for the test cases presented in Sections~\ref{sec:case-1:-vector}~and~\ref{sec:case-2:-signal}. Since we input infinite signals, we expect to get infinite signals in return, containing the resulting values of the $N$ bins. 
 \begin{code}
 test1FFTSY  = testbench1SY  kStages deltaSY  testWaveSY
 test1FFTDE  = testbench1DE  kStages deltaDE  testWaveDE
@@ -305,6 +305,60 @@ test2FFTCT  = testbench2CT  kStages deltaCT  testWaveCT
 test2FFTSDF = testbench2SDF kStages deltaSDF testWaveSDF
 \end{code}
 
+In Figure~\ref{fig:result} we plot the first 200 samples for all test cases, with a provided script which takes the number of samples as argument:
+
+\begin{lstlisting}
+runTestBench 200
+\end{lstlisting}
+
+
+\begin{figure}[ht!]
+  \centering
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out1SY}\caption{\texttt{test1FFTSY}}\label{fig:test1SY}
+  \end{subfigure}
+  ~
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out1DE}\caption{\texttt{test1FFTDE}}\label{fig:test1DE}
+  \end{subfigure}
+  ~
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out1CT}\caption{\texttt{test1FFTCT}}\label{fig:test1CT}
+  \end{subfigure}
+  ~  
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out1SDF}\caption{\texttt{test1FFTSDF}}\label{fig:test1SDF}
+  \end{subfigure}
+
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out2SY}\caption{\texttt{test2FFTSY}}\label{fig:test2SY}
+  \end{subfigure}
+  ~
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out2DE}\caption{\texttt{test2FFTDE}}\label{fig:test2DE}
+  \end{subfigure}
+  ~
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out2CT}\caption{\texttt{test2FFTCT}}\label{fig:test2CT}
+  \end{subfigure}
+  ~
+  \begin{subfigure}{.23\linewidth}
+    \includegraphics[width=\linewidth]{data/out2SDF}\caption{\texttt{test2FFTSDF}}\label{fig:test2SDF}
+  \end{subfigure}
+  \caption{Heatmap plots for all FFT bins for all test cases and MoCs. The $N$ bins are represented on the $x$ axis, whereas the output samples (in time) are stacked on the $y$ axis}
+  \label{fig:result}
+\end{figure}
+
+Some observations:
+\begin{itemize}
+\item the two tone components can be observed on the heatmaps in form of the mirrored yellow (120Hz) and light blue (50Hz) vertical lines.
+\item The first $N$ output bins in \Cref{fig:test1SY,fig:test1DE,fig:test1CT,fig:test1SDF,fig:test2SY,fig:test2DE,fig:test2CT} expose the effect of ``filling in'' the delay network we use as sampler. \Cref{fig:test2SDF} does not show this behavior since \texttt{test2FFTSDF} does not use a input sampler at all, instead it consumes $N$ samples of complete sine wave at each firing of the actor (see Figure~\ref{fig:fft-one-proc}).
+\item The ``wavy'' shape if the FFT output after stabilization (after $N$ samples) is due to the fact that the sampling window is time-shifting and does not capture an integer multiple of the input periods. We also do not use a correction window (e.g. Hamming).
+\item  Although the FFT is a DFT method and would not make sense in continuous time, the fact that \Cref{fig:test1CT,fig:test2CT} show the exact same output as the rest demonstrates an important property of the inherent lazy evaluation mechanism: a CT process network is practically discretized once we ``observe it'' (i.e. plot it), since we force the runtime to evaluate the value of a signal at certain (discrete) instances in time. In this sense we can make the observation that no matter where the discretization takes place (before the delay network in the case of DE or after the FFT stage in the case of CT), the results are practically the same since the all system instances are \emph{functionally equivalent}.
+\end{itemize}
+
+
+
 
 \ignore{
 \begin{code}
@@ -314,69 +368,68 @@ rmBraces = filter (not . (`elem` "[]{}<\b"))
 comma2spc = map (\x -> if x == ',' then ' ' else x )
 grt2newln = map (\x -> if x == '>' then '\n' else x )
 
-saveInWave fs sig = do
-  let xaxis    = map (*(1 % fs)) [0 .. 150]
+saveInWave sig = do
+  let xaxis    = map (*sampPer) [0 .. 150]
       filepath = outpath ++ "sine.dat"
     in (writeFile filepath . comma2spc . rmBraces . show . map realPart . map sig) xaxis
 
-saveVecSigs finalStage name nsamp sig = do
+saveSigVec name nsamp sig = do
   let filepath = outpath ++ name
-      outsig   = takeS nsamp $ finalStage $ sig
+      outsig   = takeS nsamp sig
     in (writeFile filepath . grt2newln . comma2spc . rmBraces . show) outsig
 
--- listToDat   = map (\x -> if x == ',' then ' ' else x ) . filter (not . (`elem` "[]")) . show
+convertToEps nsamp inFile outFile = do
+  let datFile = outpath ++ inFile
+      epsFile = outpath ++ outFile
+      plotScript =
+        "set view map\n"
+        ++ "set yrange [0:" ++ nsamp ++ "]\n"
+        ++ "set xrange [0:" ++ show nBins ++ "]\n"
+        ++ "set terminal postscript eps color\n"
+        ++ "set output \"" ++ epsFile ++"\"\n"
+        ++ "plot \'" ++ datFile ++ "\' matrix with image \n"
+  writeFile "script.gnuplot" plotScript
+  system ("gnuplot -persist script.gnuplot")
 
--- saveDoubleSine = do
---   let xaxis    = map (*(1/500)) [0..299]
---       filepath = outpath ++ "sine.dat"
---     in writeFile filepath $ listToDat $ map doublesine xaxis
+runTestBench nsamp = do 
+  let  inputSineWave  = testwave
+       fft1SYResult   = SY.zipx test1FFTSY
+       fft1DEResult   = (snd . DE.toSY . DE.zipx) test1FFTDE
+       fft1CTResult   = (snd . DE.toSY . CT.toDE sampPer testWaveDE . CT.zipx) test1FFTCT
+       fft1SDFResult  = SDF.zipx (V.fanout 1) test1FFTSDF
+       fft2SYResult   = test2FFTSY
+       fft2DEResult   = (snd . DE.toSY) test2FFTDE
+       fft2CTResult   = (snd . DE.toSY . CT.toDE sampPer testWaveDE) test2FFTCT
+       fft2SDFResult  = SDF.comb11 (nBins,1,\ x->[V.vector x]) test2FFTSDF
+  putStrLn "Plotting input signal"
+  saveInWave inputSineWave
+  putStrLn "Plotting out1SY.dat"
+  saveSigVec "out1SY.dat" nsamp  fft1SYResult
+  convertToEps (show nsamp) "out1SY.dat" "out1SY.eps" 
+  putStrLn "Plotting out1DE.dat"
+  saveSigVec "out1DE.dat" nsamp  fft1DEResult
+  convertToEps (show nsamp) "out1DE.dat" "out1DE.eps"
+  putStrLn "Plotting out1CT.dat"
+  saveSigVec "out1CT.dat" nsamp  fft1CTResult
+  convertToEps (show nsamp) "out1CT.dat" "out1CT.eps"
+  putStrLn "Plotting outSDF.dat"
+  saveSigVec "out1SDF.dat" nsamp fft1SDFResult
+  convertToEps (show nsamp) "out1SDF.dat" "out1SDF.eps"
+  putStrLn "Plotting out2SY.dat"
+  saveSigVec "out2SY.dat" nsamp  fft2SYResult 
+  convertToEps (show nsamp) "out2SY.dat" "out2SY.eps"
+  putStrLn "Plotting out2DE.dat"
+  saveSigVec "out2DE.dat" nsamp  fft2DEResult
+  convertToEps (show nsamp) "out2DE.dat" "out2DE.eps"
+  putStrLn "Plotting out2CT.dat"
+  saveSigVec "out2CT.dat" nsamp  fft2CTResult
+  convertToEps (show nsamp) "out2CT.dat" "out2CT.eps"
+  putStrLn "Plotting out2SDF.dat"
+  saveSigVec "out2SDF.dat" nsamp fft2SDFResult
+  convertToEps (show nsamp) "out2SDF.dat" "out2SDF.eps"
 
-
--- sigVecToDat :: Signal [Value (V.Vector Double)] -> String
--- sigVecToDat = map replchar . filter (not . (`elem` "{}<[]")) . show
---   where replchar '>' = '\n'
---         replchar ',' = ' '
---         replchar c   = c
-
-
-
--- saveSVOutput name sig = do
---   let sigVecToDat = map replchar . filter (not . (`elem` "{}<\b")) . show
---         where replchar '>' = '\n'
---               replchar ',' = ' '
---               replchar c   = c
---       filepath = outpath ++ name
---     in writeFile filepath $ sigVecToDat $ sig
-
-
--- saveCtOutput = do
---   let sampledOut = CT.eval $ CT.splitUntil 2 0.005 $ outSignalCT
---       filepath = outpath ++ "outCT.dat"
---     in writeFile filepath $ sigVecToDat $ sampledOut
 \end{code}%"$
 }
-
-
-\begin{code}
-
--- sinkSY  vs = SY.zipx               $ (SY.comb11           magnitude)  `V.map11` vs 
--- sinkDE  vs = DE.zipx               $ (DE.comb11           magnitude)  `V.map11` vs 
--- sinkCT  vs = CT.zipx               $ (CT.comb11           magnitude)  `V.map11` vs 
--- sinkSDF vs = SDF.zipx (V.fanout 1) $ (SDF.comb11 (1,1,map magnitude)) `V.map11` vs
-
--- testFFTSY  k = sinkSY  . fft butterflySY  k . samplerSY  k
--- testFFTDE  k = sinkDE  . fft butterflyDE  k . samplerDE  k
--- testFFTCT  k = sinkCT  . fft butterflyCT  k . samplerCT  k
--- testFFTSDF k = sinkSDF . fft butterflySDF k . samplerSDF k
-
--- doublesine t = sin (2 * pi * 50 * ((fromRational t) :+ 0)) + 3 * sin (2*pi*90 * (fromRational t) + 2)
-
--- inputSignalSY = SY.comb11 ((:+ 0) . (\t->sin (2*pi*freq*t) + 3 * sin (2*pi*90*t + 2)) . (*tau)) samps
---   where freq  = 50
---         tau   = 1/500
---         samps = SY.signal [0..299]
-
-\end{code}
 
 
 %%% Local Variables:

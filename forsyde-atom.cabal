@@ -92,12 +92,13 @@ library
                        ForSyDe.Atom.Utility
   Default-Language:    Haskell2010
   other-extensions:    PostfixOperators, FlexibleInstances
-  build-depends:       base>=4.6 && <6, 
+  build-depends:       HUnit,
+                       QuickCheck,
+                       base>=4.6 && <6,
+                       process >= 1.4.2.0,
                        test-framework,
                        test-framework-hunit,
-                       test-framework-quickcheck2,
-                       QuickCheck, 
-                       HUnit
+                       test-framework-quickcheck2
   hs-source-dirs:      src
 
 Test-Suite forsyde-testsuite

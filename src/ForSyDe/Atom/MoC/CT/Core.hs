@@ -66,7 +66,11 @@ instance MoC CT where
   ---------------------
   (CT _ v) ->- xs =  (CT 0 v) :- xs
   ---------------------
-  (CT t _) -&- xs = (\(CT t1 v) -> CT (t1 + t) v) <$> xs
+  _       -&- NullS = NullS
+  (CT 0   _) -&- xs = xs
+  (CT phi _) -&- xs = shift <$> xs
+    where shift (CT t f) = let f' x = f (x-phi)
+                           in  CT (t+phi) f'
   ---------------------
     
 -- | Shows the event starting from tag @t@ with value @v = f t@  @ v \@t@. It hides the partition (the singleton list constructor).
