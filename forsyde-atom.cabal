@@ -60,7 +60,7 @@ category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple
 cabal-version:       >=1.22
 tested-with:         GHC==7.10.3 GHC==8.0.1
-extra-doc-files:     includes/figs/*.png
+-- extra-doc-files:     includes/figs/*.png
 
 library
   exposed-modules:     ForSyDe.Atom
