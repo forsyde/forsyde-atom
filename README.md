@@ -28,12 +28,19 @@ it. It is recommended to install and test inside a sandbox:
     cabal install         # installs the library inside the sandbox
     cabal repl            # starts GHCi with the sandbox loaded
     cabal sandbox delete  # deletes the sandbox and everything in it
+    
+Generating the documentation
+----------------------------
 
-To generate the haddock extended API + technical report documentation
-one should use the provided `Makefile` instead:
+A haddock extended API + technical report documentation can be generated from the 
+version found in the `docs` branch. To do this, you should should use the provided 
+`Makefile`:
 
     make doc              # compiles the documentation and the LaTeX figures
     make clean            # removes all the generated documentation files
+    
+General dependencies
+--------------------
     
 There are a number of dependencies to be taken care of:
 
@@ -50,7 +57,7 @@ There are a number of dependencies to be taken care of:
  * `imagemagick` to convert the above PDF pictures to PNG to be
    recognized by Haddock.
    
-On a Ubuntu OS, the following commands might help for installing these dependencies:
+On a Ubuntu 16.04 OS, the following commands might help for installing these dependencies:
 
     # To be able to clone this repository
     sudo apt-get install -y git
@@ -63,8 +70,6 @@ On a Ubuntu OS, the following commands might help for installing these dependenc
     cabal update
     
     # To be able to generate the documentation, in case a LaTeX installation is not available:
-    sudo add-apt-repository -y ppa:texlive-backports/ppa
-    sudo apt-get update
     sudo apt-get install -y texlive texlive-latex-extra texlive-fonts-extra texlive-math-extra
     sudo apt-get install -y imagemagick
     
