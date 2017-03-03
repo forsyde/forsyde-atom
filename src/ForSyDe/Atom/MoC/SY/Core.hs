@@ -75,3 +75,11 @@ event4 = ($$$$) (event, event, event, event)
 -- | Transforms a list of values into a SY signal
 signal   :: [a] -> Signal a
 signal l = stream (event <$> l)
+
+-- | Reads a signal from a string. Like with the @read@ function from
+-- @Prelude@, you must specify the tipe of the signal.
+--
+-- >>> readSignal "{1,2,3,4,5}" :: Signal Int
+-- > {1,2,3,4,5}
+readSignal :: Read a => String -> Signal a
+readSignal s = read s
