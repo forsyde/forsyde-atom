@@ -77,7 +77,7 @@ module ForSyDe.Atom.MoC(
   ) where
 
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.Signal
+import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
 infixl 5 -$-, -*-

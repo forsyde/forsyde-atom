@@ -324,12 +324,12 @@ module ForSyDe.Atom (
   -- [design rule #1] a signal's tags (if explicit) /must be/ a
   -- partial or total order and all tag alterations must be monotonic.
   
-  Signal(..),
+  Stream(..),
 
   -- | For extended documentation and a list of all utilities
   -- associated with the 'Signal' type you can consult:
 
-  module ForSyDe.Atom.Signal,
+  module ForSyDe.Atom.MoC.Stream,
   
   -- | #processes#
 
@@ -626,7 +626,7 @@ module ForSyDe.Atom (
   --
   -- ==== Atoms
   
-  MoC(..),
+  Timed(..),
 
   -- | ==== Atom process network patterns
   --
@@ -764,8 +764,8 @@ module ForSyDe.Atom (
 ) where
 
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.Signal
+import ForSyDe.Atom.MoC.Stream
+import ForSyDe.Atom.MoC.Timed
 import ForSyDe.Atom.Skeleton
-import ForSyDe.Atom.MoC
 import ForSyDe.Atom.Utility
 

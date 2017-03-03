@@ -15,8 +15,7 @@
 module ForSyDe.Atom.Skeleton.Vector.Interface where
 
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.MoC
-import ForSyDe.Atom.Signal
+import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Skeleton.Vector.Core
 import ForSyDe.Atom.Skeleton.Vector.Lib
 
@@ -47,8 +46,8 @@ zipx :: MoC e =>
         -- ^ (<#wrap21f *>)
         -> ((Value a -> Value (Vector a)) -> (Context e, [Value a] -> [Value (Vector a)]))
         -- ^ (<#wrap11f **>)
-        -> Vector (Signal (e [Value a]))  -- ^ vector of signals of MoC @e@
-        -> Signal (e [Value (Vector a)]) -- ^ synchronized result signal of MoC @e@ 
+        -> Vector (Stream (e [Value a]))  -- ^ vector of signals of MoC @e@
+        -> Stream (e [Value (Vector a)]) -- ^ synchronized result signal of MoC @e@ 
 zipx   w21 w11 = red catEv . map unitEv
   where catEv  = (comb21 . w21 . psi21) (<++>)
         unitEv = (comb11 . w11 . psi11) unit
@@ -78,8 +77,8 @@ unzipx :: MoC e =>
           -- ^ (<#wrap11v *>)
           -> ((Value (Vector a) -> Value (Vector a)) -> (Context e, [Value (Vector a)] -> [Value (Vector a)]))
           -- ^ (<#wrap11vv **>)
-          -> Signal (e [Value (Vector a)]) -- ^ signal of MoC @e@ carrying vectors
-          -> Vector (Signal (e [Value a])) -- ^ vector of synced signals of MoC @e@
+          -> Stream (e [Value (Vector a)]) -- ^ signal of MoC @e@ carrying vectors
+          -> Vector (Stream (e [Value a])) -- ^ vector of synced signals of MoC @e@
 unzipx sniff w1 w2 sv = (map getFst . scan' selFun) sv
   where getFst = (comb11 . w1 . psi11) first
         selFun = fanoutn n ((comb11 . w2 . psi11) tail)
