@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PostfixOperators, TypeFamilies, FlexibleInstances #-}
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
@@ -89,6 +90,7 @@ infixl 3 -<-, -&-
 -- &#215; /V/.
 --
 class (Functor e) => Timed e where
+
   -- | This atom is mapping a function on extended values in the
   -- presence of a context to a MoC-bound signal (signal of tagged
   -- events), defined as:
@@ -110,7 +112,7 @@ class (Functor e) => Timed e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: (Stream (e (a -> b))) -> Stream (e a) -> Stream (e b)
+  (-*-) :: Stream (e (a -> b)) -> Stream (e a) -> Stream (e b)
 
   -- | When defining the 'Stream' type we enunciated __design rule #2__
   -- where we noticed the importance of initial tokens in feedback
@@ -130,7 +132,6 @@ class (Functor e) => Timed e where
   --
   -- <<includes/figs/phi-atom-formula.png>>
   (-&-) :: e a -> Stream (e a) -> Stream (e a)
-
 
 
 infixl 3 -&>-
