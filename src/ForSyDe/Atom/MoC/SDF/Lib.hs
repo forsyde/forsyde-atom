@@ -21,12 +21,6 @@ import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.SDF.Core
 import           ForSyDe.Atom.Utility
 
--- | Type alias for production rate
-type Prod = Int
-
--- | Type alias for consumption rate
-type Cons = Int
-
 ------- DELAY -------
 
 delay i = MoC.delay (part i)

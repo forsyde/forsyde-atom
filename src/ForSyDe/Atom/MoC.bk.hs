@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators, TypeFamilies, FlexibleInstances #-}
+{-# LANGUAGE PostfixOperators, TypeFamilies, FlexibleInstances, RankNTypes #-}
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
@@ -31,7 +31,7 @@ module ForSyDe.Atom.MoC(
   MoC(..),
 
   -- * Process constructors
-
+  
   -- | As shown in the documentation of "ForSyDe.Atom" process
   -- constructors are implemented as compositions of MoC atoms. Also,
   -- in order to avoid working with signals of tuples and for process
@@ -136,7 +136,6 @@ class (Functor e) => MoC e where
   (-&-) :: e a -> Signal (e a) -> Signal (e a)
 
   -- sniff :: e a -> a
-
 
 infixl 3 -&>-
 delay i xs = i ->- (i -&- xs)

@@ -24,7 +24,6 @@ import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
-
 -- | Type synonym for a SDF signal, i.e. "a signal of partitions of
 -- SDF events"
 type Signal a       = Stream (SDF [a])

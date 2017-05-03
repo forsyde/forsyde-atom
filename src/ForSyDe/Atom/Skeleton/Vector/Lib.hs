@@ -436,6 +436,10 @@ mesh4 p vv1 vv2 vv3 vv4 vs1 vs2 = map51 (\v1 v2 v3 v4 s2 s1 -> map51 p v1 v2 v3 
 length Null = 0
 length v    = red (+) . map (\_ -> 1) $ v
 
+-- | returns a vetor with the indexes from another vector.
+--
+index = map21 (\x _ -> x) indexes
+
 ----------------
 -- Generators --
 ----------------
@@ -708,13 +712,12 @@ bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
 --
 -- <<includes/figs/skel-duals-graph.png>>
 duals   v = let k = length v `div` 2
-            in  map21 (,) (take k v) (drop k v)
+            in  map22 (,) (take k v) (drop k v)
 
 -- | concatenates a previously split vector. See also 'duals'
 --
 -- <<includes/figs/skel-unduals-graph.png>>
-unduals v = let (x,y) = (v |<) 
-            in  x <++> y
+unduals = (<++>)
 
 
 

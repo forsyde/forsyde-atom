@@ -151,8 +151,9 @@ module ForSyDe.Atom.MoC.SY (
 
   -- * Interfaces
 
-  toDE, toDE2, toDE3, toDE4
-         
+  toDE, toDE2, toDE3, toDE4,
+  zipx, unzipx
+                      
   -- * Bibliography
 
   -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229.

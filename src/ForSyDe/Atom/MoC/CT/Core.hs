@@ -60,7 +60,7 @@ instance Timed CT where
   (CT 0 _ _) -&- xs = xs
   (CT d _ _) -&- xs = (\(CT t p v) -> CT (t + d) (p - d) v) <$> xs
   ---------------------
-
+    
 -- | Allows for mapping of functions on a CT event.
 instance Functor CT where
   fmap f (CT t p g) = CT t p (f . g)
