@@ -102,6 +102,9 @@ class (Functor e) => Untimed e where
   -- | A type defined by each MoC, determining the context in the
   -- presence which functions are being applied.
   type Ctxt e
+  type Part e a
+  type Func e a b
+  type PartCtx e a
   -- check :: Ctxt e -> [a] -> Bool
   
   -- | This atom is mapping a function on extended values in the
@@ -109,7 +112,7 @@ class (Functor e) => Untimed e where
   -- events), defined as:
   --
   -- <<includes/figs/star-atom-formula.png>>
-  (-.-) :: (Ctxt e, [a] -> b) -> Stream (e a) -> Stream (e b)
+  (-.-) :: Func e a b -> Stream (e a) -> Stream (e b)
   
   -- | This atom synchronizes two MoC-bound signals, one carrying
   -- functions on extended values in the presence of a context, and
@@ -121,8 +124,8 @@ class (Functor e) => Untimed e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: Stream (e (Ctxt e, [a] -> b)) -> Stream (e a) -> Stream (e b)
-  (-*)  :: Stream (e (Ctxt e, [b])) -> Stream (e b)
+  (-*-) :: Stream (e (Func e a b)) -> Stream (e a) -> Stream (e b)
+  (-*)  :: Stream (e (PartCtx e b)) -> Stream (e b)
 
 
   -- | When defining the 'Stream' type we enunciated __design rule #2__
@@ -145,25 +148,25 @@ class (Functor e) => Untimed e where
   (-&-) :: e [a] -> Stream (e a) -> Stream (e a)
 
 
--- | Utilities for extending the '-*' atom for dealing with tupled
--- outputs. Implemented are the following:
---
--- > -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<,
-(-*<) :: Untimed e
-      => Stream (e ((Ctxt e, [b]), (Ctxt e, [b1])))
-      -- ^ partitioned output tupled with (production) context
-      -> (Stream (e b), Stream (e b1))
-      -- ^ correct (unpartitioned) tupled signals 
+-- -- | Utilities for extending the '-*' atom for dealing with tupled
+-- -- outputs. Implemented are the following:
+-- --
+-- -- > -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<,
+-- (-*<) :: Untimed e
+--       => Stream (e ((Ctxt e, Part e b), (Ctxt e, Part e b1)))
+--       -- ^ partitioned output tupled with (production) context
+--       -> (Stream (e b), Stream (e b1))
+--       -- ^ correct (unpartitioned) tupled signals 
 
 infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
-(-*<) p        = ((-*),(-*))                                    $$        (p ||<)                    
-(-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)                   
-(-*<<<) p      = ((-*),(-*),(-*),(-*))                          $$$$      (p ||<<<)                  
-(-*<<<<) p     = ((-*),(-*),(-*),(-*),(-*))                     $$$$$     (p ||<<<<)                 
-(-*<<<<<) p    = ((-*),(-*),(-*),(-*),(-*),(-*))                $$$$$$    (p ||<<<<<)                
-(-*<<<<<<) p   = ((-*),(-*),(-*),(-*),(-*),(-*),(-*))           $$$$$$$   (p ||<<<<<<)     
-(-*<<<<<<<) p  = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*))      $$$$$$$$  (p ||<<<<<<<)  
-(-*<<<<<<<<) p = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*)) $$$$$$$$$ (p ||<<<<<<<<) 
+(-*<) p        = ((-*),(-*))                                    $$        (p ||<)  
+(-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)
+(-*<<<) p      = ((-*),(-*),(-*),(-*))                          $$$$      (p ||<<<)
+(-*<<<<) p     = ((-*),(-*),(-*),(-*),(-*))                     $$$$$     (p ||<<<<)
+(-*<<<<<) p    = ((-*),(-*),(-*),(-*),(-*),(-*))                $$$$$$    (p ||<<<<<)
+(-*<<<<<<) p   = ((-*),(-*),(-*),(-*),(-*),(-*),(-*))           $$$$$$$   (p ||<<<<<<)
+(-*<<<<<<<) p  = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*))      $$$$$$$$  (p ||<<<<<<<)
+(-*<<<<<<<<) p = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*)) $$$$$$$$$ (p ||<<<<<<<<)
 
 
 -- | Attaches a context parameter to a function agument (e.g
@@ -455,153 +458,153 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
 
 ----------------- DOCUMENTATION -----------------
 
--- | The @delay@ process provides both an initial token and shifts the
--- phase of the signal. In other words, it "delays" a signal with
--- one event. 
---
--- <<includes/figs/delay-formula.png>>
--- <<includes/figs/delay-graph.png>>
---
--- "ForSyDe.Atom.MoC" also exports an infix variant (@infixl 3@)
---
--- > delay, (-&>-),
-delay :: Untimed e => e [a] -> Stream (e a) -> Stream (e a)
+-- -- | The @delay@ process provides both an initial token and shifts the
+-- -- phase of the signal. In other words, it "delays" a signal with
+-- -- one event. 
+-- --
+-- -- <<includes/figs/delay-formula.png>>
+-- -- <<includes/figs/delay-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.MoC" also exports an infix variant (@infixl 3@)
+-- --
+-- -- > delay, (-&>-),
+-- delay :: Untimed e => e [a] -> Stream (e a) -> Stream (e a)
 
--- | 
--- #comb22f# /(*) actually/ @[Value a1] -> [Value a2] -> (b1, b2)@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- @comb@ processes takes care of synchronization between signals and
--- maps combinatorial functions on their event values.
---
--- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
---
--- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
--- > comb51, comb52, comb53, comb54,
-comb22 :: (Untimed e)
-          => (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [b1]), (Ctxt e, [b2]))))
-          -- ^ (<#comb22f *>)
-          -> Stream (e a1)                  -- ^ first input signal
-          -> Stream (e a2)                  -- ^ second input signal
-          -> (Stream (e b1), Stream (e b2)) -- ^ two output signals
+-- -- | 
+-- -- #comb22f# /(*) actually/ @[a1] -> [a2] -> (b1, b2)@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @comb@ processes takes care of synchronization between signals and
+-- -- maps combinatorial functions on their event values.
+-- --
+-- -- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --
+-- -- > comb11, comb12, comb13, comb14,
+-- -- > comb21, comb22, comb23, comb24,
+-- -- > comb31, comb32, comb33, comb34,
+-- -- > comb41, comb42, comb43, comb44,
+-- -- > comb51, comb52, comb53, comb54,
+-- comb22 :: (Untimed e)
+--           => (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [b1]), (Ctxt e, [b2]))))
+--           -- ^ (<#comb22f *>)
+--           -> Stream (e a1)                  -- ^ first input signal
+--           -> Stream (e a2)                  -- ^ second input signal
+--           -> (Stream (e b1), Stream (e b2)) -- ^ two output signals
 
--- | 
--- #state22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- @state@ processes model generates the process network corresponding
--- to a simple state machine like in the following graph.
---
--- <<includes/figs/scanl-formula.png>>
--- <<includes/figs/scanl-graph.png>>
---
--- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
-state22 :: Untimed e
-        => (Ctxt e, [st1] -> (Ctxt e, [st2] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [st1]), (Ctxt e, [st2]))))))
-        -> (e [st1], e [st2])
-        -> Stream (e a1) -> Stream (e a2)
-        -> (Stream (e st1), Stream (e st2))
+-- -- | 
+-- -- #state22f# /(*) actually/ @[st1] -> [st2] -> [a1] -> [a2] -> ([st1], [st2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @state@ processes model generates the process network corresponding
+-- -- to a simple state machine like in the following graph.
+-- --
+-- -- <<includes/figs/scanl-formula.png>>
+-- -- <<includes/figs/scanl-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --
+-- -- > state11, state12, state13, state14,
+-- -- > state21, state22, state23, state24,
+-- -- > state31, state32, state33, state34,
+-- -- > state41, state42, state43, state44,
+-- state22 :: Untimed e
+--         => (Ctxt e, [st1] -> (Ctxt e, [st2] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [st1]), (Ctxt e, [st2]))))))
+--         -> (e [st1], e [st2])
+--         -> Stream (e a1) -> Stream (e a2)
+--         -> (Stream (e st1), Stream (e st2))
 
--- | 
--- #stated22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- @stated@ processes model generates the graph shown below. There
--- exists a variant with 0 input signals, in which case the process
--- is a signal generator.
---
--- <<includes/figs/stated-formula.png>>
--- <<includes/figs/stated-graph.png>>
---
--- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > stated01, stated02, stated03, stated04,
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
-stated22 :: Untimed e
-        => (Ctxt e, [st1] -> (Ctxt e, [st2] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [st1]), (Ctxt e, [st2]))))))
-        -> (e [st1], e [st2])
-        -> Stream (e a1) -> Stream (e a2)
-        -> (Stream (e st1), Stream (e st2))
+-- -- | 
+-- -- #stated22f# /(*) actually/ @[st1] -> [st2] -> [a1] -> [a2] -> ([st1], [st2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @stated@ processes model generates the graph shown below. There
+-- -- exists a variant with 0 input signals, in which case the process
+-- -- is a signal generator.
+-- --
+-- -- <<includes/figs/stated-formula.png>>
+-- -- <<includes/figs/stated-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --
+-- -- > stated01, stated02, stated03, stated04,
+-- -- > stated11, stated12, stated13, stated14,
+-- -- > stated21, stated22, stated23, stated24,
+-- -- > stated31, stated32, stated33, stated34,
+-- -- > stated41, stated42, stated43, stated44,
+-- stated22 :: Untimed e
+--         => (Ctxt e, [st1] -> (Ctxt e, [st2] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [st1]), (Ctxt e, [st2]))))))
+--         -> (e [st1], e [st2])
+--         -> Stream (e a1) -> Stream (e a2)
+--         -> (Stream (e st1), Stream (e st2))
 
--- | 
--- #moore22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- #moore22od# (**) @[Value st] -> ([Value b1], [Value b2])@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- @moore@ processes model Moore state machines.
---
--- <<includes/figs/moore-formula.png>>
--- <<includes/figs/moore-graph.png>>
---
--- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---  
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
-moore22 :: Untimed e
-           => (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> (Ctxt e, [st]))))
-           -- ^ next state (<#moore22ns *>)
-           -> (Ctxt e, [st] -> ((Ctxt e, [b1]), (Ctxt e, [b2])))
-           -- ^ output decoder (<#moore22od **>) 
-           -> e [st]                          -- ^ initial state
-           -> Stream (e a1)                   -- ^ first input signal
-           -> Stream (e a2)                   -- ^ second input signal
-           -> (Stream (e b1), Stream (e b2))  -- ^ two output signals
+-- -- | 
+-- -- #moore22ns# (*) @[st] -> [a1] -> [a2] -> [st1]@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- #moore22od# (**) @[st] -> ([b1], [b2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @moore@ processes model Moore state machines.
+-- --
+-- -- <<includes/figs/moore-formula.png>>
+-- -- <<includes/figs/moore-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --  
+-- -- > moore11, moore12, moore13, moore14,
+-- -- > moore21, moore22, moore23, moore24,
+-- -- > moore31, moore32, moore33, moore34,
+-- -- > moore41, moore42, moore43, moore44,
+-- moore22 :: Untimed e
+--            => (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> (Ctxt e, [st]))))
+--            -- ^ next state (<#moore22ns *>)
+--            -> (Ctxt e, [st] -> ((Ctxt e, [b1]), (Ctxt e, [b2])))
+--            -- ^ output decoder (<#moore22od **>) 
+--            -> e [st]                          -- ^ initial state
+--            -> Stream (e a1)                   -- ^ first input signal
+--            -> Stream (e a2)                   -- ^ second input signal
+--            -> (Stream (e b1), Stream (e b2))  -- ^ two output signals
 
--- | 
--- #mealy22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- #mealy22od# (**) @[Value st] -> [Value a1] -> [Value a2] -> ([Value b1], [Value b2])@
--- /where each argument is individually wrapped with a/
--- /context. Each Untimed instance defines its own wrappers./
---
--- @mealy@ processes model Mealy state machines.
---
--- <<includes/figs/mealy-formula.png>>
--- <<includes/figs/mealy-graph.png>>
---
--- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---  
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
-mealy22 :: Untimed e
-           => (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> (Ctxt e, [st]))))
-           -- ^ next state (<#mealy22ns *>)
-           -> (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [b1]), (Ctxt e, [b2])))))
-           -- ^ output decoder (<#mealy22ns *>)
-           -> e [st]                          -- ^ initial state
-           -> Stream (e a1)                   -- ^ first input signal
-           -> Stream (e a2)                   -- ^ second input signal
-           -> (Stream (e b1), Stream (e b2))  -- ^ two output signals
+-- -- | 
+-- -- #mealy22ns# (*) @[st] -> [a1] -> [a2] -> [st1]@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- #mealy22od# (**) @[st] -> [a1] -> [a2] -> ([b1], [b2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @mealy@ processes model Mealy state machines.
+-- --
+-- -- <<includes/figs/mealy-formula.png>>
+-- -- <<includes/figs/mealy-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --  
+-- -- > mealy11, mealy12, mealy13, mealy14,
+-- -- > mealy21, mealy22, mealy23, mealy24,
+-- -- > mealy31, mealy32, mealy33, mealy34,
+-- -- > mealy41, mealy42, mealy43, mealy44,
+-- mealy22 :: Untimed e
+--            => (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> (Ctxt e, [st]))))
+--            -- ^ next state (<#mealy22ns *>)
+--            -> (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [b1]), (Ctxt e, [b2])))))
+--            -- ^ output decoder (<#mealy22ns *>)
+--            -> e [st]                          -- ^ initial state
+--            -> Stream (e a1)                   -- ^ first input signal
+--            -> Stream (e a2)                   -- ^ second input signal
+--            -> (Stream (e b1), Stream (e b2))  -- ^ two output signals
 
---------------- END DOCUMENTATION ---------------
+-- --------------- END DOCUMENTATION ---------------

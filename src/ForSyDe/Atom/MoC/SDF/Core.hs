@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances, PostfixOperators #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -24,9 +24,8 @@ import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
--- | Type synonym for a SDF signal, i.e. "a signal of partitions of
--- SDF events"
-type Signal a       = Stream (SDF [a])
+-- | Type synonym for a SY signal, i.e. "a signal of SY events"
+type Signal a   = Stream (SDF a)
 
 -- | The CT type, identifying a discrete time event and implementing an
 -- instance of the 'MoC' class. A discrete event explicitates its tag
@@ -35,43 +34,57 @@ newtype SDF a = SDF { val :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance Untimed SDF where
-  type Rate SDF = Int
+  type Ctxt SDF = Int
+  type Part SDF a = [a]
+  type Func SDF a b = (Int, [a] -> b)
+  type PartCtx SDF a = (Int, [a])
   ---------------------
-  _ -.- (_,NullS) = NullS
-  f -.- (c,s)     = (comb f . concat . map val . fromStream) s
-    where comb f l = let x'  = take c l
-                         xs' = drop c l
-                     in if   length x' == c
-                        then SDF (f x') :- comb f xs'
-                        else NullS
+  _ -.- NullS = NullS
+  (c,f) -.- s = (comb c f . map val . fromStream) s
+    where comb c f l = let x'  = take c l
+                           xs' = drop c l
+                       in if   length x' == c
+                          then SDF (f x') :- comb c f xs'
+                          else NullS
   ---------------------
-  _  -*- (_,NullS) = NullS
+  _  -*- NullS = NullS
   NullS -*- _  = NullS
-  fs -*- (c,s) = (comb2 fs . concat . map val . fromStream) s
-    where comb2 NullS       _ = NullS
-          comb2 (SDF f:-fs) l = let x'  = take c l
-                                    xs' = drop c l
-                                in if   length x' == c
-                                   then SDF (f x') :- comb2 fs xs'
-                                   else NullS
+  cfs -*- s = (comb2 cfs . map val . fromStream) s
+    where comb2 NullS           _ = NullS
+          comb2 (SDF (c,f):-fs) l = let x'  = take c l
+                                        xs' = drop c l
+                                    in if   length x' == c
+                                       then SDF (f x') :- comb2 fs xs'
+                                       else NullS
   ---------------------
-  (-<-) = (:-) 
+  (-*) NullS = NullS
+  (-*) ((SDF (p,r)):-xs) | length r == p = stream (map SDF r) +-+ (xs -*)
+                         | otherwise = error "SDF: Wrong production"
+  ---------------------
+  (-<-) l s = (stream $ sequenceA l) +-+ s
   ---------------------
   (-&-) _ a = a
   ---------------------
 
 
-instance UtUtil SDF where
-  bind = (,)
-  verify p = fmap (chprod p)
-    where chprod p (SDF x)
-            | length x /= p = error "SDF: Wrong production"
-            | otherwise     = SDF x
+-- instance UtUtil SDF where
+--   bind = (,)
+--   verify p = fmap (chprod p)
+--     where chprod p (SDF x)
+--             | length x /= p = error "SDF: Wrong production"
+--             | otherwise     = SDF x
 
 -- | A more efficient instatiation since we /know/ that the partition
 -- size is always 1.
 instance Functor SDF where
   fmap f (SDF a) = SDF (f a)
+
+instance Foldable SDF where
+    foldr f z (SDF x) = f x z
+    foldl f z (SDF x) = f z x
+
+instance Traversable SDF where
+    traverse f (SDF x) = SDF <$> f x
 
 -- -- | Allows for comparing signals with different partitions. __TODO!__ incomplete definition.
 -- instance Eq a => Eq (Signal (SDF [a])) where
@@ -94,28 +107,28 @@ instance Show a => Show (SDF a) where
   showsPrec _ (SDF x) = (++) (show x)
 
 
------------------------------------------------------------------------------
--- | Transforms a list of values into a SDF signal with only one
--- partition, i.e. all events share the same (initial) tag.
-signal :: [a] -> Signal a
-signal l = stream $ [partition l]
+-- -----------------------------------------------------------------------------
+-- -- | Transforms a list of values into a SDF signal with only one
+-- -- partition, i.e. all events share the same (initial) tag.
+-- signal :: [a] -> Signal a
+-- signal l = stream $ [partition l]
 
-partition :: [a] -> SDF [a]
-partition l = SDF l
+-- partition :: [a] -> SDF [a]
+-- partition l = SDF l
 
--- | Wraps a (tuple of) value list(s) into the equivalent event
--- partitions form.
---
--- "ForSyDe.Atom.MoC.SDF" exports the helper functions below. Please
--- follow the examples in the source code if they do not suffice:
---
--- > part, part2, part3, part4,
-partition2 (l1,l2)       = (partition l1, partition l2)
-partition3 (l1,l2,l3)    = (partition l1, partition l2, partition l3)
-partition4 (l1,l2,l3,l4) = (partition l1, partition l2, partition l3,
-                            partition l4)
+-- -- | Wraps a (tuple of) value list(s) into the equivalent event
+-- -- partitions form.
+-- --
+-- -- "ForSyDe.Atom.MoC.SDF" exports the helper functions below. Please
+-- -- follow the examples in the source code if they do not suffice:
+-- --
+-- -- > part, part2, part3, part4,
+-- partition2 (l1,l2)       = (partition l1, partition l2)
+-- partition3 (l1,l2,l3)    = (partition l1, partition l2, partition l3)
+-- partition4 (l1,l2,l3,l4) = (partition l1, partition l2, partition l3,
+--                             partition l4)
 
------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 
 
 

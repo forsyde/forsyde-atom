@@ -81,7 +81,7 @@ library
                        ForSyDe.Atom.MoC.CT.Core,
                        -- ForSyDe.Atom.MoC.CT.Lib,
                        -- ForSyDe.Atom.MoC.SDF,
-                       -- ForSyDe.Atom.MoC.SDF.Core,
+                       ForSyDe.Atom.MoC.SDF.Core,
                        -- ForSyDe.Atom.MoC.SDF.Lib,
                        -- ForSyDe.Atom.Skeleton,
                        -- ForSyDe.Atom.Skeleton.Vector,
