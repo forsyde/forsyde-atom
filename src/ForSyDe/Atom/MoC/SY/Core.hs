@@ -17,7 +17,7 @@
 module ForSyDe.Atom.MoC.SY.Core where
 
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.MoC.Timed
+import ForSyDe.Atom.MoC.Untimed
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
@@ -29,11 +29,15 @@ newtype SY a  = SY { val :: a }
   
 -- | Implenents the execution and synchronization semantics for the SY
 -- MoC through its atoms.
-instance Timed SY where
+instance Untimed SY where
+  type Par SY a = a
+  type Fun SY a b = a -> b
+  type Res SY b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------
-  (-*-) a = (<*>) (fmap (<*>) a) 
+  (-*-) a = (<*>) (fmap (<*>) a)
+  (-*) = id
   ---------------------
   (-<-) = (:-) 
   ---------------------

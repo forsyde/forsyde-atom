@@ -101,10 +101,9 @@ infixl 3 -*
 class (Functor e) => Untimed e where
   -- | A type defined by each MoC, determining the context in the
   -- presence which functions are being applied.
-  type Ctxt e
-  type Part e a
-  type Func e a b
-  type PartCtx e a
+  type Par e a
+  type Fun e a b
+  type Res e b
   -- check :: Ctxt e -> [a] -> Bool
   
   -- | This atom is mapping a function on extended values in the
@@ -112,7 +111,7 @@ class (Functor e) => Untimed e where
   -- events), defined as:
   --
   -- <<includes/figs/star-atom-formula.png>>
-  (-.-) :: Func e a b -> Stream (e a) -> Stream (e b)
+  (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
   
   -- | This atom synchronizes two MoC-bound signals, one carrying
   -- functions on extended values in the presence of a context, and
@@ -124,8 +123,8 @@ class (Functor e) => Untimed e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: Stream (e (Func e a b)) -> Stream (e a) -> Stream (e b)
-  (-*)  :: Stream (e (PartCtx e b)) -> Stream (e b)
+  (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
+  (-*)  :: Stream (e (Res e b)) -> Stream (e b)
 
 
   -- | When defining the 'Stream' type we enunciated __design rule #2__
@@ -135,7 +134,7 @@ class (Functor e) => Untimed e where
   -- mathematical formulas is:
   --
   -- <<includes/figs/pre-atom-formula.png>>
-  (-<-) :: e [a] -> Stream (e a) -> Stream (e a)
+  (-<-) :: e (Par e a) -> Stream (e a) -> Stream (e a)
    
   -- | We introduce the '-&-' atom as means to manipulate the tags in
   -- a signal in a manner which respects monotonicity in order to
@@ -145,7 +144,7 @@ class (Functor e) => Untimed e where
   -- function intact. Its signature used in mathematical formulas is:
   --
   -- <<includes/figs/phi-atom-formula.png>>
-  (-&-) :: e [a] -> Stream (e a) -> Stream (e a)
+  (-&-) :: e a -> Stream (e a) -> Stream (e a)
 
 
 -- -- | Utilities for extending the '-*' atom for dealing with tupled

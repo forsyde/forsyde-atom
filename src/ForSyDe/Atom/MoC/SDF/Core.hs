@@ -34,10 +34,9 @@ newtype SDF a = SDF { val :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
 instance Untimed SDF where
-  type Ctxt SDF = Int
-  type Part SDF a = [a]
-  type Func SDF a b = (Int, [a] -> b)
-  type PartCtx SDF a = (Int, [a])
+  type Par SDF a = [a]
+  type Fun SDF a b = (Int, [a] -> b)
+  type Res SDF a   = (Int, [a])
   ---------------------
   _ -.- NullS = NullS
   (c,f) -.- s = (comb c f . map val . fromStream) s
