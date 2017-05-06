@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators, TypeFamilies, FlexibleInstances, RankNTypes #-}
+{-# LANGUAGE PostfixOperators, TypeFamilies #-}
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
@@ -25,13 +25,13 @@
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
-
+  
   -- * Atoms
   
   MoC(..),
 
   -- * Process constructors
-  
+
   -- | As shown in the documentation of "ForSyDe.Atom" process
   -- constructors are implemented as compositions of MoC atoms. Also,
   -- in order to avoid working with signals of tuples and for process
@@ -73,15 +73,24 @@ module ForSyDe.Atom.MoC(
   mealy11, mealy12, mealy13, mealy14,
   mealy21, mealy22, mealy23, mealy24,
   mealy31, mealy32, mealy33, mealy34,
-  mealy41, mealy42, mealy43, mealy44,  
-  ) where
+  mealy41, mealy42, mealy43, mealy44,
 
-import ForSyDe.Atom.Behavior
+  -- * Utilities
+  
+  ctxt11, ctxt21, ctxt31, ctxt41, ctxt51, ctxt61, ctxt71, ctxt81, 
+  ctxt12, ctxt22, ctxt32, ctxt42, ctxt52, ctxt62, ctxt72, ctxt82, 
+  ctxt13, ctxt23, ctxt33, ctxt43, ctxt53, ctxt63, ctxt73, ctxt83, 
+  ctxt14, ctxt24, ctxt34, ctxt44, ctxt54, ctxt64, ctxt74, ctxt84,
+  warg, wres,
+  (-*<), (-*<<), (-*<<<), (-*<<<<), (-*<<<<<), (-*<<<<<<), (-*<<<<<<<), (-*<<<<<<<<),
+  )
+  where
+
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
-infixl 5 -$-, -*-
-infixl 3 ->-, -&-
+infixl 5 -.-, -*-
+infixl 3 -<-, -*, -&-
 
 -- | This is a type class defining the synchronization layer atoms.
 -- Each model of computation exposes its tag system through an unique
@@ -89,21 +98,20 @@ infixl 3 ->-, -&-
 -- &#215; /V/.
 --
 class (Functor e) => MoC e where
-  -- | A type defined by each MoC, determining the context in the
+ -- | A type defined by each MoC, determining the context in the
   -- presence which functions are being applied.
-  type Context e
+  type Par e a
+  type Fun e a b
+  type Res e b
+  -- check :: Ctxt e -> [a] -> Bool
   
   -- | This atom is mapping a function on extended values in the
   -- presence of a context to a MoC-bound signal (signal of tagged
   -- events), defined as:
   --
   -- <<includes/figs/star-atom-formula.png>>
-  --
-  -- The reason why &#946; is not extended is to allow for the
-  -- composition of generic process constructors with arbitrary number
-  -- of arguments.
-  (-$-) :: (Context e, [Value a] -> b) -> Signal (e [Value a]) -> Signal (e b)
-
+  (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
+  
   -- | This atom synchronizes two MoC-bound signals, one carrying
   -- functions on extended values in the presence of a context, and
   -- the other containing extended values, during which it applies the
@@ -114,68 +122,157 @@ class (Functor e) => MoC e where
   -- The reason why &#946; is not extended is to allow for the
   -- composition of generic process constructors with arbitrary number
   -- of arguments.
-  (-*-) :: (Signal (e (Context e, [Value a] -> b))) -> Signal (e [Value a]) -> Signal (e b)
+  (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
+  (-*)  :: Stream (e (Res e b)) -> Stream (e b)
 
-  -- | When defining the 'Signal' type we enunciated __design rule #2__
+
+  -- | When defining the 'Stream' type we enunciated __design rule #2__
   -- where we noticed the importance of initial tokens in feedback
   -- loops. The '->-' atom satisfies this need. Concretely, it prepends
   -- an event at the head of a signal. Its signature used in
   -- mathematical formulas is:
   --
   -- <<includes/figs/pre-atom-formula.png>>
-  (->-) :: e a -> Signal (e a) -> Signal (e a)
+  (-<-) :: e (Par e a) -> Stream (e a) -> Stream (e a)
    
   -- | We introduce the '-&-' atom as means to manipulate the tags in
   -- a signal in a manner which respects monotonicity in order to
-  -- respect __design rule #1__ stated in the 'Signal' section. Its
+  -- respect __design rule #1__ stated in the 'Stream' section. Its
   -- behavior could be described as "shifting the phase of a signal
   -- with a positive constant", thus preserving its characteristic
   -- function intact. Its signature used in mathematical formulas is:
   --
   -- <<includes/figs/phi-atom-formula.png>>
-  (-&-) :: e a -> Signal (e a) -> Signal (e a)
+  (-&-) :: e a -> Stream (e a) -> Stream (e a)
 
-  -- sniff :: e a -> a
+
+-- -- | Utilities for extending the '-*' atom for dealing with tupled
+-- -- outputs. Implemented are the following:
+-- --
+-- -- > -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<,
+-- (-*<) :: Untimed e
+--       => Stream (e ((Ctxt e, Part e b), (Ctxt e, Part e b1)))
+--       -- ^ partitioned output tupled with (production) context
+--       -> (Stream (e b), Stream (e b1))
+--       -- ^ correct (unpartitioned) tupled signals 
+
+infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
+(-*<) p        = ((-*),(-*))                                    $$        (p ||<)  
+(-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)
+(-*<<<) p      = ((-*),(-*),(-*),(-*))                          $$$$      (p ||<<<)
+(-*<<<<) p     = ((-*),(-*),(-*),(-*),(-*))                     $$$$$     (p ||<<<<)
+(-*<<<<<) p    = ((-*),(-*),(-*),(-*),(-*),(-*))                $$$$$$    (p ||<<<<<)
+(-*<<<<<<) p   = ((-*),(-*),(-*),(-*),(-*),(-*),(-*))           $$$$$$$   (p ||<<<<<<)
+(-*<<<<<<<) p  = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*))      $$$$$$$$  (p ||<<<<<<<)
+(-*<<<<<<<<) p = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*)) $$$$$$$$$ (p ||<<<<<<<<)
+
+
+-- | Attaches a context parameter to a function agument (e.g
+-- consumption rates in SDF). Used as kernel function in defining
+-- e.g. 'ctxt22'.
+warg :: c -> (a -> b) -> (c, a -> b)
+warg c f = (c, \x -> f x)
+
+-- | Attaches a context parameter to a function's result (e.g
+-- production rates in SDF). Used as kernel function in defining
+-- e.g. 'ctxt22'.
+wres :: p -> b -> (p, b)
+wres p x = (p, x)
+
+-- | Wraps a function with the context needed by the untimed MoC
+-- patterns (e.g. rates).
+--
+-- <<includes/figs/untimed-ctxtper-formula1.png>>
+--
+-- > ctxt11, ctxt21, ctxt31, ctxt41, ctxt51, ctxt61, ctxt71, ctxt81, 
+-- > ctxt12, ctxt22, ctxt32, ctxt42, ctxt52, ctxt62, ctxt72, ctxt82, 
+-- > ctxt13, ctxt23, ctxt33, ctxt43, ctxt53, ctxt63, ctxt73, ctxt83, 
+-- > ctxt14, ctxt24, ctxt34, ctxt44, ctxt54, ctxt64, ctxt74, ctxt84,
+ctxt22 :: (ctx, ctx)  -- ^ production rates
+       -> (ctx, ctx)  -- ^ consumption rates
+       -> ([a1] -> [a2] -> ([b1], [b2]))
+          -- ^ function on signal partitions to be wrapped
+       -> (ctx, [a1] -> (ctx, [a2] -> ((ctx, [b1]), (ctx, [b2]))))
+          -- ^ wrapped form, as required by the untimed Moc pattern
+          -- constructor.
+
+ctxt11 (c1)                      p f = warg c1 $ wres p . f
+ctxt21 (c1,c2)                   p f = warg c1 $ ctxt11  c2 p . f
+ctxt31 (c1,c2,c3)                p f = warg c1 $ ctxt21 (c2,c3) p . f
+ctxt41 (c1,c2,c3,c4)             p f = warg c1 $ ctxt31 (c2,c3,c4) p . f
+ctxt51 (c1,c2,c3,c4,c5)          p f = warg c1 $ ctxt41 (c2,c3,c4,c5) p . f
+ctxt61 (c1,c2,c3,c4,c5,c6)       p f = warg c1 $ ctxt51 (c2,c3,c4,c5,c6) p . f
+ctxt71 (c1,c2,c3,c4,c5,c6,c7)    p f = warg c1 $ ctxt61 (c2,c3,c4,c5,c6,c7) p . f
+ctxt81 (c1,c2,c3,c4,c5,c6,c7,c8) p f = warg c1 $ ctxt71 (c2,c3,c4,c5,c6,c7,c8) p . f
+
+ctxt12 (c1)                 (p1,p2) f = warg c1 $ ($$) (wres p1, wres p2) . f
+ctxt22 (c1,c2)                   ps f = warg c1 $ ctxt12  c2 ps . f
+ctxt32 (c1,c2,c3)                ps f = warg c1 $ ctxt22 (c2,c3) ps . f
+ctxt42 (c1,c2,c3,c4)             ps f = warg c1 $ ctxt32 (c2,c3,c4) ps . f
+ctxt52 (c1,c2,c3,c4,c5)          ps f = warg c1 $ ctxt42 (c2,c3,c4,c5) ps . f
+ctxt62 (c1,c2,c3,c4,c5,c6)       ps f = warg c1 $ ctxt52 (c2,c3,c4,c5,c6) ps . f
+ctxt72 (c1,c2,c3,c4,c5,c6,c7)    ps f = warg c1 $ ctxt62 (c2,c3,c4,c5,c6,c7) ps . f
+ctxt82 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = warg c1 $ ctxt72 (c2,c3,c4,c5,c6,c7,c8) ps . f
+
+ctxt13 (c1)              (p1,p2,p3) f = warg c1 $ ($$$) (wres p1, wres p2, wres p3) . f
+ctxt23 (c1,c2)                   ps f = warg c1 $ ctxt13  c2 ps . f
+ctxt33 (c1,c2,c3)                ps f = warg c1 $ ctxt23 (c2,c3) ps . f
+ctxt43 (c1,c2,c3,c4)             ps f = warg c1 $ ctxt33 (c2,c3,c4) ps . f
+ctxt53 (c1,c2,c3,c4,c5)          ps f = warg c1 $ ctxt43 (c2,c3,c4,c5) ps . f
+ctxt63 (c1,c2,c3,c4,c5,c6)       ps f = warg c1 $ ctxt53 (c2,c3,c4,c5,c6) ps . f
+ctxt73 (c1,c2,c3,c4,c5,c6,c7)    ps f = warg c1 $ ctxt63 (c2,c3,c4,c5,c6,c7) ps . f
+ctxt83 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = warg c1 $ ctxt73 (c2,c3,c4,c5,c6,c7,c8) ps . f
+
+ctxt14 (c1)           (p1,p2,p3,p4) f = warg c1 $ ($$$$) (wres p1, wres p2, wres p3, wres p4) . f
+ctxt24 (c1,c2)                   ps f = warg c1 $ ctxt14  c2 ps . f
+ctxt34 (c1,c2,c3)                ps f = warg c1 $ ctxt24 (c2,c3) ps . f
+ctxt44 (c1,c2,c3,c4)             ps f = warg c1 $ ctxt34 (c2,c3,c4) ps . f
+ctxt54 (c1,c2,c3,c4,c5)          ps f = warg c1 $ ctxt44 (c2,c3,c4,c5) ps . f
+ctxt64 (c1,c2,c3,c4,c5,c6)       ps f = warg c1 $ ctxt54 (c2,c3,c4,c5,c6) ps . f
+ctxt74 (c1,c2,c3,c4,c5,c6,c7)    ps f = warg c1 $ ctxt64 (c2,c3,c4,c5,c6,c7) ps . f
+ctxt84 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = warg c1 $ ctxt74 (c2,c3,c4,c5,c6,c7,c8) ps . f
+
 
 infixl 3 -&>-
-delay i xs = i ->- (i -&- xs)
+delay i xs = i -<- (i -&- xs)
 i -&>- xs = delay i xs          
 
-comb11 f s1                      = (f -$- s1)
-comb21 f s1 s2                   = (f -$- s1 -*- s2)
-comb31 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3)
-comb41 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4)
-comb51 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5)
-comb61 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6)
-comb71 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7)
-comb81 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8)
 
-comb12 f s1                      = (f -$- s1 ||<)
-comb22 f s1 s2                   = (f -$- s1 -*- s2 ||<)
-comb32 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 ||<)
-comb42 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 ||<)
-comb52 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 ||<)
-comb62 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 ||<)
-comb72 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 ||<)
-comb82 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 ||<)
+comb11 f s1                      = (f -.- s1 -*)
+comb21 f s1 s2                   = (f -.- s1 -*- s2 -*)
+comb31 f s1 s2 s3                = (f -.- s1 -*- s2 -*- s3 -*)
+comb41 f s1 s2 s3 s4             = (f -.- s1 -*- s2 -*- s3 -*- s4 -*)
+comb51 f s1 s2 s3 s4 s5          = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*)
+comb61 f s1 s2 s3 s4 s5 s6       = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*)
+comb71 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*)
+comb81 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*)
 
-comb13 f s1                      = (f -$- s1 ||<<)
-comb23 f s1 s2                   = (f -$- s1 -*- s2 ||<<)
-comb33 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 ||<<)
-comb43 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 ||<<)
-comb53 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 ||<<)
-comb63 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 ||<<)
-comb73 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 ||<<)
-comb83 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 ||<<)
+comb12 f s1                      = (f -.- s1 -*<)
+comb22 f s1 s2                   = (f -.- s1 -*- s2 -*<)
+comb32 f s1 s2 s3                = (f -.- s1 -*- s2 -*- s3 -*<)
+comb42 f s1 s2 s3 s4             = (f -.- s1 -*- s2 -*- s3 -*- s4 -*<)
+comb52 f s1 s2 s3 s4 s5          = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<)
+comb62 f s1 s2 s3 s4 s5 s6       = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<)
+comb72 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<)
+comb82 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 -*<)
 
-comb14 f s1                      = (f -$- s1 ||<<<)
-comb24 f s1 s2                   = (f -$- s1 -*- s2 ||<<<)
-comb34 f s1 s2 s3                = (f -$- s1 -*- s2 -*- s3 ||<<<)
-comb44 f s1 s2 s3 s4             = (f -$- s1 -*- s2 -*- s3 -*- s4 ||<<<)
-comb54 f s1 s2 s3 s4 s5          = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 ||<<<)
-comb64 f s1 s2 s3 s4 s5 s6       = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 ||<<<)
-comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 ||<<<)
-comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -$- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 ||<<<)
+comb13 f s1                      = (f -.- s1 -*<<)
+comb23 f s1 s2                   = (f -.- s1 -*- s2 -*<<)
+comb33 f s1 s2 s3                = (f -.- s1 -*- s2 -*- s3 -*<<)
+comb43 f s1 s2 s3 s4             = (f -.- s1 -*- s2 -*- s3 -*- s4 -*<<)
+comb53 f s1 s2 s3 s4 s5          = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<<)
+comb63 f s1 s2 s3 s4 s5 s6       = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<<)
+comb73 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<)
+comb83 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 -*<<)
+
+comb14 f s1                      = (f -.- s1 -*<<<)
+comb24 f s1 s2                   = (f -.- s1 -*- s2 -*<<<)
+comb34 f s1 s2 s3                = (f -.- s1 -*- s2 -*- s3 -*<<<)
+comb44 f s1 s2 s3 s4             = (f -.- s1 -*- s2 -*- s3 -*- s4 -*<<<)
+comb54 f s1 s2 s3 s4 s5          = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<<<)
+comb64 f s1 s2 s3 s4 s5 s6       = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<<<)
+comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<<)
+comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
 state11 ns i s1          =        comb21 ns st s1 
   where st               = i -&>- comb21 ns st s1 
@@ -352,161 +449,155 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
   where st                  = i -&>- comb51 ns st s1 s2 s3 s4
 
 
-
 ----------------- DOCUMENTATION -----------------
 
--- | The @delay@ process provides both an initial token and shifts the
--- phase of the signal. In other words, it "delays" a signal with
--- one event. 
---
--- <<includes/figs/delay-formula.png>>
--- <<includes/figs/delay-graph.png>>
---
--- "ForSyDe.Atom.MoC" also exports an infix variant (@infixl 3@)
---
--- > delay, (-&>-),
-delay :: MoC e => e a -> Signal (e a) -> Signal (e a)
+-- -- | The @delay@ process provides both an initial token and shifts the
+-- -- phase of the signal. In other words, it "delays" a signal with
+-- -- one event. 
+-- --
+-- -- <<includes/figs/delay-formula.png>>
+-- -- <<includes/figs/delay-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.MoC" also exports an infix variant (@infixl 3@)
+-- --
+-- -- > delay, (-&>-),
+-- delay :: Untimed e => e [a] -> Stream (e a) -> Stream (e a)
 
--- | 
--- #comb22f# /(*) actually/ @[Value a1] -> [Value a2] -> (b1, b2)@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @comb@ processes takes care of synchronization between signals and
--- maps combinatorial functions on their event values.
---
--- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
--- > comb51, comb52, comb53, comb54,
-comb22 :: (MoC e)
-          => (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2)))
-          -- ^ (<#comb22f *>)
-          -> Signal (e [Value a1])          -- ^ first input signal
-          -> Signal (e [Value a2])          -- ^ second input signal
-          -> (Signal (e b1), Signal (e b2)) -- ^ two output signals
+-- -- | 
+-- -- #comb22f# /(*) actually/ @[a1] -> [a2] -> (b1, b2)@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @comb@ processes takes care of synchronization between signals and
+-- -- maps combinatorial functions on their event values.
+-- --
+-- -- <<includes/figs/comb-formula.png>> <<includes/figs/comb-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --
+-- -- > comb11, comb12, comb13, comb14,
+-- -- > comb21, comb22, comb23, comb24,
+-- -- > comb31, comb32, comb33, comb34,
+-- -- > comb41, comb42, comb43, comb44,
+-- -- > comb51, comb52, comb53, comb54,
+-- comb22 :: (Untimed e)
+--           => (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [b1]), (Ctxt e, [b2]))))
+--           -- ^ (<#comb22f *>)
+--           -> Stream (e a1)                  -- ^ first input signal
+--           -> Stream (e a2)                  -- ^ second input signal
+--           -> (Stream (e b1), Stream (e b2)) -- ^ two output signals
 
--- | 
--- #state22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @state@ processes model generates the process network corresponding
--- to a simple state machine like in the following graph.
---
--- <<includes/figs/scanl-formula.png>>
--- <<includes/figs/scanl-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
-state22 :: MoC e
-           => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
-           -- ^ (<#state22f *>) 
-           -> (e [Value st1], e [Value st2])  -- ^ initial states
-           -> Signal (e [Value a1])
-           -> Signal (e [Value a2])
-           -> (Signal (e [Value st1]), Signal (e [Value st2]))
+-- -- | 
+-- -- #state22f# /(*) actually/ @[st1] -> [st2] -> [a1] -> [a2] -> ([st1], [st2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @state@ processes model generates the process network corresponding
+-- -- to a simple state machine like in the following graph.
+-- --
+-- -- <<includes/figs/scanl-formula.png>>
+-- -- <<includes/figs/scanl-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --
+-- -- > state11, state12, state13, state14,
+-- -- > state21, state22, state23, state24,
+-- -- > state31, state32, state33, state34,
+-- -- > state41, state42, state43, state44,
+-- state22 :: Untimed e
+--         => (Ctxt e, [st1] -> (Ctxt e, [st2] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [st1]), (Ctxt e, [st2]))))))
+--         -> (e [st1], e [st2])
+--         -> Stream (e a1) -> Stream (e a2)
+--         -> (Stream (e st1), Stream (e st2))
 
--- | 
--- #stated22f# /(*) actually/ @[Value st1] -> [Value st2] -> [Value a1] -> [Value a2] -> ([Value st1], [Value st2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @stated@ processes model generates the graph shown below. There
--- exists a variant with 0 input signals, in which case the process
--- is a signal generator.
---
--- <<includes/figs/stated-formula.png>>
--- <<includes/figs/stated-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---
--- > stated01, stated02, stated03, stated04,
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
-stated22 :: MoC e
-            => (Context e, [Value st1] -> (Context e, [Value st2] -> (Context e, [Value a1] -> (Context e, [Value a2] -> ([Value st1], [Value st2])))))
-            -- ^ (<#stated22f *>) 
-            -> (e [Value st1], e [Value st2])  -- ^ initial states
-            -> Signal (e [Value a1])
-            -> Signal (e [Value a2])
-            -> (Signal (e [Value st1]), Signal (e [Value st2])) 
+-- -- | 
+-- -- #stated22f# /(*) actually/ @[st1] -> [st2] -> [a1] -> [a2] -> ([st1], [st2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @stated@ processes model generates the graph shown below. There
+-- -- exists a variant with 0 input signals, in which case the process
+-- -- is a signal generator.
+-- --
+-- -- <<includes/figs/stated-formula.png>>
+-- -- <<includes/figs/stated-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --
+-- -- > stated01, stated02, stated03, stated04,
+-- -- > stated11, stated12, stated13, stated14,
+-- -- > stated21, stated22, stated23, stated24,
+-- -- > stated31, stated32, stated33, stated34,
+-- -- > stated41, stated42, stated43, stated44,
+-- stated22 :: Untimed e
+--         => (Ctxt e, [st1] -> (Ctxt e, [st2] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [st1]), (Ctxt e, [st2]))))))
+--         -> (e [st1], e [st2])
+--         -> Stream (e a1) -> Stream (e a2)
+--         -> (Stream (e st1), Stream (e st2))
 
--- | 
--- #moore22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- #moore22od# (**) @[Value st] -> ([Value b1], [Value b2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @moore@ processes model Moore state machines.
---
--- <<includes/figs/moore-formula.png>>
--- <<includes/figs/moore-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---  
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
-moore22 :: MoC e
-           => (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> [Value st])))
-           -- ^ next state (<#moore22ns *>)
-           -> (Context e, [Value st] -> (b1, b2))
-           -- ^ output decoder (<#moore22od **>) 
-           -> e [Value st]                    -- ^ initial state
-           -> Signal (e [Value a1])           -- ^ first input signal
-           -> Signal (e [Value a2])           -- ^ second input signal
-           -> (Signal (e b1), Signal (e b2))  -- ^ two output signals
+-- -- | 
+-- -- #moore22ns# (*) @[st] -> [a1] -> [a2] -> [st1]@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- #moore22od# (**) @[st] -> ([b1], [b2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @moore@ processes model Moore state machines.
+-- --
+-- -- <<includes/figs/moore-formula.png>>
+-- -- <<includes/figs/moore-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --  
+-- -- > moore11, moore12, moore13, moore14,
+-- -- > moore21, moore22, moore23, moore24,
+-- -- > moore31, moore32, moore33, moore34,
+-- -- > moore41, moore42, moore43, moore44,
+-- moore22 :: Untimed e
+--            => (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> (Ctxt e, [st]))))
+--            -- ^ next state (<#moore22ns *>)
+--            -> (Ctxt e, [st] -> ((Ctxt e, [b1]), (Ctxt e, [b2])))
+--            -- ^ output decoder (<#moore22od **>) 
+--            -> e [st]                          -- ^ initial state
+--            -> Stream (e a1)                   -- ^ first input signal
+--            -> Stream (e a2)                   -- ^ second input signal
+--            -> (Stream (e b1), Stream (e b2))  -- ^ two output signals
 
+-- -- | 
+-- -- #mealy22ns# (*) @[st] -> [a1] -> [a2] -> [st1]@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- #mealy22od# (**) @[st] -> [a1] -> [a2] -> ([b1], [b2])@
+-- -- /where each argument is individually wrapped with a/
+-- -- /context. Each Untimed instance defines its own wrappers./
+-- --
+-- -- @mealy@ processes model Mealy state machines.
+-- --
+-- -- <<includes/figs/mealy-formula.png>>
+-- -- <<includes/figs/mealy-graph.png>>
+-- --
+-- -- "ForSyDe.Atom.Untimed" exports the constructors below. To create your
+-- -- own constructors please follow the examples set in the source code.
+-- --  
+-- -- > mealy11, mealy12, mealy13, mealy14,
+-- -- > mealy21, mealy22, mealy23, mealy24,
+-- -- > mealy31, mealy32, mealy33, mealy34,
+-- -- > mealy41, mealy42, mealy43, mealy44,
+-- mealy22 :: Untimed e
+--            => (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> (Ctxt e, [st]))))
+--            -- ^ next state (<#mealy22ns *>)
+--            -> (Ctxt e, [st] -> (Ctxt e, [a1] -> (Ctxt e, [a2] -> ((Ctxt e, [b1]), (Ctxt e, [b2])))))
+--            -- ^ output decoder (<#mealy22ns *>)
+--            -> e [st]                          -- ^ initial state
+--            -> Stream (e a1)                   -- ^ first input signal
+--            -> Stream (e a2)                   -- ^ second input signal
+--            -> (Stream (e b1), Stream (e b2))  -- ^ two output signals
 
--- | 
--- #mealy22ns# (*) @[Value st] -> [Value a1] -> [Value a2] -> [Value st1]@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- #mealy22od# (**) @[Value st] -> [Value a1] -> [Value a2] -> ([Value b1], [Value b2])@
--- /where each argument is individually wrapped with a/
--- /context. Each MoC instance defines its own wrappers./
---
--- @mealy@ processes model Mealy state machines.
---
--- <<includes/figs/mealy-formula.png>>
--- <<includes/figs/mealy-graph.png>>
---
--- "ForSyDe.Atom.MoC" exports the constructors below. To create your
--- own constructors please follow the examples set in the source code.
---  
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
-mealy22 :: MoC e
-           => (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> [Value st])))
-           -- ^ next state (<#mealy22ns *>)
-           -> (Context e, [Value st] -> (Context e, [Value a1] -> (Context e, [Value a2] -> (b1, b2))))
-           -- ^ output decoder (<#mealy22ns *>)
-           -> e [Value st]                    -- ^ initial state
-           -> Signal (e [Value a1])           -- ^ first input
-           -> Signal (e [Value a2])           -- ^ second input
-           -> (Signal (e b1), Signal (e b2))  -- ^ two output signals
-
---------------- END DOCUMENTATION ---------------
+-- --------------- END DOCUMENTATION ---------------
