@@ -18,7 +18,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.SDF.Core where
 
-import ForSyDe.Atom.MoC.Untimed
+import ForSyDe.Atom.MoC
 -- import qualified ForSyDe.Atom.MoC.Timed as T
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Behavior
@@ -33,8 +33,8 @@ type Signal a   = Stream (SDF a)
 newtype SDF a = SDF { val :: a }
 
 -- | Implenents the CT semantics for the MoC atoms
-instance Untimed SDF where
-  type Par SDF a = [a]
+instance MoC SDF where
+  -- type Par SDF a = [a]
   type Fun SDF a b = (Int, [a] -> b)
   type Res SDF a   = (Int, [a])
   ---------------------

@@ -60,14 +60,14 @@ category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple
 cabal-version:       >=1.22
 tested-with:         GHC==7.10.3 GHC==8.0.1
--- extra-doc-files:     includes/figs/*.png
+extra-doc-files:     docfiles/figs/*.png
 
 library
   exposed-modules:     ForSyDe.Atom
                        ForSyDe.Atom.Behavior,
                        ForSyDe.Atom.MoC.Stream,
-                       ForSyDe.Atom.MoC.Timed,
-                       ForSyDe.Atom.MoC.Untimed,
+                       ForSyDe.Atom.MoC,
+                       -- ForSyDe.Atom.MoC.Untimed,
                        -- ForSyDe.Atom.MoC.SY,
                        ForSyDe.Atom.MoC.SY.Core,
                        -- ForSyDe.Atom.MoC.SY.Lib,
