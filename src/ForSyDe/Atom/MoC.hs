@@ -10,18 +10,21 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module exports the core entities of the MoC/synchronization
--- layer: atom interfaces and process constructors as patterns of
--- atoms. It does /NOT/ export any implementation or instantiation of
--- a specific MoC.
+-- This module exports the core entities of the MoC layer: interfaces
+-- for atoms and process constructors as patterns of atoms. It does
+-- /NOT/ export any implementation or instantiation of any specific
+-- MoC.
 --
--- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
--- provided by the library API are named along the lines of
--- @functionMN@ where @M@ represents the number of __/curried/__
--- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
--- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
--- repetition we shall only provide documentation for functions with 2
--- inputs and 2 outputs (i.e. @function22@).
+--  #naming_conv# __IMPORTANT!!!__ All multi-parameter patterns and
+-- utilities provided by the library API as higher-order functions are
+-- named along the lines of @functionMN@ where @M@ represents the
+-- number of __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@),
+-- while @N@ represents the number of __/tupled/__ outputs
+-- (i.e. @(b1,b2,...,bN)@). To avoid repetition we only provide
+-- documentation for functions with 2 inputs and 2 outputs
+-- (i.e. @function22@). In case the provided functions do not suffice,
+-- feel free to implement your own patterns following the examples in
+-- the source code.
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
@@ -32,20 +35,10 @@ module ForSyDe.Atom.MoC(
 
   -- * Process constructors
 
-  -- | As shown in the documentation of "ForSyDe.Atom" process
-  -- constructors are implemented as compositions of MoC atoms. Also,
-  -- in order to avoid working with signals of tuples and for process
-  -- network to reflect the passed functions, we use @unzip@ utilities
-  -- (defined in "ForSyDe.Core.Utility").
-  --
-  -- Due to Haskell's strict type system and the implementation
-  -- mechanisms, we need to provide separate constructors @processXY@,
-  -- where @process@ is the process constructor type, @X@ is the
-  -- number of inputs and @Y@ is the number of outputs. This module
-  -- provides constructors with @ X = [0..4]@ and @ Y = [1..4]@. If
-  -- needed, the designer is free to implement her own constructor by
-  -- following the atom composition rules in the source code.
-
+  -- | Process constructors are defined as patterns of MoC
+  -- atoms. Check the <#naming_conv naming convention> of the API in
+  -- the page description.
+  
   delay, (-&>-),
   
   comb11, comb12, comb13, comb14,
@@ -53,6 +46,18 @@ module ForSyDe.Atom.MoC(
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
   comb51, comb52, comb53, comb54,
+  comb61, comb62, comb63, comb64,
+  comb71, comb72, comb73, comb74,
+  comb81, comb82, comb83, comb84,
+
+  reconfig11, reconfig12, reconfig13, reconfig14,
+  reconfig21, reconfig22, reconfig23, reconfig24,
+  reconfig31, reconfig32, reconfig33, reconfig34,
+  reconfig41, reconfig42, reconfig43, reconfig44,
+  reconfig51, reconfig52, reconfig53, reconfig54,
+  reconfig61, reconfig62, reconfig63, reconfig64,
+  reconfig71, reconfig72, reconfig73, reconfig74,
+  reconfig81, reconfig82, reconfig83, reconfig84,
 
   state11, state12, state13, state14,
   state21, state22, state23, state24,
@@ -92,32 +97,73 @@ import ForSyDe.Atom.Utility
 infixl 5 -.-, -*-
 infixl 3 -<-, -*, -&-
 
--- | This is a type class defining the MoC layer atoms. Each model of
--- computation exposes its tag system through an unique event
--- constructor as an instance of this class, which defines /T/ &#215;
--- /V/.
+-- | This is a type class defining interfaces for the MoC layer
+-- atoms. Each model of computation exposes its tag system through a
+-- unique event constructor as an instance of this class, which
+-- defines /T/ &#215; /V/.
+--
+-- To express all possible MoCs which can be described using a
+-- /tagged/ /signal/ /model/ we need to capture the most general form
+-- of their atoms. Recall that all atoms in the layered framework are
+-- represented as higher-order functions on structured types
+-- (instances of this class), taking functions of other (lower) layers
+-- as arguments. While this principle stands also for this layer, the
+-- functions taken as arguments need to be formatted for each MoC in
+-- particular in order to capture additional information, which we can
+-- call in general terms as the /execution context/.
+--
+-- One typical example of additional information is the consumption
+-- and production rates of for data flow MoCs (e.g. SDF). In this case
+-- the passed functions are defined over "partitions" of events,
+-- i.e. groupings of events with the same partial order in relation
+-- to, for example, a process firing. The formal description of such a
+-- "formatted function" taken as argument by a MoC entity is:
+--
+-- <<docfiles/figs/eqs-moc-atom-formatted-func.png>>
+--
+-- where /a/ and /b/ might be cartesian products of different types,
+-- correspondend to how many signals the constructor is applied to or
+-- how many signals it yields, and each type is expressed as:
+--
+-- <<docfiles/figs/eqs-moc-atom-formatted-arg.png>>
+--
+-- While, as you can see above, the execution context can be extracted
+-- from the type information, working with type-level parameters is
+-- not a trivial task in Haskell, especially if we want to describe a
+-- general and extensible type class. This is why we have chosen a
+-- pragmatic approach in implementing the 'MoC' class:
+--
+-- * any (possible) cartesian product of /&#945;/ is represented using
+-- a recursive type, namely a list [/&#945;/].
+--
+-- * as the execution context cannot (or can hardly) be extracted from
+-- the recursive type, in the most general case we pass both context
+-- /and/ argument as a pair (see each instance in particular). To aid
+-- in pairing contexts with each argument in a function, the @ctxt@
+-- utilities are provided (see 'ctxt22').
+--
+-- * this artifice was masked using the generic type families 'Fun'
+-- and 'Res'. 
 class (Functor e) => MoC e where
 
   -- |<<docfiles/figs/eqs-moc-atom-function.png>>
   --
   -- This is a type family alias for a context-bound function passed
   -- as an argument to a MoC atom. In the most simple case it can be
-  -- regarded as an enhanced '->' type operator. While hindering
-  -- expressiveness, this implementation choice certainly has its
-  -- advantages in avoiding unnecessary or redundant type constructors
-  -- for context-less MoCs (e.g. all __timed__ MoCs). Aliases are
-  -- replaced at compile time, thus not trading run-time performance,
-  -- while redundant type constructors (see version 0.1.1 and prior)
-  -- still need to be evaluated.
+  -- regarded as an enhanced @->@ type operator. While hiding the
+  -- explicit definition of arguments, this implementation choice
+  -- certainly has its advantages in avoiding unnecessary or redundant
+  -- type constructors (see version 0.1.1 and prior). Aliases are
+  -- replaced at compile time, thus not affecting run-time
+  -- performance.
   type Fun e a b
 
   -- |<<docfiles/figs/eqs-moc-atom-result.png>>
   --
   -- As with 'Fun', this alias hides a context-bound value
-  -- (e.g. result). While through their definition, the co-existence
-  -- of 'Fun' and 'Res' is redundant and there exist more explicit
-  -- definitions (see version 0.1.1 and prior), this implementation
-  -- choice is justified by the benefit in run-time performance.
+  -- (e.g. result). Although the definition seems to be reduntant with
+  -- 'Fun', this alias is needed for utilities to recreate clean types
+  -- again (see '-*').
   type Res e b
   
   -- |<<docfiles/figs/eqs-moc-atom-dot.png>>
@@ -156,15 +202,12 @@ class (Functor e) => MoC e where
   -- signatures. In the implementation the value/partition is wrapped
   -- inside an event type to enable smooth composition. You might also
   -- notice the explicit list type for the "initial event". This is
-  -- due to the agreed implementation convention chosen to represent a
-  -- /"partition"/ for __untimed__ MoCs (i.e. a grouping of events
-  -- with the same partial order in relation to, for example, a
-  -- process firing). In case of __timed__ MoCs (where the order
-  -- between events is total), the list would /need/ to be a
-  -- singleton, i.e. the list constructor is ignored. The explicit
-  -- list type is needed and could not be masked behind a type alias
-  -- due to the fact that aliases are not injective, thus hindering
-  -- type inference in case of delayed feedback loops.
+  -- due to the agreed implementation chosen to represent a
+  -- "partition" for some MoCs (see documentation for the 'MoC'
+  -- class). The explicit list type is needed and could not be masked
+  -- behind a type alias due to the fact that aliases are not
+  -- injective, thus hindering type inference in case of delayed
+  -- feedback loops.
   (-<-) :: e [a] -> Stream (e a) -> Stream (e a)
    
   -- | <<docfiles/figs/eqs-moc-atom-phi.png>>
@@ -212,9 +255,12 @@ i -&>- xs = delay i xs
 -- > comb31, comb32, comb33, comb34,
 -- > comb41, comb42, comb43, comb44,
 -- > comb51, comb52, comb53, comb54,
+-- > comb61, comb62, comb63, comb64,
+-- > comb71, comb72, comb73, comb74,
+-- > comb81, comb82, comb83, comb84,
 comb22 :: (MoC e)
        => (Fun e a1 (Fun e a2 (Res e b1, Res e b2)))
-       -- ^ (<#comb22f *>)
+       -- ^ combinational function (<#comb22f *>)
        -> Stream (e a1)                  -- ^ first input signal
        -> Stream (e a2)                  -- ^ second input signal
        -> (Stream (e b1), Stream (e b2)) -- ^ two output signals
@@ -250,6 +296,65 @@ comb54 f s1 s2 s3 s4 s5          = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<<<)
 comb64 f s1 s2 s3 s4 s5 s6       = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<<<)
 comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<<)
 comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
+
+-- |  #reconfig22f# /(*) to be read / @a1 -> a2 -> (b1, b2)@ /where each/
+-- /argument and result might be individually wrapped with a context/
+-- /and might also express a partition./
+--
+-- <<docfiles/figs/eqs-moc-pattern-reconfig.png>>
+-- <<docfiles/figs/moc-pattern-reconfig.png>>
+--
+-- The @reconfig@ processes constructs adaptive processes, where the
+-- first signal carries functions, and it is synchronized with all the
+-- other signals. This library provides the following patterns/process
+-- constructors:
+--
+-- > reconfig11, reconfig12, reconfig13, reconfig14,
+-- > reconfig21, reconfig22, reconfig23, reconfig24,
+-- > reconfig31, reconfig32, reconfig33, reconfig34,
+-- > reconfig41, reconfig42, reconfig43, reconfig44,
+-- > reconfig51, reconfig52, reconfig53, reconfig54,
+-- > reconfig61, reconfig62, reconfig63, reconfig64,
+-- > reconfig71, reconfig72, reconfig73, reconfig74,
+-- > reconfig81, reconfig82, reconfig83, reconfig84,
+reconfig22 :: (MoC e)
+       => Stream (e (Fun e a1 (Fun e a2 (Res e b1, Res e b2))))
+       -- ^ signal carrying functions (<#reconfig22f *>)
+       -> Stream (e a1)                  -- ^ first input signal
+       -> Stream (e a2)                  -- ^ second input signal
+       -> (Stream (e b1), Stream (e b2)) -- ^ two output signals
+reconfig11 sf s1                      = (sf -*- s1 -*)
+reconfig21 sf s1 s2                   = (sf -*- s1 -*- s2 -*)
+reconfig31 sf s1 s2 s3                = (sf -*- s1 -*- s2 -*- s3 -*)
+reconfig41 sf s1 s2 s3 s4             = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*)
+reconfig51 sf s1 s2 s3 s4 s5          = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*)
+reconfig61 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*)
+reconfig71 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*)
+reconfig81 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*)
+reconfig12 sf s1                      = (sf -*- s1 -*<)
+reconfig22 sf s1 s2                   = (sf -*- s1 -*- s2 -*<)
+reconfig32 sf s1 s2 s3                = (sf -*- s1 -*- s2 -*- s3 -*<)
+reconfig42 sf s1 s2 s3 s4             = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*<)
+reconfig52 sf s1 s2 s3 s4 s5          = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<)
+reconfig62 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<)
+reconfig72 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<)
+reconfig82 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 -*<)
+reconfig13 sf s1                      = (sf -*- s1 -*<<)
+reconfig23 sf s1 s2                   = (sf -*- s1 -*- s2 -*<<)
+reconfig33 sf s1 s2 s3                = (sf -*- s1 -*- s2 -*- s3 -*<<)
+reconfig43 sf s1 s2 s3 s4             = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*<<)
+reconfig53 sf s1 s2 s3 s4 s5          = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<<)
+reconfig63 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<<)
+reconfig73 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<)
+reconfig83 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s5 -*- s8 -*<<)
+reconfig14 sf s1                      = (sf -*- s1 -*<<<)
+reconfig24 sf s1 s2                   = (sf -*- s1 -*- s2 -*<<<)
+reconfig34 sf s1 s2 s3                = (sf -*- s1 -*- s2 -*- s3 -*<<<)
+reconfig44 sf s1 s2 s3 s4             = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*<<<)
+reconfig54 sf s1 s2 s3 s4 s5          = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*<<<)
+reconfig64 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*<<<)
+reconfig74 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<<)
+reconfig84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
 -- |
 -- #state22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
@@ -555,27 +660,6 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
 
 
 
--- -- | Utilities for extending the '-*' atom for dealing with tupled
--- -- outputs. Implemented are the following:
--- --
--- -- > -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<,
--- (-*<) :: Untimed e
---       => Stream (e ((Ctxt e, Part e b), (Ctxt e, Part e b1)))
---       -- ^ partitioned output tupled with (production) context
---       -> (Stream (e b), Stream (e b1))
---       -- ^ correct (unpartitioned) tupled signals 
-
-infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
-(-*<) p        = ((-*),(-*))                                    $$        (p ||<)  
-(-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)
-(-*<<<) p      = ((-*),(-*),(-*),(-*))                          $$$$      (p ||<<<)
-(-*<<<<) p     = ((-*),(-*),(-*),(-*),(-*))                     $$$$$     (p ||<<<<)
-(-*<<<<<) p    = ((-*),(-*),(-*),(-*),(-*),(-*))                $$$$$$    (p ||<<<<<)
-(-*<<<<<<) p   = ((-*),(-*),(-*),(-*),(-*),(-*),(-*))           $$$$$$$   (p ||<<<<<<)
-(-*<<<<<<<) p  = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*))      $$$$$$$$  (p ||<<<<<<<)
-(-*<<<<<<<<) p = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*)) $$$$$$$$$ (p ||<<<<<<<<)
-
-
 -- | Attaches a context parameter to a function agument (e.g
 -- consumption rates in SDF). Used as kernel function in defining
 -- e.g. 'ctxt22'.
@@ -592,7 +676,7 @@ wres p x = (p, x)
 -- <<docfiles/figs/eqs-moc-atom-context.png>>
 --
 -- Wraps a function with the context needed by some MoCs for their
--- patterns (e.g. rates for SDF).
+-- constructors (e.g. rates in SDF).
 --
 -- > ctxt11, ctxt21, ctxt31, ctxt41, ctxt51, ctxt61, ctxt71, ctxt81, 
 -- > ctxt12, ctxt22, ctxt32, ctxt42, ctxt52, ctxt62, ctxt72, ctxt82, 
@@ -640,3 +724,19 @@ ctxt54 (c1,c2,c3,c4,c5)          ps f = warg c1 $ ctxt44 (c2,c3,c4,c5) ps . f
 ctxt64 (c1,c2,c3,c4,c5,c6)       ps f = warg c1 $ ctxt54 (c2,c3,c4,c5,c6) ps . f
 ctxt74 (c1,c2,c3,c4,c5,c6,c7)    ps f = warg c1 $ ctxt64 (c2,c3,c4,c5,c6,c7) ps . f
 ctxt84 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = warg c1 $ ctxt74 (c2,c3,c4,c5,c6,c7,c8) ps . f
+
+
+infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
+-- | Utilities for extending the '-*' atom for dealing with tupled
+-- outputs. Implemented are the following:
+--
+-- > -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<,
+(-*<) :: MoC e => Stream (e (Res e b1, Res e b2)) -> (Stream (e b1), Stream (e b2))
+(-*<) p        = ((-*),(-*))                                    $$        (p ||<)  
+(-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)
+(-*<<<) p      = ((-*),(-*),(-*),(-*))                          $$$$      (p ||<<<)
+(-*<<<<) p     = ((-*),(-*),(-*),(-*),(-*))                     $$$$$     (p ||<<<<)
+(-*<<<<<) p    = ((-*),(-*),(-*),(-*),(-*),(-*))                $$$$$$    (p ||<<<<<)
+(-*<<<<<<) p   = ((-*),(-*),(-*),(-*),(-*),(-*),(-*))           $$$$$$$   (p ||<<<<<<)
+(-*<<<<<<<) p  = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*))      $$$$$$$$  (p ||<<<<<<<)
+(-*<<<<<<<<) p = ((-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*),(-*)) $$$$$$$$$ (p ||<<<<<<<<)

@@ -17,7 +17,7 @@
 module ForSyDe.Atom.MoC.SY.Core where
 
 import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.MoC.Untimed
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
@@ -29,8 +29,7 @@ newtype SY a  = SY { val :: a }
   
 -- | Implenents the execution and synchronization semantics for the SY
 -- MoC through its atoms.
-instance Untimed SY where
-  type Par SY a = a
+instance MoC SY where
   type Fun SY a b = a -> b
   type Res SY b   = b 
   ---------------------
@@ -39,7 +38,8 @@ instance Untimed SY where
   (-*-) a = (<*>) (fmap (<*>) a)
   (-*) = id
   ---------------------
-  (-<-) = (:-) 
+  (-<-) (SY [a]) = (:-) (SY a)
+  (-<-) _ = error "SY : The event value needs to be a singleton list (see documentation for MoC class)"
   ---------------------
   (-&-) _ a = a
   ---------------------
@@ -63,13 +63,10 @@ instance Applicative (SY) where
 
 -----------------------------------------------------------------------------
 
-event  :: a -> SY a
-event  = pure
-
--- | Wraps a (tuple of) value(s) into the equivalent event form.
---
--- "ForSyDe.Atom.MoC.SY" exports the helper functions below. Please
--- follow the examples in the source code if they do not suffice:
+event  :: a -> SY [a]
+event  = pure . pure
+-- | Wraps a (tuple of) value(s) into the equivalent event form. The
+-- following helpers are exported:
 --
 -- > event, event2, event3, event4,
 event2 = ($$) (event, event)
@@ -78,7 +75,7 @@ event4 = ($$$$) (event, event, event, event)
 
 -- | Transforms a list of values into a SY signal
 signal   :: [a] -> Signal a
-signal l = stream (event <$> l)
+signal l = stream (SY <$> l)
 
 -- | Reads a signal from a string. Like with the @read@ function from
 -- @Prelude@, you must specify the tipe of the signal.
