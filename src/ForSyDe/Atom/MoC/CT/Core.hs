@@ -16,9 +16,8 @@
 
 module ForSyDe.Atom.MoC.CT.Core where
 
-import ForSyDe.Atom.MoC.Timed
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
-import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
 import Numeric
@@ -39,7 +38,10 @@ data CT a  = CT { tag :: Time, phase :: Time, func :: Time -> a }
 
 -- | Implenents the execution and synchronization semantics for the CT
 -- MoC through its atoms.
-instance Timed CT where
+instance MoC CT where
+  ---------------------
+  type Fun CT a b = a -> b
+  type Res CT b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------
@@ -55,10 +57,12 @@ instance Timed CT where
       comb pf _ NullS (x :- xs) = x %> pf <*> x  :- comb pf x NullS xs
       comb _ _ NullS NullS      = NullS
   ---------------------
-  (CT _ p v) -<- xs =  (CT 0 p v) :- xs
+  (-*) = id
   ---------------------
-  (CT 0 _ _) -&- xs = xs
-  (CT d _ _) -&- xs = (\(CT t p v) -> CT (t + d) (p - d) v) <$> xs
+  (CT _ p v :- _) -<- xs = (CT 0 p v) :- xs
+  ---------------------
+  (CT 0 _ _ :- _) -&- xs = xs
+  (CT d _ _ :- _) -&- xs = (\(CT t p v) -> CT (t + d) (p - d) v) <$> xs
   ---------------------
     
 -- | Allows for mapping of functions on a CT event.

@@ -15,16 +15,9 @@
 -- /NOT/ export any implementation or instantiation of any specific
 -- MoC.
 --
---  #naming_conv# __IMPORTANT!!!__ All multi-parameter patterns and
--- utilities provided by the library API as higher-order functions are
--- named along the lines of @functionMN@ where @M@ represents the
--- number of __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@),
--- while @N@ represents the number of __/tupled/__ outputs
--- (i.e. @(b1,b2,...,bN)@). To avoid repetition we only provide
--- documentation for functions with 2 inputs and 2 outputs
--- (i.e. @function22@). In case the provided functions do not suffice,
--- feel free to implement your own patterns following the examples in
--- the source code.
+-- __IMPORTANT!!!__
+-- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
+-- on how to interpret, use and develop your own constructors.
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
@@ -102,10 +95,10 @@ infixl 3 -<-, -*, -&-
 -- unique event constructor as an instance of this class, which
 -- defines /T/ &#215; /V/.
 --
--- To express all possible MoCs which can be described using a
--- /tagged/ /signal/ /model/ we need to capture the most general form
--- of their atoms. Recall that all atoms in the layered framework are
--- represented as higher-order functions on structured types
+-- #context# To express all possible MoCs which can be described using
+-- a /tagged/ /signal/ /model/ we need to capture the most general
+-- form of their atoms. Recall that all atoms in the layered framework
+-- are represented as higher-order functions on structured types
 -- (instances of this class), taking functions of other (lower) layers
 -- as arguments. While this principle stands also for this layer, the
 -- functions taken as arguments need to be formatted for each MoC in
@@ -172,7 +165,7 @@ class (Functor e) => MoC e where
   -- context) to a signal, i.e. stream of tagged events. As ForSyDe
   -- deals with /determinate/, /functional/ processes, this atom
   -- defines the (only) /behavior/ of a process in rapport to one
-  -- input signal. 
+  -- input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
   (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
   
   -- | <<docfiles/figs/eqs-moc-atom-star.png>>
@@ -181,7 +174,7 @@ class (Functor e) => MoC e where
   -- values (in the presence of a context), and the other containing
   -- values, during which it applies the former on the latter. As
   -- concerning the process created, this atom defines a /relation/
-  -- between two signals.
+  -- between two signals <ForSyDe-Atom.html#lee98 [Lee98]>.
   (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
 
   -- | <<docfiles/figs/eqs-moc-atom-post.png>>
@@ -190,39 +183,40 @@ class (Functor e) => MoC e where
   -- yielding a clean signal type. 
   (-*)  :: Stream (e (Res e b)) -> Stream (e b)
 
-
   -- | <<docfiles/figs/eqs-moc-atom-pre.png>>
   -- 
   -- This atom appends a (partition of) events at the begining of a
   -- signal. This atom is necessary to ensure /complete partial order/
   -- of a signal and assures the /least upper bound/ necessary for
-  -- example in the evaluation of feedback loops.
+  -- example in the evaluation of feedback loops
+  -- <ForSyDe-Atom.html#lee98 [Lee98]>.
   --
   -- Notice the difference between the formal and the implemented type
   -- signatures. In the implementation the value/partition is wrapped
   -- inside an event type to enable smooth composition. You might also
-  -- notice the explicit list type for the "initial event". This is
-  -- due to the agreed implementation chosen to represent a
-  -- "partition" for some MoCs (see documentation for the 'MoC'
-  -- class). The explicit list type is needed and could not be masked
-  -- behind a type alias due to the fact that aliases are not
-  -- injective, thus hindering type inference in case of delayed
-  -- feedback loops.
-  (-<-) :: e [a] -> Stream (e a) -> Stream (e a)
+  -- notice the type for the "initial event(s)" as being wrapped
+  -- inside a signal constructor. This allows defining an DSL for this
+  -- layer which is centered around signals exclusively, while also
+  -- enabling to define atoms as homomorphisms to certain extent
+  -- <ForSyDe-Atom.html#bird97 [Bird97]>. Certain MoCs might have
+  -- additional constraints on the first operand being finite.
+  (-<-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
    
   -- | <<docfiles/figs/eqs-moc-atom-phi.png>>
   -- 
   -- This atom allows the manipulation of tags in a signal in a
   -- restrictive way which preserves /monotonicity/ and /continuity/
-  -- in a process, namely by “phase-shifting” all tags in a signal
-  -- with the appropriate metric corresponding to each MoC. Thus
-  -- it preserves the characteristic function intact.
+  -- in a process <ForSyDe-Atom.html#lee98 [Lee98]>, namely by
+  -- “phase-shifting” all tags in a signal with the appropriate metric
+  -- corresponding to each MoC. Thus it preserves the characteristic
+  -- function intact <ForSyDe-Atom.html#sander04 [Sander04]>.
   --
   -- As with the '-<-' atom, we can justify the type signature for
-  -- smooth composition, although the only information required for
-  -- this atom are tags which are encapsulated in the event type
-  -- constructor.
-  (-&-) :: e [a] -> Stream (e a) -> Stream (e a)
+  -- smooth composition and the definition of atoms as homomorphisms
+  -- to certain extent. This in turn allows the interpretation of the
+  -- '-&-' operator as "aligning the phases" of two signals: the
+  -- second operand is aligned based on the first.
+  (-&-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
 
 infixl 3 -&>-
 -- | <<docfiles/figs/eqs-moc-pattern-delay.png>>
@@ -378,7 +372,7 @@ reconfig84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -
 state22 :: MoC e
         => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Res e st1, Res e st2))))
         -- ^ next state function (<#state22ns *>)
-        -> (e [st1], e [st2])
+        -> (Stream (e st1), Stream (e st2))
         -- ^ initial state(s) (<#state22i **>)
         -> Stream (e a1)
         -- ^ first input signal
@@ -458,7 +452,7 @@ state44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st2
 stated22 :: MoC e
         => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Res e st1, Res e st2))))
         -- ^ next state function (<#stated22ns *>)
-        -> (e [st1], e [st2])
+        -> (Stream (e st1), Stream (e st2))
         -- ^ initial state(s) (<#stated22i **>)
         -> Stream (e a1)
         -- ^ first input signal
@@ -549,7 +543,7 @@ moore22 :: MoC e
         -- ^ next state function (<#moore22ns *>)
         -> Fun e st (Res e b1, Res e b2)
         -- ^ output decoder (<#moore22od **>)
-        -> e [st]
+        -> Stream (e st)
         -- ^ intial state (<#moore22i ***>)
         -> Stream (e a1)
         -- ^ first input signal
@@ -617,7 +611,7 @@ mealy22 :: MoC e
         -- ^ next state function (<#mealy22ns *>)
         -> Fun e st (Fun e a1 (Fun e a2 (Res e b1, Res e b2)))
         -- ^ output decoder (<#mealy22od **>)
-        -> e [st]
+        -> Stream (e st)
         -- ^ intial state (<#mealy22i ***>)
         -> Stream (e a1)
         -- ^ first input signal

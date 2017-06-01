@@ -63,56 +63,63 @@ tested-with:         GHC==7.10.3 GHC==8.0.1
 extra-doc-files:     docfiles/figs/*.png
 
 library
-  exposed-modules:     ForSyDe.Atom
-                       ForSyDe.Atom.Behavior,
-                       ForSyDe.Atom.MoC.Stream,
-                       ForSyDe.Atom.MoC,
-                       -- ForSyDe.Atom.MoC.Untimed,
-                       -- ForSyDe.Atom.MoC.SY,
-                       ForSyDe.Atom.MoC.SY.Core,
-                       -- ForSyDe.Atom.MoC.SY.Lib,
-                       -- ForSyDe.Atom.MoC.SY.Interface,
-                       -- ForSyDe.Atom.MoC.DE,
-                       ForSyDe.Atom.MoC.DE.Core,
-                       -- ForSyDe.Atom.MoC.DE.Lib,
-                       -- ForSyDe.Atom.MoC.DE.Interface,
-                       -- ForSyDe.Atom.MoC.DE.Hybrid,
-                       -- ForSyDe.Atom.MoC.CT,
-                       ForSyDe.Atom.MoC.CT.Core,
-                       -- ForSyDe.Atom.MoC.CT.Lib,
-                       -- ForSyDe.Atom.MoC.SDF,
-                       ForSyDe.Atom.MoC.SDF.Core,
-                       -- ForSyDe.Atom.MoC.SDF.Lib,
-                       -- ForSyDe.Atom.Skeleton,
-                       -- ForSyDe.Atom.Skeleton.Vector,
-                       -- ForSyDe.Atom.Skeleton.Vector.Core,
-                       -- ForSyDe.Atom.Skeleton.Vector.Lib,
-                       -- ForSyDe.Atom.Skeleton.Vector.Interface,
-                       ForSyDe.Atom.Utility
-  Default-Language:    Haskell2010
-  other-extensions:    PostfixOperators, FlexibleInstances
-  build-depends:       HUnit,
-                       QuickCheck,
-                       base>=4.6 && <6,
-                       process >= 1.4.2.0,
-                       test-framework,
-                       test-framework-hunit,
-                       test-framework-quickcheck2
-  hs-source-dirs:      src
+  exposed-modules:   ForSyDe.Atom
+                   , ForSyDe.Atom.ExB
+                   , ForSyDe.Atom.ExB.Absent
+                   , ForSyDe.Atom.MoC.Stream
+                   , ForSyDe.Atom.MoC
+                   , ForSyDe.Atom.MoC.SY
+                   , ForSyDe.Atom.MoC.SY.Core
+                   , ForSyDe.Atom.MoC.SY.Lib
+                   -- , ForSyDe.Atom.MoC.SY.Interface
+                   -- , ForSyDe.Atom.MoC.DE
+                   , ForSyDe.Atom.MoC.DE.Core
+                   -- , ForSyDe.Atom.MoC.DE.Lib
+                   -- , ForSyDe.Atom.MoC.DE.Interface
+                   -- , ForSyDe.Atom.MoC.DE.Hybrid
+                   -- , ForSyDe.Atom.MoC.CT
+                   , ForSyDe.Atom.MoC.CT.Core
+                   -- , ForSyDe.Atom.MoC.CT.Lib
+                   -- , ForSyDe.Atom.MoC.SDF
+                   , ForSyDe.Atom.MoC.SDF.Core
+                   -- , ForSyDe.Atom.MoC.SDF.Lib
+                   -- , ForSyDe.Atom.Skeleton
+                   -- , ForSyDe.Atom.Skeleton.Vector
+                   -- , ForSyDe.Atom.Skeleton.Vector.Core
+                   -- , ForSyDe.Atom.Skeleton.Vector.Lib
+                   -- , ForSyDe.Atom.Skeleton.Vector.Interface
+                   , ForSyDe.Atom.Utility
+  default-language:  Haskell2010
+  other-extensions:  PostfixOperators, FlexibleInstances
+  build-depends:     base>=4.6 && <6
+                   , doctest >= 0.8
+                       -- HUnit,
+                       -- QuickCheck,
+                       -- process >= 1.4.2.0,
+                       -- test-framework,
+                       -- test-framework-hunit,
+                       -- test-framework-quickcheck2
+  hs-source-dirs:    src
 
-Test-Suite forsyde-testsuite
-  Type:                exitcode-stdio-1.0
-  Default-Language:    Haskell2010
-  Hs-Source-Dirs:      tests
-  Main-is:             Tests.hs
-  Build-depends:       base>=4.6 && <6, 
-                       forsyde-atom, 
-                       QuickCheck, 
-                       test-framework,
-                       test-framework-hunit,
-                       test-framework-quickcheck2,
-                       HUnit
+-- Test-Suite forsyde-testsuite
+--   Type:                exitcode-stdio-1.0
+--   Default-Language:    Haskell2010
+--   Hs-Source-Dirs:      tests
+--   Main-is:             Tests.hs
+--   Build-depends:       base>=4.6 && <6, 
+--                        forsyde-atom, 
+--                        QuickCheck, 
+--                        test-framework,
+--                        test-framework-hunit,
+--                        test-framework-quickcheck2,
+--                        HUnit
 
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  ghc-options:      -threaded
+  main-is:          tests/TestsDoc.hs
+  build-depends:    base>=4.6 && <6, doctest >= 0.8
 
 source-repository head
   type:     git

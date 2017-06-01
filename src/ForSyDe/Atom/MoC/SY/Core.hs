@@ -16,12 +16,12 @@
 
 module ForSyDe.Atom.MoC.SY.Core where
 
-import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
--- | Type synonym for a SY signal, i.e. "a signal of SY events"
+-- | Type synonym for a SY signal, i.e. "an ordered stream of SY
+-- events"
 type Signal a   = Stream (SY a)
 
 -- | The SY event. It identifies a synchronous signal.
@@ -38,8 +38,7 @@ instance MoC SY where
   (-*-) a = (<*>) (fmap (<*>) a)
   (-*) = id
   ---------------------
-  (-<-) (SY [a]) = (:-) (SY a)
-  (-<-) _ = error "SY : The event value needs to be a singleton list (see documentation for MoC class)"
+  (-<-) (a:-_) = (:-) a
   ---------------------
   (-&-) _ a = a
   ---------------------
@@ -63,17 +62,18 @@ instance Applicative (SY) where
 
 -----------------------------------------------------------------------------
 
-event  :: a -> SY [a]
-event  = pure . pure
--- | Wraps a (tuple of) value(s) into the equivalent event form. The
--- following helpers are exported:
+unit  :: a -> Signal a
+unit  = pure . pure
+-- | Wraps a (tuple of) value(s) into the equivalent unit signal(s).
 --
--- > event, event2, event3, event4,
-event2 = ($$) (event, event)
-event3 = ($$$) (event, event, event)
-event4 = ($$$$) (event, event, event, event)
+-- The following helpers are exported:
+--
+-- > unit, unit2, unit3, unit4,
+unit2 = ($$) (unit, unit)
+unit3 = ($$$) (unit, unit, unit)
+unit4 = ($$$$) (unit, unit, unit, unit)
 
--- | Transforms a list of values into a SY signal
+-- | Transforms a list of values into a SY signal.
 signal   :: [a] -> Signal a
 signal l = stream (SY <$> l)
 
@@ -81,6 +81,6 @@ signal l = stream (SY <$> l)
 -- @Prelude@, you must specify the tipe of the signal.
 --
 -- >>> readSignal "{1,2,3,4,5}" :: Signal Int
--- > {1,2,3,4,5}
+-- {1,2,3,4,5}
 readSignal :: Read a => String -> Signal a
-readSignal s = read s
+readSignal = read

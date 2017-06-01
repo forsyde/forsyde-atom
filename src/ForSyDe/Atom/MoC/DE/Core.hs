@@ -16,7 +16,7 @@
 
 module ForSyDe.Atom.MoC.DE.Core where
 
-import ForSyDe.Atom.MoC.Untimed
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 import Numeric.Natural
@@ -34,8 +34,7 @@ data DE a  = DE { tag :: Tag,  -- ^ timestamp
 
 -- | Implenents the execution and synchronization semantics for the DE
 -- MoC through its atoms.
-instance Untimed DE where
-  type Par DE a = a
+instance MoC DE where
   type Fun DE a b = a -> b
   type Res DE b   = b 
   ---------------------
@@ -54,9 +53,9 @@ instance Untimed DE where
   ---------------------
   (-*) = id
   ---------------------
-  (DE _ v) -<- xs = pure v :- xs
+  (DE _ v :- _) -<- xs = pure v :- xs
   ---------------------
-  (DE d _) -&- xs = (\(DE t v) -> DE (t + d) v) <$> xs
+  (DE d _ :- _) -&- xs = (\(DE t v) -> DE (t + d) v) <$> xs
   ---------------------
 
 -- | Shows the event with tag @t@ and value @v@ as @ v \@t@.

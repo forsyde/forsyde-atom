@@ -20,7 +20,6 @@ module ForSyDe.Atom.MoC.SDF.Core where
 
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
-import ForSyDe.Atom.Behavior
 import ForSyDe.Atom.Utility
 
 -- | Type synonym for a SY signal, i.e. "a signal of SY events"
@@ -55,13 +54,16 @@ instance MoC SDF where
                                        else NullS
   ---------------------
   (-*) NullS = NullS
-  (-*) ((SDF (p,r)):-xs) | length r == p = stream (map SDF r) +-+ (xs -*)
-                         | otherwise = error "SDF: Wrong production"
+  (-*) ((SDF (p,r)):-xs)
+    | length r == p = stream (map SDF r) +-+ (xs -*)
+    | otherwise     = error "SDF: Wrong production"
   ---------------------
-  (-<-) (SDF l) s = (stream $ map SDF l) +-+ s
+  -- (-<-) (SDF l) s = (stream $ map SDF l) +-+ s
+  (-<-) = (+-+)
   ---------------------
   (-&-) _ a = a
   ---------------------
+
 
 -- | Allows for mapping of functions on a SDF event.
 instance Functor SDF where

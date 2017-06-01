@@ -59,13 +59,16 @@
 -- * "ForSyDe.Atom.MoC.Utility" (re-exported by "ForSyDe.Atom")
 -- containing general purpose utility functions.
 --
--- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
--- provided by the library API are named along the lines of
--- @functionMN@ where @M@ represents the number of __/curried/__
--- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
--- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
--- repetition we shall only provide documentation for functions with 2
--- inputs and 2 outputs (i.e. @function22@).
+--  #naming_conv# __IMPORTANT!!!__ All multi-parameter patterns and
+-- utilities provided by the library API as higher-order functions are
+-- named along the lines of @functionMN@ where @M@ represents the
+-- number of __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@),
+-- while @N@ represents the number of __/tupled/__ outputs
+-- (i.e. @(b1,b2,...,bN)@). To avoid repetition we only provide
+-- documentation for functions with 2 inputs and 2 outputs
+-- (i.e. @function22@). In case the provided functions do not suffice,
+-- feel free to implement your own patterns following the examples in
+-- the source code.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom (
 
@@ -392,7 +395,7 @@ module ForSyDe.Atom (
   --
   -- <<includes/figs/extended-values.png>>
   
-  Value(..),
+  -- Value(..),
 
   -- | #mocs#
   
@@ -626,7 +629,7 @@ module ForSyDe.Atom (
   --
   -- ==== Atoms
   
-  Timed(..),
+  MoC(..),
 
   -- | ==== Atom process network patterns
   --
@@ -713,7 +716,7 @@ module ForSyDe.Atom (
   --
   -- ==== Atom
     
-  (>$), (>*), (>%), (>%!), (>#), (>#!),
+  -- (>$), (>*), (>%), (>%!), (>#), (>#!),
 
   -- | ==== Behavior wrappers
   --
@@ -746,26 +749,28 @@ module ForSyDe.Atom (
          
   -- * Bibliography
 
-  -- | #sander04# <http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf [1]> Sander, I., & Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [formal system design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.
+  -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
+
+  -- | #bird97# <http://dl.acm.org/citation.cfm?id=248932 [Bird97]> Bird, R. S. & de Moor, O. (1997). Algebra of Programming. Prentice-Hall, Inc., Upper Saddle River, NJ, USA. 
+
+  -- | #halbwachs91# <http://ieeexplore.ieee.org/document/97300/ [Halbwachs91]> Halbwachs, N., Caspi, P., Raymond, P., & Pilaud, D. (1991). The synchronous data flow programming language LUSTRE. /Proceedings of the IEEE, 79(9)/, 1305-1320.
+
+  -- | #kahn76# [Kahn76] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
+
+  -- | #lee98# [Lee98] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229. 
+
+  -- | #reekie95# <http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [Reekie95]> Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.
   
-  -- | #lee98# [2] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229. 
-
-  -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [3]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
-  
-  -- | #kahn76# [4] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
-
-  -- | #reekie95# <http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [5]> Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.
-
-  -- | #bird96# [6] Bird, R., & De Moor, O. (1996, January). The algebra of programming. In /NATO ASI DPD/ (pp. 167-203).
-
-  -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [7]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
+  -- | #sander04# <http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf [Sander04]> Sander, I., & Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [formal system design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.
+    
+  -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [Skillicorn05]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
 
   
 ) where
 
-import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.ExB
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
-import ForSyDe.Atom.MoC.Timed
 import ForSyDe.Atom.Skeleton
 import ForSyDe.Atom.Utility
 
