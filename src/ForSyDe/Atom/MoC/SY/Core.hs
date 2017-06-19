@@ -31,7 +31,7 @@ newtype SY a  = SY { val :: a }
 -- MoC through its atoms.
 instance MoC SY where
   type Fun SY a b = a -> b
-  type Res SY b   = b 
+  type Ret SY b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------

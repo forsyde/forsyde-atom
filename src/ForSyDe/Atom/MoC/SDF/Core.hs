@@ -33,7 +33,7 @@ newtype SDF a = SDF { val :: a }
 -- | Implenents the SDF semantics for the MoC atoms
 instance MoC SDF where
   type Fun SDF a b = (Int, [a] -> b)
-  type Res SDF a   = (Int, [a])
+  type Ret SDF a   = (Int, [a])
   ---------------------
   _ -.- NullS = NullS
   (c,f) -.- s = (comb c f . map val . fromStream) s

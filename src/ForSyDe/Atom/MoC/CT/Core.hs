@@ -41,7 +41,7 @@ data CT a  = CT { tag :: Time, phase :: Time, func :: Time -> a }
 instance MoC CT where
   ---------------------
   type Fun CT a b = a -> b
-  type Res CT b   = b 
+  type Ret CT b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------

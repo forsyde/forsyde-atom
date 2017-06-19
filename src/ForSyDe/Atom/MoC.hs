@@ -154,10 +154,10 @@ class (Functor e) => MoC e where
   -- |<<docfiles/figs/eqs-moc-atom-result.png>>
   --
   -- As with 'Fun', this alias hides a context-bound value
-  -- (e.g. result). Although the definition seems to be reduntant with
-  -- 'Fun', this alias is needed for utilities to recreate clean types
-  -- again (see '-*').
-  type Res e b
+  -- (e.g. function return). Although the definition seems to be
+  -- reduntant with 'Fun', this alias is needed for utilities to
+  -- recreate clean types again (see '-*').
+  type Ret e b
   
   -- |<<docfiles/figs/eqs-moc-atom-dot.png>>
   --
@@ -181,7 +181,7 @@ class (Functor e) => MoC e where
   -- 
   -- Artifficial /utility/ which drops the context and/or partitioning
   -- yielding a clean signal type. 
-  (-*)  :: Stream (e (Res e b)) -> Stream (e b)
+  (-*)  :: Stream (e (Ret e b)) -> Stream (e b)
 
   -- | <<docfiles/figs/eqs-moc-atom-pre.png>>
   -- 
@@ -253,7 +253,7 @@ i -&>- xs = delay i xs
 -- > comb71, comb72, comb73, comb74,
 -- > comb81, comb82, comb83, comb84,
 comb22 :: (MoC e)
-       => (Fun e a1 (Fun e a2 (Res e b1, Res e b2)))
+       => (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))
        -- ^ combinational function (<#comb22f *>)
        -> Stream (e a1)                  -- ^ first input signal
        -> Stream (e a2)                  -- ^ second input signal
@@ -312,7 +312,7 @@ comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 
 -- > reconfig71, reconfig72, reconfig73, reconfig74,
 -- > reconfig81, reconfig82, reconfig83, reconfig84,
 reconfig22 :: (MoC e)
-       => Stream (e (Fun e a1 (Fun e a2 (Res e b1, Res e b2))))
+       => Stream (e (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2))))
        -- ^ signal carrying functions (<#reconfig22f *>)
        -> Stream (e a1)                  -- ^ first input signal
        -> Stream (e a2)                  -- ^ second input signal
@@ -370,7 +370,7 @@ reconfig84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -
 -- > state31, state32, state33, state34,
 -- > state41, state42, state43, state44,
 state22 :: MoC e
-        => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Res e st1, Res e st2))))
+        => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e st2))))
         -- ^ next state function (<#state22ns *>)
         -> (Stream (e st1), Stream (e st2))
         -- ^ initial state(s) (<#state22i **>)
@@ -450,7 +450,7 @@ state44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st2
 -- > stated31, stated32, stated33, stated34,
 -- > stated41, stated42, stated43, stated44,
 stated22 :: MoC e
-        => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Res e st1, Res e st2))))
+        => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e st2))))
         -- ^ next state function (<#stated22ns *>)
         -> (Stream (e st1), Stream (e st2))
         -- ^ initial state(s) (<#stated22i **>)
@@ -539,9 +539,9 @@ stated44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st
 -- > moore31, moore32, moore33, moore34,
 -- > moore41, moore42, moore43, moore44,
 moore22 :: MoC e
-        => Fun e st (Fun e a1 (Fun e a2 (Res e st)))
+        => Fun e st (Fun e a1 (Fun e a2 (Ret e st)))
         -- ^ next state function (<#moore22ns *>)
-        -> Fun e st (Res e b1, Res e b2)
+        -> Fun e st (Ret e b1, Ret e b2)
         -- ^ output decoder (<#moore22od **>)
         -> Stream (e st)
         -- ^ intial state (<#moore22i ***>)
@@ -607,9 +607,9 @@ moore44 ns od i s1 s2 s3 s4 =        comb14 od st
 -- > mealy31, mealy32, mealy33, mealy34,
 -- > mealy41, mealy42, mealy43, mealy44,
 mealy22 :: MoC e
-        => Fun e st (Fun e a1 (Fun e a2 (Res e st)))
+        => Fun e st (Fun e a1 (Fun e a2 (Ret e st)))
         -- ^ next state function (<#mealy22ns *>)
-        -> Fun e st (Fun e a1 (Fun e a2 (Res e b1, Res e b2)))
+        -> Fun e st (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))
         -- ^ output decoder (<#mealy22od **>)
         -> Stream (e st)
         -- ^ intial state (<#mealy22i ***>)
@@ -725,7 +725,7 @@ infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
 -- outputs. Implemented are the following:
 --
 -- > -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<,
-(-*<) :: MoC e => Stream (e (Res e b1, Res e b2)) -> (Stream (e b1), Stream (e b2))
+(-*<) :: MoC e => Stream (e (Ret e b1, Ret e b2)) -> (Stream (e b1), Stream (e b2))
 (-*<) p        = ((-*),(-*))                                    $$        (p ||<)  
 (-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)
 (-*<<<) p      = ((-*),(-*),(-*),(-*))                          $$$$      (p ||<<<)

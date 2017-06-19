@@ -36,7 +36,7 @@ data DE a  = DE { tag :: Tag,  -- ^ timestamp
 -- MoC through its atoms.
 instance MoC DE where
   type Fun DE a b = a -> b
-  type Res DE b   = b 
+  type Ret DE b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------
@@ -55,7 +55,8 @@ instance MoC DE where
   ---------------------
   (DE _ v :- _) -<- xs = pure v :- xs
   ---------------------
-  (DE d _ :- _) -&- xs = (\(DE t v) -> DE (t + d) v) <$> xs
+  (_ :- DE d _ :- _) -&- xs = (\(DE t v) -> DE (t + d) v) <$> xs
+  (_ :- NullS) -&- _  = error "DE: signal delayed to infinity"
   ---------------------
 
 -- | Shows the event with tag @t@ and value @v@ as @ v \@t@.
@@ -79,36 +80,39 @@ instance Applicative DE where
 
 -----------------------------------------------------------------------------
 
--- | Wraps a tuple @(tag, value)@ into a DE event of extended values
-event  :: (Tag, a) -> DE a 
-event (t,v) = DE t v
+unit  :: (Tag, a) -> Signal a 
+unit (t,v) = (DE 0 v :- DE t v :- NullS)
 
 -- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
--- event container(s).
+-- unit signal(s), in this case a signal with one event with the
+-- period @tag@ carrying @value@.
 --
--- "ForSyDe.Atom.MoC.DE" exports the helper functions below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following helpers are exported:
 --
--- > event, event2, event3, event4,
-event2 = ($$) (event,event)
-event3 = ($$$) (event,event,event)
-event4 = ($$$$) (event,event,event,event)
+-- > unit, unit2, unit3, unit4,
+unit2 = ($$) (unit,unit)
+unit3 = ($$$) (unit,unit,unit)
+unit4 = ($$$$) (unit,unit,unit,unit)
 
--- | Transforms a list of tuples such as the ones taken by 'event'
--- into a DE signal
+-- | Creates an infinite signal.
+infinite :: a -> Signal a
+infinite v = DE 0 v :- NullS
+
+-- | Transforms a list of tuples @(tag, value)@ into a DE
+-- signal. Checks if it is well-formed.
 signal :: [(Tag, a)] -> Signal a
-signal = checkSignal . stream . fmap event
+signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 
 -- | Reads a signal from a string and checks if it is well-formed. Like
--- with the @read@ function from @Prelude@, you must specify the tipe
+-- with the @read@ function from @Prelude@, you must specify the type
 -- of the signal.
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- > { 1 @0, 2 @2, 3 @5, 4 @7, 5 @10}
+-- { 1 @0, 2 @2, 3 @5, 4 @7, 5 @10}
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
--- > { 1 @0, 2 @2, 3 @5*** Exception: DE: malformed signal
+-- { 1 @0, 2 @2, 3 @5*** Exception: DE: malformed signal
 -- >>> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- > *** Exception: DE: input signal does not start from global 0
+-- *** Exception: DE: signal does not start from global 0
 readSignal :: Read a => String -> Signal a
 readSignal s = checkSignal $ read s
 
@@ -117,7 +121,7 @@ readSignal s = checkSignal $ read s
 checkSignal NullS = NullS
 checkSignal s@(x:-_)
   | tag x == 0 = checkOrder s
-  | otherwise  = error "DE: input signal does not start from global 0"
+  | otherwise  = error "DE: signal does not start from global 0"
   where
     checkOrder NullS      = NullS
     checkOrder (x:-NullS) = (x:-NullS)

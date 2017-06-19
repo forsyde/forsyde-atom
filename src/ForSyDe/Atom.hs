@@ -753,6 +753,8 @@ module ForSyDe.Atom (
 
   -- | #bird97# <http://dl.acm.org/citation.cfm?id=248932 [Bird97]> Bird, R. S. & de Moor, O. (1997). Algebra of Programming. Prentice-Hall, Inc., Upper Saddle River, NJ, USA. 
 
+    -- | #fuji00# [Fujimoto00] Fujimoto, R. M. (2000). Parallel and distributed simulation systems (Vol. 300). New York: Wiley.
+  
   -- | #halbwachs91# <http://ieeexplore.ieee.org/document/97300/ [Halbwachs91]> Halbwachs, N., Caspi, P., Raymond, P., & Pilaud, D. (1991). The synchronous data flow programming language LUSTRE. /Proceedings of the IEEE, 79(9)/, 1305-1320.
 
   -- | #kahn76# [Kahn76] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.

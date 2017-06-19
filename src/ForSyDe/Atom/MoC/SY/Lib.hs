@@ -590,9 +590,22 @@ when' :: Signal Bool       -- ^ Signal of predicates
      -> Signal (AbstExt a) -- ^ Output signal
 when' = MoC.comb21 (B.filter')
 
+-- | Simple wrapper for applying a predicate function on a signal of
+-- absent-extended events.
+--
+-- >>> let s1   = signal $ map Prst [1,2,3,4,5]
+-- >>> s1 `is` (>3)
+-- {False,False,False,True,True}
 is :: Signal (AbstExt a) -> (a -> Bool) -> Signal (AbstExt Bool)
-is s p = comb11 (B.resolution11 p) s
+is s p = comb11 (B.res11 p) s
 
+-- | Same as 'when' but triggering the output events merely based on
+-- the presence of the first input rather than a predicate function.
+--
+-- >>> let s1   = signal $ map Prst [1,2,3,4,5]
+-- >>> let sp   = signal [Prst 1, Prst 1, Abst, Prst 1, Abst]
+-- >>> whenPresent sp s1
+-- {1,2,⟂,4,⟂}
 whenPresent s = when (s `is` (\_ -> True))
 
 -- | Filters out values to 'Abst' if they do not fulfill a predicate
@@ -612,7 +625,7 @@ filter :: (a -> Bool)      -- ^ Predicate function
        -> Signal (AbstExt a) -- ^ Input signal
        -> Signal (AbstExt a) -- ^ Output signal
 filter p s = MoC.comb21 B.filter ps s
-  where ps = comb11 (B.resolution11 p) s
+  where ps = comb11 (B.res11 p) s
 
 
 -- | Same as 'filter' but inputs signals of non-extended values.
@@ -656,6 +669,30 @@ hold init = MoC.state11 fillF (unit init)
 
 ------- ABSENT EXTENDED WRAPPERS -------
 
+-- | Creates a wrapper enabling a reactive behvior to absent-extended
+-- signals for processes which would otherwise degrade the
+-- absent-extension (e.g. state machines with 'ignore22' behavior).
+--
+-- The following constructors are provided:
+--
+-- > reactAbst1, reactAbst2, reactAbst3, reactAbst4,
+--
+-- >>> let s1 = readSignal "{1,1,1,_,1,_,1}" :: Signal (AbstExt Int)
+-- >>> let proc = stated11 (B.ignore11 (+)) 0
+-- >>> proc s1
+-- {0,1,2,3,3,4,4,5}
+-- >>> reactAbst1 proc s1
+-- {0,1,2,⟂,3,⟂,4} 
+--
+-- <<docfiles/figs/moc-sy-pattern-reactAbst.png>>
+reactAbst2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b)
+           -- ^ process which degrades the absent extension,
+           -- e.g. holds present values
+           -> Signal (AbstExt a1)
+           -> Signal (AbstExt a2)
+           -> Signal (AbstExt b)
+           -- ^ absent-extended signal, properly reacting to the inputs
+     
 reactAbst1 p s1          = whenPresent s1 $ comb11 B.extend (p s1)
 reactAbst2 p s1 s2       = whenPresent s1 $ comb11 B.extend (p s1 s2)
 reactAbst3 p s1 s2 s3    = whenPresent s1 $ comb11 B.extend (p s1 s2 s3)

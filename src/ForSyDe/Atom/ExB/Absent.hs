@@ -17,11 +17,11 @@
 -- defined in "ForSyDe.Atom.ExB", and no helpers or utilities are
 -- needed. Example usage:
 --
--- >>> resolution21 (+) (Prst 1) (Prst 2) 
+-- >>> res21 (+) (Prst 1) (Prst 2) 
 -- 3
--- >>> resolution21 (+) Abst     Abst 
+-- >>> res21 (+) Abst     Abst 
 -- ⟂
--- >>> resolution21 (+) (Prst 1) Abst 
+-- >>> res21 (+) (Prst 1) Abst 
 -- *** Exception: [ExB.Absent] Illegal occurrence of an absent and present event
 -- >>> filter Abst         (Prst 1)
 -- ⟂

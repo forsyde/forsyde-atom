@@ -27,14 +27,14 @@ module ForSyDe.Atom.ExB (
   
   -- * Patterns
 
-  resolution11, resolution12, resolution13, resolution14,
-  resolution21, resolution22, resolution23, resolution24,
-  resolution31, resolution32, resolution33, resolution34,
-  resolution41, resolution42, resolution43, resolution44,
-  resolution51, resolution52, resolution53, resolution54,
-  resolution61, resolution62, resolution63, resolution64,
-  resolution71, resolution72, resolution73, resolution74,
-  resolution81, resolution82, resolution83, resolution84,
+  res11, res12, res13, res14,
+  res21, res22, res23, res24,
+  res31, res32, res33, res34,
+  res41, res42, res43, res44,
+  res51, res52, res53, res54,
+  res61, res62, res63, res64,
+  res71, res72, res73, res74,
+  res81, res82, res83, res84,
 
   filter, filter',
 
@@ -80,7 +80,7 @@ class Functor b => ExB b where
   -- <<docfiles/figs/eqs-exb-atom-func.png>>
   (/.\) :: (a -> a') -> b a -> b a'
 
-  -- | Applicative operator. Defines a resolution between two extended
+  -- | Applicative operator. Defines a res between two extended
   -- behavior symbols.
   --
   -- <<docfiles/figs/eqs-exb-atom-app.png>>
@@ -104,58 +104,58 @@ class Functor b => ExB b where
 -- |  
 -- <<docfiles/figs/eqs-exb-pattern-resolution.png>>
 --
--- The @resolution@ behavior pattern lifts a function on values to the
+-- The @res@ behavior pattern lifts a function on values to the
 -- extended behavior domain, and applies a resolution between two
 -- extended behavior symbols.
 --
 -- These are the functions exported:
 --
--- > resolution11, resolution12, resolution13, resolution14,
--- > resolution21, resolution22, resolution23, resolution24,
--- > resolution31, resolution32, resolution33, resolution34,
--- > resolution41, resolution42, resolution43, resolution44,
--- > resolution51, resolution52, resolution53, resolution54,
--- > resolution61, resolution62, resolution63, resolution64,
--- > resolution71, resolution72, resolution73, resolution74,
--- > resolution81, resolution82, resolution83, resolution84,
-resolution22 :: ExB b
+-- > res11, res12, res13, res14,
+-- > res21, res22, res23, res24,
+-- > res31, res32, res33, res34,
+-- > res41, res42, res43, res44,
+-- > res51, res52, res53, res54,
+-- > res61, res62, res63, res64,
+-- > res71, res72, res73, res74,
+-- > res81, res82, res83, res84,
+res22 :: ExB b
   => (a1 -> a2 -> (a1', a2')) -- ^ function on values
   -> b a1                     -- ^ first input
   -> b a2                     -- ^ second input
   -> (b a1', b a2')           -- ^ tupled output
   
-resolution11 f b1                      = (f /.\ b1)
-resolution21 f b1 b2                   = (f /.\ b1 /*\ b2)
-resolution31 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3)
-resolution41 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4)
-resolution51 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5)
-resolution61 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6)
-resolution71 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7)
-resolution81 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 /*\ b8)
-resolution12 f b1                      = (f /.\ b1 |<)
-resolution22 f b1 b2                   = (f /.\ b1 /*\ b2 |<)
-resolution32 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3 |<)
-resolution42 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 |<)
-resolution52 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 |<)
-resolution62 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 |<)
-resolution72 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 |<)
-resolution82 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b5 /*\ b8 |<)
-resolution13 f b1                      = (f /.\ b1 |<<)
-resolution23 f b1 b2                   = (f /.\ b1 /*\ b2 |<<)
-resolution33 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3 |<<)
-resolution43 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 |<<)
-resolution53 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 |<<)
-resolution63 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 |<<)
-resolution73 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 |<<)
-resolution83 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b5 /*\ b8 |<<)
-resolution14 f b1                      = (f /.\ b1 |<<<)
-resolution24 f b1 b2                   = (f /.\ b1 /*\ b2 |<<<)
-resolution34 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3 |<<<)
-resolution44 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 |<<<)
-resolution54 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 |<<<)
-resolution64 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 |<<<)
-resolution74 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 |<<<)
-resolution84 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 /*\ b8 |<<<)
+res11 f b1                      = (f /.\ b1)
+res21 f b1 b2                   = (f /.\ b1 /*\ b2)
+res31 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3)
+res41 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4)
+res51 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5)
+res61 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6)
+res71 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7)
+res81 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 /*\ b8)
+res12 f b1                      = (f /.\ b1 |<)
+res22 f b1 b2                   = (f /.\ b1 /*\ b2 |<)
+res32 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3 |<)
+res42 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 |<)
+res52 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 |<)
+res62 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 |<)
+res72 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 |<)
+res82 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b5 /*\ b8 |<)
+res13 f b1                      = (f /.\ b1 |<<)
+res23 f b1 b2                   = (f /.\ b1 /*\ b2 |<<)
+res33 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3 |<<)
+res43 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 |<<)
+res53 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 |<<)
+res63 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 |<<)
+res73 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 |<<)
+res83 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b5 /*\ b8 |<<)
+res14 f b1                      = (f /.\ b1 |<<<)
+res24 f b1 b2                   = (f /.\ b1 /*\ b2 |<<<)
+res34 f b1 b2 b3                = (f /.\ b1 /*\ b2 /*\ b3 |<<<)
+res44 f b1 b2 b3 b4             = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 |<<<)
+res54 f b1 b2 b3 b4 b5          = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 |<<<)
+res64 f b1 b2 b3 b4 b5 b6       = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 |<<<)
+res74 f b1 b2 b3 b4 b5 b6 b7    = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 |<<<)
+res84 f b1 b2 b3 b4 b5 b6 b7 b8 = (f /.\ b1 /*\ b2 /*\ b3 /*\ b4 /*\ b5 /*\ b6 /*\ b7 /*\ b8 |<<<)
 
 -- | Prefix name for the prefix operator '/&\'.
 filter  p    = (/&\) p
@@ -172,15 +172,15 @@ degrade a = (/!\) a
 --
 -- The @ignoreXY@ pattern takes a funcion of @Y + X@ arguments, @Y@
 -- basic inputs followed by @X@ behavior-extended inputs. The @X@
--- behavior-extended arguments are subjugated to a resolution, and the
+-- behavior-extended arguments are subjugated to a res, and the
 -- result is then degraded using the first @Y@ arguments as
 -- fallback. The effect is similar to "ignoring" a the result of a
--- resolution function if &#8712; /b/.
+-- res function if &#8712; /b/.
 --
 -- The main application of this pattern is as extended behavior
 -- wrapper for state machine functions which do not "understand"
 -- extended behavior semantics, i.e. it simply propagates the current
--- state (&#8712; /&#945;/) if the inputs (their resolution) belongs
+-- state (&#8712; /&#945;/) if the inputs (their res) belongs
 -- to the set of extended values (&#8712; /b/).
 --
 -- You can choose from the following exported functions:
@@ -194,19 +194,19 @@ ignore22 :: ExB b
          -- ^ function of @Y + X@ arguments
          -> a1 -> a2 -> b a1' -> b a2' -> (a1, a2)
      
-ignore11 f a1 b1          = degrade a1 $ resolution11 (f a1) b1
-ignore21 f a1 b1 b2       = degrade a1 $ resolution21 (f a1) b1 b2
-ignore31 f a1 b1 b2 b3    = degrade a1 $ resolution31 (f a1) b1 b2 b3
-ignore41 f a1 b1 b2 b3 b4 = degrade a1 $ resolution41 (f a1) b1 b2 b3 b4
-ignore12 f a1 a2 b1          = degrade (a1, a2) $ resolution11 (f a1 a2) b1
-ignore22 f a1 a2 b1 b2       = degrade (a1, a2) $ resolution21 (f a1 a2) b1 b2
-ignore32 f a1 a2 b1 b2 b3    = degrade (a1, a2) $ resolution31 (f a1 a2) b1 b2 b3
-ignore42 f a1 a2 b1 b2 b3 b4 = degrade (a1, a2) $ resolution41 (f a1 a2) b1 b2 b3 b4
-ignore13 f a1 a2 a3 b1          = degrade (a1, a2, a3) $ resolution11 (f a1 a2 a3) b1
-ignore23 f a1 a2 a3 b1 b2       = degrade (a1, a2, a3) $ resolution21 (f a1 a2 a3) b1 b2
-ignore33 f a1 a2 a3 b1 b2 b3    = degrade (a1, a2, a3) $ resolution31 (f a1 a2 a3) b1 b2 b3
-ignore43 f a1 a2 a3 b1 b2 b3 b4 = degrade (a1, a2, a3) $ resolution41 (f a1 a2 a3) b1 b2 b3 b4
-ignore14 f a1 a2 a3 a4 b1          = degrade (a1, a2, a3, a4) $ resolution11 (f a1 a2 a3 a4) b1
-ignore24 f a1 a2 a3 a4 b1 b2       = degrade (a1, a2, a3, a4) $ resolution21 (f a1 a2 a3 a4) b1 b2
-ignore34 f a1 a2 a3 a4 b1 b2 b3    = degrade (a1, a2, a3, a4) $ resolution31 (f a1 a2 a3 a4) b1 b2 b3
-ignore44 f a1 a2 a3 a4 b1 b2 b3 b4 = degrade (a1, a2, a3, a4) $ resolution41 (f a1 a2 a3 a4) b1 b2 b3 b4
+ignore11 f a1 b1          = degrade a1 $ res11 (f a1) b1
+ignore21 f a1 b1 b2       = degrade a1 $ res21 (f a1) b1 b2
+ignore31 f a1 b1 b2 b3    = degrade a1 $ res31 (f a1) b1 b2 b3
+ignore41 f a1 b1 b2 b3 b4 = degrade a1 $ res41 (f a1) b1 b2 b3 b4
+ignore12 f a1 a2 b1          = degrade (a1, a2) $ res11 (f a1 a2) b1
+ignore22 f a1 a2 b1 b2       = degrade (a1, a2) $ res21 (f a1 a2) b1 b2
+ignore32 f a1 a2 b1 b2 b3    = degrade (a1, a2) $ res31 (f a1 a2) b1 b2 b3
+ignore42 f a1 a2 b1 b2 b3 b4 = degrade (a1, a2) $ res41 (f a1 a2) b1 b2 b3 b4
+ignore13 f a1 a2 a3 b1          = degrade (a1, a2, a3) $ res11 (f a1 a2 a3) b1
+ignore23 f a1 a2 a3 b1 b2       = degrade (a1, a2, a3) $ res21 (f a1 a2 a3) b1 b2
+ignore33 f a1 a2 a3 b1 b2 b3    = degrade (a1, a2, a3) $ res31 (f a1 a2 a3) b1 b2 b3
+ignore43 f a1 a2 a3 b1 b2 b3 b4 = degrade (a1, a2, a3) $ res41 (f a1 a2 a3) b1 b2 b3 b4
+ignore14 f a1 a2 a3 a4 b1          = degrade (a1, a2, a3, a4) $ res11 (f a1 a2 a3 a4) b1
+ignore24 f a1 a2 a3 a4 b1 b2       = degrade (a1, a2, a3, a4) $ res21 (f a1 a2 a3 a4) b1 b2
+ignore34 f a1 a2 a3 a4 b1 b2 b3    = degrade (a1, a2, a3, a4) $ res31 (f a1 a2 a3 a4) b1 b2 b3
+ignore44 f a1 a2 a3 a4 b1 b2 b3 b4 = degrade (a1, a2, a3, a4) $ res41 (f a1 a2 a3 a4) b1 b2 b3 b4

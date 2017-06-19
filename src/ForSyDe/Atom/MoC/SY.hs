@@ -84,7 +84,7 @@ module ForSyDe.Atom.MoC.SY (
 
   -- | These SY process constructors are basically specific
   -- instantiations of the patterns of atoms defined in
-  -- "ForSyDe.Atom.MoC". Some arealso wrapping functions in an
+  -- "ForSyDe.Atom.MoC". Some are also wrapping functions in an
   -- extended behavioural model.
 
   -- ** Simple
@@ -134,8 +134,8 @@ module ForSyDe.Atom.MoC.SY (
   -- | These processes manipulate the behavior of a signal based on
   -- predicates on their status.
 
-  when, when', filter, filter', fill, hold,
-
+  when, when', is, whenPresent, filter, filter', fill, hold,
+  reactAbst1, reactAbst2, reactAbst3, reactAbst4
   -- -- * Interfaces
 
   -- toDE, toDE2, toDE3, toDE4,
