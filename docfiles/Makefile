@@ -1,4 +1,5 @@
-FILES = eqs
+FILES = eqs-exb \
+	eqs-moc moc moc-sy moc-de
 
 target-format=figs/$(1)-$(2).png
 
@@ -23,14 +24,14 @@ define fig-template
 	$(foreach image,$(2),$(call compile-latex,$(1),$(image)))
 endef
 
-$(foreach file,$(FILES),\
-	$(eval $(call fig-template,$(file),$(call make-fig-targets,$(file)))))
-
 haddock: prepare $(FIGS) Makefile $(STYLE)
 	@cd .. && cabal haddock --hyperlink-source --css=docfiles/styles/ocean.css
 
 prepare:
 	$(MKDIR) figs
+
+$(foreach file,$(FILES),\
+	$(eval $(call fig-template,$(file),$(call make-fig-targets,$(file)))))
 
 clean:
 	rm -rf auto
