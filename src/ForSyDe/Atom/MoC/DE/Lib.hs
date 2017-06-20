@@ -16,466 +16,658 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.DE.Lib where
 
-import           ForSyDe.Atom.Behavior hiding (value)
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.DE.Core
 import           ForSyDe.Atom.Utility
 
-import           Numeric.Natural
+------- DOCTEST SETUP -------
+
+-- $setup
+-- >>> import ForSyDe.Atom.MoC.Stream (takeS)
 
 ------- DELAY -------
 
-delay t v = MoC.delay (event (t, v))
+-- | The @delay@ process "delays" a signal with one
+-- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern.
+--
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> delay 3 0 s
+-- { 0 @0, 1 @3, 2 @5, 3 @9, 4 @11, 5 @12}
+--
+-- <<docfiles/figs/moc-de-pattern-delay.png>>
+delay :: Tag        -- ^ time delay
+      -> a          -- ^ initial value
+      -> Signal a   -- ^ input signal
+      -> Signal a   -- ^ output signal
+
+delay t v = MoC.delay (unit (t, v))
+
+-- | Similar to the previous, but this is the raw instantiation of the
+-- 'ForSyDe.Atom.MoC.delay' pattern. It "borrows" the first event from
+-- one signal and appends it at the head of another signal.
+--
+-- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> delay 3 0 s
+-- { 1 @0, 3 @2, 4 @6, 5 @7, 6 @10, 7 @11}
+--
+-- <<docfiles/figs/moc-de-pattern-delayp.png>>
+delay' :: Signal a  -- ^ signal "borrowing" the initial event
+      -> Signal a   -- ^ input signal
+      -> Signal a   -- ^ output signal
+
+delay' = MoC.delay
 
 ------- COMB -------
 
-comb11 :: (a1 -> b1)
-       -> Sig a1 -> Sig b1                                
-comb12 :: (a1 -> (b1, b2))
-       -> Sig a1 -> (Sig b1, Sig b2)                          
-comb13 :: (a1 -> (b1, b2, b3))
-       -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-comb14 :: (a1 -> (b1, b2, b3, b4))
-       -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-comb21 :: (a1 -> a2 -> b1)
-       -> Sig a1 -> Sig a2 -> Sig b1                          
-comb23 :: (a1 -> a2 -> (b1, b2, b3))
-       -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-comb24 :: (a1 -> a2 -> (b1, b2, b3, b4))
-       -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)            
-comb31 :: (a1 -> a2 -> a3 -> b1)
-       -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-comb32 :: (a1 -> a2 -> a3 -> (b1, b2))
-       -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-comb33 :: (a1 -> a2 -> a3 -> (b1, b2, b3))
-       -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-comb34 :: (a1 -> a2 -> a3 -> (b1, b2, b3, b4))
-       -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
-comb41 :: (a1 -> a2 -> a3 -> a4 -> b1)
-       -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-comb42 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2))
-       -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-comb43 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
-       -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-comb44 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
-       -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
-
-comb11 f = MoC.comb11 (wrap11 (psi11 f))
-comb12 f = MoC.comb12 (wrap12 (psi12 f))
-comb13 f = MoC.comb13 (wrap13 (psi13 f))
-comb14 f = MoC.comb14 (wrap14 (psi14 f))
-comb21 f = MoC.comb21 (wrap21 (psi21 f))
-comb22 f = MoC.comb22 (wrap22 (psi22 f))
-comb23 f = MoC.comb23 (wrap23 (psi23 f))
-comb24 f = MoC.comb24 (wrap24 (psi24 f))
-comb31 f = MoC.comb31 (wrap31 (psi31 f))
-comb32 f = MoC.comb32 (wrap32 (psi32 f))
-comb33 f = MoC.comb33 (wrap33 (psi33 f))
-comb34 f = MoC.comb34 (wrap34 (psi34 f))
-comb41 f = MoC.comb41 (wrap41 (psi41 f))
-comb42 f = MoC.comb42 (wrap42 (psi42 f))
-comb43 f = MoC.comb43 (wrap43 (psi43 f))
-comb44 f = MoC.comb44 (wrap44 (psi44 f))
-
-
-------- CONSTANT -------
-
-constant1 :: b1 -> Sig b1                                
-constant3 :: (b1, b2, b3) -> (Sig b1, Sig b2, Sig b3)                      
-constant4 :: (b1, b2, b3, b4) -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-
-constant1 i =  signal [(0, i)]
-constant2 i = (signal [(0, i)] ||||<)
-constant3 i = (signal [(0, i)] ||||<<)
-constant4 i = (signal [(0, i)] ||||<<<)
-
-------- GENERATE -------
-
-generate1 :: (b1 -> b1) -> (Tag, b1)
-          -> Sig b1                                
-generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-          -> (Sig b1, Sig b2, Sig b3)                      
-generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-          -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-
-generate1 ns i = MoC.stated01 (wrap11 (psi11 ns)) (event  i)
-generate2 ns i = MoC.stated02 (wrap22 (psi22 ns)) (event2 i)
-generate3 ns i = MoC.stated03 (wrap33 (psi33 ns)) (event3 i)
-generate4 ns i = MoC.stated04 (wrap44 (psi44 ns)) (event4 i)
-
-------- STATED -------
-
-stated11 :: (b1 -> a1 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig b1                                
-stated12 :: (b1 -> b2 -> a1 -> (b1, b2)) -> ((Tag, b1), (Tag, b2))
-        -> Sig a1 -> (Sig b1, Sig b2)                          
-stated13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-stated14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-stated21 :: (b1 -> a1 -> a2 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig a2 -> Sig b1                          
-stated23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-stated24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
-stated31 :: (b1 -> a1 -> a2 -> a3 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-stated32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) -> ((Tag, b1), (Tag, b2))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-stated33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-stated34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
-stated41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-stated42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> ((Tag, b1), (Tag, b2))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-stated43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-stated44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
-
-stated11 ns i = MoC.stated11 (wrap21 (psi21 ns)) (event  i)
-stated12 ns i = MoC.stated12 (wrap32 (psi32 ns)) (event2 i)
-stated13 ns i = MoC.stated13 (wrap43 (psi43 ns)) (event3 i)
-stated14 ns i = MoC.stated14 (wrap54 (psi54 ns)) (event4 i)
-stated21 ns i = MoC.stated21 (wrap31 (psi31 ns)) (event  i)
-stated22 ns i = MoC.stated22 (wrap42 (psi42 ns)) (event2 i)
-stated23 ns i = MoC.stated23 (wrap53 (psi53 ns)) (event3 i)
-stated24 ns i = MoC.stated24 (wrap64 (psi64 ns)) (event4 i)
-stated31 ns i = MoC.stated31 (wrap41 (psi41 ns)) (event  i)
-stated32 ns i = MoC.stated32 (wrap52 (psi52 ns)) (event2 i)
-stated33 ns i = MoC.stated33 (wrap63 (psi63 ns)) (event3 i)
-stated34 ns i = MoC.stated34 (wrap74 (psi74 ns)) (event4 i)
-stated41 ns i = MoC.stated41 (wrap51 (psi51 ns)) (event  i)
-stated42 ns i = MoC.stated42 (wrap62 (psi62 ns)) (event2 i)
-stated43 ns i = MoC.stated43 (wrap73 (psi73 ns)) (event3 i)
-stated44 ns i = MoC.stated44 (wrap84 (psi84 ns)) (event4 i)
-
-------- STATE -------
-
-state11 :: (b1 -> a1 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig b1                                
-state12 :: (b1 -> b2 -> a1 -> (b1, b2)) -> ((Tag, b1), (Tag, b2))
-        -> Sig a1 -> (Sig b1, Sig b2)                          
-state13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-state14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-state21 :: (b1 -> a1 -> a2 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig a2 -> Sig b1                          
-state23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-state24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
-state31 :: (b1 -> a1 -> a2 -> a3 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-state32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) -> ((Tag, b1), (Tag, b2))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-state33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-state34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
-state41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1) -> (Tag, b1)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-state42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> ((Tag, b1), (Tag, b2))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-state43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> ((Tag, b1), (Tag, b2), (Tag, b3))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-state44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
-
-state11 ns i = MoC.state11 (wrap21 (psi21 ns)) (event  i)
-state12 ns i = MoC.state12 (wrap32 (psi32 ns)) (event2 i)
-state13 ns i = MoC.state13 (wrap43 (psi43 ns)) (event3 i)
-state14 ns i = MoC.state14 (wrap54 (psi54 ns)) (event4 i)
-state21 ns i = MoC.state21 (wrap31 (psi31 ns)) (event  i)
-state22 ns i = MoC.state22 (wrap42 (psi42 ns)) (event2 i)
-state23 ns i = MoC.state23 (wrap53 (psi53 ns)) (event3 i)
-state24 ns i = MoC.state24 (wrap64 (psi64 ns)) (event4 i)
-state31 ns i = MoC.state31 (wrap41 (psi41 ns)) (event  i)
-state32 ns i = MoC.state32 (wrap52 (psi52 ns)) (event2 i)
-state33 ns i = MoC.state33 (wrap63 (psi63 ns)) (event3 i)
-state34 ns i = MoC.state34 (wrap74 (psi74 ns)) (event4 i)
-state41 ns i = MoC.state41 (wrap51 (psi51 ns)) (event  i)
-state42 ns i = MoC.state42 (wrap62 (psi62 ns)) (event2 i)
-state43 ns i = MoC.state43 (wrap73 (psi73 ns)) (event3 i)
-state44 ns i = MoC.state44 (wrap84 (psi84 ns)) (event4 i)
-
-
-------- MOORE -------
-
-moore11 :: (st -> a1 -> st) -> (st -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig b1                                
-moore12 :: (st -> a1 -> st) -> (st -> (b1, b2)) -> (Tag, st)
-        -> Sig a1 -> (Sig b1, Sig b2)                          
-moore13 :: (st -> a1 -> st) -> (st -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-moore14 :: (st -> a1 -> st) -> (st -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-moore21 :: (st -> a1 -> a2 -> st) -> (st -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig b1                          
-moore23 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-moore24 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
-moore31 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-moore32 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> (b1, b2)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-moore33 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-moore34 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
-moore41 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-moore42 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> (b1, b2)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-moore43 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-moore44 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
-
-moore11 ns od i = MoC.moore11 (wrap21 (psi21 ns)) (wrap11 (psi11 od)) (event i)
-moore12 ns od i = MoC.moore12 (wrap21 (psi21 ns)) (wrap12 (psi12 od)) (event i)
-moore13 ns od i = MoC.moore13 (wrap21 (psi21 ns)) (wrap13 (psi13 od)) (event i)
-moore14 ns od i = MoC.moore14 (wrap21 (psi21 ns)) (wrap14 (psi14 od)) (event i)
-moore21 ns od i = MoC.moore21 (wrap31 (psi31 ns)) (wrap11 (psi11 od)) (event i)
-moore22 ns od i = MoC.moore22 (wrap31 (psi31 ns)) (wrap12 (psi12 od)) (event i)
-moore23 ns od i = MoC.moore23 (wrap31 (psi31 ns)) (wrap13 (psi13 od)) (event i)
-moore24 ns od i = MoC.moore24 (wrap31 (psi31 ns)) (wrap14 (psi14 od)) (event i)
-moore31 ns od i = MoC.moore31 (wrap41 (psi41 ns)) (wrap11 (psi11 od)) (event i)
-moore32 ns od i = MoC.moore32 (wrap41 (psi41 ns)) (wrap12 (psi12 od)) (event i)
-moore33 ns od i = MoC.moore33 (wrap41 (psi41 ns)) (wrap13 (psi13 od)) (event i)
-moore34 ns od i = MoC.moore34 (wrap41 (psi41 ns)) (wrap14 (psi14 od)) (event i)
-moore41 ns od i = MoC.moore41 (wrap51 (psi51 ns)) (wrap11 (psi11 od)) (event i)
-moore42 ns od i = MoC.moore42 (wrap51 (psi51 ns)) (wrap12 (psi12 od)) (event i)
-moore43 ns od i = MoC.moore43 (wrap51 (psi51 ns)) (wrap13 (psi13 od)) (event i)
-moore44 ns od i = MoC.moore44 (wrap51 (psi51 ns)) (wrap14 (psi14 od)) (event i)
-
-------- MEALY -------
-
-mealy11 :: (st -> a1 -> st) -> (st -> a1 -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig b1                                
-mealy12 :: (st -> a1 -> st) -> (st -> a1 -> (b1, b2)) -> (Tag, st)
-        -> Sig a1 -> (Sig b1, Sig b2)                          
-mealy13 :: (st -> a1 -> st) -> (st -> a1 -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3)                      
-mealy14 :: (st -> a1 -> st) -> (st -> a1 -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> (Sig b1, Sig b2, Sig b3, Sig b4)                  
-mealy21 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig b1                          
-mealy23 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3)                
-mealy24 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2, Sig b3, Sig b4)                     
-mealy31 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> a1 -> a2 -> a3 -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig b1                    
-mealy32 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> a1 -> a2 -> a3 -> (b1, b2)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2)              
-mealy33 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3)          
-mealy34 :: (st -> a1 -> a2 -> a3 -> st) -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> (Sig b1, Sig b2, Sig b3, Sig b4)     
-mealy41 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> a1 -> a2 -> a3 -> a4 -> b1) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> Sig b1              
-mealy42 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2)        
-mealy43 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3)    
-mealy44 :: (st -> a1 -> a2 -> a3 -> a4 -> st) -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) -> (Tag, st)
-        -> Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig b1, Sig b2, Sig b3, Sig b4)
-
-mealy11 ns od i = MoC.mealy11 (wrap21 (psi21 ns)) (wrap21 (psi21 od)) (event i)
-mealy12 ns od i = MoC.mealy12 (wrap21 (psi21 ns)) (wrap22 (psi22 od)) (event i)
-mealy13 ns od i = MoC.mealy13 (wrap21 (psi21 ns)) (wrap23 (psi23 od)) (event i)
-mealy14 ns od i = MoC.mealy14 (wrap21 (psi21 ns)) (wrap24 (psi24 od)) (event i)
-mealy21 ns od i = MoC.mealy21 (wrap31 (psi31 ns)) (wrap31 (psi31 od)) (event i)
-mealy22 ns od i = MoC.mealy22 (wrap31 (psi31 ns)) (wrap32 (psi32 od)) (event i)
-mealy23 ns od i = MoC.mealy23 (wrap31 (psi31 ns)) (wrap33 (psi33 od)) (event i)
-mealy24 ns od i = MoC.mealy24 (wrap31 (psi31 ns)) (wrap34 (psi34 od)) (event i)
-mealy31 ns od i = MoC.mealy31 (wrap41 (psi41 ns)) (wrap41 (psi41 od)) (event i)
-mealy32 ns od i = MoC.mealy32 (wrap41 (psi41 ns)) (wrap42 (psi42 od)) (event i)
-mealy33 ns od i = MoC.mealy33 (wrap41 (psi41 ns)) (wrap43 (psi43 od)) (event i)
-mealy34 ns od i = MoC.mealy34 (wrap41 (psi41 ns)) (wrap44 (psi44 od)) (event i)
-mealy41 ns od i = MoC.mealy41 (wrap51 (psi51 ns)) (wrap51 (psi51 od)) (event i)
-mealy42 ns od i = MoC.mealy42 (wrap51 (psi51 ns)) (wrap52 (psi52 od)) (event i)
-mealy43 ns od i = MoC.mealy43 (wrap51 (psi51 ns)) (wrap53 (psi53 od)) (event i)
-mealy44 ns od i = MoC.mealy44 (wrap51 (psi51 ns)) (wrap54 (psi54 od)) (event i)
-
-------- SYNC -------
-
-sync3 :: Sig a1 -> Sig a2 -> Sig a3 -> (Sig a1, Sig a2, Sig a3)             
-sync4 :: Sig a1 -> Sig a2 -> Sig a3 -> Sig a4 -> (Sig a1, Sig a2, Sig a3, Sig a4)
-
-sync2 = comb22 (,)
-sync3 = comb33 (,,)
-sync4 = comb44 (,,,)
-
-
------------------ DOCUMENTATION -----------------
-
--- | The @delay@ process "delays" a signal with one event. It is an
--- instantiation of the 'ForSyDe.Atom.MoC.delay' constructor.
---
--- <<includes/figs/de-delay-graph.png>>
-delay :: Natural -- ^ time delay
-      -> a       -- ^ initial value
-      -> Sig a   -- ^ input signal
-      -> Sig a   -- ^ output signal
-
 -- | @comb@ processes map combinatorial functions on signals and take
 -- care of synchronization between input signals. It instantiates the
--- @comb@ atom pattern (see 'ForSyDe.Atom.MoC.comb22').
---
--- <<includes/figs/de-comb-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22').
+-- 
+-- The following constructors are provided:
 --
 -- > comb11, comb12, comb13, comb14,
 -- > comb21, comb22, comb23, comb24,
 -- > comb31, comb32, comb33, comb34,
 -- > comb41, comb42, comb43, comb44,
+--
+-- >>> let s1 = infinite 1
+-- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> comb11 (+1) s2
+-- { 2 @0, 3 @2, 4 @6, 5 @8, 6 @9}
+-- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
+-- ({ 2 @0, 3 @2, 4 @6, 5 @8, 6 @9},{ 0 @0, -1 @2, -2 @6, -3 @8, -4 @9})
+--
+-- <<docfiles/figs/moc-de-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
-       -> Sig a1                 -- ^ first input signal
-       -> Sig a2                 -- ^ second input signal
-       -> (Sig b1, Sig b2)       -- ^ two output signals
+       -> Signal a1                 -- ^ first input signal
+       -> Signal a2                 -- ^ second input signal
+       -> (Signal b1, Signal b2)       -- ^ two output signals
+comb11 :: (a1 -> b1)
+       -> Signal a1 -> Signal b1                                
+comb12 :: (a1 -> (b1, b2))
+       -> Signal a1 -> (Signal b1, Signal b2)                          
+comb13 :: (a1 -> (b1, b2, b3))
+       -> Signal a1 -> (Signal b1, Signal b2, Signal b3)                      
+comb14 :: (a1 -> (b1, b2, b3, b4))
+       -> Signal a1 -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
+comb21 :: (a1 -> a2 -> b1)
+       -> Signal a1 -> Signal a2 -> Signal b1                          
+comb23 :: (a1 -> a2 -> (b1, b2, b3))
+       -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3)                
+comb24 :: (a1 -> a2 -> (b1, b2, b3, b4))
+       -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3, Signal b4)            
+comb31 :: (a1 -> a2 -> a3 -> b1)
+       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal b1                    
+comb32 :: (a1 -> a2 -> a3 -> (b1, b2))
+       -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2)              
+comb33 :: (a1 -> a2 -> a3 -> (b1, b2, b3))
+       -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3)          
+comb34 :: (a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+       -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3, Signal b4)     
+comb41 :: (a1 -> a2 -> a3 -> a4 -> b1)
+       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> Signal b1              
+comb42 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2))
+       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2)        
+comb43 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3)    
+comb44 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+
+comb11 = MoC.comb11 
+comb12 = MoC.comb12 
+comb13 = MoC.comb13 
+comb14 = MoC.comb14 
+comb21 = MoC.comb21 
+comb22 = MoC.comb22 
+comb23 = MoC.comb23 
+comb24 = MoC.comb24 
+comb31 = MoC.comb31 
+comb32 = MoC.comb32 
+comb33 = MoC.comb33 
+comb34 = MoC.comb34 
+comb41 = MoC.comb41 
+comb42 = MoC.comb42 
+comb43 = MoC.comb43 
+comb44 = MoC.comb44 
 
 
--- | @sync@ synchronizes multiple signals, so that they have the same
--- set of tags, and consequently, the same number of events. It
--- instantiates the @comb@ atom pattern (see
--- 'ForSyDe.Atom.MoC.comb22').
---
--- <<includes/figs/de-sync-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
---
--- > sync2, sync3, sync4,
-sync2 :: Sig a1                 -- ^ first input signal
-      -> Sig a2                 -- ^ second input signal
-      -> (Sig a1, Sig a2)       -- ^ two output signals
-
+------- CONSTANT -------
 
 -- | A signal generator which keeps a value constant. As compared with
--- the 'ForSyDe.Atom.MoC.SY.SY', it just constructs a singleton signal with an initial event, and according to the properties of the <#g:1 DE implementation>, it persists until infinity.
+-- the 'ForSyDe.Atom.MoC.SY.SY', it just constructs an infinite signal
+-- with constant value (i.e. a signal with one event starting from
+-- time 0).
 --
--- <<includes/figs/de-constant-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following constructors are provided:
 --
 -- > constant1, constant2, constant3, constant4,
+--
+-- >>> constant1 2
+-- { 2 @0}
+--
+-- <<docfiles/figs/moc-de-pattern-constant.png>>
 constant2 :: (b1, b2)         -- ^ values to be repeated
-          -> (Sig b1, Sig b2) -- ^ generated signals
+          -> (Signal b1, Signal b2) -- ^ generated signals
+constant1 :: b1 -> Signal b1                                
+constant3 :: (b1, b2, b3) -> (Signal b1, Signal b2, Signal b3)
+constant4 :: (b1, b2, b3, b4) -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
--- | A signal generator based on a function and a kernel value. It is
--- actually an instantiation of the @stated0X@ constructor (check
--- 'ForSyDe.Atom.MoC.stated22').
+constant1 = infinite
+constant2 = ($$) (infinite,infinite)
+constant3 = ($$$) (infinite,infinite,infinite)
+constant4 = ($$$$) (infinite,infinite,infinite,infinite)
+
+------- GENERATE -------
+
+-- | A signal generator based on a function and a kernel value. It
+-- is actually an instantiation of the @stated0X@ constructor
+-- (check 'ForSyDe.Atom.MoC.stated22').
 --
--- <<includes/figs/de-generate-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following constructors are provided:
 --
 -- > generate1, generate2, generate3, generate4,
+--
+-- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) ((3,1),(1,2))
+-- >>> takeS 5 s1
+-- { 1 @0, 2 @3, 2 @4, 2 @5, 3 @6}
+-- >>> takeS 7 s2
+-- { 2 @0, 4 @1, 6 @2, 8 @3, 10 @4, 12 @5, 14 @6}
+--
+-- <<docfiles/figs/moc-de-pattern-generate.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
-             -- ^ function to generate next value
-             -> ((Tag, b1), (Tag, b2))
-             -- ^ kernel values tupled with their generation rate.
-             -> (Sig b1, Sig b2) -- ^ generated signals
+          -- ^ function to generate next value
+          -> ((Tag, b1), (Tag, b2))
+          -- ^ kernel values tupled with their generation rate.
+          -> (Signal b1, Signal b2) -- ^ generated signals
+generate1 :: (b1 -> b1) -> (Tag, b1)
+          -> Signal b1                                
+generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3))
+          -> ((Tag, b1), (Tag, b2), (Tag, b3))
+          -> (Signal b1, Signal b2, Signal b3)                      
+generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4))
+          -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+          -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
+
+generate1 ns i = MoC.stated01 ns (unit  i)
+generate2 ns i = MoC.stated02 ns (unit2 i)
+generate3 ns i = MoC.stated03 ns (unit3 i)
+generate4 ns i = MoC.stated04 ns (unit4 i)
+
+------- STATED -------
 
 -- | @stated@ is a state machine without an output decoder. It is an
 -- instantiation of the @state@ MoC constructor (see
 -- 'ForSyDe.Atom.MoC.stated22').
 --
--- <<includes/figs/de-stated-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following constructors are provided:
 --
 -- > stated11, stated12, stated13, stated14,
 -- > stated21, stated22, stated23, stated24,
 -- > stated31, stated32, stated33, stated34,
 -- > stated41, stated42, stated43, stated44,
+--
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> takeS 7 $ stated11 (+) (6,1) s
+-- { 1 @0, 2 @6, 3 @8, 5 @12, 7 @14, 8 @15, 10 @18}
+--
+-- <<docfiles/figs/moc-de-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ next state function
            -> ((Tag, b1), (Tag, b2))
            -- ^ initial state values tupled with their initial delay
-            -> Sig a1
+            -> Signal a1
             -- ^ first input signal
-            -> Sig a2
+            -> Signal a2
             -- ^ second input signal
-            -> (Sig b1, Sig b2) -- ^ output signals
-                 
--- | @state@ is a state machine without an output decoder. It is an
--- instantiation of the @stated@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.state22'). 
+            -> (Signal b1, Signal b2) -- ^ output signals
+stated11 :: (b1 -> a1 -> b1)
+         -> (Tag, b1)
+         -> Signal a1
+         -> Signal b1 
+stated12 :: (b1 -> b2 -> a1 -> (b1, b2))
+         -> ((Tag, b1), (Tag, b2))
+         -> Signal a1
+         -> (Signal b1, Signal b2) 
+stated13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> Signal a1
+         -> (Signal b1, Signal b2, Signal b3) 
+stated14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> Signal a1
+         -> (Signal b1, Signal b2, Signal b3, Signal b4) 
+stated21 :: (b1 -> a1 -> a2 -> b1)
+         -> (Tag, b1)
+         -> Signal a1 -> Signal a2
+         -> Signal b1 
+stated23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> Signal a1 -> Signal a2
+         -> (Signal b1, Signal b2, Signal b3) 
+stated24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> Signal a1 -> Signal a2
+         -> (Signal b1, Signal b2, Signal b3, Signal b4) 
+stated31 :: (b1 -> a1 -> a2 -> a3 -> b1)
+         -> (Tag, b1)
+         -> Signal a1 -> Signal a2 -> Signal a3
+         -> Signal b1 
+stated32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2))
+         -> ((Tag, b1), (Tag, b2))
+         -> Signal a1 -> Signal a2 -> Signal a3
+         -> (Signal b1, Signal b2) 
+stated33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> Signal a1 -> Signal a2 -> Signal a3
+         -> (Signal b1, Signal b2, Signal b3) 
+stated34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> Signal a1 -> Signal a2 -> Signal a3
+         -> (Signal b1, Signal b2, Signal b3, Signal b4) 
+stated41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
+         -> (Tag, b1)
+         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+         -> Signal b1 
+stated42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2))
+         -> ((Tag, b1), (Tag, b2))
+         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+         -> (Signal b1, Signal b2) 
+stated43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+         -> (Signal b1, Signal b2, Signal b3) 
+stated44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+         -> (Signal b1, Signal b2, Signal b3, Signal b4)
+
+stated11 ns i = MoC.stated11 ns (unit  i)
+stated12 ns i = MoC.stated12 ns (unit2 i)
+stated13 ns i = MoC.stated13 ns (unit3 i)
+stated14 ns i = MoC.stated14 ns (unit4 i)
+stated21 ns i = MoC.stated21 ns (unit  i)
+stated22 ns i = MoC.stated22 ns (unit2 i)
+stated23 ns i = MoC.stated23 ns (unit3 i)
+stated24 ns i = MoC.stated24 ns (unit4 i)
+stated31 ns i = MoC.stated31 ns (unit  i)
+stated32 ns i = MoC.stated32 ns (unit2 i)
+stated33 ns i = MoC.stated33 ns (unit3 i)
+stated34 ns i = MoC.stated34 ns (unit4 i)
+stated41 ns i = MoC.stated41 ns (unit  i)
+stated42 ns i = MoC.stated42 ns (unit2 i)
+stated43 ns i = MoC.stated43 ns (unit3 i)
+stated44 ns i = MoC.stated44 ns (unit4 i)
+
+------- STATE -------
+
+-- | @state@ is a state machine without an output decoder, and the
+-- state non-transparent. It is an instantiation of the @state@ MoC
+-- constructor (see 'ForSyDe.Atom.MoC.state22').
 --
--- <<includes/figs/de-state-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following constructors are provided:
 --
 -- > state11, state12, state13, state14,
 -- > state21, state22, state23, state24,
 -- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,                    
+-- > state41, state42, state43, state44,
+--
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> takeS 7 $ state11 (+) (6,1) s
+-- { 2 @0, 3 @2, 5 @6, 7 @8, 8 @9, 10 @12, 12 @14}
+--
+-- <<docfiles/figs/moc-de-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ next state function
            -> ((Tag, b1), (Tag, b2))
            -- ^ initial state values tupled with their initial delay
-           -> Sig a1
+           -> Signal a1
            -- ^ first input signal
-           -> Sig a2
+           -> Signal a2
            -- ^ second input signal
-           -> (Sig b1, Sig b2) -- ^ output signals
+           -> (Signal b1, Signal b2) -- ^ output signals
+state11 :: (b1 -> a1 -> b1)
+        -> (Tag, b1)
+        -> Signal a1
+        -> Signal b1                                
+state12 :: (b1 -> b2 -> a1 -> (b1, b2)) 
+        -> ((Tag, b1), (Tag, b2))
+        -> Signal a1
+        -> (Signal b1, Signal b2)                          
+state13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> Signal a1
+        -> (Signal b1, Signal b2, Signal b3)                      
+state14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> Signal a1 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
+state21 :: (b1 -> a1 -> a2 -> b1)
+        -> (Tag, b1)
+        -> Signal a1 -> Signal a2
+        -> Signal b1                          
+state23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> Signal a1 -> Signal a2 
+        -> (Signal b1, Signal b2, Signal b3)                
+state24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> Signal a1 -> Signal a2 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
+state31 :: (b1 -> a1 -> a2 -> a3 -> b1)
+        -> (Tag, b1)
+        -> Signal a1 -> Signal a2 -> Signal a3
+        -> Signal b1                    
+state32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) 
+        -> ((Tag, b1), (Tag, b2))
+        -> Signal a1 -> Signal a2 -> Signal a3 
+        -> (Signal b1, Signal b2)              
+state33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> Signal a1 -> Signal a2 -> Signal a3 
+        -> (Signal b1, Signal b2, Signal b3)          
+state34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> Signal a1 -> Signal a2 -> Signal a3 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)     
+state41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
+        -> (Tag, b1)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+        -> Signal b1
+state42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
+        -> ((Tag, b1), (Tag, b2))
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
+        -> (Signal b1, Signal b2)        
+state43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
+        -> (Signal b1, Signal b2, Signal b3)    
+state44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
+        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)
+
+state11 ns i = MoC.state11 ns (unit  i)
+state12 ns i = MoC.state12 ns (unit2 i)
+state13 ns i = MoC.state13 ns (unit3 i)
+state14 ns i = MoC.state14 ns (unit4 i)
+state21 ns i = MoC.state21 ns (unit  i)
+state22 ns i = MoC.state22 ns (unit2 i)
+state23 ns i = MoC.state23 ns (unit3 i)
+state24 ns i = MoC.state24 ns (unit4 i)
+state31 ns i = MoC.state31 ns (unit  i)
+state32 ns i = MoC.state32 ns (unit2 i)
+state33 ns i = MoC.state33 ns (unit3 i)
+state34 ns i = MoC.state34 ns (unit4 i)
+state41 ns i = MoC.state41 ns (unit  i)
+state42 ns i = MoC.state42 ns (unit2 i)
+state43 ns i = MoC.state43 ns (unit3 i)
+state44 ns i = MoC.state44 ns (unit4 i)
+
+
+------- MOORE -------
 
 -- | @moore@ processes model Moore state machines. It is an
--- instantiation of the @moore@ MoC constructor
--- (see 'ForSyDe.Atom.MoC.moore22').
+-- instantiation of the @moore@ MoC constructor (see
+-- 'ForSyDe.Atom.MoC.moore22').
 --
--- <<includes/figs/de-moore-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following constructors are provided:
 --
 -- > moore11, moore12, moore13, moore14,
 -- > moore21, moore22, moore23, moore24,
 -- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,          
+-- > moore41, moore42, moore43, moore44,
+--
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
+-- { 2 @0, 3 @6, 4 @8, 6 @12, 8 @14, 9 @15, 11 @18}
+--
+-- <<docfiles/figs/moc-de-pattern-moore.png>>          
 moore22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> (b1, b2))
            -- ^ output decoder
            -> (Tag, st)
            -- ^ initial state: tag and value
-           -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
+           -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
+moore11 :: (st -> a1 -> st)
+        -> (st -> b1)
+        -> (Tag, st)
+        -> Signal a1
+        -> Signal b1                                
+moore12 :: (st -> a1 -> st)
+        -> (st -> (b1, b2))
+        -> (Tag, st)
+        -> Signal a1
+        -> (Signal b1, Signal b2)                          
+moore13 :: (st -> a1 -> st)
+        -> (st -> (b1, b2, b3))
+        -> (Tag, st)
+        -> Signal a1
+        -> (Signal b1, Signal b2, Signal b3)                      
+moore14 :: (st -> a1 -> st)
+        -> (st -> (b1, b2, b3, b4))
+        -> (Tag, st)
+        -> Signal a1
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
+moore21 :: (st -> a1 -> a2 -> st)
+        -> (st -> b1)
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2
+        -> Signal b1                          
+moore23 :: (st -> a1 -> a2 -> st)
+        -> (st -> (b1, b2, b3))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2
+        -> (Signal b1, Signal b2, Signal b3)                
+moore24 :: (st -> a1 -> a2 -> st)
+        -> (st -> (b1, b2, b3, b4))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
+moore31 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (st -> b1)
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3
+        -> Signal b1                    
+moore32 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (st -> (b1, b2))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3
+        -> (Signal b1, Signal b2)              
+moore33 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (st -> (b1, b2, b3))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3
+        -> (Signal b1, Signal b2, Signal b3)          
+moore34 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (st -> (b1, b2, b3, b4))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)     
+moore41 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (st -> b1)
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+        -> Signal b1              
+moore42 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (st -> (b1, b2))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+        -> (Signal b1, Signal b2)        
+moore43 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (st -> (b1, b2, b3))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+        -> (Signal b1, Signal b2, Signal b3)    
+moore44 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (st -> (b1, b2, b3, b4))
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)
+
+moore11 ns od i = MoC.moore11 ns od (unit i)
+moore12 ns od i = MoC.moore12 ns od (unit i)
+moore13 ns od i = MoC.moore13 ns od (unit i)
+moore14 ns od i = MoC.moore14 ns od (unit i)
+moore21 ns od i = MoC.moore21 ns od (unit i)
+moore22 ns od i = MoC.moore22 ns od (unit i)
+moore23 ns od i = MoC.moore23 ns od (unit i)
+moore24 ns od i = MoC.moore24 ns od (unit i)
+moore31 ns od i = MoC.moore31 ns od (unit i)
+moore32 ns od i = MoC.moore32 ns od (unit i)
+moore33 ns od i = MoC.moore33 ns od (unit i)
+moore34 ns od i = MoC.moore34 ns od (unit i)
+moore41 ns od i = MoC.moore41 ns od (unit i)
+moore42 ns od i = MoC.moore42 ns od (unit i)
+moore43 ns od i = MoC.moore43 ns od (unit i)
+moore44 ns od i = MoC.moore44 ns od (unit i)
+
+------- MEALY -------
 
 -- | @mealy@ processes model Mealy state machines. It is an
 -- instantiation of the @mealy@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.mealy22').
 --
--- <<includes/figs/de-mealy-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following constructors are provided:
 --
 -- > mealy11, mealy12, mealy13, mealy14,
 -- > mealy21, mealy22, mealy23, mealy24,
 -- > mealy31, mealy32, mealy33, mealy34,
 -- > mealy41, mealy42, mealy43, mealy44,
+--
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
+-- { 0 @0, -1 @2, -1 @6, -1 @8, -2 @9, 0 @12, 2 @14}
+--
+-- <<docfiles/figs/moc-de-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)
-           -- ^ next state function
-           -> (st -> a1 -> a2 -> (b1, b2))
-           -- ^ outpt decoder
-           -> (Tag, st)
-           -- ^ initial state: tag and value
-           -> Sig a1 -> Sig a2 -> (Sig b1, Sig b2)
+        -- ^ next state function
+        -> (st -> a1 -> a2 -> (b1, b2))
+        -- ^ outpt decoder
+        -> (Tag, st)
+        -- ^ initial state: tag and value
+        -> Signal a1 -> Signal a2
+        -> (Signal b1, Signal b2)
+mealy11 :: (st -> a1 -> st) 
+        -> (st -> a1 -> b1) 
+        -> (Tag, st)
+        -> Signal a1
+        -> Signal b1                                
+mealy12 :: (st -> a1 -> st) 
+        -> (st -> a1 -> (b1, b2)) 
+        -> (Tag, st)
+        -> Signal a1 
+        -> (Signal b1, Signal b2)                          
+mealy13 :: (st -> a1 -> st) 
+        -> (st -> a1 -> (b1, b2, b3)) 
+        -> (Tag, st)
+        -> Signal a1 
+        -> (Signal b1, Signal b2, Signal b3)                      
+mealy14 :: (st -> a1 -> st) 
+        -> (st -> a1 -> (b1, b2, b3, b4)) 
+        -> (Tag, st)
+        -> Signal a1 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
+mealy21 :: (st -> a1 -> a2 -> st) 
+        -> (st -> a1 -> a2 -> b1) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2
+        -> Signal b1                          
+mealy23 :: (st -> a1 -> a2 -> st) 
+        -> (st -> a1 -> a2 -> (b1, b2, b3)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 
+        -> (Signal b1, Signal b2, Signal b3)                
+mealy24 :: (st -> a1 -> a2 -> st) 
+        -> (st -> a1 -> a2 -> (b1, b2, b3, b4)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
+mealy31 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> b1) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3
+        -> Signal b1  
+mealy32 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> (b1, b2)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 
+        -> (Signal b1, Signal b2)              
+mealy33 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 
+        -> (Signal b1, Signal b2, Signal b3)          
+mealy34 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)     
+mealy41 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> a4 -> b1) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+        -> Signal b1
+mealy42 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
+        -> (Signal b1, Signal b2)        
+mealy43 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
+        -> (Signal b1, Signal b2, Signal b3)    
+mealy44 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
+        -> (Tag, st)
+        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
+        -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
+mealy11 ns od i = MoC.mealy11 ns od (unit i)
+mealy12 ns od i = MoC.mealy12 ns od (unit i)
+mealy13 ns od i = MoC.mealy13 ns od (unit i)
+mealy14 ns od i = MoC.mealy14 ns od (unit i)
+mealy21 ns od i = MoC.mealy21 ns od (unit i)
+mealy22 ns od i = MoC.mealy22 ns od (unit i)
+mealy23 ns od i = MoC.mealy23 ns od (unit i)
+mealy24 ns od i = MoC.mealy24 ns od (unit i)
+mealy31 ns od i = MoC.mealy31 ns od (unit i)
+mealy32 ns od i = MoC.mealy32 ns od (unit i)
+mealy33 ns od i = MoC.mealy33 ns od (unit i)
+mealy34 ns od i = MoC.mealy34 ns od (unit i)
+mealy41 ns od i = MoC.mealy41 ns od (unit i)
+mealy42 ns od i = MoC.mealy42 ns od (unit i)
+mealy43 ns od i = MoC.mealy43 ns od (unit i)
+mealy44 ns od i = MoC.mealy44 ns od (unit i)
 
--- (s1,s2) = (S.takeS 5 k1, S.takeS 7 k2) :: (Sig Int, Sig Int)
---   where (k1, k2) = generate2 (\a b -> (a+1,b+2)) ((9,2),(24,5))
+------- SYNC -------
+
+-- | @sync@ synchronizes multiple signals, so that they have the same
+-- set of tags, and consequently, the same number of events. It
+-- instantiates the @comb@ atom pattern (see
+-- 'ForSyDe.Atom.MoC.comb22').
+--
+-- The following constructors are provided:
+--
+-- > sync2, sync3, sync4,
+--
+-- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8,  5@9}"  :: Signal Int
+-- >>> let s2 = readSignal "{1@0, 2@5, 3@6, 4@10, 5@12}" :: Signal Int
+-- >>> sync2 s1 s2
+-- ({ 1 @0, 2 @2, 2 @5, 3 @6, 4 @8, 5 @9, 5 @10, 5 @12},{ 1 @0, 1 @2, 2 @5, 3 @6, 3 @8, 3 @9, 4 @10, 5 @12})
+--
+-- <<docfiles/figs/moc-de-pattern-sync.png>>
+sync2 :: Signal a1                    -- ^ first input signal
+      -> Signal a2                    -- ^ second input signal
+      -> (Signal a1, Signal a2)       -- ^ two output signals
+sync3 :: Signal a1 -> Signal a2 -> Signal a3
+      -> (Signal a1, Signal a2, Signal a3)             
+sync4 :: Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+      -> (Signal a1, Signal a2, Signal a3, Signal a4)
+
+sync2 = comb22 (,)
+sync3 = comb33 (,,)
+sync4 = comb44 (,,,)
+

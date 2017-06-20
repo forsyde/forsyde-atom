@@ -16,12 +16,12 @@
 
 module ForSyDe.Atom.MoC.SY.Core where
 
-import ForSyDe.Atom.Behavior
-import ForSyDe.Atom.MoC.Untimed
+import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
--- | Type synonym for a SY signal, i.e. "a signal of SY events"
+-- | Type synonym for a SY signal, i.e. "an ordered stream of SY
+-- events"
 type Signal a   = Stream (SY a)
 
 -- | The SY event. It identifies a synchronous signal.
@@ -29,17 +29,16 @@ newtype SY a  = SY { val :: a }
   
 -- | Implenents the execution and synchronization semantics for the SY
 -- MoC through its atoms.
-instance Untimed SY where
-  type Par SY a = a
+instance MoC SY where
   type Fun SY a b = a -> b
-  type Res SY b   = b 
+  type Ret SY b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------
   (-*-) a = (<*>) (fmap (<*>) a)
   (-*) = id
   ---------------------
-  (-<-) = (:-) 
+  (-<-) (a:-_) = (:-) a
   ---------------------
   (-&-) _ a = a
   ---------------------
@@ -63,27 +62,25 @@ instance Applicative (SY) where
 
 -----------------------------------------------------------------------------
 
-event  :: a -> SY a
-event  = pure
-
--- | Wraps a (tuple of) value(s) into the equivalent event form.
+unit  :: a -> Signal a
+unit  = pure . pure
+-- | Wraps a (tuple of) value(s) into the equivalent unit signal(s).
 --
--- "ForSyDe.Atom.MoC.SY" exports the helper functions below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following helpers are exported:
 --
--- > event, event2, event3, event4,
-event2 = ($$) (event, event)
-event3 = ($$$) (event, event, event)
-event4 = ($$$$) (event, event, event, event)
+-- > unit, unit2, unit3, unit4,
+unit2 = ($$) (unit, unit)
+unit3 = ($$$) (unit, unit, unit)
+unit4 = ($$$$) (unit, unit, unit, unit)
 
--- | Transforms a list of values into a SY signal
+-- | Transforms a list of values into a SY signal.
 signal   :: [a] -> Signal a
-signal l = stream (event <$> l)
+signal l = stream (SY <$> l)
 
 -- | Reads a signal from a string. Like with the @read@ function from
 -- @Prelude@, you must specify the tipe of the signal.
 --
 -- >>> readSignal "{1,2,3,4,5}" :: Signal Int
--- > {1,2,3,4,5}
+-- {1,2,3,4,5}
 readSignal :: Read a => String -> Signal a
-readSignal s = read s
+readSignal = read
