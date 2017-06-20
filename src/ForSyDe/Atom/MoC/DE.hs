@@ -67,20 +67,21 @@ module ForSyDe.Atom.MoC.DE (
   -- 1. According to <ForSyDe-Atom.html#lee98 [Lee98]>, our DE MoC is
   -- a one-sided system, i.e. time starts from an absolute 0. While
   -- negative time cannot be represented, signals can be phase-aligned
-  -- with the help of the '-&-' atom. The discrete aspect is is
-  -- enforced literally, by representing tags with natural numbers.
+  -- with the help of the 'ForSyDe.Atom.MoC.-&-' atom. The discrete
+  -- aspect is is enforced literally, by representing tags with
+  -- natural numbers.
   --
   -- 1. tags are explicit and a DE event will construct a type around
   -- both a tag and a value. Tags represent the start time of the
   -- event, the end time being implicit from the start time of the
-  -- next event. By doing so, we ensure that our DE MoC is be a
-  -- special case of CT (i.e. the time domain is non-disjoint).
+  -- next event. By doing so, we ensure that the time domain is
+  -- non-disjoint, i.e. a sub-case of continous time.
   --
   -- 1. according to the previous point, events are assumed to persist
   -- from their time of arrival until the next event arrives or, if
-  -- there is no incoming event, until infinity. The default behavior
-  -- can be regarded either as a persistent channel (e.g. wire), or as
-  -- non-blocking buffered input, with the buffers of size 1.
+  -- there is no incoming event, until infinity. This default behavior
+  -- can be be interpret signals as being either persistent channels
+  -- (e.g. latched wires), or non-blocking buffers of size 1.
   --
   -- 1. as a consequence to the previous is that feedback loops will
   -- generate an infinite number of events (strictly preceding each

@@ -75,7 +75,7 @@ library
                    , ForSyDe.Atom.MoC.DE
                    , ForSyDe.Atom.MoC.DE.Core
                    , ForSyDe.Atom.MoC.DE.Lib
-                   -- , ForSyDe.Atom.MoC.DE.Interface
+                   , ForSyDe.Atom.MoC.DE.Interface
                    -- , ForSyDe.Atom.MoC.DE.Hybrid
                    -- , ForSyDe.Atom.MoC.CT
                    , ForSyDe.Atom.MoC.CT.Core
