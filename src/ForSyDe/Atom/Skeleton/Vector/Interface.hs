@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.Skeleton.Vector.Interface where
 
-import ForSyDe.Atom.Behavior
+import ForSyDe.Atom.ExB
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Skeleton.Vector.Core
 import ForSyDe.Atom.Skeleton.Vector.Lib

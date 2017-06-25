@@ -48,7 +48,7 @@ delay t v = MoC.delay (unit (t, v))
 --
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
--- >>> delay 3 0 s
+-- >>> delay' s1 s2
 -- { 1 @0, 3 @2, 4 @6, 5 @7, 6 @10, 7 @11}
 --
 -- <<docfiles/figs/moc-de-pattern-delayp.png>>

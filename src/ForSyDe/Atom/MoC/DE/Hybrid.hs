@@ -3,12 +3,51 @@
 module ForSyDe.Atom.MoC.DE.Hybrid where
 
 import           ForSyDe.Atom.MoC
-import qualified ForSyDe.Atom.MoC.DE.Core      as DE (Sig)
+import qualified ForSyDe.Atom.MoC.DE.Core      as DE (Signal)
 import qualified ForSyDe.Atom.MoC.DE.Interface as DE
-import qualified ForSyDe.Atom.MoC.SY.Core      as SY (Sig)
+import qualified ForSyDe.Atom.MoC.SY.Core      as SY (Signal)
 import qualified ForSyDe.Atom.MoC.SY.Interface as SY
 import           ForSyDe.Atom.Utility
 
+import qualified ForSyDe.Atom.MoC.SY.Lib
+
+------- DOCTEST SETUP -------
+
+-- $setup
+-- >>> import ForSyDe.Atom.MoC.SY.Lib as SY
+-- >>> import ForSyDe.Atom.MoC.DE.Core (readSignal, signal)
+
+------- HYBRID PROCESSES -------
+
+-- | Embeds a 'ForSyDe.Atom.MoC.SY.SY' process inside a
+-- 'ForSyDe.Atom.MoC.DE.DE' environment. Internally, it synchronizes
+-- the input signals, translates them to SY, feeds them to a SY
+-- process and translates the result back to DE using the same input
+-- tags. Seen from outside, this process behaves like a DE process
+-- with "instantaneous response", even for feedback loops.
+--
+-- The following constructors are provided:
+--
+-- > embedSY11, embedSY12, embedSY13, embedSY14,
+-- > embedSY21, embedSY22, embedSY23, embedSY24,
+-- > embedSY31, embedSY32, embedSY33, embedSY34,
+-- > embedSY41, embedSY42, embedSY43, embedSY44,
+--
+-- For the following example, see the difference between its output
+-- and the one of 'ForSyDe.Atom.MoC.DE.stated22'
+--
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
+-- >>> embedSY11 (SY.stated11 (+) 1) s
+-- { 1 @0, 2 @2, 4 @6, 7 @8, 11 @9}
+--
+-- <<docfiles/figs/moc-de-pattern-embedsy.png>>
+embedSY22 :: (SY.Signal a1 -> SY.Signal a2
+              -> (SY.Signal b1, SY.Signal b2))
+          -- ^ 'ForSyDe.Atom.MoC.SY.SY' process
+          -> DE.Signal a1 -- ^ first input DE signal
+          -> DE.Signal a2 -- ^ second input DE signal 
+          -> (DE.Signal b1, DE.Signal b2)
+          -- ^ two output 'ForSyDe.Atom.MoC.DE.DE' signals
 
 embedSY11 syproc de1 = let (ts, sy1) = DE.toSY de1
                        in  SY.toDE ts $     syproc sy1 
@@ -45,27 +84,3 @@ embedSY43 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 d
                                    in  SY.toDE3 ts <>>  syproc sy1 sy2 sy3 sy4
 embedSY44 syproc de1 de2 de3 de4 = let (ts, sy1, sy2, sy3, sy4) = DE.toSY4 de1 de2 de3 de4
                                    in  SY.toDE4 ts <>>> syproc sy1 sy2 sy3 sy4
------------------ DOCUMENTATION -----------------
-
--- | Embeds a 'ForSyDe.Atom.MoC.SY.SY' process inside a DE
--- environment. Internally, it synchronizes the input signals,
--- translates them to SY, feeds them to a SY process and translates
--- the result back to DE using the same input tags.
---
--- <<includes/figs/de-embedsy-graph.png>>
---
--- "ForSyDe.Atom.MoC.DE" exports the constructors below. Please
--- follow the examples in the source code if they do not suffice:
---
--- > embedSY11, embedSY12, embedSY13, embedSY14,
--- > embedSY21, embedSY22, embedSY23, embedSY24,
--- > embedSY31, embedSY32, embedSY33, embedSY34,
--- > embedSY41, embedSY42, embedSY43, embedSY44,
-embedSY22 :: (SY.Sig a1 -> SY.Sig a2 -> (SY.Sig b1, SY.Sig b2))
-             -- ^ 'ForSyDe.Atom.MoC.SY.SY' process
-             -> DE.Sig a1 -- ^ first input DE signal
-             -> DE.Sig a2 -- ^ second input DE signal 
-             -> (DE.Sig b1, DE.Sig b2)
-             -- ^ two output 'ForSyDe.Atom.MoC.DE.DE' signals
-      
---------------- END DOCUMENTATION ---------------

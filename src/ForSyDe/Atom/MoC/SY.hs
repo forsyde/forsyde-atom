@@ -135,10 +135,11 @@ module ForSyDe.Atom.MoC.SY (
   -- predicates on their status.
 
   when, when', is, whenPresent, filter, filter', fill, hold,
-  reactAbst1, reactAbst2, reactAbst3, reactAbst4
-  -- -- * Interfaces
+  reactAbst1, reactAbst2, reactAbst3, reactAbst4,
 
-  -- toDE, toDE2, toDE3, toDE4,
+  -- * Interfaces
+
+  toDE, toDE2, toDE3, toDE4,
   -- zipx, unzipx  
   
   ) where
@@ -146,4 +147,4 @@ module ForSyDe.Atom.MoC.SY (
 import Prelude hiding (filter)
 import ForSyDe.Atom.MoC.SY.Core
 import ForSyDe.Atom.MoC.SY.Lib
--- import ForSyDe.Atom.MoC.SY.Interface
+import ForSyDe.Atom.MoC.SY.Interface

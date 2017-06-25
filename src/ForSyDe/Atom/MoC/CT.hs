@@ -9,31 +9,28 @@
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
--- The @CT@ library implements the atoms holding the sematics for the
--- continuous time computation model. It also provides a set of helpers
--- for properly instantiating process network patterns as process
--- constructors.
 --
--- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
--- provided by the library API are named along the lines of
--- @functionMN@ where @M@ represents the number of __/curried/__
--- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
--- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
--- repetition we shall only provide documentation for functions with 2
--- inputs and 2 outputs (i.e. @function22@).
+-- The @CT@ library implements the atoms holding the sematics for the
+-- continuous time computation model. It also provides a set of
+-- helpers for properly instantiating process network patterns as
+-- process constructors.
+--
+-- __IMPORTANT!!!__
+-- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
+-- on how to interpret, use and develop your own constructors.
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.CT (
 
   -- * Continuous time (@CT@) event
 
-  -- | According to <#lee98 [1]>, "[regarding metric time] at a
-  -- minimum, /T/ is an Abelian group, in addition to being totally
-  -- ordered. A consequence is that /t&#8322;/ - /t&#8321;/ is itself
-  -- a tag &#8704; /t&#8321;/, /t&#8322;/ &#8712; /T/. In a slightly
-  -- more elaborate model of computation, /T/ has a metric. (...) A
-  -- continuous-time system is a metric timed system /Q/ where /T/ is
-  -- a continuum (a closed connected set)."
+  -- | According to <ForSyDe-Atom.html#lee98 [Lee98]>, "[regarding
+  -- metric time] at a minimum, /T/ is an Abelian group, in addition
+  -- to being totally ordered. A consequence is that /t&#8322;/ -
+  -- /t&#8321;/ is itself a tag &#8704; /t&#8321;/, /t&#8322;/ &#8712;
+  -- /T/. In a slightly more elaborate model of computation, /T/ has a
+  -- metric. (...) A continuous-time system is a metric timed system
+  -- /Q/ where /T/ is a continuum (a closed connected set)."
   --
   -- The continuous time (@CT@) MoC defines the closest behavior to
   -- what we could call "physical time", where signals cover the full
@@ -42,89 +39,126 @@ module ForSyDe.Atom.MoC.CT (
   --
   -- [The CT MoC] is abstracting the execution semantics and describes
   -- a system where computation is performed continuously over a
-  -- (possibly infine) span of time.
+  -- (possibly infinite) span of time.
   --
   -- Below is an illustration of the behavior in time of the input and
   -- the output signals of a CT process:
   --
-  -- <<includes/figs/ct-example1.png>>
+  -- <<docfiles/figs/moc-ct-example.png>>
   --
-  -- The implementation of the CT MoC mirrors the 'ForSyDe.MoC.DE.DE'
-  -- almost completely with two small differences:
-  -- 1. 'ForSyDe.MoC.DE.tag's are not discrete values any more
-  -- (order-isomorphic with integers), but 'Rational's instead to be
-  -- able to fuly cover a continuous metric span, and 2. events,
-  -- instead of carrying 'ForSyDe.MoC.DE.val's, now carry functions on
-  -- this 'Time' system ('Rational' &#8594; /V/). This subtle change
-  -- has a deep impact on the execution semantics:
+  -- Our CT MoC is implemented as an enhanced version of
+  -- 'ForSyDe.MoC.DE.DE' with respect to the __CT MoC__ definition, in
+  -- the sense that:
   --
-  -- 1. while the execution engine is still discrete (similar to a KPN
-  -- <#kahn76 [2]>, check the 'ForSyDe.MoC.DE.DE' MoC),
-  -- i. e. evaluation is performed each time a new event arrives, the
-  -- systems described are continuous reactive.
+  -- 1. tags /t/ are represented with 'Rational' numbers instead of
+  -- 'Natural' numbers to be able to fuly cover a continuous metric
+  -- span.
   --
-  -- 1. for each /t/ &#8712; /T/, a signal is able to return
-  -- (e.g. plot) the exact value /v/ for that particular /t/.
+  -- 1. values are represented as functions over time /f(t)/, thus an
+  -- event represents a continuous function over its time span rather
+  -- than just a value or a series of values.
   --
-  -- 1. Haskell's lazy evaluation system computes values only when
-  -- needed. This implies that a simulator will evaluate/execute
-  -- computation for values only when asked, i.e. for the
-  -- discretization points. As a consequence, a designer can trade
-  -- precision for simulation speed.
+  -- 1. The event constructor has also a /phase/ component /&#966;/,
+  -- which is taken into consideration only when evaluating the event
+  -- function, i.e. /f (t + &#966;)/. This enables the modeling of
+  -- "phase dispacements" of delay lines without altering the function
+  -- itself (and thus increasing the complexity of the un-evaluated
+  -- function graph). The phase needs to be reset during event
+  -- synchronization.
   --
-  -- 1. as all timed tag systems, the full structure used by the MoC
-  -- atoms is @(CT [Value a])@, i. e. CT events of partitioned
-  -- extended values, where the partition is always 1 since for the CT
-  -- MoC, /T/ is a total order (check __design rule #4__ in the
+  -- These seemingly minor changes have deep implications in the
+  -- expressiveness of a FoSyDe CT system and how we interpret
+  -- it. Capturing the particularities of this MoC, we can formulate
+  -- the following properties:
+  --
+  -- <<docfiles/figs/misc-ct-model.png>>
+  --
+  -- 1. 'CT' signals, due to their formation as streams of tagged
+  -- events, represent /discrete/ changes in a continuous function
+  -- over time (e.g. analog signal). While the functions carried by
+  -- events are infinite (have always happened and will always
+  -- happen), being carried by events in a tag system suggests that
+  -- changes occur at discrete times. A CT signal can be represented
+  -- by the analog circuit above, where the inputs are continuous
+  -- signals, but the switch is discrete. Like in the
+  -- 'ForSyDe.MoC.DE.DE' MoC, the absolute time 0 represent the time
+  -- when the system started to be observed.
+  --
+  -- 1. the previous property is also proven by the fact that the
+  -- evaluation engine of ForSyDe-Atom is inherently discrete,
+  -- i.e. evaluation is performed whenever a new event occurs, in a
+  -- dataflow manner.
+  --
+  -- 1. events carry /functions/ and not /values/. In a lazy
+  -- evaluation system like Haskell's, functions are kept symbolic
+  -- until evaluation. This means that in a CT system computations are
+  -- propagated as function graphs until a result is needed, e.g. a
+  -- signal is plotted for arbitrary positions in time. This way
+  -- intermediate quantization errors are eliminated, and the cost of
+  -- higher plot resolution is the cost of evaluating the final
+  -- results only.
+  --
+  -- 1. needless to say, for each /t/ &#8712; /T/, a signal is able to
+  -- return (e.g. plot) the exact value /v/ for that particular /t/.
   -- documentation of "ForSyDe.Atom")
   --
-  -- 1. CT atoms do not require any additional context, apart from a
-  -- function on values thus by definition
+  -- 1. since itself the 'ForSyDe.MoC.CT.CT' MoC is just an enhanced
+  -- 'ForSyDe.MoC.DE.DE' system, all atom evaluation properties are
+  -- inherited from it: feedback loops need to advance time, atoms are
+  -- forbidden to clean signals, and the conservative approach makes
+  -- it ideal for parallel/distributed simulation.
   --
-  -- > type Context CT = ()
+  -- 1. since /T/ is a total order, there is no need for an
+  -- <ForSyDe-Atom-MoC.html#context execution context> and we can
+  -- ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we
+  -- can safely assume:
   --
-  -- From @4.@ and @5.@ we can safely assume that:
-  --
-  -- <<includes/figs/timed-wrapper-formula.png>>
+  -- <<docfiles/figs/eqs-moc-timed-context.png>>
 
-  CT(..),
+
+  Time, CT(..),
 
   -- * Aliases & utilities
 
-  -- | For convenience we also provide a set of type synonyms and
-  -- utilities to ease in the design of systems. The API type
-  -- signatures will feature these aliases to hide the cumbersome
-  -- construction of atoms and atom patters as seen in
-  -- "ForSyDe.Atom.MoC".
+  -- | A set of type synonyms and utilities are provided for
+  -- convenience. The API type signatures will feature these aliases
+  -- to hide the cumbersome construction of atoms and patters as seen
+  -- in "ForSyDe.Atom.MoC".
 
-  Time, Event, Sig, event2, signal, split, splitUntil, eval,
-
-  wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
-  wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
-  wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
-  wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
+  Signal, unit, unit2, unit3, unit4, infinite, signal, checkSignal,
   
   -- * @CT@ process constuctors
 
-  -- | These CT-specific process constructors are basically
-  -- specific instantiations of the network patterns defined in
-  -- "ForSyDe.Atom.MoC", also wrapping functions in a behavioural
+  -- | The CT process constructors are basically specific
+  -- instantiations of patterns defined in "ForSyDe.Atom.MoC". Some
+  -- might also be wrapping functions in an extended behavioural
   -- model.
+  --
+  -- In the examples below we have imported and instantiated the
+  -- functions @pi'@, @sin'@ and @cos'@ from the module
+  -- @Data.Number.FixedFunctions@ in package
+  -- <https://hackage.haskell.org/package/numbers-3000.2.0.1/docs/Data-Number-FixedFunctions.html numbers>.
+  --
+  -- > import Data.Number.FixedFunctions as RatF
+  -- > let pi'  = RatF.pi  0.001
+  -- > let sin' = RatF.sin 0.001
+  -- > let cos' = RatF.cos 0.001
 
-  -- ** Default behavior
+  -- ** Simple
 
-  -- | These processes manifest a default behavior as defined in
-  -- "ForSyDe.Atom.Behavior", when it comes to dealing with special
-  -- events.
+  -- | These are mainly direct instantiations of patterns defined in
+  -- "ForSyDe.Atom.MoC", using DE-specific utilities.
+
+  delay, delay',
   
   comb11, comb12, comb13, comb14,
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
 
-  delay,
   
   constant1, constant2, constant3, constant4,
+  infinite1, infinite2, infinite3, infinite4,
 
   generate1, generate2, generate3, generate4,
 
@@ -148,19 +182,12 @@ module ForSyDe.Atom.MoC.CT (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
-  -- ** Interfaces
+  -- -- ** Interfaces
 
-  zipx, unzipx, toDE
-
-  -- * Bibliography
-  
-
-  -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229.
-  
-  -- | #kahn76# [2] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
+  -- zipx, unzipx, toDE
   
   ) where
 
 import ForSyDe.Atom.MoC.CT.Core
 import ForSyDe.Atom.MoC.CT.Lib
-import ForSyDe.Atom.MoC.CT.Interface
+-- import ForSyDe.Atom.MoC.CT.Interface
