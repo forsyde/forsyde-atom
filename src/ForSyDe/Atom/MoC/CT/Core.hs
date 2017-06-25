@@ -31,10 +31,15 @@ type Time = Rational
 -- | Type synonym for a CT signal, i.e. "a signal of CT events"
 type Signal a = Stream (CT a)
 
--- | The CT type, identifying a discrete time event and implementing an
--- instance of the 'MoC' class. A discrete event explicitates its tag
--- which is represented as an integer.
-data CT a  = CT { tag :: Time, phase :: Time, func :: Time -> a }
+-- | The CT type, identifying a continuous time event and implementing an
+-- instance of the 'MoC' class.
+data CT a  = CT { tag   :: Time
+                  -- ^ start time of event
+                , phase :: Time
+                  -- ^ phase. Models function delays
+                , func  :: Time -> a
+                  -- ^ function of time
+                }
 
 -- | Implenents the execution and synchronization semantics for the CT
 -- MoC through its atoms.
@@ -61,8 +66,9 @@ instance MoC CT where
   ---------------------
   (CT _ p v :- _) -<- xs = (CT 0 p v) :- xs
   ---------------------
-  (CT 0 _ _ :- _) -&- xs = xs
-  (CT d _ _ :- _) -&- xs = (\(CT t p v) -> CT (t + d) (p - d) v) <$> xs
+  -- (CT 0 _ _ :- _) -&- xs = xs
+  (_ :- CT d _ _ :- _) -&- xs = (\(CT t p v) -> CT (t + d) (p - d) v) <$> xs
+  (_ :- NullS) -&- _  = error "CT: signal delayed to infinity"
   ---------------------
     
 -- | Allows for mapping of functions on a CT event.
@@ -72,52 +78,92 @@ instance Functor CT where
 -- | Allows for lifting functions on a pair of CT events.
 instance Applicative CT where
   pure x = CT 0 0 (\_ -> x)
-  (CT t p f) <*> (CT _ _ g) = CT t p (\x -> (f x) (g x))
+  (CT t p1 f) <*> (CT _ p2 g) = CT t 0 (\x -> (f (x+p1)) (g (x+p2)))
+
+-- | A non-ideal instance meant for debug purpose only. For each event
+-- it evaluates the function at the tag time /only/!
+instance Show a => Show (CT a) where
+  showsPrec _ e
+    = (++) ( " "  ++ show (eval (tag e) e) ++
+             " @" ++ (showFFloat Nothing $ fromRat $ tag e) "" )
 
 -----------------------------------------------------------------------------
 -- These functions are not exported and are used for testing purpose only.
 
 infixl 7 %>
-(CT t p _) %> (CT _ _ x) = CT t p x
+(CT t _ _) %> (CT _ p x) = CT t p x
 
 -- end of testbench functions
 -----------------------------------------------------------------------------
 
-eval (CT t p f) = f (t+p)
+eval t (CT _ p f) = f (t + p)
+time (CT t p _) = t + p
+const v = (\_ -> v)
 
--- | Wraps a tuple @(tag, value)@ into a CT event
-event  :: (Time, Time -> a) -> CT a 
-event (t,f) = CT t 0 f
+                   
+unit  :: (Time, Time -> a) -> Signal a 
+unit (t,f) = (CT 0 0 f :- CT t 0 f :- NullS)
 
-
--- | Wraps a (tuple of) pair(s) @(tag, function)@ into the equivalent
--- event container(s).
+-- | Wraps a (tuple of) pair(s) @(time, function)@ into the equivalent
+-- unit signal(s), i.e. signal(s) with one event with the period
+-- @time@ carrying @function@.
 --
--- "ForSyDe.Atom.MoC.CT" exports the helper functions below. Please
--- follow the examples in the source code if they do not suffice:
+-- The following helpers are exported:
 --
--- > event, event2, event3, event4,
-event2 = ($$) (event,event)
-event3 = ($$$) (event,event,event)
-event4 = ($$$$) (event,event,event,event)
+-- > unit, unit2, unit3, unit4,
+unit2 = ($$) (unit,unit)
+unit3 = ($$$) (unit,unit,unit)
+unit4 = ($$$$) (unit,unit,unit,unit)
+
+-- | Creates an infinite signal.
+infinite :: (Time -> a) -> Signal a
+infinite f = CT 0 0 f :- NullS
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
 -- into a CT signal
-signal   :: [(Time, Time -> a)] -> Signal a
-signal l = stream (event <$> l)
+signal :: [(Time, Time -> a)] -> Signal a
+signal = checkSignal . stream . fmap (\(t, f) -> CT t 0 f)
 
-    
--- -- | Shows the event starting from tag @t@ with value @v = f t@  @ v \@t@. It hides the partition (the singleton list constructor).
--- instance Show a => Show (CT [a]) where
---   showsPrec _ (CT t f) = (++) ( " " ++ show (head $ f t) ++ " @" ++ (showFFloat Nothing $ fromRat t) "" )
-  
--- -- | A more efficient instatiation since we /know/ that the partition
--- -- size is always 1.
--- instance Eq a => Eq (CT a) where
---   (CT t1 a) == (CT t2 b) = a t1 == b t2
+-- | Checks if a signal is well-formed or not, according to the CT MoC
+-- interpretation in @ForSyDe-Atom@.
+checkSignal NullS = NullS
+checkSignal s@(x:-_)
+  | tag x + phase x == 0 = checkOrder s
+  | otherwise  = error "CT: signal does not tag from global 0"
+  where
+    checkOrder NullS      = NullS
+    checkOrder (x:-NullS) = (x:-NullS)
+    checkOrder (x:-y:-xs)
+      | tag x + phase x < tag y + phase y = x :-checkOrder (y:-xs)
+      | otherwise = error "CT: malformed signal"
 
--- -- | Defines the equality operator between two CT signals. __TODO!__ incomplete definition.
--- instance Eq a => Eq (Signal (CT [a])) where
---   a == b = flatten a == flatten b
---     where flatten = concat . map (\(CT t f) -> f t) . fromSignal
+-- | Returns a stream with the results of evaluating a signal with a
+-- given sampling period.
+plot :: Time          -- ^ sample period
+     -> Time          -- ^ end of plotting
+     -> Stream (CT a) -- ^ input CT signal
+     -> Stream a      -- ^ stream with evaluation results
+plot step until = evalPlot 0
+  where
+    evalPlot t s@(x:-y:-xs)
+      | t >= until  = NullS
+      | tag y > t = eval t x :- evalPlot (t + step) s
+      | otherwise   = evalPlot t (y:-xs)
+    evalPlot t s@(x:-NullS)
+      | t < until = eval t x :- evalPlot (t + step) s
+      | otherwise = NullS
+plot2 s u = ($$)   (plot s u, plot s u)
+plot3 s u = ($$$)  (plot s u, plot s u, plot s u)
+plot4 s u = ($$$$) (plot s u, plot s u, plot s u, plot s u)
 
+-- | Same as 'plot', but also converts rational outputs to floats
+-- (which are easier to be read by drawing engines).
+plotFloat :: RealFloat b
+          => Time             -- ^ sample period
+          -> Time             -- ^ end of plotting
+          -> Stream (CT Time) -- ^ CT signal with a 'Time' codomain
+          -> Stream b         -- ^ plot output in floating point format
+plotFloat  s u = fmap  fromRat . plot s u
+plotFloat2 s u = ($$)   (plotFloat s u, plotFloat s u)
+plotFloat3 s u = ($$$)  (plotFloat s u, plotFloat s u, plotFloat s u)
+plotFloat4 s u = ($$$$) (plotFloat s u, plotFloat s u, plotFloat s u, plotFloat s u)

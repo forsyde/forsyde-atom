@@ -7,7 +7,11 @@ main = doctest
   , "src/ForSyDe/Atom/ExB/Absent.hs"
   , "src/ForSyDe/Atom/MoC/SY/Core.hs"
   , "src/ForSyDe/Atom/MoC/SY/Lib.hs"
+  , "src/ForSyDe/Atom/MoC/SY/Interface.hs"
   , "src/ForSyDe/Atom/MoC/DE/Core.hs"
   , "src/ForSyDe/Atom/MoC/DE/Lib.hs"
   , "src/ForSyDe/Atom/MoC/DE/Interface.hs"
+  , "src/ForSyDe/Atom/MoC/DE/Hybrid.hs"
+  , "src/ForSyDe/Atom/MoC/CT/Core.hs"
+  , "src/ForSyDe/Atom/MoC/CT/Lib.hs"
   ]

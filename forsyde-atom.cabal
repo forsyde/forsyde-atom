@@ -71,15 +71,15 @@ library
                    , ForSyDe.Atom.MoC.SY
                    , ForSyDe.Atom.MoC.SY.Core
                    , ForSyDe.Atom.MoC.SY.Lib
-                   -- , ForSyDe.Atom.MoC.SY.Interface
+                   , ForSyDe.Atom.MoC.SY.Interface
                    , ForSyDe.Atom.MoC.DE
                    , ForSyDe.Atom.MoC.DE.Core
                    , ForSyDe.Atom.MoC.DE.Lib
                    , ForSyDe.Atom.MoC.DE.Interface
-                   -- , ForSyDe.Atom.MoC.DE.Hybrid
-                   -- , ForSyDe.Atom.MoC.CT
+                   , ForSyDe.Atom.MoC.DE.Hybrid
+                   , ForSyDe.Atom.MoC.CT
                    , ForSyDe.Atom.MoC.CT.Core
-                   -- , ForSyDe.Atom.MoC.CT.Lib
+                   , ForSyDe.Atom.MoC.CT.Lib
                    -- , ForSyDe.Atom.MoC.SDF
                    , ForSyDe.Atom.MoC.SDF.Core
                    -- , ForSyDe.Atom.MoC.SDF.Lib
@@ -93,6 +93,7 @@ library
   other-extensions:  PostfixOperators, FlexibleInstances
   build-depends:     base>=4.6 && <6
                    , doctest >= 0.8
+                   , numbers >= 3000
                        -- HUnit,
                        -- QuickCheck,
                        -- process >= 1.4.2.0,

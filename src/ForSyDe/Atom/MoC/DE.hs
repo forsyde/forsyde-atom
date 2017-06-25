@@ -69,13 +69,15 @@ module ForSyDe.Atom.MoC.DE (
   -- negative time cannot be represented, signals can be phase-aligned
   -- with the help of the 'ForSyDe.Atom.MoC.-&-' atom. The discrete
   -- aspect is is enforced literally, by representing tags with
-  -- natural numbers.
+  -- natural numbers. All signals need to start from timestamp 0, and
+  -- events need to be positioned with their tags in strict ascending
+  -- order. The 'checkSignal' utility enforces these rules.
   --
   -- 1. tags are explicit and a DE event will construct a type around
   -- both a tag and a value. Tags represent the start time of the
   -- event, the end time being implicit from the start time of the
   -- next event. By doing so, we ensure that the time domain is
-  -- non-disjoint, i.e. a sub-case of continous time.
+  -- non-disjoint, i.e. a sub-case of continous time. 
   --
   -- 1. according to the previous point, events are assumed to persist
   -- from their time of arrival until the next event arrives or, if
@@ -115,7 +117,7 @@ module ForSyDe.Atom.MoC.DE (
   -- checkers. Inside a ForSyDe process network, transformations are
   -- rate-monotonic, thus output signals are guaranteed to be sane.
   --
-  -- 1. since /T/ is a total orderm there is no need for an
+  -- 1. since /T/ is a total order, there is no need for an
   -- <ForSyDe-Atom-MoC.html#context execution context> and we can
   -- ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we
   -- can safely assume:
@@ -178,23 +180,23 @@ module ForSyDe.Atom.MoC.DE (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
-  -- -- ** Interface processes
+  -- ** Interface processes
 
-  -- toSY, toSY2, toSY3, toSY4,
+  toSY, toSY2, toSY3, toSY4,
   -- toCT, toCT2, toCT3, toCT4,
 
   -- zipx, unzipx,
   
-  -- -- ** Hybrid processes
+  -- ** Hybrid processes
 
-  -- embedSY11, embedSY12, embedSY13, embedSY14,
-  -- embedSY21, embedSY22, embedSY23, embedSY24,
-  -- embedSY31, embedSY32, embedSY33, embedSY34,
-  -- embedSY41, embedSY42, embedSY43, embedSY44,
+  embedSY11, embedSY12, embedSY13, embedSY14,
+  embedSY21, embedSY22, embedSY23, embedSY24,
+  embedSY31, embedSY32, embedSY33, embedSY34,
+  embedSY41, embedSY42, embedSY43, embedSY44,
       
  ) where
 
 import ForSyDe.Atom.MoC.DE.Core
 import ForSyDe.Atom.MoC.DE.Lib
--- import ForSyDe.Atom.MoC.DE.Hybrid
--- import ForSyDe.Atom.MoC.DE.Interface
+import ForSyDe.Atom.MoC.DE.Hybrid
+import ForSyDe.Atom.MoC.DE.Interface

@@ -3,8 +3,6 @@
 
 module ForSyDe.Atom.MoC.DE.Interface where
 
--- import           ForSyDe.Atom.ExB
--- import           ForSyDe.Atom.MoC hiding (comb22, comb33, comb44)
 import           ForSyDe.Atom.MoC.DE.Core (Tag)
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 -- import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
@@ -21,9 +19,10 @@ import qualified ForSyDe.Atom.MoC.CT.Core as CT
 
 ------- MoC INTERFACES -------
 
--- | Synchronizes a (set of) DE signal(s) an strips off their explicit
--- tags, outputting the equivalent SY signal(s), tupled with an SY
--- signal carrying the timestamps for the synchronization points.
+-- | Synchronizes a (set of) 'ForSyDe.Atom.MoC.DE.DE' signal(s) an
+-- strips off their explicit tags, outputting the equivalent
+-- 'ForSyDe.Atom.MoC.SY.SY' signal(s), tupled with an SY signal
+-- carrying the timestamps for the synchronization points.
 --
 -- The following constructors are provided:
 --
