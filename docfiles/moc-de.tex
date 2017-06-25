@@ -7,7 +7,7 @@
 \begin{docimage}{example}
 \begin{tikzpicture}
   \standard[process, ni=2, moc=de, f={$+$}, type=comb](p1){};
-  \begin{signalsDE}[grid,timestamps=5,inputs={p1}, num signals=2]{11}
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}]{11}
     \signalDE{1:0}
     \signalDE{ 1:0, 2:2, 3:6, 4:8, 5:9}
   \end{signalsDE}
@@ -21,11 +21,11 @@
 \begin{docimage}{pattern-comb}
 \begin{tikzpicture}
   \standard[process, ni=2,no=2, moc=de, f={$\lambda\ a\ b\rightarrow (a+b,a-b)$}, type=comb](p1){};
-  \begin{signalsDE}[grid,timestamps=5,inputs={p1}, num signals=2]{11}
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}]{11}
     \signalDE{1:0}
     \signalDE{ 1:0, 2:2, 3:6, 4:8, 5:9}
   \end{signalsDE}
-  \begin{signalsDE}[grid,timestamps=5,outputs={p1}, num signals=2]{11}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}]{11}
     \signalDE{ 2 :0, 3 :2, 4 :6, 5 :8, 6 :9}
     \signalDE{ 0 :0, -1 :2, -2 :6, -3 :8, -4 :9}
   \end{signalsDE}
@@ -47,7 +47,7 @@
 \begin{docimage}{pattern-delayp}
 \begin{tikzpicture}
   \standard[process, ni=2, moc=de, type=delay'](p1){};
-  \begin{signalsDE}[grid,timestamps=5,inputs={p1}, num signals=2]{13}
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}]{13}
     \signalDE{1:0, 2:2, 3:6, 4:8, 5:9}
     \signalDE{3:0, 4:4, 5:5, 6:8, 7:9}
   \end{signalsDE}
@@ -70,7 +70,7 @@
 \begin{docimage}{pattern-generate}
 \begin{tikzpicture}
   \standard[process, moc=de, f={$\lambda\ a\ b\rightarrow (a+1,b+2)$;$(3,1),(1,2)$}, no=2, type=generate](p1){};
-  \begin{signalsDE}[grid,timestamps=5,outputs={p1}, num signals=2]{7}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}]{7}
     \signalDE{ 1 :0, 2 :3, 3 :6}
     \signalDE{ 2 :0, 4 :1, 6 :2, 8 :3, 10 :4, 12 :5, 14 :6}
   \end{signalsDE}
@@ -130,13 +130,40 @@
 \begin{docimage}{pattern-sync}
 \begin{tikzpicture}
   \standard[process, ni=2,no=2, moc=de, type=sync](p1){};
-  \begin{signalsDE}[grid,timestamps=5,inputs={p1}, num signals=2]{15}
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}]{15}
     \signalDE{1:0, 2:2, 3:6, 4:8,  5:9}
     \signalDE{1:0, 2:5, 3:6, 4:10, 5:12}
   \end{signalsDE}
-  \begin{signalsDE}[grid,timestamps=5,outputs={p1}, num signals=2]{15}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}]{15}
     \signalDE{ 1 :0, 2 :2, 2 :5, 3 :6, 4 :8, 5 :9, 5 :10, 5 :12}
     \signalDE{ 1 :0, 1 :2, 2 :5, 3 :6, 3 :8, 3 :9, 4 :10, 5 :12}
+  \end{signalsDE}
+\end{tikzpicture}
+\end{docimage} 
+
+\begin{docimage}{tosy}
+\begin{tikzpicture}
+  \standard[process, ni=2,no=3, moc=de, type=toSY](p1){};
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}, xscale=.4]{10}
+    \signalDE{1:0}
+    \signalDE{ 1:0, 2:2, 3:6, 4:8, 5:9}
+  \end{signalsDE}
+  \outputSY*[yshift=.4cm]  <p1.e1> {0,2,6,8,9};
+  \outputSY*[]  <p1.e2> {1,1,1,1,1};
+  \outputSY*[yshift=-.4cm]  <p1.e3> {1,2,3,4,5};
+\end{tikzpicture}
+\end{docimage} 
+
+
+\begin{docimage}{pattern-embedsy}
+\begin{tikzpicture}
+  \standard[process, moc=sy, f={$+$;$1$}, type=stated](p1){};
+  \cluster[process, inner sep=16pt, moc=de, type=embedSY] <(p1)> {};
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}, xshift=-1cm]{12}
+    \signalDE{1:0, 2:2, 3:6, 4:8,  5:9}
+  \end{signalsDE}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}, xshift=1cm]{12}
+    \signalDE{ 1 :0, 2 :2, 4 :6, 7 :8, 11 :9}
   \end{signalsDE}
 \end{tikzpicture}
 \end{docimage} 

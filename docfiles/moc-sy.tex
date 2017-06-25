@@ -172,6 +172,17 @@
 \end{tikzpicture}
 \end{docimage}
 
+\begin{docimage}{tode}
+\begin{tikzpicture}[]
+  \standard[process, ni=2, moc=sy, type=toDE](p1){};
+  \inputSY*[yshift=.2cm]  <p1.w1> {$0,3,4,6,9$};
+  \inputSY*[yshift=-.2cm]  <p1.w2> {$1,2,3,4,5$};
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}{1}, xscale=.4]{10}
+    \signalDE{ 1:0, 2:3, 3:4, 4:6, 5:9}
+  \end{signalsDE}
+\end{tikzpicture}
+\end{docimage}
+
 
 \end{document}
 

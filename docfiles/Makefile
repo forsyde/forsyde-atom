@@ -1,5 +1,6 @@
 FILES = eqs-exb \
-	eqs-moc moc moc-sy moc-de
+	eqs-moc moc moc-sy moc-de moc-ct \
+	misc
 
 target-format=figs/$(1)-$(2).png
 
