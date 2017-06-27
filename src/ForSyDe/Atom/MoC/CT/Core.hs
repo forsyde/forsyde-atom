@@ -21,6 +21,7 @@ import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
 import Numeric
+import Numeric.Natural
 import Data.Ratio
 
 -- | Type alias for the tag type to represent metric time. Underneath
@@ -28,12 +29,14 @@ import Data.Ratio
 -- /t&#8321;/ < /t&#8322;/ &#8712; /T/.
 type Time = Rational
 
+type Tag = Natural
+
 -- | Type synonym for a CT signal, i.e. "a signal of CT events"
 type Signal a = Stream (CT a)
 
 -- | The CT type, identifying a continuous time event and implementing an
 -- instance of the 'MoC' class.
-data CT a  = CT { tag   :: Time
+data CT a  = CT { tag   :: Tag
                   -- ^ start time of event
                 , phase :: Time
                   -- ^ phase. Models function delays

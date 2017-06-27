@@ -80,6 +80,7 @@ library
                    , ForSyDe.Atom.MoC.CT
                    , ForSyDe.Atom.MoC.CT.Core
                    , ForSyDe.Atom.MoC.CT.Lib
+                   , ForSyDe.Atom.MoC.CT.Interface
                    -- , ForSyDe.Atom.MoC.SDF
                    , ForSyDe.Atom.MoC.SDF.Core
                    -- , ForSyDe.Atom.MoC.SDF.Lib
