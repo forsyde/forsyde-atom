@@ -18,11 +18,11 @@ module ForSyDe.Atom.MoC.DE.Core where
 
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
+import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility (($$),($$$),($$$$))
-import Numeric.Natural
 
 -- | Type alias for timestamps. They are natural numbers to ensure /t/ &#8805; 0.
-type Tag = Natural
+type Tag = TimeStamp
 
 -- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Signal a   = Stream (DE a)
@@ -108,9 +108,9 @@ signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 -- of the signal.
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- { 1 @0, 2 @2, 3 @5, 4 @7, 5 @10}
+-- { 1 @0s, 2 @2s, 3 @5s, 4 @7s, 5 @10s}
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
--- { 1 @0, 2 @2, 3 @5*** Exception: DE: malformed signal
+-- { 1 @0s, 2 @2s, 3 @5s*** Exception: DE: malformed signal
 -- >>> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- *** Exception: DE: signal does not start from global 0
 readSignal :: Read a => String -> Signal a

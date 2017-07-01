@@ -126,6 +126,9 @@ module ForSyDe.Atom.MoC.CT (
   -- in "ForSyDe.Atom.MoC".
 
   Signal, unit, unit2, unit3, unit4, infinite, signal, checkSignal,
+
+  plot, plot2, plot3, plot4,
+  plotFloat, plotFloat2, plotFloat3, plotFloat4,
   
   -- * @CT@ process constuctors
 
@@ -182,12 +185,13 @@ module ForSyDe.Atom.MoC.CT (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
-  -- -- ** Interfaces
+  -- ** Interfaces
 
+  toDE, toDE2, toDE3, toDE4,
   -- zipx, unzipx, toDE
   
   ) where
 
 import ForSyDe.Atom.MoC.CT.Core
 import ForSyDe.Atom.MoC.CT.Lib
--- import ForSyDe.Atom.MoC.CT.Interface
+import ForSyDe.Atom.MoC.CT.Interface

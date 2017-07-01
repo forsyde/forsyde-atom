@@ -16,27 +16,24 @@
 
 module ForSyDe.Atom.MoC.CT.Core where
 
+import Data.Ratio
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
+import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility
-
-import Numeric
-import Numeric.Natural
-import Data.Ratio
 
 -- | Type alias for the tag type to represent metric time. Underneath
 -- we use 'Rational' that is able to represent any /t/ between
 -- /t&#8321;/ < /t&#8322;/ &#8712; /T/.
 type Time = Rational
 
-type Tag = Natural
 
 -- | Type synonym for a CT signal, i.e. "a signal of CT events"
 type Signal a = Stream (CT a)
 
 -- | The CT type, identifying a continuous time event and implementing an
 -- instance of the 'MoC' class.
-data CT a  = CT { tag   :: Tag
+data CT a  = CT { tag   :: TimeStamp
                   -- ^ start time of event
                 , phase :: Time
                   -- ^ phase. Models function delays
@@ -69,8 +66,8 @@ instance MoC CT where
   ---------------------
   (CT _ p v :- _) -<- xs = (CT 0 p v) :- xs
   ---------------------
-  -- (CT 0 _ _ :- _) -&- xs = xs
-  (_ :- CT d _ _ :- _) -&- xs = (\(CT t p v) -> CT (t + d) (p - d) v) <$> xs
+  (_ :- CT d _ _ :- _) -&- xs
+    = (\(CT t p v) -> CT (t + d) (p - toRational d) v) <$> xs
   (_ :- NullS) -&- _  = error "CT: signal delayed to infinity"
   ---------------------
     
@@ -87,8 +84,8 @@ instance Applicative CT where
 -- it evaluates the function at the tag time /only/!
 instance Show a => Show (CT a) where
   showsPrec _ e
-    = (++) ( " "  ++ show (eval (tag e) e) ++
-             " @" ++ (showFFloat Nothing $ fromRat $ tag e) "" )
+    = (++) ( " "  ++ show (evalTs (tag e) e) ++
+             " @" ++ show (tag e) )
 
 -----------------------------------------------------------------------------
 -- These functions are not exported and are used for testing purpose only.
@@ -99,12 +96,13 @@ infixl 7 %>
 -- end of testbench functions
 -----------------------------------------------------------------------------
 
-eval t (CT _ p f) = f (t + p)
-time (CT t p _) = t + p
+evalTm t (CT _ p f) = f (t + p)
+evalTs t (CT _ p f) = f ((toRational t) + p)
+time (CT t _ _) = toRational t
 const v = (\_ -> v)
 
                    
-unit  :: (Time, Time -> a) -> Signal a 
+unit  :: (TimeStamp, Time -> a) -> Signal a 
 unit (t,f) = (CT 0 0 f :- CT t 0 f :- NullS)
 
 -- | Wraps a (tuple of) pair(s) @(time, function)@ into the equivalent
@@ -124,37 +122,37 @@ infinite f = CT 0 0 f :- NullS
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
 -- into a CT signal
-signal :: [(Time, Time -> a)] -> Signal a
+signal :: [(TimeStamp, Time -> a)] -> Signal a
 signal = checkSignal . stream . fmap (\(t, f) -> CT t 0 f)
 
 -- | Checks if a signal is well-formed or not, according to the CT MoC
 -- interpretation in @ForSyDe-Atom@.
 checkSignal NullS = NullS
 checkSignal s@(x:-_)
-  | tag x + phase x == 0 = checkOrder s
+  | tag x == 0 = checkOrder s
   | otherwise  = error "CT: signal does not tag from global 0"
   where
     checkOrder NullS      = NullS
     checkOrder (x:-NullS) = (x:-NullS)
     checkOrder (x:-y:-xs)
-      | tag x + phase x < tag y + phase y = x :-checkOrder (y:-xs)
+      | tag x < tag y = x :-checkOrder (y:-xs)
       | otherwise = error "CT: malformed signal"
 
 -- | Returns a stream with the results of evaluating a signal with a
 -- given sampling period.
-plot :: Time          -- ^ sample period
-     -> Time          -- ^ end of plotting
-     -> Stream (CT a) -- ^ input CT signal
-     -> Stream a      -- ^ stream with evaluation results
+plot :: TimeStamp  -- ^ sample period
+     -> TimeStamp  -- ^ end of plotting
+     -> Signal a   -- ^ input CT signal
+     -> Stream a   -- ^ stream with evaluation results
 plot step until = evalPlot 0
   where
     evalPlot t s@(x:-y:-xs)
-      | t >= until  = NullS
-      | tag y > t = eval t x :- evalPlot (t + step) s
-      | otherwise   = evalPlot t (y:-xs)
+      | t >= until = NullS
+      | tag y > t  = evalTs t x :- evalPlot (t + step) s
+      | otherwise  = evalPlot t (y:-xs)
     evalPlot t s@(x:-NullS)
-      | t < until = eval t x :- evalPlot (t + step) s
-      | otherwise = NullS
+      | t >= until = NullS
+      | otherwise  = evalTs t x :- evalPlot (t + step) s
 plot2 s u = ($$)   (plot s u, plot s u)
 plot3 s u = ($$$)  (plot s u, plot s u, plot s u)
 plot4 s u = ($$$$) (plot s u, plot s u, plot s u, plot s u)
@@ -162,11 +160,13 @@ plot4 s u = ($$$$) (plot s u, plot s u, plot s u, plot s u)
 -- | Same as 'plot', but also converts rational outputs to floats
 -- (which are easier to be read by drawing engines).
 plotFloat :: RealFloat b
-          => Time             -- ^ sample period
-          -> Time             -- ^ end of plotting
-          -> Stream (CT Time) -- ^ CT signal with a 'Time' codomain
-          -> Stream b         -- ^ plot output in floating point format
-plotFloat  s u = fmap  fromRat . plot s u
+          => TimeStamp     -- ^ sample period
+          -> TimeStamp     -- ^ end of plotting
+          -> Signal Time   -- ^ CT signal with a 'Time' codomain
+          -> Stream b      -- ^ plot output in floating point format
+plotFloat  s u = fmap  fromRational . plot s u
 plotFloat2 s u = ($$)   (plotFloat s u, plotFloat s u)
 plotFloat3 s u = ($$$)  (plotFloat s u, plotFloat s u, plotFloat s u)
 plotFloat4 s u = ($$$$) (plotFloat s u, plotFloat s u, plotFloat s u, plotFloat s u)
+
+

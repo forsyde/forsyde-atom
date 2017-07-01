@@ -38,7 +38,7 @@ import qualified ForSyDe.Atom.MoC.SY.Lib
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
 -- >>> embedSY11 (SY.stated11 (+) 1) s
--- { 1 @0, 2 @2, 4 @6, 7 @8, 11 @9}
+-- { 1 @0s, 2 @2s, 4 @6s, 7 @8s, 11 @9s}
 --
 -- <<docfiles/figs/moc-de-pattern-embedsy.png>>
 embedSY22 :: (SY.Signal a1 -> SY.Signal a2

@@ -14,4 +14,5 @@ main = doctest
   , "src/ForSyDe/Atom/MoC/DE/Hybrid.hs"
   , "src/ForSyDe/Atom/MoC/CT/Core.hs"
   , "src/ForSyDe/Atom/MoC/CT/Lib.hs"
+  , "src/ForSyDe/Atom/MoC/CT/Interface.hs"
   ]

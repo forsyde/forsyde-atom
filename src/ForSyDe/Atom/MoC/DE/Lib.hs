@@ -32,7 +32,7 @@ import           ForSyDe.Atom.Utility
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> delay 3 0 s
--- { 0 @0, 1 @3, 2 @5, 3 @9, 4 @11, 5 @12}
+-- { 0 @0s, 1 @3s, 2 @5s, 3 @9s, 4 @11s, 5 @12s}
 --
 -- <<docfiles/figs/moc-de-pattern-delay.png>>
 delay :: Tag        -- ^ time delay
@@ -49,7 +49,7 @@ delay t v = MoC.delay (unit (t, v))
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
 -- >>> delay' s1 s2
--- { 1 @0, 3 @2, 4 @6, 5 @7, 6 @10, 7 @11}
+-- { 1 @0s, 3 @2s, 4 @6s, 5 @7s, 6 @10s, 7 @11s}
 --
 -- <<docfiles/figs/moc-de-pattern-delayp.png>>
 delay' :: Signal a  -- ^ signal "borrowing" the initial event
@@ -74,9 +74,9 @@ delay' = MoC.delay
 -- >>> let s1 = infinite 1
 -- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> comb11 (+1) s2
--- { 2 @0, 3 @2, 4 @6, 5 @8, 6 @9}
+-- { 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s}
 -- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
--- ({ 2 @0, 3 @2, 4 @6, 5 @8, 6 @9},{ 0 @0, -1 @2, -2 @6, -3 @8, -4 @9})
+-- ({ 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s},{ 0 @0s, -1 @2s, -2 @6s, -3 @8s, -4 @9s})
 --
 -- <<docfiles/figs/moc-de-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
@@ -144,7 +144,7 @@ comb44 = MoC.comb44
 -- > constant1, constant2, constant3, constant4,
 --
 -- >>> constant1 2
--- { 2 @0}
+-- { 2 @0s}
 --
 -- <<docfiles/figs/moc-de-pattern-constant.png>>
 constant2 :: (b1, b2)         -- ^ values to be repeated
@@ -170,9 +170,9 @@ constant4 = ($$$$) (infinite,infinite,infinite,infinite)
 --
 -- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) ((3,1),(1,2))
 -- >>> takeS 5 s1
--- { 1 @0, 2 @3, 2 @4, 2 @5, 3 @6}
+-- { 1 @0s, 2 @3s, 2 @4s, 2 @5s, 3 @6s}
 -- >>> takeS 7 s2
--- { 2 @0, 4 @1, 6 @2, 8 @3, 10 @4, 12 @5, 14 @6}
+-- { 2 @0s, 4 @1s, 6 @2s, 8 @3s, 10 @4s, 12 @5s, 14 @6s}
 --
 -- <<docfiles/figs/moc-de-pattern-generate.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
@@ -209,7 +209,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ stated11 (+) (6,1) s
--- { 1 @0, 2 @6, 3 @8, 5 @12, 7 @14, 8 @15, 10 @18}
+-- { 1 @0s, 2 @6s, 3 @8s, 5 @12s, 7 @14s, 8 @15s, 10 @18s}
 --
 -- <<docfiles/figs/moc-de-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -314,7 +314,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ state11 (+) (6,1) s
--- { 2 @0, 3 @2, 5 @6, 7 @8, 8 @9, 10 @12, 12 @14}
+-- { 2 @0s, 3 @2s, 5 @6s, 7 @8s, 8 @9s, 10 @12s, 12 @14s}
 --
 -- <<docfiles/figs/moc-de-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -420,7 +420,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
--- { 2 @0, 3 @6, 4 @8, 6 @12, 8 @14, 9 @15, 11 @18}
+-- { 2 @0s, 3 @6s, 4 @8s, 6 @12s, 8 @14s, 9 @15s, 11 @18s}
 --
 -- <<docfiles/figs/moc-de-pattern-moore.png>>          
 moore22 :: (st -> a1 -> a2 -> st)
@@ -538,7 +538,7 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
--- { 0 @0, -1 @2, -1 @6, -1 @8, -2 @9, 0 @12, 2 @14}
+-- { 0 @0s, -1 @2s, -1 @6s, -1 @8s, -2 @9s, 0 @12s, 2 @14s}
 --
 -- <<docfiles/figs/moc-de-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)
@@ -656,7 +656,7 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8,  5@9}"  :: Signal Int
 -- >>> let s2 = readSignal "{1@0, 2@5, 3@6, 4@10, 5@12}" :: Signal Int
 -- >>> sync2 s1 s2
--- ({ 1 @0, 2 @2, 2 @5, 3 @6, 4 @8, 5 @9, 5 @10, 5 @12},{ 1 @0, 1 @2, 2 @5, 3 @6, 3 @8, 3 @9, 4 @10, 5 @12})
+-- ({ 1 @0s, 2 @2s, 2 @5s, 3 @6s, 4 @8s, 5 @9s, 5 @10s, 5 @12s},{ 1 @0s, 1 @2s, 2 @5s, 3 @6s, 3 @8s, 3 @9s, 4 @10s, 5 @12s})
 --
 -- <<docfiles/figs/moc-de-pattern-sync.png>>
 sync2 :: Signal a1                    -- ^ first input signal

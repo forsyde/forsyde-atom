@@ -82,7 +82,7 @@ library
                    , ForSyDe.Atom.MoC.CT.Lib
                    , ForSyDe.Atom.MoC.CT.Interface
                    -- , ForSyDe.Atom.MoC.SDF
-                   , ForSyDe.Atom.MoC.SDF.Core
+                   -- , ForSyDe.Atom.MoC.SDF.Core
                    -- , ForSyDe.Atom.MoC.SDF.Lib
                    -- , ForSyDe.Atom.Skeleton
                    -- , ForSyDe.Atom.Skeleton.Vector
@@ -95,6 +95,7 @@ library
   build-depends:     base>=4.6 && <6
                    , doctest >= 0.8
                    , numbers >= 3000
+                   , time
                        -- HUnit,
                        -- QuickCheck,
                        -- process >= 1.4.2.0,

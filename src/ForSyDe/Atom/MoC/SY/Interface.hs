@@ -32,7 +32,7 @@ import qualified ForSyDe.Atom.MoC.SY.Core as SY
 -- >>> let s1 = SY.signal [0,3,4,6,9]
 -- >>> let s2 = SY.signal [1,2,3,4,5]
 -- >>> toDE s1 s2
--- { 1 @0, 2 @3, 3 @4, 4 @6, 5 @9}
+-- { 1 @0s, 2 @3s, 3 @4s, 4 @6s, 5 @9s}
 --
 -- <<docfiles/figs/moc-sy-tode.png>>
 toDE2 ::  SY.Signal DE.Tag
