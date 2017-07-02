@@ -38,7 +38,7 @@ eventToDE e = DE.DE tg (CT.evalTs tg e)
 --
 -- > toDE, toDE2, toDE3, toDE4
 --
--- >>> let s  = CT.infinite (fromRational . sin')
+-- >>> let s = CT.infinite (fromRational . sin')
 -- >>> let c = DE.generate1 id (pi'/2, 1)
 -- >>> takeS 6 $ toDE c s
 -- { 0.0 @0s, 1.0 @1.570796326794s, 1.793238520564752e-12 @3.141592653588s, -1.0 @4.712388980382s, 0.0 @6.283185307176s, 1.0 @7.85398163397s}

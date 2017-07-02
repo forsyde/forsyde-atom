@@ -3,7 +3,7 @@
 
 module ForSyDe.Atom.MoC.DE.Interface where
 
-import           ForSyDe.Atom.MoC.DE.Core (Tag)
+import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 -- import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
 import           ForSyDe.Atom.Utility
@@ -36,15 +36,15 @@ import qualified ForSyDe.Atom.MoC.CT.Core as CT
 -- <<docfiles/figs/moc-de-tosy.png>>
 toSY2 :: DE.Signal a             -- ^ first input DE signal
       -> DE.Signal b             -- ^ second input DE signal
-      -> (SY.Signal Tag, SY.Signal a, SY.Signal b)
+      -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b)
       -- ^ signal carrying timestamps tupled with the two output
       -- 'ForSyDe.Atom.MoC.SY.SY' signals
 toSY  :: DE.Signal a
-      -> (SY.Signal Tag, SY.Signal a)
+      -> (SY.Signal TimeStamp, SY.Signal a)
 toSY3 :: DE.Signal a -> DE.Signal b -> DE.Signal c
-      -> (SY.Signal Tag, SY.Signal a, SY.Signal b, SY.Signal c)
+      -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b, SY.Signal c)
 toSY4 :: DE.Signal a -> DE.Signal b -> DE.Signal c -> DE.Signal d
-      -> (SY.Signal Tag, SY.Signal a, SY.Signal b, SY.Signal c, SY.Signal d)
+      -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b, SY.Signal c, SY.Signal d)
 
 eventToSY (DE.DE t a) = (SY.SY t, SY.SY a)
 toSY  s1              = (eventToSY <$> s1 |<)

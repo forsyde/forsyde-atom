@@ -21,15 +21,12 @@ import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 
--- | Type alias for timestamps. They are natural numbers to ensure /t/ &#8805; 0.
-type Tag = TimeStamp
-
 -- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Signal a   = Stream (DE a)
 
 -- | The DE event. It identifies a discrete event signal.
-data DE a  = DE { tag :: Tag,  -- ^ timestamp
-                  val :: a     -- ^ the value
+data DE a  = DE { tag :: TimeStamp,  -- ^ timestamp
+                  val :: a           -- ^ the value
                 } deriving (Eq)
 
 -- | Implenents the execution and synchronization semantics for the DE
@@ -56,7 +53,7 @@ instance MoC DE where
   (DE _ v :- _) -<- xs = pure v :- xs
   ---------------------
   (_ :- DE d _ :- _) -&- xs = (\(DE t v) -> DE (t + d) v) <$> xs
-  (_ :- NullS) -&- _  = error "DE: signal delayed to infinity"
+  (_ :- NullS) -&- _  = error "[MoC.DE] signal delayed to infinity"
   ---------------------
 
 -- | Shows the event with tag @t@ and value @v@ as @ v \@t@.
@@ -80,7 +77,7 @@ instance Applicative DE where
 
 -----------------------------------------------------------------------------
 
-unit  :: (Tag, a) -> Signal a 
+unit  :: (TimeStamp, a) -> Signal a 
 unit (t,v) = (DE 0 v :- DE t v :- NullS)
 
 -- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
@@ -100,7 +97,7 @@ infinite v = DE 0 v :- NullS
 
 -- | Transforms a list of tuples @(tag, value)@ into a DE
 -- signal. Checks if it is well-formed.
-signal :: [(Tag, a)] -> Signal a
+signal :: [(TimeStamp, a)] -> Signal a
 signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 
 -- | Reads a signal from a string and checks if it is well-formed. Like
@@ -110,7 +107,7 @@ signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- { 1 @0s, 2 @2s, 3 @5s, 4 @7s, 5 @10s}
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
--- { 1 @0s, 2 @2s, 3 @5s*** Exception: DE: malformed signal
+-- { 1 @0s, 2 @2s, 3 @5s*** Exception: [MoC.DE] malformed signal
 -- >>> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- *** Exception: DE: signal does not start from global 0
 readSignal :: Read a => String -> Signal a
@@ -121,12 +118,12 @@ readSignal s = checkSignal $ read s
 checkSignal NullS = NullS
 checkSignal s@(x:-_)
   | tag x == 0 = checkOrder s
-  | otherwise  = error "DE: signal does not start from global 0"
+  | otherwise  = error "[MoC.DE] signal does not start from global 0"
   where
     checkOrder NullS      = NullS
     checkOrder (x:-NullS) = (x:-NullS)
     checkOrder (x:-y:-xs) | tag x < tag y = x :-checkOrder (y:-xs)
-                          | otherwise = error "DE: malformed signal"
+                          | otherwise = error "[MoC.DE] malformed signal"
 
 ----------------------------------------------------------------------------- 
 -- These functions are not exported and are used for testing purpose only.

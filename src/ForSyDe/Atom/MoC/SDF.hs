@@ -107,13 +107,8 @@ module ForSyDe.Atom.MoC.SDF (
   -- construction of atoms and atom patters as seen in
   -- "ForSyDe.Atom.MoC".
 
-  Partition, Sig, Prod, Cons, part2, signal,
+  Signal, Prod, Cons, signal,
 
-  wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
-  wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
-  wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
-  wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
-  
   -- * @SDF@ process constuctors
 
   -- | These SDF-specific process constructors are basically
@@ -132,7 +127,7 @@ module ForSyDe.Atom.MoC.SDF (
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
 
-  delay,
+  delay, delay', 
   
   constant1, constant2, constant3, constant4,
 
@@ -160,17 +155,11 @@ module ForSyDe.Atom.MoC.SDF (
 
   -- ** Interfaces
 
-  zipx--, unzipx
+  toSY, toSY2, toSY3, toSY4
+  -- zipx--, unzipx  
 
-  -- * Bibliography
-
-  -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229.
-  
-  -- | #kahn76# [2] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
-  
   ) where
 
-import Prelude hiding (filter)
 import ForSyDe.Atom.MoC.SDF.Core
 import ForSyDe.Atom.MoC.SDF.Lib
 import ForSyDe.Atom.MoC.SDF.Interface

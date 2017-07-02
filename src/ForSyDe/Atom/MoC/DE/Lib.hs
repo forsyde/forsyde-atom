@@ -18,6 +18,7 @@ module ForSyDe.Atom.MoC.DE.Lib where
 
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.DE.Core
+import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.Utility
 
 ------- DOCTEST SETUP -------
@@ -35,7 +36,7 @@ import           ForSyDe.Atom.Utility
 -- { 0 @0s, 1 @3s, 2 @5s, 3 @9s, 4 @11s, 5 @12s}
 --
 -- <<docfiles/figs/moc-de-pattern-delay.png>>
-delay :: Tag        -- ^ time delay
+delay :: TimeStamp        -- ^ time delay
       -> a          -- ^ initial value
       -> Signal a   -- ^ input signal
       -> Signal a   -- ^ output signal
@@ -177,16 +178,16 @@ constant4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- <<docfiles/figs/moc-de-pattern-generate.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
           -- ^ function to generate next value
-          -> ((Tag, b1), (Tag, b2))
+          -> ((TimeStamp, b1), (TimeStamp, b2))
           -- ^ kernel values tupled with their generation rate.
           -> (Signal b1, Signal b2) -- ^ generated signals
-generate1 :: (b1 -> b1) -> (Tag, b1)
+generate1 :: (b1 -> b1) -> (TimeStamp, b1)
           -> Signal b1                                
 generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3))
-          -> ((Tag, b1), (Tag, b2), (Tag, b3))
+          -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
           -> (Signal b1, Signal b2, Signal b3)                      
 generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4))
-          -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+          -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
           -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
 
 generate1 ns i = MoC.stated01 ns (unit  i)
@@ -214,7 +215,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- <<docfiles/figs/moc-de-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ next state function
-           -> ((Tag, b1), (Tag, b2))
+           -> ((TimeStamp, b1), (TimeStamp, b2))
            -- ^ initial state values tupled with their initial delay
             -> Signal a1
             -- ^ first input signal
@@ -222,63 +223,63 @@ stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ second input signal
             -> (Signal b1, Signal b2) -- ^ output signals
 stated11 :: (b1 -> a1 -> b1)
-         -> (Tag, b1)
+         -> (TimeStamp, b1)
          -> Signal a1
          -> Signal b1 
 stated12 :: (b1 -> b2 -> a1 -> (b1, b2))
-         -> ((Tag, b1), (Tag, b2))
+         -> ((TimeStamp, b1), (TimeStamp, b2))
          -> Signal a1
          -> (Signal b1, Signal b2) 
 stated13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
          -> Signal a1
          -> (Signal b1, Signal b2, Signal b3) 
 stated14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
          -> Signal a1
          -> (Signal b1, Signal b2, Signal b3, Signal b4) 
 stated21 :: (b1 -> a1 -> a2 -> b1)
-         -> (Tag, b1)
+         -> (TimeStamp, b1)
          -> Signal a1 -> Signal a2
          -> Signal b1 
 stated23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
          -> Signal a1 -> Signal a2
          -> (Signal b1, Signal b2, Signal b3) 
 stated24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
          -> Signal a1 -> Signal a2
          -> (Signal b1, Signal b2, Signal b3, Signal b4) 
 stated31 :: (b1 -> a1 -> a2 -> a3 -> b1)
-         -> (Tag, b1)
+         -> (TimeStamp, b1)
          -> Signal a1 -> Signal a2 -> Signal a3
          -> Signal b1 
 stated32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2))
-         -> ((Tag, b1), (Tag, b2))
+         -> ((TimeStamp, b1), (TimeStamp, b2))
          -> Signal a1 -> Signal a2 -> Signal a3
          -> (Signal b1, Signal b2) 
 stated33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
          -> Signal a1 -> Signal a2 -> Signal a3
          -> (Signal b1, Signal b2, Signal b3) 
 stated34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
          -> Signal a1 -> Signal a2 -> Signal a3
          -> (Signal b1, Signal b2, Signal b3, Signal b4) 
 stated41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
-         -> (Tag, b1)
+         -> (TimeStamp, b1)
          -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
          -> Signal b1 
 stated42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2))
-         -> ((Tag, b1), (Tag, b2))
+         -> ((TimeStamp, b1), (TimeStamp, b2))
          -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
          -> (Signal b1, Signal b2) 
 stated43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
          -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
          -> (Signal b1, Signal b2, Signal b3) 
 stated44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
-         -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
          -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
          -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
@@ -319,7 +320,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- <<docfiles/figs/moc-de-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ next state function
-           -> ((Tag, b1), (Tag, b2))
+           -> ((TimeStamp, b1), (TimeStamp, b2))
            -- ^ initial state values tupled with their initial delay
            -> Signal a1
            -- ^ first input signal
@@ -327,63 +328,63 @@ state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ second input signal
            -> (Signal b1, Signal b2) -- ^ output signals
 state11 :: (b1 -> a1 -> b1)
-        -> (Tag, b1)
+        -> (TimeStamp, b1)
         -> Signal a1
         -> Signal b1                                
 state12 :: (b1 -> b2 -> a1 -> (b1, b2)) 
-        -> ((Tag, b1), (Tag, b2))
+        -> ((TimeStamp, b1), (TimeStamp, b2))
         -> Signal a1
         -> (Signal b1, Signal b2)                          
 state13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
         -> Signal a1
         -> (Signal b1, Signal b2, Signal b3)                      
 state14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
         -> Signal a1 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
 state21 :: (b1 -> a1 -> a2 -> b1)
-        -> (Tag, b1)
+        -> (TimeStamp, b1)
         -> Signal a1 -> Signal a2
         -> Signal b1                          
 state23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
         -> Signal a1 -> Signal a2 
         -> (Signal b1, Signal b2, Signal b3)                
 state24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
         -> Signal a1 -> Signal a2 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
 state31 :: (b1 -> a1 -> a2 -> a3 -> b1)
-        -> (Tag, b1)
+        -> (TimeStamp, b1)
         -> Signal a1 -> Signal a2 -> Signal a3
         -> Signal b1                    
 state32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) 
-        -> ((Tag, b1), (Tag, b2))
+        -> ((TimeStamp, b1), (TimeStamp, b2))
         -> Signal a1 -> Signal a2 -> Signal a3 
         -> (Signal b1, Signal b2)              
 state33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
         -> Signal a1 -> Signal a2 -> Signal a3 
         -> (Signal b1, Signal b2, Signal b3)          
 state34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
         -> Signal a1 -> Signal a2 -> Signal a3 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)     
 state41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
-        -> (Tag, b1)
+        -> (TimeStamp, b1)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> Signal b1
 state42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
-        -> ((Tag, b1), (Tag, b2))
+        -> ((TimeStamp, b1), (TimeStamp, b2))
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
         -> (Signal b1, Signal b2)        
 state43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
         -> (Signal b1, Signal b2, Signal b3)    
 state44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
-        -> ((Tag, b1), (Tag, b2), (Tag, b3), (Tag, b4))
+        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
@@ -427,82 +428,82 @@ moore22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> (b1, b2))
            -- ^ output decoder
-           -> (Tag, st)
+           -> (TimeStamp, st)
            -- ^ initial state: tag and value
            -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
 moore11 :: (st -> a1 -> st)
         -> (st -> b1)
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1
         -> Signal b1                                
 moore12 :: (st -> a1 -> st)
         -> (st -> (b1, b2))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1
         -> (Signal b1, Signal b2)                          
 moore13 :: (st -> a1 -> st)
         -> (st -> (b1, b2, b3))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1
         -> (Signal b1, Signal b2, Signal b3)                      
 moore14 :: (st -> a1 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1
         -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
 moore21 :: (st -> a1 -> a2 -> st)
         -> (st -> b1)
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2
         -> Signal b1                          
 moore23 :: (st -> a1 -> a2 -> st)
         -> (st -> (b1, b2, b3))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2
         -> (Signal b1, Signal b2, Signal b3)                
 moore24 :: (st -> a1 -> a2 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2
         -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
 moore31 :: (st -> a1 -> a2 -> a3 -> st)
         -> (st -> b1)
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3
         -> Signal b1                    
 moore32 :: (st -> a1 -> a2 -> a3 -> st)
         -> (st -> (b1, b2))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3
         -> (Signal b1, Signal b2)              
 moore33 :: (st -> a1 -> a2 -> a3 -> st)
         -> (st -> (b1, b2, b3))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3
         -> (Signal b1, Signal b2, Signal b3)          
 moore34 :: (st -> a1 -> a2 -> a3 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3
         -> (Signal b1, Signal b2, Signal b3, Signal b4)     
 moore41 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> b1)
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> Signal b1              
 moore42 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> (b1, b2))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> (Signal b1, Signal b2)        
 moore43 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> (b1, b2, b3))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> (Signal b1, Signal b2, Signal b3)    
 moore44 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
@@ -545,83 +546,83 @@ mealy22 :: (st -> a1 -> a2 -> st)
         -- ^ next state function
         -> (st -> a1 -> a2 -> (b1, b2))
         -- ^ outpt decoder
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -- ^ initial state: tag and value
         -> Signal a1 -> Signal a2
         -> (Signal b1, Signal b2)
 mealy11 :: (st -> a1 -> st) 
         -> (st -> a1 -> b1) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1
         -> Signal b1                                
 mealy12 :: (st -> a1 -> st) 
         -> (st -> a1 -> (b1, b2)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 
         -> (Signal b1, Signal b2)                          
 mealy13 :: (st -> a1 -> st) 
         -> (st -> a1 -> (b1, b2, b3)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 
         -> (Signal b1, Signal b2, Signal b3)                      
 mealy14 :: (st -> a1 -> st) 
         -> (st -> a1 -> (b1, b2, b3, b4)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
 mealy21 :: (st -> a1 -> a2 -> st) 
         -> (st -> a1 -> a2 -> b1) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2
         -> Signal b1                          
 mealy23 :: (st -> a1 -> a2 -> st) 
         -> (st -> a1 -> a2 -> (b1, b2, b3)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 
         -> (Signal b1, Signal b2, Signal b3)                
 mealy24 :: (st -> a1 -> a2 -> st) 
         -> (st -> a1 -> a2 -> (b1, b2, b3, b4)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
 mealy31 :: (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> b1) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3
         -> Signal b1  
 mealy32 :: (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> (b1, b2)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 
         -> (Signal b1, Signal b2)              
 mealy33 :: (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 
         -> (Signal b1, Signal b2, Signal b3)          
 mealy34 :: (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)     
 mealy41 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> b1) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> Signal b1
 mealy42 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
         -> (Signal b1, Signal b2)        
 mealy43 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
         -> (Signal b1, Signal b2, Signal b3)    
 mealy44 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
-        -> (Tag, st)
+        -> (TimeStamp, st)
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
         -> (Signal b1, Signal b2, Signal b3, Signal b4)
 

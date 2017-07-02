@@ -68,7 +68,7 @@ instance MoC CT where
   ---------------------
   (_ :- CT d _ _ :- _) -&- xs
     = (\(CT t p v) -> CT (t + d) (p - toRational d) v) <$> xs
-  (_ :- NullS) -&- _  = error "CT: signal delayed to infinity"
+  (_ :- NullS) -&- _  = error "[MoC.CT] signal delayed to infinity"
   ---------------------
     
 -- | Allows for mapping of functions on a CT event.
@@ -130,13 +130,13 @@ signal = checkSignal . stream . fmap (\(t, f) -> CT t 0 f)
 checkSignal NullS = NullS
 checkSignal s@(x:-_)
   | tag x == 0 = checkOrder s
-  | otherwise  = error "CT: signal does not tag from global 0"
+  | otherwise  = error "[MoC.CT] signal does not tag from global 0"
   where
     checkOrder NullS      = NullS
     checkOrder (x:-NullS) = (x:-NullS)
     checkOrder (x:-y:-xs)
       | tag x < tag y = x :-checkOrder (y:-xs)
-      | otherwise = error "CT: malformed signal"
+      | otherwise = error "[MoC.CT] malformed signal"
 
 -- | Returns a stream with the results of evaluating a signal with a
 -- given sampling period.

@@ -67,11 +67,10 @@ module ForSyDe.Atom.MoC.DE (
   -- 1. According to <ForSyDe-Atom.html#lee98 [Lee98]>, our DE MoC is
   -- a one-sided system, i.e. time starts from an absolute 0. While
   -- negative time cannot be represented, signals can be phase-aligned
-  -- with the help of the 'ForSyDe.Atom.MoC.-&-' atom. The discrete
-  -- aspect is is enforced literally, by representing tags with
-  -- natural numbers. All signals need to start from timestamp 0, and
-  -- events need to be positioned with their tags in strict ascending
-  -- order. The 'checkSignal' utility enforces these rules.
+  -- with the help of the 'ForSyDe.Atom.MoC.-&-' atom. All signals
+  -- need to start from timestamp 0, and events need to be positioned
+  -- with their tags in strict ascending order. The 'checkSignal'
+  -- utility enforces these rules.
   --
   -- 1. tags are explicit and a DE event will construct a type around
   -- both a tag and a value. Tags represent the start time of the
@@ -124,7 +123,7 @@ module ForSyDe.Atom.MoC.DE (
   --
   -- <<docfiles/figs/eqs-moc-timed-context.png>>
 
-  Tag, DE(..),
+  DE(..),
 
   -- * Aliases & utilities
 
