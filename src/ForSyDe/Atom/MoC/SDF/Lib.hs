@@ -79,7 +79,7 @@ delay' = MoC.delay
 -- >>> comb21 ((3,2),3,f) s1 s2
 -- *** Exception: [MoC.SDF] Wrong production
 --
--- <<includes/figs/moc-sdf-pattern-comb.png>>
+-- <<docfiles/figs/moc-sdf-pattern-comb.png>>
 comb22 :: ((Cons,Cons), (Prod,Prod),
            [a1] -> [a2] -> ([b1], [b2]))
           -- ^ function on lists of values, tupled with consumption /
@@ -771,3 +771,4 @@ mealy41 (cns,pns,ns) (cod,pod,od) i = MoC.mealy41 (MoC.ctxt51 cns pns ns) (MoC.c
 mealy42 (cns,pns,ns) (cod,pod,od) i = MoC.mealy42 (MoC.ctxt51 cns pns ns) (MoC.ctxt52 cod pod od) (signal i)
 mealy43 (cns,pns,ns) (cod,pod,od) i = MoC.mealy43 (MoC.ctxt51 cns pns ns) (MoC.ctxt53 cod pod od) (signal i)
 mealy44 (cns,pns,ns) (cod,pod,od) i = MoC.mealy44 (MoC.ctxt51 cns pns ns) (MoC.ctxt54 cod pod od) (signal i)
+
