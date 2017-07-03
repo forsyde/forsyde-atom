@@ -177,9 +177,17 @@
   \standard[process, ni=2, moc=sy, type=toDE](p1){};
   \inputSY*[yshift=.2cm]  <p1.w1> {$0,3,4,6,9$};
   \inputSY*[yshift=-.2cm]  <p1.w2> {$1,2,3,4,5$};
-  \begin{signalsDE}[grid,timestamps=5,outputs={p1}{1}, xscale=.4]{10}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}, xscale=.4]{10}
     \signalDE{ 1:0, 2:3, 3:4, 4:6, 5:9}
   \end{signalsDE}
+\end{tikzpicture}
+\end{docimage}
+
+\begin{docimage}{tosdf}
+\begin{tikzpicture}[]
+  \standard[process, moc=sy, type=toSDF](p1){};
+  \inputSY*  <p1.w1> {1,2,3,4,5};
+  \outputSY* <p1.e1> {1,2,3,4,5};
 \end{tikzpicture}
 \end{docimage}
 
