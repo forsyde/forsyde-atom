@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK prune #-}
-----------------------------------------------------------------------------
+---------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.SY
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015-2016
@@ -17,7 +17,7 @@
 -- __IMPORTANT!!!__
 -- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
 -- on how to interpret, use and develop your own constructors.
-----------------------------------------------------------------------------
+---------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.SY (
 
@@ -140,6 +140,7 @@ module ForSyDe.Atom.MoC.SY (
   -- * Interfaces
 
   toDE, toDE2, toDE3, toDE4,
+  toSDF, toSDF2, toSDF3, toSDF4,
   -- zipx, unzipx  
   
   ) where

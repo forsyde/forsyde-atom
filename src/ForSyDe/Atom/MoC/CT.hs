@@ -50,13 +50,17 @@ module ForSyDe.Atom.MoC.CT (
   -- 'ForSyDe.MoC.DE.DE' with respect to the __CT MoC__ definition, in
   -- the sense that:
   --
-  -- 1. tags /t/ are represented with 'Rational' numbers instead of
-  -- 'Natural' numbers to be able to fuly cover a continuous metric
-  -- span.
+  -- 1. tags /t/ are also represented with
+  -- 'ForSyDe.Atom.MoC.TimeStamp's, thus we can say that changes in a
+  -- CT signal happen at discrete times (see below).
   --
-  -- 1. values are represented as functions over time /f(t)/, thus an
-  -- event represents a continuous function over its time span rather
-  -- than just a value or a series of values.
+  -- 1. values are represented as functions over a continuous span of
+  -- time /f(t)/ rather than just a value or a series of values. The
+  -- time domain is represented with rational numbers which, as
+  -- compared to floating point numbers, do not suffer from inherent
+  -- quantisation, being able to model true continuity, i.e. between
+  -- any two arbitrary points in time there is an infinite amount of
+  -- intermediate moments.
   --
   -- 1. The event constructor has also a /phase/ component /&#966;/,
   -- which is taken into consideration only when evaluating the event
@@ -87,7 +91,8 @@ module ForSyDe.Atom.MoC.CT (
   -- 1. the previous property is also proven by the fact that the
   -- evaluation engine of ForSyDe-Atom is inherently discrete,
   -- i.e. evaluation is performed whenever a new event occurs, in a
-  -- dataflow manner.
+  -- dataflow manner. Allowing infinitely small distances between tags
+  -- would hinder the advancement of simulation time.
   --
   -- 1. events carry /functions/ and not /values/. In a lazy
   -- evaluation system like Haskell's, functions are kept symbolic
@@ -100,7 +105,6 @@ module ForSyDe.Atom.MoC.CT (
   --
   -- 1. needless to say, for each /t/ &#8712; /T/, a signal is able to
   -- return (e.g. plot) the exact value /v/ for that particular /t/.
-  -- documentation of "ForSyDe.Atom")
   --
   -- 1. since itself the 'ForSyDe.MoC.CT.CT' MoC is just an enhanced
   -- 'ForSyDe.MoC.DE.DE' system, all atom evaluation properties are
@@ -126,6 +130,9 @@ module ForSyDe.Atom.MoC.CT (
   -- in "ForSyDe.Atom.MoC".
 
   Signal, unit, unit2, unit3, unit4, infinite, signal, checkSignal,
+
+  plot, plot2, plot3, plot4,
+  plotFloat, plotFloat2, plotFloat3, plotFloat4,
   
   -- * @CT@ process constuctors
 
@@ -139,8 +146,8 @@ module ForSyDe.Atom.MoC.CT (
   -- @Data.Number.FixedFunctions@ in package
   -- <https://hackage.haskell.org/package/numbers-3000.2.0.1/docs/Data-Number-FixedFunctions.html numbers>.
   --
-  -- > import Data.Number.FixedFunctions as RatF
-  -- > let pi'  = RatF.pi  0.001
+  -- > import qualified Data.Number.FixedFunctions as RatF
+  -- > let pi'  = realToFrac pi
   -- > let sin' = RatF.sin 0.001
   -- > let cos' = RatF.cos 0.001
 
@@ -182,12 +189,13 @@ module ForSyDe.Atom.MoC.CT (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
-  -- -- ** Interfaces
+  -- ** Interfaces
 
+  toDE, toDE2, toDE3, toDE4,
   -- zipx, unzipx, toDE
   
   ) where
 
 import ForSyDe.Atom.MoC.CT.Core
 import ForSyDe.Atom.MoC.CT.Lib
--- import ForSyDe.Atom.MoC.CT.Interface
+import ForSyDe.Atom.MoC.CT.Interface

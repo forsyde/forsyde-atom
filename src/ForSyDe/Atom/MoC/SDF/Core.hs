@@ -22,6 +22,12 @@ import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
+-- | Type synonym for production rate
+type Cons = Int
+
+-- | Type synonym for consumption rate
+type Prod = Int
+
 -- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Signal a   = Stream (SDF a)
 
@@ -32,8 +38,8 @@ newtype SDF a = SDF { val :: a }
 
 -- | Implenents the SDF semantics for the MoC atoms
 instance MoC SDF where
-  type Fun SDF a b = (Int, [a] -> b)
-  type Ret SDF a   = (Int, [a])
+  type Fun SDF a b = (Cons, [a] -> b)
+  type Ret SDF a   = (Prod, [a])
   ---------------------
   _ -.- NullS = NullS
   (c,f) -.- s = (comb c f . map val . fromStream) s
@@ -56,9 +62,8 @@ instance MoC SDF where
   (-*) NullS = NullS
   (-*) ((SDF (p,r)):-xs)
     | length r == p = stream (map SDF r) +-+ (xs -*)
-    | otherwise     = error "SDF: Wrong production"
+    | otherwise     = error "[MoC.SDF] Wrong production"
   ---------------------
-  -- (-<-) (SDF l) s = (stream $ map SDF l) +-+ s
   (-<-) = (+-+)
   ---------------------
   (-&-) _ a = a
@@ -96,19 +101,15 @@ instance Read a => Read (SDF a) where
 signal :: [a] -> Signal a
 signal l = stream (SDF <$> l)
 
-part :: [a] -> SDF [a]
-part l = SDF l
-
--- | Wraps a (tuple of) value list(s) into the equivalent event
--- partition form.
---
--- "ForSyDe.Atom.MoC.SDF" exports the helper functions below. Please
--- follow the examples in the source code if they do not suffice:
---
--- > part, part2, part3, part4,
-part2 (l1,l2)       = (part l1, part l2)
-part3 (l1,l2,l3)    = (part l1, part l2, part l3)
-part4 (l1,l2,l3,l4) = (part l1, part l2, part l3, part l4)
+signal2 (l1,l2)       = (signal l1, signal l2)
+signal3 (l1,l2,l3)    = (signal l1, signal l2, signal l3)
+signal4 (l1,l2,l3,l4) = (signal l1, signal l2, signal l3, signal l4)
 
 -----------------------------------------------------------------------------
 
+
+unit a = [a]
+
+zipx   w21 w11 = foldr1 catEv . map unitEv
+  where catEv  = (comb21 . w21) (++)
+        unitEv = (comb11 . w11) unit

@@ -3,7 +3,7 @@
 
 module ForSyDe.Atom.MoC.DE.Interface where
 
-import           ForSyDe.Atom.MoC.DE.Core (Tag)
+import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 -- import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
 import           ForSyDe.Atom.Utility
@@ -31,20 +31,20 @@ import qualified ForSyDe.Atom.MoC.CT.Core as CT
 -- >>> let s1 = DE.infinite 1
 -- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
 -- >>> toSY2 s1 s2
--- ({0,2,6,8,9},{1,1,1,1,1},{1,2,3,4,5})
+-- ({0s,2s,6s,8s,9s},{1,1,1,1,1},{1,2,3,4,5})
 --
 -- <<docfiles/figs/moc-de-tosy.png>>
 toSY2 :: DE.Signal a             -- ^ first input DE signal
       -> DE.Signal b             -- ^ second input DE signal
-      -> (SY.Signal Tag, SY.Signal a, SY.Signal b)
+      -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b)
       -- ^ signal carrying timestamps tupled with the two output
       -- 'ForSyDe.Atom.MoC.SY.SY' signals
 toSY  :: DE.Signal a
-      -> (SY.Signal Tag, SY.Signal a)
+      -> (SY.Signal TimeStamp, SY.Signal a)
 toSY3 :: DE.Signal a -> DE.Signal b -> DE.Signal c
-      -> (SY.Signal Tag, SY.Signal a, SY.Signal b, SY.Signal c)
+      -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b, SY.Signal c)
 toSY4 :: DE.Signal a -> DE.Signal b -> DE.Signal c -> DE.Signal d
-      -> (SY.Signal Tag, SY.Signal a, SY.Signal b, SY.Signal c, SY.Signal d)
+      -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b, SY.Signal c, SY.Signal d)
 
 eventToSY (DE.DE t a) = (SY.SY t, SY.SY a)
 toSY  s1              = (eventToSY <$> s1 |<)
@@ -72,23 +72,21 @@ toSY4 s1 s2 s3 s4
 -- TODO: example
 --
 -- <<docfiles/figs/moc-de-toct.png>>
-toCT2 :: CT.Time              -- ^ time scale
-      -> DE.Signal a             -- ^ first input DE signal
+toCT2 :: DE.Signal a             -- ^ first input DE signal
       -> DE.Signal b             -- ^ second input DE signal
       -> (CT.Signal a, CT.Signal b)
       -- ^ two output 'ForSyDe.Atom.MoC.CT.CT' signals
-toCT  :: CT.Time -> DE.Signal a
+toCT  :: DE.Signal a
       -> (CT.Signal a)
-toCT3 :: CT.Time -> DE.Signal a -> DE.Signal b -> DE.Signal c
+toCT3 :: DE.Signal a -> DE.Signal b -> DE.Signal c
       -> (CT.Signal a, CT.Signal b, CT.Signal c)
-toCT4 :: CT.Time -> DE.Signal a -> DE.Signal b -> DE.Signal c -> DE.Signal d
+toCT4 :: DE.Signal a -> DE.Signal b -> DE.Signal c -> DE.Signal d
       -> (CT.Signal a, CT.Signal b, CT.Signal c, CT.Signal d)
-tagToTime = fromInteger . toInteger
-eventToCT scale (DE.DE t a) = CT.CT (scale * tagToTime t) 0 (\_->a)
-toCT  sc s1          = eventToCT sc <$> s1
-toCT2 sc s1 s2       = (toCT sc, toCT sc) $$ (s1,s2)
-toCT3 sc s1 s2 s3    = (toCT sc, toCT sc, toCT sc) $$$ (s1,s2,s3)
-toCT4 sc s1 s2 s3 s4 = (toCT sc, toCT sc, toCT sc, toCT sc) $$$$ (s1,s2,s3,s4)
+eventToCT (DE.DE t a) = CT.CT t 0 (\_->a)
+toCT  s1          = eventToCT <$> s1
+toCT2 s1 s2       = (toCT, toCT) $$ (s1,s2)
+toCT3 s1 s2 s3    = (toCT, toCT, toCT) $$$ (s1,s2,s3)
+toCT4 s1 s2 s3 s4 = (toCT, toCT, toCT, toCT) $$$$ (s1,s2,s3,s4)
 
 
 -- -- Towards skeleton layer
