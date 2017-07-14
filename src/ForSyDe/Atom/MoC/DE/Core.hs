@@ -100,16 +100,16 @@ infinite v = DE 0 v :- NullS
 signal :: [(TimeStamp, a)] -> Signal a
 signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 
--- | Reads a signal from a string and checks if it is well-formed. Like
--- with the @read@ function from @Prelude@, you must specify the type
--- of the signal.
+-- | Reads a signal from a string and checks if it is well-formed.
+-- Like with the @read@ function from @Prelude@, you must specify the
+-- type of the signal.
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- { 1 @0s, 2 @2s, 3 @5s, 4 @7s, 5 @10s}
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
 -- { 1 @0s, 2 @2s, 3 @5s*** Exception: [MoC.DE] malformed signal
 -- >>> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- *** Exception: DE: signal does not start from global 0
+-- *** Exception: [MoC.DE] signal does not start from global 0
 readSignal :: Read a => String -> Signal a
 readSignal s = checkSignal $ read s
 

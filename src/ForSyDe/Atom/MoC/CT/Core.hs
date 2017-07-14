@@ -19,13 +19,9 @@ module ForSyDe.Atom.MoC.CT.Core where
 import Data.Ratio
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
+import ForSyDe.Atom.MoC.Time
 import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility
-
--- | Type alias for the tag type to represent metric time. Underneath
--- we use 'Rational' that is able to represent any /t/ between
--- /t&#8321;/ < /t&#8322;/ &#8712; /T/.
-type Time = Rational
 
 
 -- | Type synonym for a CT signal, i.e. "a signal of CT events"
@@ -98,8 +94,6 @@ infixl 7 %>
 
 evalTm t (CT _ p f) = f (t + p)
 evalTs t (CT _ p f) = f ((toRational t) + p)
-time (CT t _ _) = toRational t
-const v = (\_ -> v)
 
                    
 unit  :: (TimeStamp, Time -> a) -> Signal a 

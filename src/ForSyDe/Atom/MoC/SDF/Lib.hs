@@ -52,9 +52,9 @@ delay i = MoC.delay (signal i)
 -- {0,0,0,1,2,3,4,5}
 --
 -- <<docfiles/figs/moc-sdf-pattern-delayp.png>>
-delay' :: Signal a  -- ^ signal "borrowing" the initial event
-      -> Signal a   -- ^ input signal
-      -> Signal a   -- ^ output signal
+delay' :: Signal a  -- ^ signal containing the initial tokens
+       -> Signal a   -- ^ input signal
+       -> Signal a   -- ^ output signal
 
 delay' = MoC.delay
 
@@ -163,6 +163,117 @@ comb14 (c,p,f) s1          = MoC.comb14 (MoC.ctxt14 c p f) s1
 comb24 (c,p,f) s1 s2       = MoC.comb24 (MoC.ctxt24 c p f) s1 s2
 comb34 (c,p,f) s1 s2 s3    = MoC.comb34 (MoC.ctxt34 c p f) s1 s2 s3
 comb44 (c,p,f) s1 s2 s3 s4 = MoC.comb44 (MoC.ctxt44 c p f) s1 s2 s3 s4
+
+------- RECONFIG -------
+
+-- | @reconfig@ creates an SDF adaptive process where the first signal
+-- carries functions and the other carry the arguments. It
+-- instantiates the @reconfig@ atom pattern (see
+-- 'ForSyDe.Atom.MoC.reconfig22'). According to our SDF definition,
+-- the production and consumption rates need to be fixed, so they are
+-- passed as parameters to the constructor, whereas the first signal
+-- carries adaptive functions only. For the adaptive signal it only
+-- makes sense that the consumption rate is always 1.
+--
+-- The following constructors are provided:
+--
+-- > reconfig11, reconfig12, reconfig13, reconfig14,
+-- > reconfig21, reconfig22, reconfig23, reconfig24,
+-- > reconfig31, reconfig32, reconfig33, reconfig34,
+-- > reconfig41, reconfig42, reconfig43, reconfig44,
+--
+-- >>> let f1 a = [sum a]
+-- >>> let f2 a = [maximum a]
+-- >>> let sf = signal [f1,f2,f1,f2,f1,f2,f1] 
+-- >>> let s1 = signal [1..]
+-- >>> reconfig11 (4,1) sf s1
+-- {10,8,42,16,74,24,106}
+--
+-- <<docfiles/figs/moc-sdf-pattern-reconfig.png>>
+reconfig22 :: ((Cons,Cons), (Prod,Prod))
+           -> Signal ([a1] -> [a2] -> ([b1], [b2]))
+           -- ^ function on lists of values, tupled with consumption /
+           -- production rates
+           -> Signal a1              -- ^ first input signal
+           -> Signal a2              -- ^ second input signal
+           -> (Signal b1, Signal b2) -- ^ two output signals
+reconfig11 :: (Cons, Prod) 
+           -> Signal ([a1] -> [b1])
+           -> Signal a1
+           -> Signal b1
+reconfig21 :: ((Cons,Cons), Prod)
+           -> Signal ( [a1] -> [a2] -> [b1])
+           -> Signal a1 -> Signal a2
+           -> Signal b1
+reconfig31 :: ((Cons,Cons,Cons), Prod)
+           -> Signal ([a1] -> [a2] -> [a3] -> [b1])
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> Signal b1
+reconfig41 :: ((Cons,Cons,Cons,Cons), Prod)
+           -> Signal ([a1] -> [a2] -> [a3] -> [a4] -> [b1])
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> Signal b1
+reconfig12 :: (Cons, (Prod,Prod))
+           -> Signal ([a1] -> ([b1], [b2]))
+           -> Signal a1
+           -> (Signal b1, Signal b2)
+reconfig32 :: ((Cons,Cons,Cons), (Prod,Prod))
+           -> Signal ([a1] -> [a2] -> [a3] -> ([b1], [b2]))
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal b1, Signal b2)
+reconfig42 :: ((Cons,Cons,Cons,Cons), (Prod,Prod))
+           -> Signal ([a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2]))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal b1, Signal b2)
+reconfig13 :: (Cons, (Prod,Prod,Prod))
+           -> Signal ([a1] -> ([b1], [b2], [b3]))
+           -> Signal a1
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig23 :: ((Cons,Cons), (Prod,Prod,Prod))
+           -> Signal ([a1] -> [a2] -> ([b1], [b2], [b3]))
+           -> Signal a1 -> Signal a2
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig33 :: ((Cons,Cons,Cons), (Prod,Prod,Prod))
+           -> Signal ([a1] -> [a2] -> [a3] -> ([b1], [b2], [b3]))
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig43 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod))
+           -> Signal ([a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2], [b3]))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig14 :: (Cons, (Prod,Prod,Prod,Prod))
+           -> Signal ([a1] -> ([b1], [b2], [b3], [b4]))
+           -> Signal a1
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig24 :: ((Cons,Cons), (Prod,Prod,Prod,Prod))
+           -> Signal ([a1] -> [a2] -> ([b1], [b2], [b3], [b4]))
+           -> Signal a1 -> Signal a2
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig34 :: ((Cons,Cons,Cons), (Prod,Prod,Prod,Prod))
+           -> Signal ([a1] -> [a2] -> [a3] -> ([b1], [b2], [b3], [b4]))
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig44 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod))
+           -> Signal ([a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2], [b3], [b4]))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+wrap ctxt c p sf = (fmap . fmap) (\f->ctxt c p f) sf
+reconfig11 (c,p) sf = MoC.reconfig11 (wrap MoC.ctxt11 c p sf)
+reconfig12 (c,p) sf = MoC.reconfig12 (wrap MoC.ctxt12 c p sf)
+reconfig13 (c,p) sf = MoC.reconfig13 (wrap MoC.ctxt13 c p sf)
+reconfig14 (c,p) sf = MoC.reconfig14 (wrap MoC.ctxt14 c p sf)
+reconfig21 (c,p) sf = MoC.reconfig21 (wrap MoC.ctxt21 c p sf)
+reconfig22 (c,p) sf = MoC.reconfig22 (wrap MoC.ctxt22 c p sf)
+reconfig23 (c,p) sf = MoC.reconfig23 (wrap MoC.ctxt23 c p sf)
+reconfig24 (c,p) sf = MoC.reconfig24 (wrap MoC.ctxt24 c p sf)
+reconfig31 (c,p) sf = MoC.reconfig31 (wrap MoC.ctxt31 c p sf)
+reconfig32 (c,p) sf = MoC.reconfig32 (wrap MoC.ctxt32 c p sf)
+reconfig33 (c,p) sf = MoC.reconfig33 (wrap MoC.ctxt33 c p sf)
+reconfig34 (c,p) sf = MoC.reconfig34 (wrap MoC.ctxt34 c p sf)
+reconfig41 (c,p) sf = MoC.reconfig41 (wrap MoC.ctxt41 c p sf)
+reconfig42 (c,p) sf = MoC.reconfig42 (wrap MoC.ctxt42 c p sf)
+reconfig43 (c,p) sf = MoC.reconfig43 (wrap MoC.ctxt43 c p sf)
+reconfig44 (c,p) sf = MoC.reconfig44 (wrap MoC.ctxt44 c p sf)
 
 ------- CONSTANT -------
 

@@ -67,6 +67,12 @@ hours    = secondsToDiffTime . (*3600)
 toTime   :: TimeStamp -> Rational
 toTime   = toRational
 
+-- | 'TimeStamp' representation of the number &#960;. Converted from
+-- the "Prelude" equivalent, which is 'Floating'.
+pi :: TimeStamp 
+pi  = realToFrac Prelude.pi
+
+
 -- | reads @[n]s@ as a fraction of a second, where @[n]@ is a floating
 -- point number.
 instance Read DiffTime where

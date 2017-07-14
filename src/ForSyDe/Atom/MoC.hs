@@ -1,6 +1,6 @@
 {-# LANGUAGE PostfixOperators, TypeFamilies #-}
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
@@ -15,10 +15,18 @@
 -- /NOT/ export any implementation or instantiation of any specific
 -- MoC.
 --
+-- Current MoC implementations can be used by importing their
+-- respective modules:
+--
+-- * "ForSyDe.Atom.MoC.CT"
+-- * "ForSyDe.Atom.MoC.DE"
+-- * "ForSyDe.Atom.MoC.SY"
+-- * "ForSyDe.Atom.MoC.SDF"
+--
 -- __IMPORTANT!!!__
 -- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
 -- on how to interpret, use and develop your own constructors.
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
   
