@@ -38,11 +38,23 @@ infixr 5 <++>
 -- into multiple parts and evaluating it in parallel. Due to reasons
 -- of efficiency, and to ensure that the structure is flat and
 -- homogeneous, 'Vector' is implemented using the same constructors as
--- an infinite list <ForSyDe-Atom.html#bird87 [Bird87]> (see
+-- an infinite list like in <ForSyDe-Atom.html#bird87 [Bird87]> (see
 -- below). When defining skeletons of vectors we will not use the real
 -- constructors though, but the theoretical ones defined above and
 -- provided as <#g:2 functions> . This way we align ForSyDe-Atom's
 -- 'Vector' type with the categorical type theory and its theorems.
+--
+-- Another particularity of 'Vector' is that it instantiates the
+-- reduction atom '=\=' as a /right fold/, as it is the most efficient
+-- implementation in the context of lazy evaluation. As a consequence
+-- reduction is performed __/from right to left/__. This is noticeable
+-- especially in the case of pipeline-based skeletons (where 'pipe'
+-- itself is a reduction with the right-associative composition
+-- operator '.') is performed from right to left, which
+-- comes in natural when considering the order of function
+-- composition. Thus for 'reduce'-based skeletons (e.g. 'prefix',
+-- 'suffix', 'recur', 'cascade', 'mesh') the result vectors shall be
+-- read from end to beginning.
 data Vector a = Null
               -- ^ Null element. Terminates a vector.
               | a :> (Vector a)

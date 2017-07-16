@@ -145,7 +145,7 @@ infixl 3 -<-, -*, -&-
 --
 -- * this artifice was masked using the generic type families 'Fun'
 -- and 'Res'. 
-class (Functor e) => MoC e where
+class (Applicative e) => MoC e where
 
   -- |<<docfiles/figs/eqs-moc-atom-function.png>>
   --

@@ -90,8 +90,8 @@ library
                    , ForSyDe.Atom.Skeleton
                    , ForSyDe.Atom.Skeleton.Vector
                    , ForSyDe.Atom.Skeleton.Vector.Core
-                   -- , ForSyDe.Atom.Skeleton.Vector.Lib
-                   -- , ForSyDe.Atom.Skeleton.Vector.Interface
+                   , ForSyDe.Atom.Skeleton.Vector.Lib
+                   , ForSyDe.Atom.Skeleton.Vector.Interface
                    , ForSyDe.Atom.Utility
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances

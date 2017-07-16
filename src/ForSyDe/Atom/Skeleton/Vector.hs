@@ -87,33 +87,33 @@ module ForSyDe.Atom.Skeleton.Vector (
   cascade, cascade1, cascade2, cascade3, cascade4, 
   mesh, mesh1, mesh2, mesh3, mesh4, 
 
-  -- -- ** Queries
+  -- ** Queries
 
-  -- -- | Queries return various information about a vector. They are
-  -- -- also built as skeletons.
+  -- | Queries return various information about a vector. They are
+  -- also built as skeletons.
 
-  -- length, index,
+  length, index,
   
-  -- -- ** Generators
+  -- ** Generators
 
-  -- -- | Generators are specific applications of the @prefix@ or
-  -- -- @suffix@ skeletons.
+  -- | Generators are specific applications of the @prefix@ or
+  -- @suffix@ skeletons.
 
-  -- fanout, fanoutn, generate, iterate, 
+  fanout, fanoutn, generate, iterate, 
   
-  -- -- ** Permutators
+  -- ** Permutators
 
-  -- -- | Permutators perform operations on the very structure of
-  -- -- vectors, and make heavy use of the vector constructors.
+  -- | Permutators perform operations on the very structure of
+  -- vectors, and make heavy use of the vector constructors.
 
-  -- first, last, init, tail, inits, tails,
-  -- concat, reverse, group, shiftr, shiftl, rotr, rotl, 
-  -- take, drop, filterIdx, odds, evens, stride,
-  -- get, (<@), (<@!), gather1, gather2, gather3, gather4, gather5,
-  -- (<@!>), (<<@!>>), (<<<@!>>>), (<<<<@!>>>>), (<<<<<@!>>>>>),
-  -- replace, scatter,
-  -- -- takeWhile, filter
-  -- bitrev, duals, unduals,
+  first, last, inits, tails, init, tail,
+  concat, reverse, group, shiftr, shiftl, rotr, rotl, 
+  take, drop, takeWhile, filterIdx, odds, evens, stride,
+  get, (<@), (<@!), gather1, gather2, gather3, gather4, gather5,
+  (<@>), (<<@>>), (<<<@>>>), (<<<<@>>>>), (<<<<<@>>>>>),
+  replace, scatter,
+  -- takeWhile, filter
+  bitrev, duals, unduals,
 
   -- -- ** Interfaces
 
