@@ -340,6 +340,12 @@ recur1 p v1 s            = S.farm11 p v1 =/= s
 recur2 p v1 v2 s         = S.farm21 p v1 v2 =/= s
 recur3 p v1 v2 v3 s      = S.farm31 p v1 v2 v3 =/= s
 recur4 p v1 v2 v3 v4 s   = S.farm41 p v1 v2 v3 v4 =/= s
+recuri1 p v1 s            = S.farm11 p v1 `recuri` s
+recuri2 p v1 v2 s         = S.farm21 p v1 v2 `recuri` s
+recuri3 p v1 v2 v3 s      = S.farm31 p v1 v2 v3 `recuri` s
+recuri4 p v1 v2 v3 v4 s   = S.farm41 p v1 v2 v3 v4 `recuri` s
+
+
 
 ------- CASCADE -------
 

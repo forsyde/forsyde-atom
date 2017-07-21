@@ -84,6 +84,7 @@ module ForSyDe.Atom.Skeleton.Vector (
 
   pipe, pipe1, pipe2, pipe3, pipe4,
   (=/=), recur, recur1, recur2, recur3, recur4,
+  recuri, recuri1, recuri2, recuri3, recuri4,
   cascade, cascade1, cascade2, cascade3, cascade4, 
   mesh, mesh1, mesh2, mesh3, mesh4, 
 
@@ -115,15 +116,15 @@ module ForSyDe.Atom.Skeleton.Vector (
   -- takeWhile, filter
   bitrev, duals, unduals,
 
-  -- -- ** Interfaces
+  -- ** Interfaces
 
-  -- zipx, unzipx,
+  zipx, unzipx,
   
   ) where
 
 import ForSyDe.Atom.Skeleton.Vector.Core
 import ForSyDe.Atom.Skeleton.Vector.Lib
--- import ForSyDe.Atom.Skeleton.Vector.Interface
+import ForSyDe.Atom.Skeleton.Vector.Interface
 
 import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
 

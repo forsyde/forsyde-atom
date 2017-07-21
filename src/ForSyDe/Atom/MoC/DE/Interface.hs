@@ -3,9 +3,11 @@
 
 module ForSyDe.Atom.MoC.DE.Interface where
 
-import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
--- import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
+import           ForSyDe.Atom.MoC.Stream (Stream(..))
+import           ForSyDe.Atom.MoC.TimeStamp
+import qualified ForSyDe.Atom.Skeleton.Vector as V (
+  Vector, zipx, unzipx, fanout, unit, length, vector, reverse)
 import           ForSyDe.Atom.Utility
 
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
@@ -89,23 +91,48 @@ toCT3 s1 s2 s3    = (toCT, toCT, toCT) $$$ (s1,s2,s3)
 toCT4 s1 s2 s3 s4 = (toCT, toCT, toCT, toCT) $$$$ (s1,s2,s3,s4)
 
 
--- -- Towards skeleton layer
+-- Towards skeleton layer
 
--- -- | Synchronizes all signals inside a vector into one signal carrying
--- -- vector events. This is simply an instantiation of the skeleton
--- -- 'V.zipx', which passes the DE context wrappers ('DE.wrap22') to
--- -- instantiate a 'ForSyDe.Atom.MoC.comb22' properly.
--- zipx :: V.Vector (DE.Sig a) -> DE.Sig (V.Vector a)
--- zipx = V.zipx DE.wrap21 DE.wrap11
+-- | Synchronizes all the signals contained by a vector and zips them
+-- into one signal of vectors. It instantiates the
+-- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+--
+-- >>> let s1 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
+-- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@4, 4@8, 5@9}" :: DE.Signal Int
+-- >>> let v1 = V.vector [s1,s1,s2,s2]
+-- >>> v1
+-- <{ 1 @0s, 2 @2s, 3 @6s, 4 @8s, 5 @9s},{ 1 @0s, 2 @2s, 3 @6s, 4 @8s, 5 @9s},{ 1 @0s, 2 @2s, 3 @4s, 4 @8s, 5 @9s},{ 1 @0s, 2 @2s, 3 @4s, 4 @8s, 5 @9s}>
+-- >>> zipx v1
+-- { <1,1,1,1> @0s, <2,2,2,2> @2s, <2,2,3,3> @4s, <3,3,3,3> @6s, <4,4,4,4> @8s, <5,5,5,5> @9s}
+--
+-- <<docfiles/figs/moc-de-zipx.png>>
+zipx ::V.Vector (DE.Signal a) -> DE.Signal (V.Vector a)
+zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
+-- | Unzips the vectors carried by a signal into a vector of
+-- signals. It instantiates the 'ForSyDe.Atom.Skeleton.Vector.unzipx'
+-- skeleton. To avoid infinite recurrence, the user needs to provide
+-- the length of the output vector.
+--
+-- >>> let v1 = V.vector [1,2,3,4]
+-- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)]
+-- >>> s1
+-- { <1,2,3,4> @0s, <1,2,3,4> @2s, <1,2,3,4> @6s, <1,2,3,4> @8s, <1,2,3,4> @9s}
+-- >>> unzipx 4 s1
+-- <{ 1 @0s, 1 @2s, 1 @6s, 1 @8s, 1 @9s},{ 2 @0s, 2 @2s, 2 @6s, 2 @8s, 2 @9s},{ 3 @0s, 3 @2s, 3 @6s, 3 @8s, 3 @9s},{ 4 @0s, 4 @2s, 4 @6s, 4 @8s, 4 @9s}>
+--
+-- <<docfiles/figs/moc-de-unzipx.png>>
+unzipx :: Integer -> DE.Signal (V.Vector a) -> V.Vector (DE.Signal a)
+unzipx n = V.reverse . V.unzipx id n
 
--- -- | Unfolds a signal carrying vector events into a vector of synchronized
--- -- signals. This is simply an instantiation of the skeleton 'V.unzipx',
--- -- which passes the DE context wrappers ('DE.wrap22') to instantiate a
--- -- 'ForSyDe.Atom.MoC.comb22' properly.
--- --
--- -- __/ATTENTION!/__ this  is a temporary unsafe  implementation, since
--- -- it assumes all events are carrying vectors of the same length.
--- unzipx :: DE.Sig (V.Vector a) -> V.Vector (DE.Sig a)
--- unzipx = V.unzipx DE.val DE.wrap11 DE.wrap11
+-- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
+--
+-- >>> let v1 = V.vector [1,2,3,4]
+-- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)]
+-- >>> s1
+-- { <1,2,3,4> @0s, <1,2,3,4> @2s, <1,2,3,4> @6s, <1,2,3,4> @8s, <1,2,3,4> @9s}
+-- >>> unzipx' s1
+-- <{ 1 @0s, 1 @2s, 1 @6s, 1 @8s, 1 @9s},{ 2 @0s, 2 @2s, 2 @6s, 2 @8s, 2 @9s},{ 3 @0s, 3 @2s, 3 @6s, 3 @8s, 3 @9s},{ 4 @0s, 4 @2s, 4 @6s, 4 @8s, 4 @9s}>
+unzipx' :: DE.Signal (V.Vector a) -> V.Vector (DE.Signal a)
+unzipx' s@(a:-_) = unzipx (V.length $ DE.val a) s
 

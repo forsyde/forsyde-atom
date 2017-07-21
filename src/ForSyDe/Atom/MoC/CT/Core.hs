@@ -94,7 +94,7 @@ infixl 7 %>
 
 evalTm t (CT _ p f) = f (t + p)
 evalTs t (CT _ p f) = f ((toRational t) + p)
-
+evalEv (CT t p f) = f ((toRational t) + p)
                    
 unit  :: (TimeStamp, Time -> a) -> Signal a 
 unit (t,f) = (CT 0 0 f :- CT t 0 f :- NullS)

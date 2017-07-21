@@ -142,8 +142,8 @@ module ForSyDe.Atom.MoC.SDF (
 
   -- ** Interfaces
 
-  toSY, toSY2, toSY3, toSY4
-  -- zipx--, unzipx  
+  toSY, toSY2, toSY3, toSY4,
+  zipx, unzipx  
 
   ) where
 

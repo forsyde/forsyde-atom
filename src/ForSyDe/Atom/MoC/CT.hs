@@ -201,7 +201,7 @@ module ForSyDe.Atom.MoC.CT (
   -- ** Interfaces
 
   toDE, toDE2, toDE3, toDE4,
-  -- zipx, unzipx, toDE
+  zipx, unzipx, unzipx'
   
   ) where
 
