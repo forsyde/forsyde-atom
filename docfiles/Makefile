@@ -17,7 +17,8 @@ make-fig-targets=$(patsubst %,$(call target-format,$(1),%),$(call get-fig-names,
 
 define compile-latex
 
-	@pdflatex --shell-escape "\def\currimage{$(subst $(1)-,,$(basename $(notdir $(2))))} \input{$(1).tex}"
+	@echo $(2)
+	@pdflatex --shell-escape "\def\currimage{$(subst $(1)-,,$(basename $(notdir $(2))))} \input{$(1).tex}" >> /dev/null
 	@convert -density 150 $(1).pdf -quality 90 $(2)
 endef
 
