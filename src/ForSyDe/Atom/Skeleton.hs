@@ -125,8 +125,7 @@ class Functor c => Skeleton c where
   -- @pipe@ as a true reduction. Alas, it can still be exploited in
   -- parallel since it exposes another type of parallelism: time
   -- parallelism.
-  (=<<=) :: Skeleton c
-         => c (a -> a)  -- ^ vector of functions
+  (=<<=) :: c (a -> a)  -- ^ vector of functions
          -> a           -- ^ kernel element
          -> a           -- ^ result 
   (=<<=) ps = (.) =\= ps
