@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.SDF
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015-2016
@@ -15,124 +15,106 @@
 -- helpers for properly instantiating process network patterns as
 -- process constructors.
 --
--- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
--- provided by the library API are named along the lines of
--- @functionMN@ where @M@ represents the number of __/curried/__
--- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
--- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
--- repetition we shall only provide documentation for functions with 2
--- inputs and 2 outputs (i.e. @function22@).
------------------------------------------------------------------------------
+-- __IMPORTANT!!!__
+-- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
+-- on how to interpret, use and develop your own constructors.
+----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.SDF (
   
   -- * Synchronous data flow (@SDF@) event
 
   -- | The synchronous data flow (@SDF@) MoC is the first untimed MoC
- -- implemented by the @forsyde-atom@ framework. On untimed MoCs,
- -- <#lee98 [1]>, states that: "when tags are partially ordered rather
- -- than totally ordered, we say that the system is untimed. Untimed
- -- systems cannot have the same notion of causality as timed systems
- -- [see 'ForSyDe.Atom.MoC.SY.SY']. The equivalent intuition is
- -- provided by the monotonicity [and continuity]
- -- condition[s]". Regarding SDF, it states that "is a special case of
- -- Kahn process networks <#kahn76 [2]>. A dataflow process is a Kahn
- -- process that is also sequential, where the events on the self-loop
- -- signal denote the firings of the dataflow actor. The firing rules
- -- of a dataflow actor are partial ordering constraints between these
- -- events and events on the inputs."
+  -- implemented by the @forsyde-atom@ framework. On untimed MoCs,
+  -- <ForSyDe-Atom.html#lee98 [Lee98]> states that: "when tags are
+  -- partially ordered rather than totally ordered, we say that the
+  -- system is untimed. Untimed systems cannot have the same notion of
+  -- causality as timed systems [see 'ForSyDe.Atom.MoC.SY.SY']. (...)
+  -- Processes defined in terms of constraints on the tags in the
+  -- signals (...) have a /consistent cut/ rather than
+  -- /simultaneity/."  Regarding SDF, it states that "is a special
+  -- case of Kahn process networks
+  -- <ForSyDe-Atom.html#kahn76 [Kahn76]>. A dataflow process is a Kahn
+  -- process that is also sequential, where the events on the
+  -- self-loop signal denote the firings of the dataflow actor. The
+  -- firing rules of a dataflow actor are partial ordering constraints
+  -- between these events and events on the inputs. (...)
+  -- Produced/consumed events are defined in terms of relations with
+  -- the events in the firing signal. It results that for the same
+  -- firing /i/, e&#7522; < e&#8338;, as an intuitive sort of
+  -- causality constraint."
   --
-  -- Based on the above insights, let us define the @forsyde-atom@
-  -- interpretation of SDF:
+  -- Based on the above insights, we can formulate a simplified
+  -- definition of the @forsyde-atom@ interpretation of SDF:
   --
   -- [The SDF MoC] is abstracting the execution semantics of a system
-  -- where computation is performed according to some firing rules
-  -- where the production and the consumption is fixed. 
+  -- where computation is performed according to firing rules where
+  -- the production and the consumption rates are fixed.
   --
   -- Below is a /possible/ behavior in time of the input and the
-  -- output signals of a SDF process, to illustrate these
-  -- semantics. We mark with an overbrace the events sharing the same
-  -- tag and consumed during one firing:
+  -- output signals of a SDF process. Events sharing the same partial
+  -- ordering in relation to one firing are overlined:
   --
-  -- <<includes/figs/sdf-example1.png>>
+  -- <<docfiles/figs/moc-sdf-example.png>>
   --
   -- Implementing the SDF tag system implied a series of engineering
-  -- decisions which lead to formulating __design rule #4__ (see
-  -- "ForSyDe.Atom") and embedding it into the atom construction (see
-  -- "ForSyDe.Atom.MoC"). Namely, we use an implicitly tagged
-  -- 'ForSyDe.Atom.Signal' which, by its nature is associated with a
-  -- total order, group its events into /partitions/ to mimic the
-  -- partial ordering. This partitioning mirrors the firing rules with
-  -- which (atom) processes were endowned with. We can list the
-  -- following particularities that come with this implementation:
+  -- decisions which lead to the following particularities:
   --
-  -- 1. tags are implicit and inferred through a combination of the
-  -- position in the signal and the position in the partition.
+  -- 1. signals represent FIFO channels, and tags are implicit from
+  -- their position in the 'ForSyDe.Atom.MoC.Stream.Stream'
+  -- structure. Internally, 'ForSyDe.Atom.MoC.SDF.SDF' signals have
+  -- exactly the same structure as 'ForSyDe.Atom.MoC.SY.SY' signals,
+  -- whereas the partial ordering is imposed by the processes alone.
   --
-  -- 1. the type constructor wraps around a list of values,
-  -- symbolizing the events sharing a particular tag.
+  -- 1. the 'ForSyDe.Atom.MoC.SDF.SDF' event constructor wraps only a
+  -- value.
   --
-  -- 1. while a correct format for our above interpretation would be
-  -- @[SDF (Value a)]@ (i.e. a partition of events of extended
-  -- values), the type polymorphism mechanics imposed the formal @SDF
-  -- [Value a]@ (i.e. event constructors around partitions of extended
-  -- values). Nevertheless, we can easily prove semantic equivalence
-  -- between the two types, by ensuring that both constructors are
-  -- functors and traversable.
+  -- 1. being an /untimed MoC/, the order between events is partial to
+  -- the firings of processes. An SDF atom will fire only when there
+  -- are enough events to trigger its inputs. Once a firing occurs, it
+  -- will take care of partitioning the input or output signals.
   --
-  -- 1. SDF atoms /do/ require a context (see below list): the
-  -- consumption /c/ and production /p/ rates, as parameters which
-  -- determine the atom's firing rules.
+  -- 1. SDF atoms /do/ require a context: the consumption /c/ and
+  -- production /p/ rates. Also, the functions passed as arguments
+  -- reflect the fact that multiple events are handled during a
+  -- firing.
   --
-  -- 1. A ForSyDe SDF atom will fire only when there are enough events
-  -- to trigger its inputs. Once a firing occurs, it will take care of
-  -- partitioning the input or output signals.
+  -- 1. the previous statement can be synthesized into the following
+  -- <ForSyDe-Atom-MoC.html#context execution context>, which also
+  -- justifies the SDF implementation of 'ForSyDe.Atom.MoC.Fun' and
+  -- for 'ForSyDe.Atom.MoC.Ret':
   --
-  -- 1. As implemented in the current version of @forsyde-atom@, only
-  -- /c/ is a primary parameter required by the atoms. /p/ is only a
-  -- secondary parameter and it is required by the function wrapper to
-  -- perform a /run-time/ sanity check on the produced partition
-  -- (which should be correctly defined by the user-provided
-  -- function).
-  --
-  -- > type Context SDF = Int
-  --
+  -- <<docfiles/figs/eqs-moc-sdf-context.png>>
+  
   SDF(..),
   
   -- * Aliases & utilities
 
-  -- | For convenience we also provide a set of type synonyms and
-  -- utilities to ease in the design of systems. The API type
-  -- signatures will feature these aliases to hide the cumbersome
-  -- construction of atoms and atom patters as seen in
-  -- "ForSyDe.Atom.MoC".
+  -- | A set of type synonyms and utilities are provided for
+  -- convenience. The API type signatures will feature these aliases
+  -- to hide the cumbersome construction of atoms and patters as seen
+  -- in "ForSyDe.Atom.MoC".
 
-  Partition, Sig, Prod, Cons, part2, signal,
+  Signal, Prod, Cons, signal,
 
-  wrap11, wrap21, wrap31, wrap41, wrap51, wrap61, wrap71, wrap81, 
-  wrap12, wrap22, wrap32, wrap42, wrap52, wrap62, wrap72, wrap82, 
-  wrap13, wrap23, wrap33, wrap43, wrap53, wrap63, wrap73, wrap83, 
-  wrap14, wrap24, wrap34, wrap44, wrap54, wrap64, wrap74, wrap84,
-  
-  -- * @SDF@ process constuctors
+  -- | These SY process constructors are basically specific
+  -- instantiations of the patterns of atoms defined in
+  -- "ForSyDe.Atom.MoC". Some are also wrapping functions in an
+  -- extended behavioural model.
 
-  -- | These SDF-specific process constructors are basically
-  -- specific instantiations of the network patterns defined in
-  -- "ForSyDe.Atom.MoC", also wrapping functions in a behavioural
-  -- model.
+  -- ** Simple
 
-  -- ** Default behavior
-
-  -- | These processes manifest a default behavior as defined in
-  -- "ForSyDe.Atom.Behavior", when it comes to dealing with special
-  -- events.
+  delay, delay', 
   
   comb11, comb12, comb13, comb14,
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
 
-  delay,
+  reconfig11, reconfig12, reconfig13, reconfig14,
+  reconfig21, reconfig22, reconfig23, reconfig24,
+  reconfig31, reconfig32, reconfig33, reconfig34,
+  reconfig41, reconfig42, reconfig43, reconfig44,
   
   constant1, constant2, constant3, constant4,
 
@@ -160,15 +142,11 @@ module ForSyDe.Atom.MoC.SDF (
 
   -- ** Interfaces
 
+  toSY, toSY2, toSY3, toSY4,
+  zipx, unzipx  
 
-  -- * Bibliography
-
-  -- | #lee98# [1] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /Computer-Aided Design of Integrated Circuits and Systems, IEEE Transactions on, 17(12)/, 1217-1229.
-  
-  -- | #kahn76# [2] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
-  
   ) where
 
-import Prelude hiding (filter)
 import ForSyDe.Atom.MoC.SDF.Core
 import ForSyDe.Atom.MoC.SDF.Lib
+import ForSyDe.Atom.MoC.SDF.Interface

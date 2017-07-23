@@ -1,0 +1,290 @@
+\documentclass[preview]{standalone} 
+\usepackage[math]{forsyde}
+\usepackage{forsyde-atom-docs}
+
+\begin{document}
+\begin{docimage}{operators}
+  \begin{align}%
+  \SkelVec{ } &: \alpha \rightarrow \mathcal{V}(\alpha) \\
+  \doubleplus &: \mathcal{V}(\alpha) \rightarrow \mathcal{V}(\alpha) \rightarrow \mathcal{V}(\alpha)\\
+  v[n]         &: \mathcal{V}(\alpha) \times \mathtt{Int} \rightarrow \alpha \\
+  v[2..]       &: \mathcal{V}(\alpha) \times \mathcal{V}(\mathtt{Int}) \rightarrow \mathcal{V}(\alpha) \\
+  _{\infty}     &: \alpha \rightarrow \mathcal{V}(\alpha)%
+\end{align}
+\end{docimage}
+
+\begin{docimage}{farm}
+  \begin{align*}%
+    \SkelCons{farm} &: (\alpha^m \rightarrow \beta^n) \rightarrow \SkelVec{\alpha}^m \rightarrow \SkelVec{\beta}^n \\
+    \SkelCons{farm} &: \SkelFrm
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{reduce-old}
+  \begin{align*}%
+    \SkelCons{reduce} &: (\beta^n \rightarrow \alpha \times \alpha \rightarrow \alpha)
+                        \rightarrow \SkelVec{\beta}^n  \rightarrow \SkelVec{\alpha} \rightarrow \alpha \\
+    \SkelCons{reduce} &\ f\ \SkelVec{b}^n \SkelVec{a}= f \SkelFrm (\SkelVec{b}^n,\SkelVec{a}_{2..}) \SkelPip \SkelVec{a}_{1}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{reduce}
+  \begin{align*}%
+    \SkelCons{reduce} &: (\alpha \times \alpha \rightarrow \alpha)
+                        \rightarrow \rightarrow \SkelVec{\alpha} \rightarrow \alpha \\
+    \SkelCons{reduce} &\ f\ \SkelVec{b}^n \SkelVec{a}= f \SkelFrm (\SkelVec{b}^n,\SkelVec{a}_{2..}) \SkelPip \SkelVec{a}_{1}
+  \end{align*}
+\end{docimage}
+
+
+\begin{docimage}{prefix-old}
+  \begin{align*}%
+    \SkelCons{prefix} &: (\beta^n \rightarrow \alpha \times \alpha \rightarrow \alpha)
+                        \rightarrow \SkelVec{\beta}^n  \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{prefix} &\ f\ \SkelVec{b}^n \SkelVec{a}= (f \SkelRed) \SkelFrm (\SkelVec{b}^n_\infty, \SkelCons{inits} \SkelVec{a})
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{prefix}
+  \begin{align*}%
+    \SkelCons{prefix} &: (\alpha \times \alpha \rightarrow \alpha)
+                        \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{prefix} &\ f\ \SkelVec{a}= (f \SkelRed) \SkelFrm (\SkelCons{tails} \SkelVec{a})
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{suffix}
+  \begin{align*}%
+    \SkelCons{suffix} &: (\alpha \times \alpha \rightarrow \alpha)
+                        \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{suffix} &\ f\ \SkelVec{a}= (f \SkelRed) \SkelFrm (\SkelCons{inits} \SkelVec{a})
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{recur}
+  \begin{align*}%
+    \SkelRec &: \SkelVec{\alpha \rightarrow \alpha}
+                          \rightarrow \alpha \rightarrow \SkelVec{\alpha} \\
+    \SkelVec{f}\ \SkelRec &\ i = (\SkelPip i) \SkelFrm (\SkelCons{tails} \SkelVec{f})
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{cascade}
+\begin{align*}%
+  \SkelCons{cascade} &: (\alpha \rightarrow \alpha \rightarrow \alpha)
+                       \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha}\\
+  \SkelCons{cascade} &\ p\ \SkelVec{s}_1\ \SkelVec{s}_2 = \SkelCons{scanf} \SkelFrm \SkelVec{s}_2 \SkelPip \SkelVec{s}_1 \\
+                     &\text{where}\ \ \SkelCons{scanf}\ s_2\ \SkelVec{s}_1 = p \SkelFrm \SkelVec{s}_1 \SkelRec s_2 %
+\end{align*}
+\end{docimage}
+
+
+\begin{docimage}{mesh}
+\begin{align*}%
+  \SkelCons{mesh} &: (\alpha \rightarrow \alpha \rightarrow \alpha)
+                       \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\SkelVec{\alpha}}\\
+  \SkelCons{mesh} &\ p\ \SkelVec{s}_1\ \SkelVec{s}_2 = \SkelCons{scanf} \SkelFrm \SkelVec{s}_2 \SkelRec \SkelVec{s}_1 \\
+                     &\text{where}\ \ \SkelCons{scanf}\ s_2\ \SkelVec{s}_1 = p \SkelFrm \SkelVec{s}_1 \SkelRec s_2 %
+\end{align*}
+\end{docimage}
+
+\begin{docimage}{length}
+\begin{align*}%
+  \SkelCons{length} &: \SkelVec{\alpha} \rightarrow \mathtt{Int}\\
+  \SkelCons{length} & = (+ \SkelRed) \circ (1 \SkelFrm)
+\end{align*}
+\end{docimage}
+
+\begin{docimage}{generate}
+\begin{align*}%
+  \SkelCons{generate} &: \mathtt{Int} \rightarrow (\alpha \rightarrow \alpha) \rightarrow \alpha \rightarrow \SkelVec{\alpha}\\
+  \SkelCons{generate} &\ n\ f\ i =  \SkelVec{f}_{\times n} \SkelRec i
+\end{align*}
+\end{docimage}
+
+\begin{docimage}{tail}
+\begin{align*}%
+  \SkelCons{tail} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha}\\
+  \SkelCons{tail} & = \SkelCons{tails}[2]
+\end{align*}
+\end{docimage}
+
+
+\begin{docimage}{init}
+\begin{align*}%
+  \SkelCons{init} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha}\\
+  \SkelCons{init} & = \SkelCons{inits}[L-1]
+\end{align*}
+\end{docimage}
+
+\begin{docimage}{concat}
+\begin{align*}%
+  \SkelCons{concat} &: \SkelVec{\SkelVec{\alpha}} \rightarrow \SkelVec{\alpha}\\
+  \SkelCons{concat} & = \doubleplus \SkelRed 
+\end{align*}
+\end{docimage}
+
+\begin{docimage}{group}
+  \begin{align*}
+    \SkelCons{group} &: Int \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\SkelVec{\alpha}} \\
+    \SkelCons{group} &\ n = (\SkelCons{take}\ n) \SkelFrm \circ (\SkelCons{drop}\ n) \SkelRec
+  \end{align*}
+\end{docimage}
+
+
+\begin{docimage}{reverse}
+  \begin{align*}
+    \SkelCons{reverse} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{reverse} &\ n = (\id{rev} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                       & \text{where } \id{rev}\ x\ y = y \doubleplus x
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{inits}
+  \begin{align*}
+    \SkelCons{inits} &: \SkelVec{\alpha} \rightarrow \SkelVec{\SkelVec{\alpha}} \\
+    \SkelCons{inits} &\ n = (\id{sel} \SkelRed) \circ (\SkelVec{\SkelVec{}} \SkelFrm) \\
+                       & \text{where } \id{sel}\ x\ y = x \doubleplus ((x[L] \doubleplus) \SkelFrm y)
+  \end{align*}
+\end{docimage}
+
+
+\begin{docimage}{tails}
+  \begin{align*}
+    \SkelCons{tails} &: \SkelVec{\alpha} \rightarrow \SkelVec{\SkelVec{\alpha}} \\
+    \SkelCons{tails} &\ n = (\id{sel} \SkelRed) \circ (\SkelVec{\SkelVec{}} \SkelFrm) \\
+                       & \text{where } \id{sel}\ x\ y = ((\doubleplus y[1]) \SkelFrm x) \doubleplus y
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{get}
+  \begin{align*}
+    \SkelCons{get} &: \SkelVec{\alpha} \rightarrow \alpha \\
+    \SkelCons{get} &\ n = (\id{sel} \SkelRed)  \\
+                   & \mbox{where }\id{sel}\ x\ y= \begin{cases}
+                     x &\mbox{ if } \id{index}(x) = n \\
+                     y &\mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{take}
+  \begin{align*}
+    \SkelCons{take} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{take} &\ n = (\id{sel} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x\ y= \begin{cases}
+                     x \doubleplus y &\mbox{ if } \id{index}(x) < n \\
+                     x &\mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{drop}
+  \begin{align*}
+    \SkelCons{drop} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{drop} &\ n = (\id{sel} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x\ y= \begin{cases}
+                     x \doubleplus y &\mbox{ if } \id{index}(x) > n \\
+                     y &\mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{filteridx}
+  \begin{align*}
+    \SkelCons{filterIdx} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{filterIdx} &\ f = (\id{sel} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x\ y= \begin{cases}
+                     x \doubleplus y &\mbox{ if } f(\id{index}(x)) = \id{true} \\
+                     y &\mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+
+\begin{docimage}{replace}
+  \begin{align*}
+    \SkelCons{replace} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{replace} &\ n\ r = (\id{sel} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x\ y= \begin{cases}
+                     \SkelVec{r} \doubleplus y &\mbox{ if } \id{index}(x) = n \\
+                     x \doubleplus y & \mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{takewhile}
+  \begin{align*}
+    \SkelCons{takeWhile} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{takeWhile} &\ f = \SkelCons{concat} \circ (\id{sel} \SkelRed) \circ (\SkelVec{\SkelVec{}} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x\ y= \begin{cases}
+                     x \doubleplus y &\mbox{ if } f(y[1]) = \id{true} \wedge \exists x[L] \\
+                     x & \mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{stride}
+  \begin{align*}
+    \SkelCons{stride} &: \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{stride} &\ \id{first}\ \id{stride} = (\id{sel} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x y = \begin{cases}
+                     x \doubleplus y &\mbox{ if } (\id{index}(x) - \id{first}) \mod \id{stride} = 0  \\
+                     y & \mbox{ otherwise}
+                   \end{cases}
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{gather}
+  \begin{align*}
+    \SkelCons{gather} &: \SkelVec{Int} \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{gather} &\ \SkelVec{ix} \SkelVec{v}= \id{sel} \SkelFrm \SkelVec{ix} \\
+                   & \mbox{where }\id{sel}\ x = \SkelVec{v}[x]
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{scatter}
+  \begin{align*}
+    \SkelCons{scatter} &: \SkelVec{Int} \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \rightarrow \SkelVec{\alpha} \\
+    \SkelCons{scatter} &\ \SkelVec{ix} \SkelVec{host} = (\id{sel} \SkelRed) \circ (\SkelVec{} \SkelFrm) \\
+                   & \mbox{where }\id{sel}\ x = \SkelCons{replace}\ \id{index}(x)\ x[1]\  \SkelVec{host} 
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{odds}
+  \begin{equation*}
+    \SkelCons{odds} = \SkelCons{filterIdx}(odd)   
+  \end{equation*}
+\end{docimage}
+
+
+\begin{docimage}{evens}
+  \begin{equation*}
+    \SkelCons{odds} = \SkelCons{filterIdx}(even)   
+  \end{equation*}
+\end{docimage}
+
+\begin{docimage}{zipx}
+  \begin{align*}
+    \SkelCons{zipx} &: \SkelVec{\dot{\SkelVec{\alpha}} \times \dot{\SkelVec{\alpha}} \rightarrow \dot{\SkelVec{\alpha}}}
+                      \rightarrow \SkelVec{\mathcal{S}(\alpha)} \rightarrow \mathcal{S}(\SkelVec{\alpha}) \\
+    \SkelCons{zipx} &\ \SkelVec{\id{part}} = ((\doubleplus \MocCmb) \SkelRed \SkelVec{\id{part}}) \circ (\SkelCons{unit} \SkelFrm) 
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{unzipx}
+  \begin{align*}
+    \SkelCons{unzipx} &: (\SkelVec{\alpha} \rightarrow \SkelVec{\dot{\alpha}}) \rightarrow Int 
+                        \rightarrow \mathcal{S}(\SkelVec{\alpha}) \rightarrow \SkelVec{\mathcal{S}(\alpha)}  \\
+    \SkelCons{unzipx} &\ \id{part}\ n = ((\SkelCons{first} \MocCmb) \SkelFrm) \circ (\SkelVec{\SkelCons{tail}}_{\times n} \SkelRec )
+                        \circ (\id{part} \MocCmb) 
+  \end{align*}
+\end{docimage}
+
+\end{document}
+
+%%% Local Variables:
+%%% TeX-command-default: "Make"
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

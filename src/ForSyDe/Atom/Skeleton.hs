@@ -1,4 +1,5 @@
-{-# OPTIONS_HADDOCK show-extensions #-}
+{-# LANGUAGE PostfixOperators #-}
+{-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Skeleton
@@ -12,6 +13,10 @@
 -- This module exports a type class with the interfaces for the
 -- Skeleton layer atoms. It does /NOT/ export any implementation of
 -- atoms not any constructor as composition of atoms.
+--
+-- __IMPORTANT!!!__
+-- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
+-- on how to interpret, use and develop your own constructors.
 -----------------------------------------------------------------------------
 
 
@@ -19,32 +24,54 @@ module ForSyDe.Atom.Skeleton (
 
   -- * Atoms
   
-  Skeleton(..)
+  Skeleton(..),
 
-  -- * Bibliography
-  
-  -- | #gorlatch03# <http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [1]> Fischer, J., Gorlatch, S., & Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.
-  
-  -- | #bird96# [2] Bird, R., & De Moor, O. (1996, January). The algebra of programming. In /NATO ASI DPD/ (pp. 167-203).
-  
-  -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [3]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
+  -- * Skeleton constructors
 
+  -- | Patterns of in the skeleton layer are provided, like all other
+  -- patterns in ForSyDe-Atom, as constructors. If the layer below
+  -- this one is the 'ForSyDe.Atom.MoC.MoC' layer, i.e. the functions
+  -- taken as arguments are processes, then these skeletons can be
+  -- regarded as process network constructors, as the structures
+  -- created are process networks with inherent potential for parallel
+  -- implementation.
+  
+  farm11, farm12, farm13, farm14,
+  farm21, farm22, farm23, farm24,
+  farm31, farm32, farm33, farm34,
+  farm41, farm42, farm43, farm44,
+  farm51, farm52, farm53, farm54,
+  farm61, farm62, farm63, farm64,
+  farm71, farm72, farm73, farm74,
+  farm81, farm82, farm83, farm84,
+
+  reduce, reducei, pipe,
+  
+  pipe1, pipe2, pipe3, pipe4,
+  pipe5, pipe6, pipe7, pipe8,
+  
   ) where
 
-infixl 4 =$=, =*=
-infixl 2 =\=, =<<=
+import ForSyDe.Atom.Utility
 
+infixl 4 =.=, =*=
+infixl 2 =\=, =<<=
 
 -- | Class containing all the Skeleton layer atoms.
 --
 -- This class is instantiated by a set of categorical types,
--- i.e. types which desctibe an inherent potential for parallel
--- evaluation. All skeletons, i.e. constructors for process networks
--- which can can be mapped on parallel platforms, are then described
--- as composition of these three atoms (the fourth being just a
--- specific instantiation of the third). This possible due to an
--- existing theorem enunciated in <#gorlatch03 [1]>, based on the
--- Bird-Merteens formalism <#bird96 [2]>:
+-- i.e. types which describe an inherent potential for being evaluated
+-- in parallel. Skeletons are patterns from this layer. When skeletons
+-- take as arguments entities from the MoC layer (i.e. processes), the
+-- results themselves are parallel process networks which describe
+-- systems with an inherent potential to be implemented on parallel
+-- platforms. All skeletons can be described as composition of the
+-- three atoms below ('=<<=' being just a specific instantiation of
+-- '=\='). This possible due to an existing theorem in the categorical
+-- type theory, also called the Bird-Merteens formalism
+-- <ForSyDe-Atom.html#bird97 [Bird97]>:
+--
+-- #factorization#
 --
 -- [factorization] A function on a categorical type is an algorithmic
 -- skeleton (i.e. catamorphism) /iff/ it can be represented in a
@@ -55,41 +82,193 @@ infixl 2 =\=, =<<=
 -- either:
 --
 -- * type constructors or functions derived from type constructors
--- * processes, i.e. MoC layer enities
+-- * processes, i.e. MoC layer entities
 --
 -- Most of the ground-work on algorithmic skeletons on which this
--- module is founded has been laid bt Skillicorn in <#skillicorn03 [3]>.
-class Skeleton c where
+-- module is founded has been laid in <ForSyDe-Atom.html#bird97 [Bird97]>,
+-- <ForSyDe-Atom.html#skillicorn05 [Skillicorn05]> and it founds many
+-- of the frameworks collected in <ForSyDe-Atom.html#gorlatch03 [Gorlatch03]>.
+class Functor c => Skeleton c where
   -- | Atom which maps a function on each element of a structure
   -- (i.e. categorical type), defined as:
   --
-  -- <<includes/figs/skel-map-atom-formula.png>>
+  -- <<docfiles/figs/eqs-skel-atom-dot.png>>
   --
-  -- '=$=' together with '=*=' and some utilities defined in
-  -- "ForSyDe.Atom.Utility", form the @map@ pattern.
-  (=$=)  :: (a -> b) -> c a -> c b
+  -- '=.=' together with '=*=' form the @map@ pattern.
+  (=.=)  :: (a -> b) -> c a -> c b
 
   -- | Atom which applies the functions contained by as structure
   -- (i.e. categorical type), on the elements of another structure,
   -- defined as:
   --
-  -- <<includes/figs/skel-appl-atom-formula.png>>
+  -- <<docfiles/figs/eqs-skel-atom-star.png>>
   --
-  -- '=$=' together with '=*=' and some utilities defined in
-  -- "ForSyDe.Atom.Utility", form the @map@ pattern.
+  -- '=.=' together with '=*=' form the @map@ pattern.
   (=*=)  :: c (a -> b) -> c a -> c b
 
   -- | Atom which reduces a structure to an element based on an
-  -- associative function, defined as:
+  -- /associative/ function, defined as:
   --
-  -- <<includes/figs/skel-red-atom-formula.png>>
+  -- <<docfiles/figs/eqs-skel-atom-red.png>>
   (=\=)  :: (a -> a -> a) -> c a -> a
-  -----------------------------------
 
   -- | Skeleton which /pipes/ an element through all the functions
-  -- contained by a structure. __OBS:__ this is not an atom, as it is
-  -- implicitly defined as:
+  -- contained by a structure. 
   --
-  -- <<includes/figs/skel-pipe-atom-formula.png>>
-  (=<<=) :: c (a -> a) -> a -> a    
+  -- __N.B.__: this is not an atom. It has an implicit definition
+  -- which might be augmented by instances of this class to include
+  -- edge cases.
+  --
+  -- <<docfiles/figs/eqs-skel-pattern-pipe.png>>
+  --
+  -- As the composition operation is not associative, we cannot treat
+  -- @pipe@ as a true reduction. Alas, it can still be exploited in
+  -- parallel since it exposes another type of parallelism: time
+  -- parallelism.
+  (=<<=) :: c (a -> a)  -- ^ vector of functions
+         -> a           -- ^ kernel element
+         -> a           -- ^ result 
   (=<<=) ps = (.) =\= ps
+
+            
+  -- | Returns the first element in a structure.
+  --
+  -- __N.B.__: this is not an atom. It has an implicit definition
+  -- which might be replaced by instances of this class with a more
+  -- efficient implementation.
+  --
+  -- <<docfiles/figs/eqs-skel-pattern-first.png>>
+  first :: c a -> a
+  first v = (\x y -> x) =\= v
+
+  -- | Returns the last element in a structure.
+  --
+  -- __N.B.__: this is not an atom. It has an implicit definition
+  -- which might be replaced by instances of this class with a more
+  -- efficient implementation.
+  --
+  -- <<docfiles/figs/eqs-skel-pattern-last.png>>
+  last :: c a -> a
+  last v = (\x y -> y) =\= v
+
+--------------
+-- PATTERNS --
+--------------
+
+-- | @farm@ maps a function on a vector. It is the embodiment of the
+-- @map@ homomorphism, and its naming is inspired from the pattern
+-- predominant in HPC. Indeed, if we consider the layer below as being
+-- the 'ForSyDe.Atom.MoC.MoC' layer (i.e. the passed functions are
+-- processes), the resulting structure could be regarded as a "farm of
+-- data-parallel processes".
+--
+-- The following constructors are provided:
+--
+-- >  farm11, farm12, farm13, farm14,
+-- >  farm21, farm22, farm23, farm24,
+-- >  farm31, farm32, farm33, farm34,
+-- >  farm41, farm42, farm43, farm44,
+-- >  farm51, farm52, farm53, farm54,
+-- >  farm61, farm62, farm63, farm64,
+-- >  farm71, farm72, farm73, farm74,
+-- >  farm81, farm82, farm83, farm84,
+--
+-- <<docfiles/figs/eqs-skel-pattern-farm.png>>
+-- <<docfiles/figs/skel-pattern-farm.png>>
+farm22 :: Skeleton c => (a1 -> a2 -> (b1, b2)) -> c a1 -> c a2 -> (c b1, c b2)
+farm11 p v1                      = (p =.= v1)
+farm21 p v1 v2                   = (p =.= v1 =*= v2)
+farm31 p v1 v2 v3                = (p =.= v1 =*= v2 =*= v3)
+farm41 p v1 v2 v3 v4             = (p =.= v1 =*= v2 =*= v3 =*= v4)
+farm51 p v1 v2 v3 v4 v5          = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5)
+farm61 p v1 v2 v3 v4 v5 v6       = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6)
+farm71 p v1 v2 v3 v4 v5 v6 v7    = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7)
+farm81 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8)
+farm12 p v1                      = (p =.= v1 |<)
+farm22 p v1 v2                   = (p =.= v1 =*= v2 |<)
+farm32 p v1 v2 v3                = (p =.= v1 =*= v2 =*= v3 |<)
+farm42 p v1 v2 v3 v4             = (p =.= v1 =*= v2 =*= v3 =*= v4 |<)
+farm52 p v1 v2 v3 v4 v5          = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<)
+farm62 p v1 v2 v3 v4 v5 v6       = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<)
+farm72 p v1 v2 v3 v4 v5 v6 v7    = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<)
+farm82 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v5 =*= v8 |<)
+farm13 p v1                      = (p =.= v1 |<<)
+farm23 p v1 v2                   = (p =.= v1 =*= v2 |<<)
+farm33 p v1 v2 v3                = (p =.= v1 =*= v2 =*= v3 |<<)
+farm43 p v1 v2 v3 v4             = (p =.= v1 =*= v2 =*= v3 =*= v4 |<<)
+farm53 p v1 v2 v3 v4 v5          = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<)
+farm63 p v1 v2 v3 v4 v5 v6       = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<)
+farm73 p v1 v2 v3 v4 v5 v6 v7    = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<)
+farm83 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v5 =*= v8 |<<)
+farm14 p v1                      = (p =.= v1 |<<<)
+farm24 p v1 v2                   = (p =.= v1 =*= v2 |<<<)
+farm34 p v1 v2 v3                = (p =.= v1 =*= v2 =*= v3 |<<<)
+farm44 p v1 v2 v3 v4             = (p =.= v1 =*= v2 =*= v3 =*= v4 |<<<)
+farm54 p v1 v2 v3 v4 v5          = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 |<<<)
+farm64 p v1 v2 v3 v4 v5 v6       = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 |<<<)
+farm74 p v1 v2 v3 v4 v5 v6 v7    = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 |<<<)
+farm84 p v1 v2 v3 v4 v5 v6 v7 v8 = (p =.= v1 =*= v2 =*= v3 =*= v4 =*= v5 =*= v6 =*= v7 =*= v8 |<<<)
+
+-- | Infix name for the '=\=' atom operator.
+--
+-- (*) if the operation is not associative then the network can be
+-- treated like a pipeline.
+reduce :: Skeleton c
+       => (a -> a -> a) -- ^ associative function (*)
+       -> c a           -- ^ structure
+       -> a             -- ^ reduced element
+reduce = (=\=)
+
+-- | 'reducei' is special case of 'reduce' where an initial element is
+-- specified outside the reduced vector. It is implemented as a
+-- 'pipe' with switched arguments, and the reduction function is
+-- constrained to be associative. It is semantically equivalent to the
+-- pattern depicted below.
+--
+-- (*) if the operation is not associative then the network is
+-- semantically equivalent to @pipe1@ (see 'pipe2').
+--
+-- <<docfiles/figs/eqs-skel-pattern-reducei.png>>
+-- <<docfiles/figs/skel-pattern-reducei.png>>
+reducei :: Skeleton c
+        => (a -> a -> a) -- ^ associative function (*)
+        -> a             -- ^ initial element of structure
+        -> c a           -- ^ structure
+        -> a             -- ^ reduced element
+reducei p i v = farm11 p v =<<= i  
+
+
+-- | Infix name for the '=<<=' skeleton operator.
+pipe :: Skeleton c
+     => c (a -> a)  -- ^ vector of functions
+     -> a           -- ^ kernel element
+     -> a           -- ^ result 
+pipe = (=<<=)
+
+-- | The @pipe@ constructors are a more generic form of the '=<<='
+-- ('pipe') skeleton apt for successive partial application and create
+-- more robust parameterizable pipeline networks.
+--
+-- The following constructors are provided:
+--
+-- > pipe1, pipe2, pipe3, pipe4,
+-- > pipe5, pipe6, pipe7, pipe8,
+--
+-- <<docfiles/figs/eqs-skel-pattern-pipe1.png>>
+-- <<docfiles/figs/skel-pattern-pipe1.png>>
+pipe2 :: Skeleton c
+      => (a1 -> a2 -> a -> a)
+      -> c a1 -> c a2
+      -> a -> a
+pipe1 p v1 s                      = farm11 p v1 =<<= s
+pipe2 p v1 v2 s                   = farm21 p v1 v2 =<<= s
+pipe3 p v1 v2 v3 s                = farm31 p v1 v2 v3 =<<= s
+pipe4 p v1 v2 v3 v4 s             = farm41 p v1 v2 v3 v4 =<<= s
+pipe5 p v1 v2 v3 v4 v5 s          = farm51 p v1 v2 v3 v4 v5 =<<= s
+pipe6 p v1 v2 v3 v4 v5 v6 s       = farm61 p v1 v2 v3 v4 v5 v6 =<<= s
+pipe7 p v1 v2 v3 v4 v5 v6 v7 s    = farm71 p v1 v2 v3 v4 v5 v6 v7 =<<= s
+pipe8 p v1 v2 v3 v4 v5 v6 v7 v8 s = farm81 p v1 v2 v3 v4 v5 v6 v7 v8 =<<= s
+
+
+
+

@@ -1,2 +1,0 @@
-sudo apt-get install libdevil1c2 libdevil-dev 
-cabal install repa-devil
