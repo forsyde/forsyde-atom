@@ -28,8 +28,9 @@ install:
  - cabal --version
  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
  - travis_retry cabal update
-# - make sandbox
-# - make doc
+ # cabal sdist fails if the haddock include wildcard fails. Since the documentation is
+ # found in another branch, making a dummy file is a good workaround. 
+ - mkdir -p docfiles/figs && touch docfiles/figs/dummy.png 
 
 # Here starts the actual work to be performed for the package under test; any command which exits with a non-zero exit code causes the build to fail.
 script:

@@ -106,10 +106,13 @@ signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- { 1 @0s, 2 @2s, 3 @5s, 4 @7s, 5 @10s}
--- >>> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
--- { 1 @0s, 2 @2s, 3 @5s*** Exception: [MoC.DE] malformed signal
--- >>> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- *** Exception: [MoC.DE] signal does not start from global 0
+--
+-- Incorrect usage (not covered by @doctest@):
+--
+-- > λ> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
+-- > { 1 @0s, 2 @2s, 3 @5s*** Exception: [MoC.DE] malformed signal
+-- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
+-- > *** Exception: [MoC.DE] signal does not start from global 0
 readSignal :: Read a => String -> Signal a
 readSignal s = checkSignal $ read s
 
