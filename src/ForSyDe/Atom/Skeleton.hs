@@ -60,14 +60,14 @@ infixl 2 =\=, =<<=
 -- | Class containing all the Skeleton layer atoms.
 --
 -- This class is instantiated by a set of categorical types,
--- i.e. types which desctibe an inherent potential for being evaluated
+-- i.e. types which describe an inherent potential for being evaluated
 -- in parallel. Skeletons are patterns from this layer. When skeletons
 -- take as arguments entities from the MoC layer (i.e. processes), the
--- results thenselves are parallel process networks which describe
+-- results themselves are parallel process networks which describe
 -- systems with an inherent potential to be implemented on parallel
 -- platforms. All skeletons can be described as composition of the
 -- three atoms below ('=<<=' being just a specific instantiation of
--- '=\='). This possible due to an existing theorem in the categoric
+-- '=\='). This possible due to an existing theorem in the categorical
 -- type theory, also called the Bird-Merteens formalism
 -- <ForSyDe-Atom.html#bird97 [Bird97]>:
 --
@@ -82,7 +82,7 @@ infixl 2 =\=, =<<=
 -- either:
 --
 -- * type constructors or functions derived from type constructors
--- * processes, i.e. MoC layer enities
+-- * processes, i.e. MoC layer entities
 --
 -- Most of the ground-work on algorithmic skeletons on which this
 -- module is founded has been laid in <ForSyDe-Atom.html#bird97 [Bird97]>,

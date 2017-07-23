@@ -87,7 +87,7 @@ class Functor b => ExB b where
   (/*\) :: b (a -> a') -> b a -> b a'
 
   -- | Predicate operator. Generates a defined behavior based on an
-  -- extended boolean predicate.
+  -- extended Boolean predicate.
   --
   -- <<docfiles/figs/eqs-exb-atom-phi.png>>
   (/&\) :: b Bool -> b a -> b a
@@ -170,7 +170,7 @@ degrade a = (/!\) a
 -- | 
 -- <<docfiles/figs/eqs-exb-pattern-ignore.png>>
 --
--- The @ignoreXY@ pattern takes a funcion of @Y + X@ arguments, @Y@
+-- The @ignoreXY@ pattern takes a function of @Y + X@ arguments, @Y@
 -- basic inputs followed by @X@ behavior-extended inputs. The @X@
 -- behavior-extended arguments are subjugated to a res, and the
 -- result is then degraded using the first @Y@ arguments as

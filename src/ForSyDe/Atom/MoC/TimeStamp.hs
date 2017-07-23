@@ -19,19 +19,18 @@ import Data.Time.Clock ( DiffTime
                        , picosecondsToDiffTime
                        )
 
--- | Alias for the type of explicit tags used for the
--- 'ForSyDe.Atom.MoC.DE.DE' MoC (and subsequently the discrete event
--- evaluation engine for simulating the 'ForSyDe.Atom.MoC.CT.CT'
--- MoC).
+-- | Alias for the type representing discrete time. It is inherently
+-- quantizable, the quantum being a picosecond (10&#8315;&#185;&#178;
+-- seconds), thus it can be considered order-isomorphic with a set of
+-- integers, i.e. between any two timestamps there is a finite number
+-- of timestamps. Moreover, a timestamp can be easily translated into
+-- a rational number representing fractions of a second, so the
+-- conversion between timestamps (discrete time) and rationals
+-- (analog/continuous time) is straightforward.
 --
--- This type is inherently quantizable, the quantum being a picosecond
--- (10&#8315;&#185;&#178; seconds), thus it can be considered
--- order-isomorphic with a set of integers, i.e. between any two
--- timestamps there is a finite number of timestamps. Moreover, a
--- timestamp can be easily translated into a rational number
--- representing fractions of a second, so the conversion between
--- timestamps (discrete time) and rationals (analog/continuous time)
--- is straightforward.
+-- This type is used in the explicit tags of the
+-- 'ForSyDe.Atom.MoC.DE.DE' MoC (and subsequently the discrete event
+-- evaluation engine for simulating the 'ForSyDe.Atom.MoC.CT.CT' MoC).
 type TimeStamp = DiffTime
 
 -- | Specifies a timestamp in terms of picoseconds.

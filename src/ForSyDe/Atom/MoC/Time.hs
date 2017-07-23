@@ -28,9 +28,9 @@ import ForSyDe.Atom.MoC.TimeStamp (TimeStamp)
 
 import qualified Data.Number.FixedFunctions as RatF
 
--- | Type alias for the tag type to represent metric time. Underneath
--- we use 'Rational' that is able to represent any /t/ between
--- /t&#8321;/ < /t&#8322;/ &#8712; /T/.
+-- | Type alias for the type to represent metric (continuous)
+-- time. Underneath we use 'Rational' that is able to represent any
+-- /t/ between /t&#8321;/ < /t&#8322;/ &#8712; /T/.
 type Time = Rational
 
 -- | Converts 'TimeStamp' into 'Time' representation.
