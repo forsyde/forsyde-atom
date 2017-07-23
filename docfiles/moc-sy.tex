@@ -4,6 +4,8 @@
 \usepackage{tikz}
 \usetikzlibrary{decorations.markings,positioning}
 
+\newcommand{\vbvec}{\rotatebox[origin=c]{-90}{$\langle$}}
+\newcommand{\vevec}{\rotatebox[origin=c]{-90}{$\rangle$}}
 \newcommand{\mksynch}[2]{\node[sync]{}; \node[anchor=north,yshift=-1mm]{\scriptsize #1}; \node[anchor=south,yshift=1mm]{\scriptsize #2};}
 \begin{document}
 
@@ -190,6 +192,60 @@
   \outputSY* <p1.e1> {1,2,3,4,5};
 \end{tikzpicture}
 \end{docimage}
+
+
+\begin{docimage}{zipx}
+\begin{tikzpicture}[]\scriptsize
+  \trans[transition=s1v1, rotate shape=180, ni=4, moc=sdf, type=zipx](p1){};
+  \node[shift={(-3, .35)}, anchor=south west] (p1w1) at (p1.w1) {1,2,3,4,5};
+  \node[shift={(-3, .15)}, anchor=south west] (p1w2) at (p1.w2) {1,2,3,4,5};
+  \node[shift={(-3,-.15)}, anchor=south west] (p1w3) at (p1.w3) {11,12,13,14,15};
+  \node[shift={(-3,-.35)}, anchor=south west] (p1w4) at (p1.w4) {11,12,13,14,15};
+  \node[anchor=south west, xshift=1cm] (p1e1) at (p1.e1) {%
+    $\begin{array}{ccccc}
+      \vbvec & \vbvec & \vbvec & \vbvec & \vbvec \\
+      1  & 2 & 3 & 4 & 5 \\
+      1  & 2 & 3 & 4 & 5 \\
+      11 & 12 & 13 & 14 & 15 \\
+      11 & 12 & 13 & 14 & 15 \\
+      \vevec & \vevec & \vevec & \vevec & \vevec
+    \end{array}$
+  };
+  \path[s,->, -|-=.9]
+  (p1w1.south west) edge (p1.w1)
+  (p1w2.south west) edge (p1.w2)
+  (p1w3.south west) edge (p1.w3)
+  (p1w4.south west) edge (p1.w4)
+  (p1.e1) edge (p1e1.south east);
+\end{tikzpicture}
+\end{docimage}
+
+\begin{docimage}{unzipx}
+\begin{tikzpicture}[]\scriptsize
+  \trans[transition=s1v1, no=4, moc=sdf, type=zipx](p1){};
+  \node[shift={(3, .35)}, anchor=south east] (p1e1) at (p1.e1) {1,1,1,1,1};
+  \node[shift={(3, .15)}, anchor=south east] (p1e2) at (p1.e2) {2,2,2,2,2};
+  \node[shift={(3,-.15)}, anchor=south east] (p1e3) at (p1.e3) {3,3,3,3,3};
+  \node[shift={(3,-.35)}, anchor=south east] (p1e4) at (p1.e4) {4,4,4,4,4};
+  \node[anchor=south east, xshift=-1cm] (p1w1) at (p1.w1) {%
+    $\begin{array}{ccccc}
+      \vbvec & \vbvec & \vbvec & \vbvec & \vbvec \\
+      1  & 1 & 1 & 1 & 1 \\
+      2  & 2 & 2 & 2 & 2 \\
+      3  & 3 & 3 & 3 & 3 \\
+      4  & 4 & 4 & 4 & 4 \\
+      \vevec & \vevec & \vevec & \vevec & \vevec
+    \end{array}$
+  };
+  \path[s,<-, -|-=.9]
+  (p1e1.south east) edge (p1.e1)
+  (p1e2.south east) edge (p1.e2)
+  (p1e3.south east) edge (p1.e3)
+  (p1e4.south east) edge (p1.e4)
+  (p1.w1) edge (p1w1.south west);
+\end{tikzpicture}
+\end{docimage}
+
 
 
 \end{document}

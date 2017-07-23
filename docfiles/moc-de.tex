@@ -32,6 +32,20 @@
 \end{tikzpicture}
 \end{docimage} 
 
+\begin{docimage}{pattern-reconfig}
+\begin{tikzpicture}
+  \standard[process, ni=2,no=1, moc=de,type=reconfig](p1){};
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1}]{11}
+    \signalDE{ $+1$:0, $\times 2$:2, $+1$:5, $\times 2$:7}
+    \signalDE{ 1:0, 2:3, 3:5, 4:9}
+  \end{signalsDE}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1}]{11}
+    \signalDE{ 2 :0, 2 :2, 4 :3, 4 :5, 6 :7, 8 :9}
+  \end{signalsDE}
+\end{tikzpicture}
+\end{docimage} 
+
+
 \begin{docimage}{pattern-delay}
 \begin{tikzpicture}
   \standard[process, moc=de, f={$3$;$0$}, type=delay](p1){};
@@ -167,6 +181,38 @@
   \end{signalsDE}
 \end{tikzpicture}
 \end{docimage} 
+
+\begin{docimage}{zipx}
+\begin{tikzpicture}[]\scriptsize
+  \trans[transition=s1v1, rotate shape=180, ni=4, moc=sdf, type=zipx](p1){};
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1},xscale=.4]{12}
+    \signalDE{1:0, 2:2, 3:6, 4:8}
+    \signalDE{1:0, 2:2, 3:6, 4:8}
+    \signalDE{1:0, 2:2, 3:4, 4:8}
+    \signalDE{1:0, 2:2, 3:4, 4:8}
+  \end{signalsDE}
+  \begin{signalsDE}[grid,timestamps=5,outputs={p1},xscale=.8]{12}
+    \signalDE{ {$\langle 1,1,1,1 \rangle$} :0, {$\langle 2,2,2,2 \rangle$} :2, {$\langle 2,2,3,3 \rangle$} :4, {$\langle 3,3,3,3 \rangle$} :6, {$\langle 4,4,4,4 \rangle$} :8}
+  \end{signalsDE}
+\end{tikzpicture}
+\end{docimage}
+
+\begin{docimage}{unzipx}
+\begin{tikzpicture}[]\scriptsize
+  \trans[transition=s1v1, no=4, moc=sdf, type=unzipx](p1){};
+  \begin{signalsDE}[grid,timestamps=5,inputs={p1},xscale=.8]{12}
+    \signalDE{ {$\langle 1,2,3,4 \rangle$} :0, {$\langle 1,2,3,4 \rangle$} :2, {$\langle 1,2,3,4 \rangle$} :6, {$\langle 1,2,3,4 \rangle$} :8}
+  \end{signalsDE}
+ \begin{signalsDE}[grid,timestamps=5,outputs={p1},xscale=.4]{12}
+    \signalDE{1:0, 1:2, 1:6, 1:8}
+    \signalDE{2:0, 2:2, 2:6, 2:8}
+    \signalDE{3:0, 3:2, 3:6, 3:8}
+    \signalDE{4:0, 4:2, 4:6, 4:8}
+  \end{signalsDE}
+\end{tikzpicture}
+\end{docimage}
+
+
 
 \end{document}
  
