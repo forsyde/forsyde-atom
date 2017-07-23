@@ -76,8 +76,11 @@ delay' = MoC.delay
 -- >>> let f [a,b,c] [d,e] = [a+d, c+e] 
 -- >>> comb21 ((3,2),2,f) s1 s2
 -- {2,4,5,7,8,10}
--- >>> comb21 ((3,2),3,f) s1 s2
--- *** Exception: [MoC.SDF] Wrong production
+--
+-- Incorrect usage (not covered by @doctest@):
+--
+-- > λ> comb21 ((3,2),3,f) s1 s2
+-- > *** Exception: [MoC.SDF] Wrong production
 --
 -- <<docfiles/figs/moc-sdf-pattern-comb.png>>
 comb22 :: ((Cons,Cons), (Prod,Prod),

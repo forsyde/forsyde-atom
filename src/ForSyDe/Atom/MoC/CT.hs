@@ -132,7 +132,8 @@ module ForSyDe.Atom.MoC.CT (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, unit, unit2, unit3, unit4, infinite, signal, checkSignal,
+  Signal, unit, unit2, unit3, unit4, infinite,
+  signal, checkSignal, 
 
   plot, plot2, plot3, plot4,
   plotFloat, plotFloat2, plotFloat3, plotFloat4,

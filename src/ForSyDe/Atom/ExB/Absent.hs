@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.ExB.Absent
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015-2016
@@ -21,8 +21,6 @@
 -- 3
 -- >>> res21 (+) Abst     Abst 
 -- ⟂
--- >>> res21 (+) (Prst 1) Abst 
--- *** Exception: [ExB.Absent] Illegal occurrence of an absent and present event
 -- >>> filter Abst         (Prst 1)
 -- ⟂
 -- >>> filter (Prst False) (Prst 1)
@@ -41,7 +39,12 @@
 -- 2
 -- >>> ignore11 (+) 1 Abst
 -- 1
------------------------------------------------------------------------------
+--
+-- Incorrect usage (not covered by @doctest@):
+--
+-- > λ> res21 (+) (Prst 1) Abst 
+-- > *** Exception: [ExB.Absent] Illegal occurrence of an absent and present event
+----------------------------------------------------------------------
 
 module ForSyDe.Atom.ExB.Absent where
 
