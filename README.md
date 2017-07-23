@@ -4,16 +4,16 @@ forsyde-atom
 [![Build Status](https://travis-ci.org/forsyde/forsyde-atom.svg?branch=master)](https://travis-ci.org/forsyde/forsyde-atom)
 
 Reimplementation of the ForSyDe-Haskell modelling library in an
-applicative manner using the concept of atoms, and a layered process
-model. For a technical report, check the extended API
-documentation at [forsyde.github.io/forsyde-atom](https://forsyde.github.io/forsyde-atom),
+applicative manner using the concepts of atoms and the layered process
+model. For a technical report, check the extended API documentation at
+[forsyde.github.io/forsyde-atom](https://forsyde.github.io/forsyde-atom),
 which was generated with Haddock.
 
 ---- 
 
-Ideas based on the projects `forsyde-patterns` (George
-Ungureanu), `forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe. library
-(KTH-SAM group)
+Ideas based on the projects `forsyde-patterns` (George Ungureanu),
+`forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe. library (KTH-SAM
+group)
 
 
 Installation and usage
@@ -32,13 +32,23 @@ it. It is recommended to install and test inside a sandbox:
 Generating the documentation
 ----------------------------
 
-A haddock extended API + technical report documentation can be generated from the 
-version found in the `docs` branch. To do this, you should should use the provided 
+A haddock extended API + technical report documentation can be
+generated from the version found in the `docs` branch. It contains an
+additional folder called `docfiles` in the project root, which holds
+`LaTeX` sources for the figures and equations in the API
+documentation.
+
+To generate the documentation, you should should use the provided
 `Makefile`:
 
-    make doc              # compiles the documentation and the LaTeX figures
-    make clean            # removes all the generated documentation files
+    cd docfiles           # here the Makefile is found
+    make haddock          # compiles the LaTeX figures and the documentation
+    make clean            # removes all generated LaTeX files
+	make superclean       # removes generated files including the figures
     
+Pay attention as the `docs` branch might lag behind the current
+development and it is recommended to check the project history.
+	
 General dependencies
 --------------------
     
@@ -56,6 +66,11 @@ There are a number of dependencies to be taken care of:
 
  * `imagemagick` to convert the above PDF pictures to PNG to be
    recognized by Haddock.
+   
+ * the package
+   [`forsyde-latex`](https://github.com/forsyde/forsyde-latex), as
+   most figures are dependent on it. It needs to be manually installed
+   using the instructions on the project web page.
    
 On a Ubuntu 16.04 OS, the following commands might help for installing these dependencies:
 

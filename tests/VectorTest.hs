@@ -130,7 +130,7 @@ test_gather_1    = V.gather1 v3 v1    @?= V.vector [4,4,4,4,4]
 test_replace_1   = V.replace 4 200 v1 @?= V.vector [4,5,6,200,8,9,10,11,12,13]
 test_scatter_1   = V.scatter v5 v3 v1 @?= V.vector [4,1,5,1,6]
 test_bitrev_1    = V.bitrev v1        @?= V.vector [11,7,9,13,5,10,6,8,12,4]
-test_duals_1     = V.duals v1         @?= V.vector [(4,9),(5,10),(6,11),(7,12),(8,13)]
+test_duals_1     = V.duals v1         @?= (V.vector [4,5,6,7,8], V.vector [9,10,11,12,13])
 
 
 instance (Arbitrary a) => Arbitrary (Vector a) where
