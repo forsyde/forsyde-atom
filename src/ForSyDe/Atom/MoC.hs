@@ -1,6 +1,6 @@
 {-# LANGUAGE PostfixOperators, TypeFamilies #-}
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
@@ -15,10 +15,18 @@
 -- /NOT/ export any implementation or instantiation of any specific
 -- MoC.
 --
+-- Current MoC implementations can be used by importing their
+-- respective modules:
+--
+-- * "ForSyDe.Atom.MoC.CT"
+-- * "ForSyDe.Atom.MoC.DE"
+-- * "ForSyDe.Atom.MoC.SY"
+-- * "ForSyDe.Atom.MoC.SDF"
+--
 -- __IMPORTANT!!!__
 -- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
 -- on how to interpret, use and develop your own constructors.
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
   
@@ -114,8 +122,8 @@ infixl 3 -<-, -*, -&-
 --
 -- <<docfiles/figs/eqs-moc-atom-formatted-func.png>>
 --
--- where /a/ and /b/ might be cartesian products of different types,
--- correspondend to how many signals the constructor is applied to or
+-- where /a/ and /b/ might be Cartesian products of different types,
+-- corresponding to how many signals the constructor is applied to or
 -- how many signals it yields, and each type is expressed as:
 --
 -- <<docfiles/figs/eqs-moc-atom-formatted-arg.png>>
@@ -126,7 +134,7 @@ infixl 3 -<-, -*, -&-
 -- general and extensible type class. This is why we have chosen a
 -- pragmatic approach in implementing the 'MoC' class:
 --
--- * any (possible) cartesian product of /&#945;/ is represented using
+-- * any (possible) Cartesian product of /&#945;/ is represented using
 -- a recursive type, namely a list [/&#945;/].
 --
 -- * as the execution context cannot (or can hardly) be extracted from
@@ -137,7 +145,7 @@ infixl 3 -<-, -*, -&-
 --
 -- * this artifice was masked using the generic type families 'Fun'
 -- and 'Res'. 
-class (Functor e) => MoC e where
+class (Applicative e) => MoC e where
 
   -- |<<docfiles/figs/eqs-moc-atom-function.png>>
   --
@@ -155,7 +163,7 @@ class (Functor e) => MoC e where
   --
   -- As with 'Fun', this alias hides a context-bound value
   -- (e.g. function return). Although the definition seems to be
-  -- reduntant with 'Fun', this alias is needed for utilities to
+  -- redundant with 'Fun', this alias is needed for utilities to
   -- recreate clean types again (see '-*').
   type Ret e b
   
@@ -179,13 +187,13 @@ class (Functor e) => MoC e where
 
   -- | <<docfiles/figs/eqs-moc-atom-post.png>>
   -- 
-  -- Artifficial /utility/ which drops the context and/or partitioning
+  -- Artificial /utility/ which drops the context and/or partitioning
   -- yielding a clean signal type. 
   (-*)  :: Stream (e (Ret e b)) -> Stream (e b)
 
   -- | <<docfiles/figs/eqs-moc-atom-pre.png>>
   -- 
-  -- This atom appends a (partition of) events at the begining of a
+  -- This atom appends a (partition of) events at the beginning of a
   -- signal. This atom is necessary to ensure /complete partial order/
   -- of a signal and assures the /least upper bound/ necessary for
   -- example in the evaluation of feedback loops
@@ -544,7 +552,7 @@ moore22 :: MoC e
         -> Fun e st (Ret e b1, Ret e b2)
         -- ^ output decoder (<#moore22od **>)
         -> Stream (e st)
-        -- ^ intial state (<#moore22i ***>)
+        -- ^ initial state (<#moore22i ***>)
         -> Stream (e a1)
         -- ^ first input signal
         -> Stream (e a2)
@@ -612,7 +620,7 @@ mealy22 :: MoC e
         -> Fun e st (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))
         -- ^ output decoder (<#mealy22od **>)
         -> Stream (e st)
-        -- ^ intial state (<#mealy22i ***>)
+        -- ^ initial state (<#mealy22i ***>)
         -> Stream (e a1)
         -- ^ first input signal
         -> Stream (e a2)
@@ -654,7 +662,7 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
 
 
 
--- | Attaches a context parameter to a function agument (e.g
+-- | Attaches a context parameter to a function argument (e.g
 -- consumption rates in SDF). Used as kernel function in defining
 -- e.g. 'ctxt22'.
 warg :: c -> (a -> b) -> (c, a -> b)

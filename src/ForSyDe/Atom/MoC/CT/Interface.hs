@@ -7,6 +7,9 @@ import ForSyDe.Atom.MoC ((-.-), (-*-))
 import ForSyDe.Atom.MoC.CT.Core as CT
 import ForSyDe.Atom.MoC.DE.Core as DE
 import ForSyDe.Atom.MoC.DE.Interface (toCT)
+import ForSyDe.Atom.MoC.Stream (Stream(..))
+import qualified ForSyDe.Atom.Skeleton.Vector as V (
+  Vector, zipx, unzipx, fanout, unit, length, vector)
 import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 
 
@@ -65,24 +68,43 @@ toDE3 c s1 s2 s3    = (toDE c s1, toDE c s2, toDE c s3)
 toDE4 c s1 s2 s3 s4 = (toDE c s1, toDE c s2, toDE c s3, toDE c s4)
 
 
-                      
 -- Towards skeleton layer
 
--- -- | Synchronizes all signals inside a vector into one signal carrying
--- -- vector events. This is simply an instantiation of the skeleton
--- -- 'V.zipx', which passes the CT context wrappers ('CT.wrap22') to
--- -- instantiate a 'ForSyDe.Atom.MoC.comb22' properly.
--- zipx :: V.Vector (CT.Signal a) -> CT.Signal (V.Vector a)
--- zipx = V.zipx CT.wrap21 CT.wrap11
+-- | Synchronizes all the signals contained by a vector and zips them
+-- into one signal of vectors. It instantiates the
+-- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+--
+-- >>> let s1 = CT.signal [(0,const 1), (2,const 2), (6,const 3)]
+-- >>> let s2 = CT.signal [(0,const 1), (2,const 2), (4,const 3)]
+-- >>> let v1 = V.vector [s1,s1,s2,s2]
+-- >>> zipx v1
+-- { <1,1,1,1> @0s, <2,2,2,2> @2s, <2,2,3,3> @4s, <3,3,3,3> @6s}
+--
+-- See 'ForSyCt.Atom.MoC.DE.zipx' from the "ForSyCt.Atom.MoC.DE"
+-- library for a comprehensive visual example.
+zipx ::V.Vector (CT.Signal a) -> CT.Signal (V.Vector a)
+zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
+-- | Unzips the vectors carried by a signal into a vector of
+-- signals. It instantiates the 'ForSyCt.Atom.Skeleton.Vector.unzipx'
+-- skeleton. To avoid infinite recurrence, the user needs to provict
+-- the length of the output vector.
+--
+-- >>> let v1 = V.vector [1,2,3,4]
+-- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
+-- >>> unzipx 4 s1
+-- <{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
+--
+-- See 'ForSyCt.Atom.MoC.DE.unzipx' from the "ForSyCt.Atom.MoC.DE"
+-- library for a comprehensive visual example.
+unzipx :: Integer -> CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
+unzipx = V.unzipx id
 
--- -- | Unfolds a signal carrying vector events into a vector of synchronized
--- -- signals. This is simply an instantiation of the skeleton 'V.unzipx',
--- -- which passes the CT context wrappers ('CT.wrap22') to instantiate a
--- -- 'ForSyDe.Atom.MoC.comb22' properly.
--- --
--- -- __/ATTENTION!/__ this  is a temporary unsafe  implementation, since
--- -- it assumes all events are carrying vectors of the same length.
--- unzipx :: CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
--- unzipx = V.unzipx (CT.sniff) CT.wrap11 CT.wrap11
-
+-- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
+--
+-- >>> let v1 = V.vector [1,2,3,4]
+-- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
+-- >>> unzipx' s1
+-- <{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
+unzipx' :: CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
+unzipx' s@(a:-_) = unzipx (V.length $ CT.evalEv a) s

@@ -17,9 +17,11 @@ module ForSyDe.Atom.MoC.SY.Interface where
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SDF.Core as SDF
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
+import           ForSyDe.Atom.MoC.Stream (Stream(..))
 import           ForSyDe.Atom.MoC.TimeStamp
+import qualified ForSyDe.Atom.Skeleton.Vector as V (
+  Vector, vector, zipx, unzipx, fanout, unit, length, reverse)
 import           ForSyDe.Atom.Utility
--- import qualified ForSyDe.Atom.Skeleton.Vector as V (Vector, zipx, unzipx)
 
 ------- MoC INTERFACES -------
 
@@ -79,24 +81,47 @@ toSDF2 s1 s2       = (toSDF s1, toSDF s2)
 toSDF3 s1 s2 s3    = (toSDF s1, toSDF s2, toSDF s3)
 toSDF4 s1 s2 s3 s4 = (toSDF s1, toSDF s2, toSDF s3, toSDF s4)
 
+-- Towards skeleton layer
 
+-- | Synchronizes all the signals contained by a vector and zips them
+-- into one signal of vectors. It instantiates the
+-- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+--
+-- >>> let s1 = SY.signal [1,2,3,4,5]
+-- >>> let s2 = SY.signal [11,12,13,14,15]
+-- >>> let v1 = V.vector [s1,s1,s2,s2]
+-- >>> v1
+-- <{1,2,3,4,5},{1,2,3,4,5},{11,12,13,14,15},{11,12,13,14,15}>
+-- >>> zipx v1
+-- {<1,1,11,11>,<2,2,12,12>,<3,3,13,13>,<4,4,14,14>,<5,5,15,15>}
+--
+-- <<docfiles/figs/moc-sy-zipx.png>>
+zipx ::V.Vector (SY.Signal a) -> SY.Signal (V.Vector a)
+zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
--- -- Towards skeleton layer
+-- | Unzips the vectors carried by a signal into a vector of
+-- signals. It instantiates the 'ForSyDe.Atom.Skeleton.Vector.unzipx'
+-- skeleton. To avoid infinite recurrence, the user needs to provide
+-- the length of the output vector.
+--
+-- >>> let v1 = V.vector [1,2,3,4]
+-- >>> let s1 = SY.signal [v1,v1,v1,v1,v1]
+-- >>> s1
+-- {<1,2,3,4>,<1,2,3,4>,<1,2,3,4>,<1,2,3,4>,<1,2,3,4>}
+-- >>> unzipx 4 s1
+-- <{1,1,1,1,1},{2,2,2,2,2},{3,3,3,3,3},{4,4,4,4,4}>
+--
+-- <<docfiles/figs/moc-sy-zipx.png>>
+unzipx :: Integer -> SY.Signal (V.Vector a) -> V.Vector (SY.Signal a)
+unzipx n = V.reverse . V.unzipx id n
 
--- -- | Synchronizes all signals inside a vector into one signal carrying
--- -- vector events. This is simply an instantiation of the skeleton
--- -- 'V.zipx', which passes the SY context wrappers ('SY.wrap22') to
--- -- instantiate a 'ForSyDe.Atom.MoC.comb22' properly.
--- zipx :: V.Vector (SY.Sig a) -> SY.Sig (V.Vector a)
--- zipx = V.zipx SY.wrap21 SY.wrap11
-
-
--- -- | Unfolds a signal carrying vector events into a vector of synchronized
--- -- signals. This is simply an instantiation of the skeleton 'V.unzipx',
--- -- which passes the SY context wrappers ('SY.wrap22') to instantiate a
--- -- 'ForSyDe.Atom.MoC.comb22' properly.
--- --
--- -- __/ATTENTION!/__ this  is a temporary unsafe  implementation, since
--- -- it assumes all events are carrying vectors of the same length.
--- unzipx :: SY.Sig (V.Vector a) -> V.Vector (SY.Sig a)
--- unzipx = V.unzipx SY.val SY.wrap11 SY.wrap11
+-- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
+--
+-- >>> let v1 = V.vector [1,2,3,4]
+-- >>> let s1 = SY.signal [v1,v1,v1,v1,v1]
+-- >>> s1
+-- {<1,2,3,4>,<1,2,3,4>,<1,2,3,4>,<1,2,3,4>,<1,2,3,4>}
+-- >>> unzipx' s1
+-- <{1,1,1,1,1},{2,2,2,2,2},{3,3,3,3,3},{4,4,4,4,4}>
+unzipx' :: SY.Signal (V.Vector a) -> V.Vector (SY.Signal a)
+unzipx' s@(a:-_) = unzipx (V.length $ SY.val a) s

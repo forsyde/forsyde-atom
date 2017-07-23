@@ -132,6 +132,81 @@ comb42 = MoC.comb42
 comb43 = MoC.comb43 
 comb44 = MoC.comb44 
 
+------- RECONFIG -------
+
+-- | @reconfig@ creates a DE adaptive process where the first signal
+-- carries functions and the other carry the arguments. It
+-- instantiates the @reconfig@ atom pattern (see
+-- 'ForSyDe.Atom.MoC.reconfig22').
+--
+-- The following constructors are provided:
+--
+-- > reconfig11, reconfig12, reconfig13, reconfig14,
+-- > reconfig21, reconfig22, reconfig23, reconfig24,
+-- > reconfig31, reconfig32, reconfig33, reconfig34,
+-- > reconfig41, reconfig42, reconfig43, reconfig44,
+--
+-- >>> let sf = signal [(0,(+1)),(2,(*2)),(5,(+1)),(7,(*2))]
+-- >>> let s1 = signal [(0,1),(3,2),(5,3),(9,4)]
+-- >>> reconfig11 sf s1
+-- { 2 @0s, 2 @2s, 4 @3s, 4 @5s, 6 @7s, 8 @9s}
+--
+-- <<docfiles/figs/moc-de-pattern-reconfig.png>>
+reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
+           -- ^ signal carrying functions
+           -> Signal a1
+           -- ^ first input signal carrying arguments
+           -> Signal a2
+           -- ^ second input signal carrying arguments
+           -> (Signal b1, Signal b2)
+           -- ^ two output signals
+reconfig11 :: Signal (a1 -> b1)
+           -> Signal a1 -> Signal b1
+reconfig12 :: Signal(a1 -> (b1, b2))
+           -> Signal a1 -> (Signal b1, Signal b2)
+reconfig13 :: Signal(a1 -> (b1, b2, b3))
+           -> Signal a1 -> (Signal b1, Signal b2, Signal b3)
+reconfig14 :: Signal(a1 -> (b1, b2, b3, b4))
+           -> Signal a1 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig21 :: Signal(a1 -> a2 -> b1)
+           -> Signal a1 -> Signal a2 -> Signal b1
+reconfig23 :: Signal(a1 -> a2 -> (b1, b2, b3))
+           -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3)
+reconfig24 :: Signal(a1 -> a2 -> (b1, b2, b3, b4))
+           -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig31 :: Signal(a1 -> a2 -> a3 -> b1)
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal b1
+reconfig32 :: Signal(a1 -> a2 -> a3 -> (b1, b2))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2)
+reconfig33 :: Signal(a1 -> a2 -> a3 -> (b1, b2, b3))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3)
+reconfig34 :: Signal(a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig41 :: Signal(a1 -> a2 -> a3 -> a4 -> b1)
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> Signal b1
+reconfig42 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2)
+reconfig43 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3)
+reconfig44 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+
+reconfig11 = MoC.reconfig11 
+reconfig12 = MoC.reconfig12 
+reconfig13 = MoC.reconfig13 
+reconfig14 = MoC.reconfig14 
+reconfig21 = MoC.reconfig21 
+reconfig22 = MoC.reconfig22 
+reconfig23 = MoC.reconfig23 
+reconfig24 = MoC.reconfig24 
+reconfig31 = MoC.reconfig31 
+reconfig32 = MoC.reconfig32 
+reconfig33 = MoC.reconfig33 
+reconfig34 = MoC.reconfig34 
+reconfig41 = MoC.reconfig41 
+reconfig42 = MoC.reconfig42 
+reconfig43 = MoC.reconfig43 
+reconfig44 = MoC.reconfig44 
 
 ------- CONSTANT -------
 

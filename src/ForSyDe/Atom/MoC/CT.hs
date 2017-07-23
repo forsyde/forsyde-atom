@@ -1,6 +1,6 @@
 {-# OPTIONS_HADDOCK prune #-}
 {-# LANGUAGE PostfixOperators #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.CT
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
@@ -15,10 +15,14 @@
 -- helpers for properly instantiating process network patterns as
 -- process constructors.
 --
+-- For working with time or timestamps please check the utilities
+-- provided by the "ForSyDe.Atom.MoC.Time" and
+-- "ForSyDe.Atom.MoC.TimeStamp" modules.
+--
 -- __IMPORTANT!!!__
 -- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
 -- on how to interpret, use and develop your own constructors.
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.CT (
 
@@ -119,8 +123,7 @@ module ForSyDe.Atom.MoC.CT (
   --
   -- <<docfiles/figs/eqs-moc-timed-context.png>>
 
-
-  Time, CT(..),
+  TimeStamp, Time, CT(..),
 
   -- * Aliases & utilities
 
@@ -142,14 +145,16 @@ module ForSyDe.Atom.MoC.CT (
   -- model.
   --
   -- In the examples below we have imported and instantiated the
-  -- functions @pi'@, @sin'@ and @cos'@ from the module
-  -- @Data.Number.FixedFunctions@ in package
-  -- <https://hackage.haskell.org/package/numbers-3000.2.0.1/docs/Data-Number-FixedFunctions.html numbers>.
+  -- functions such as @e'@ @pi'@, @sin'@ and @cos'@ from the
+  -- collection of utilities in "ForSyDe.Atom.MoC.Time" and
+  -- "ForSyDe.Atom.MoC.TimeStamp" :
   --
-  -- > import qualified Data.Number.FixedFunctions as RatF
-  -- > let pi'  = realToFrac pi
-  -- > let sin' = RatF.sin 0.001
-  -- > let cos' = RatF.cos 0.001
+  -- > import ForSyDe.Atom.MoC.Time as Time
+  -- > import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
+  -- > let pi'  = TimeStamp.pi
+  -- > let exp' = Time.exp
+  -- > let sin' = Time.sin
+  -- > let cos' = Time.cos
 
   -- ** Simple
 
@@ -163,7 +168,11 @@ module ForSyDe.Atom.MoC.CT (
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
 
-  
+  reconfig11, reconfig12, reconfig13, reconfig14,
+  reconfig21, reconfig22, reconfig23, reconfig24,
+  reconfig31, reconfig32, reconfig33, reconfig34,
+  reconfig41, reconfig42, reconfig43, reconfig44,
+
   constant1, constant2, constant3, constant4,
   infinite1, infinite2, infinite3, infinite4,
 
@@ -192,10 +201,12 @@ module ForSyDe.Atom.MoC.CT (
   -- ** Interfaces
 
   toDE, toDE2, toDE3, toDE4,
-  -- zipx, unzipx, toDE
+  zipx, unzipx, unzipx'
   
   ) where
 
+import ForSyDe.Atom.MoC.Time
+import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.MoC.CT.Core
 import ForSyDe.Atom.MoC.CT.Lib
 import ForSyDe.Atom.MoC.CT.Interface

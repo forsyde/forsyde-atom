@@ -103,13 +103,18 @@ module ForSyDe.Atom.MoC.SDF (
   -- extended behavioural model.
 
   -- ** Simple
+
+  delay, delay', 
   
   comb11, comb12, comb13, comb14,
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
 
-  delay, delay', 
+  reconfig11, reconfig12, reconfig13, reconfig14,
+  reconfig21, reconfig22, reconfig23, reconfig24,
+  reconfig31, reconfig32, reconfig33, reconfig34,
+  reconfig41, reconfig42, reconfig43, reconfig44,
   
   constant1, constant2, constant3, constant4,
 
@@ -137,8 +142,8 @@ module ForSyDe.Atom.MoC.SDF (
 
   -- ** Interfaces
 
-  toSY, toSY2, toSY3, toSY4
-  -- zipx--, unzipx  
+  toSY, toSY2, toSY3, toSY4,
+  zipx, unzipx  
 
   ) where
 

@@ -105,11 +105,4 @@ signal2 (l1,l2)       = (signal l1, signal l2)
 signal3 (l1,l2,l3)    = (signal l1, signal l2, signal l3)
 signal4 (l1,l2,l3,l4) = (signal l1, signal l2, signal l3, signal l4)
 
------------------------------------------------------------------------------
-
-
-unit a = [a]
-
-zipx   w21 w11 = foldr1 catEv . map unitEv
-  where catEv  = (comb21 . w21) (++)
-        unitEv = (comb11 . w11) unit
+----------------------------------------------------------------------

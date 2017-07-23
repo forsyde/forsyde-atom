@@ -68,6 +68,7 @@ library
                    , ForSyDe.Atom.ExB.Absent
                    , ForSyDe.Atom.MoC
                    , ForSyDe.Atom.MoC.Stream
+                   , ForSyDe.Atom.MoC.Time
                    , ForSyDe.Atom.MoC.TimeStamp
                    , ForSyDe.Atom.MoC.SY
                    , ForSyDe.Atom.MoC.SY.Core
@@ -86,11 +87,11 @@ library
                    , ForSyDe.Atom.MoC.SDF.Core
                    , ForSyDe.Atom.MoC.SDF.Lib
                    , ForSyDe.Atom.MoC.SDF.Interface
-                   -- , ForSyDe.Atom.Skeleton
-                   -- , ForSyDe.Atom.Skeleton.Vector
-                   -- , ForSyDe.Atom.Skeleton.Vector.Core
-                   -- , ForSyDe.Atom.Skeleton.Vector.Lib
-                   -- , ForSyDe.Atom.Skeleton.Vector.Interface
+                   , ForSyDe.Atom.Skeleton
+                   , ForSyDe.Atom.Skeleton.Vector
+                   , ForSyDe.Atom.Skeleton.Vector.Core
+                   , ForSyDe.Atom.Skeleton.Vector.Lib
+                   , ForSyDe.Atom.Skeleton.Vector.Interface
                    , ForSyDe.Atom.Utility
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances

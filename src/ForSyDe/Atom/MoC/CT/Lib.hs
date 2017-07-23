@@ -1,3 +1,4 @@
+
 {-# LANGUAGE PostfixOperators #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
@@ -18,6 +19,7 @@ module ForSyDe.Atom.MoC.CT.Lib where
 
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.CT.Core
+import           ForSyDe.Atom.MoC.Time
 import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.Utility
 import           Prelude hiding (const)
@@ -28,7 +30,8 @@ import           Prelude hiding (const)
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
 -- >>> import qualified Data.Number.FixedFunctions as RatF
--- >>> let pi'  = realToFrac pi
+-- >>> let exp' = RatF.exp 0.001
+-- >>> let pi'  = realToFrac Prelude.pi
 -- >>> let sin' = RatF.sin 0.001
 -- >>> let cos' = RatF.cos 0.001
 
@@ -36,8 +39,7 @@ import           Prelude hiding (const)
 
 -- | The @delay@ process "delays" a signal with one
 -- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern. In the CT
--- MoC, this process can be interpreted as a "delay line" (e.g. an
--- ideal capacitor).
+-- MoC, this process can be interpreted as an ideal "delay line".
 --
 -- >>> let s  = infinite (sin')
 -- >>> let s' = delay 2 (\_ -> 0) s
@@ -90,9 +92,9 @@ delay' = MoC.delay
 --
 -- <<docfiles/figs/moc-ct-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
-       -> Signal a1                 -- ^ first input signal
-       -> Signal a2                 -- ^ second input signal
-       -> (Signal b1, Signal b2)       -- ^ two output signals
+       -> Signal a1              -- ^ first input signal
+       -> Signal a2              -- ^ second input signal
+       -> (Signal b1, Signal b2) -- ^ two output signals
 comb11 :: (a1 -> b1)
        -> Signal a1 -> Signal b1                                
 comb12 :: (a1 -> (b1, b2))
@@ -141,6 +143,94 @@ comb42 = MoC.comb42
 comb43 = MoC.comb43 
 comb44 = MoC.comb44 
 
+------- RECONFIG -------
+
+-- | @reconfig@ creates a CT adaptive process where the first signal
+-- carries functions and the other carry the arguments. It
+-- instantiates the @reconfig@ atom pattern (see
+-- 'ForSyDe.Atom.MoC.reconfig22').
+--
+-- The following constructors are provided:
+--
+-- > reconfig11, reconfig12, reconfig13, reconfig14,
+-- > reconfig21, reconfig22, reconfig23, reconfig24,
+-- > reconfig31, reconfig32, reconfig33, reconfig34,
+-- > reconfig41, reconfig42, reconfig43, reconfig44,
+--
+-- >>> let s1 = infinite (sin')
+-- >>> let sf = signal [(0,\_->(*0)),(pi',\_->(+1)),(2*pi',\_->(*0)),(3*pi',\_->(+1))]
+-- >>> plot 0.5 5 $ reconfig11 sf s1
+-- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,5408 % 8329,512 % 2105,25 % 1117}
+reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
+           -- ^ signal carrying functions
+           -> Signal a1
+           -- ^ first input signal carrying arguments
+           -> Signal a2
+           -- ^ second input signal carrying arguments
+           -> (Signal b1, Signal b2)
+           -- ^ two output signals
+reconfig11 :: Signal (a1 -> b1)
+           -> Signal a1
+           -> Signal b1
+reconfig12 :: Signal(a1 -> (b1, b2))
+           -> Signal a1
+           -> (Signal b1, Signal b2)
+reconfig13 :: Signal(a1 -> (b1, b2, b3))
+           -> Signal a1
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig14 :: Signal(a1 -> (b1, b2, b3, b4))
+           -> Signal a1
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig21 :: Signal(a1 -> a2 -> b1)
+           -> Signal a1 -> Signal a2
+           -> Signal b1
+reconfig23 :: Signal(a1 -> a2 -> (b1, b2, b3))
+           -> Signal a1 -> Signal a2
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig24 :: Signal(a1 -> a2 -> (b1, b2, b3, b4))
+           -> Signal a1 -> Signal a2
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig31 :: Signal(a1 -> a2 -> a3 -> b1)
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> Signal b1
+reconfig32 :: Signal(a1 -> a2 -> a3 -> (b1, b2))
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal b1, Signal b2)
+reconfig33 :: Signal(a1 -> a2 -> a3 -> (b1, b2, b3))
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig34 :: Signal(a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig41 :: Signal(a1 -> a2 -> a3 -> a4 -> b1)
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> Signal b1
+reconfig42 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal b1, Signal b2)
+reconfig43 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal b1, Signal b2, Signal b3)
+reconfig44 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal b1, Signal b2, Signal b3, Signal b4)
+
+reconfig11 = MoC.reconfig11 
+reconfig12 = MoC.reconfig12 
+reconfig13 = MoC.reconfig13 
+reconfig14 = MoC.reconfig14 
+reconfig21 = MoC.reconfig21 
+reconfig22 = MoC.reconfig22 
+reconfig23 = MoC.reconfig23 
+reconfig24 = MoC.reconfig24 
+reconfig31 = MoC.reconfig31 
+reconfig32 = MoC.reconfig32 
+reconfig33 = MoC.reconfig33 
+reconfig34 = MoC.reconfig34 
+reconfig41 = MoC.reconfig41 
+reconfig42 = MoC.reconfig42 
+reconfig43 = MoC.reconfig43 
+reconfig44 = MoC.reconfig44 
 
 ------- CONSTANT -------
 
@@ -214,14 +304,14 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 --
 -- Another example simulating an RC oscillator:
 --
--- >>> let vs = 2      -- Vs : supply voltage
--- >>> let r  = 100    -- R : resistance
--- >>> let c  = 0.0005 -- C : capacitance
--- >>> let vc t = vs * (1 - exp 1 ** ((-fromRational t) / (r * c))) -- Vc(t) : voltage charging through capacitor
--- >>> let ns v = vs + (-1 * v)
+-- >>> let vs = 2                                -- Vs : supply voltage
+-- >>> let r  = 100                              -- R : resistance
+-- >>> let c  = 0.0005                           -- C : capacitance
+-- >>> let vc t = vs * (1 - exp' (-t / (r * c))) -- Vc(t) : voltage charging through capacitor
+-- >>> let ns v = vs + (-1 * v)                  -- next state : charging / discharging
 -- >>> let rcOsc = generate1 ns (milisec 500, vc)
 -- >>> plot 0.2 2 rcOsc
--- {0.0,1.9633687222225316,1.999329074744195,0.2706705664732254,4.957504353332753e-3,0.0,1.9633687222225316,1.999329074744195,0.2706705664732254,4.957504353332753e-3}
+-- {0 % 1,255840 % 130321,33955596480 % 16983563041,98 % 361,235298 % 47045881,0 % 1,255840 % 130321,33955596480 % 16983563041,98 % 361,235298 % 47045881}
 --
 -- <<docfiles/figs/moc-ct-pattern-generate1.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))

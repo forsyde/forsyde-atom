@@ -11,31 +11,54 @@
 --
 -- The core implementation of the 'Vector' type
 -----------------------------------------------------------------------------
-
 module ForSyDe.Atom.Skeleton.Vector.Core where
 
 import ForSyDe.Atom.Skeleton
 
 import Prelude hiding (null)
 
-
 infixr 3 :>
 infixl 5 <:
 infixr 5 <++>
 
--- | The data type 'Vector', or at least its interpretation, is the
--- exact equivalent of a catamorphic list, as defined in
--- <#bird96 [2]>. Its name though is borrowed from <#reekie95 [4]>,
--- since it is more suggestive in the context of process networks.
+-- | The  'Vector', or at least its interpretation, is the
+-- exact equivalent of an infinite list, as defined in
+-- <ForSyDe-Atom.html#bird97 [Bird97]>. Its name though is borrowed
+-- from <ForSyDe-Atom.html#reekie95 [Reekie95]>, since it is more
+-- suggestive in the context of process networks.
 --
--- Due to reasons of efficiency, and to ensure that the structure is
--- flat and homogeneous, 'Vector' is implemented using the same
--- constructors as an infinite list, as seen below. In the
--- implementation of skeletons though, we shall interpret 'Vector' as
--- being <#g:2 \"constructed\"> in a different fashion, one which
--- suggests that a 'Vector' is divided and evaluated in parallel.
-data Vector a = Null            -- ^ Null element. Terminates a vector.
-              | a :> (Vector a) -- ^ appends an element at the head of a vector.
+-- According to <ForSyDe-Atom.html#bird97 [Bird97]>, 'Vector'
+-- should be implemented as following:
+--
+-- > data Vector a = Null                   -- null element
+-- >               | Unit a                 -- singleton vector
+-- >               | Vector a <++> Vector a -- concatenate two vectors
+--
+-- This construction suggests the possibility of splitting a 'Vector'
+-- into multiple parts and evaluating it in parallel. Due to reasons
+-- of efficiency, and to ensure that the structure is flat and
+-- homogeneous, 'Vector' is implemented using the same constructors as
+-- an infinite list like in <ForSyDe-Atom.html#bird87 [Bird87]> (see
+-- below). When defining skeletons of vectors we will not use the real
+-- constructors though, but the theoretical ones defined above and
+-- provided as <#g:2 functions> . This way we align ForSyDe-Atom's
+-- 'Vector' type with the categorical type theory and its theorems.
+--
+-- Another particularity of 'Vector' is that it instantiates the
+-- reduction atom '=\=' as a /right fold/, as it is the most efficient
+-- implementation in the context of lazy evaluation. As a consequence
+-- reduction is performed __/from right to left/__. This is noticeable
+-- especially in the case of pipeline-based skeletons (where 'pipe'
+-- itself is a reduction with the right-associative composition
+-- operator '.') is performed from right to left, which
+-- comes in natural when considering the order of function
+-- composition. Thus for 'reduce'-based skeletons (e.g. 'prefix',
+-- 'suffix', 'recur', 'cascade', 'mesh') the result vectors shall be
+-- read from end to beginning.
+data Vector a = Null
+              -- ^ Null element. Terminates a vector.
+              | a :> (Vector a)
+              -- ^ appends an element at the head of a vector.
               deriving (Eq)
 
 --------------------
@@ -43,12 +66,21 @@ data Vector a = Null            -- ^ Null element. Terminates a vector.
 --------------------
 
 -- | Constructs a null vector.
+--
+-- >>> null
+-- <>
 null = Null
 
 -- | Constructs a singleton vector.
+--
+-- >>> unit 1
+-- <1>
 unit a = a :> Null
 
 -- | Constructs a vector by appending two existing vectors.
+--
+-- >>> unit 1 <++> unit 2
+-- <1,2>
 Null    <++> ys = ys
 (x:>xs) <++> ys = x :> (xs <++> ys) 
 
@@ -56,7 +88,7 @@ Null    <++> ys = ys
 -- Instances --
 ---------------
 
--- | Provides an implementation for '=$='.
+-- | Provides an implementation for '=.='.
 instance Functor Vector where
   fmap _ Null   = Null
   fmap f (x:>xs) = f x :> fmap f xs
@@ -77,10 +109,13 @@ instance Foldable Vector where
 
 -- | Ensures that 'Vector' is a structure associated with the Skeleton Layer.
 instance Skeleton Vector where
-  (=$=) = (<$>)
+  (=.=) = (<$>)
   (=*=) = (<*>)
-  _ =\= Null = error "reduce: empty vector" 
-  f =\= v    = foldr1 f v
+  _ =\= Null   = error "[Skel.Vector] cannot reduce empty vector" 
+  f =\= v      = foldr1 f v
+  Null =<<= s = s
+  ps   =<<= s = (.) =\= ps $ s
+  first (x:>_) = x
 
 -- | The vector 1 :> 2 :> Null is represented as \<1,2\>.
 instance (Show a) => Show (Vector a) where
@@ -114,14 +149,12 @@ vector (x:xs) = x :> (vector xs)
 fromVector Null    = []
 fromVector (x:>xs) = x : fromVector xs
 
--- | Creates the vector:
+-- | Creates the infinite vector:
 --
 -- > <1,2,3,4,...>
 --
--- Used mainly for operation on indexes. __OBS:__ Do not use it with
--- any selector skeleton, since this will lead to circular reference.
-indexes = ixf 1
-  where ixf n = n :> ixf (n+1)
+-- Used mainly for operation on indexes.
+indexes = vector [1..]
 
 -- | Returns @True@ if the argument is a null vector.
 isNull Null = True

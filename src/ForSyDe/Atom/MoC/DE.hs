@@ -123,7 +123,7 @@ module ForSyDe.Atom.MoC.DE (
   --
   -- <<docfiles/figs/eqs-moc-timed-context.png>>
 
-  DE(..),
+  TimeStamp, DE(..),
 
   -- * Aliases & utilities
 
@@ -152,6 +152,11 @@ module ForSyDe.Atom.MoC.DE (
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
+  
+  reconfig11, reconfig12, reconfig13, reconfig14,
+  reconfig21, reconfig22, reconfig23, reconfig24,
+  reconfig31, reconfig32, reconfig33, reconfig34,
+  reconfig41, reconfig42, reconfig43, reconfig44,
 
   sync2, sync3, sync4,
   
@@ -182,9 +187,9 @@ module ForSyDe.Atom.MoC.DE (
   -- ** Interface processes
 
   toSY, toSY2, toSY3, toSY4,
-  -- toCT, toCT2, toCT3, toCT4,
+  toCT, toCT2, toCT3, toCT4,
 
-  -- zipx, unzipx,
+  zipx, unzipx, unzipx',
   
   -- ** Hybrid processes
 
@@ -196,6 +201,7 @@ module ForSyDe.Atom.MoC.DE (
  ) where
 
 import ForSyDe.Atom.MoC.DE.Core
-import ForSyDe.Atom.MoC.DE.Lib
 import ForSyDe.Atom.MoC.DE.Hybrid
 import ForSyDe.Atom.MoC.DE.Interface
+import ForSyDe.Atom.MoC.DE.Lib
+import ForSyDe.Atom.MoC.TimeStamp

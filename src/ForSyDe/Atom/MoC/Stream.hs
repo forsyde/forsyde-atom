@@ -15,57 +15,30 @@
 -- events that enables processes to communicate and synchronize.  The
 -- 'Stream' type is but an ordered structure to encapsulate events as
 -- infinite streams.
---
--- __/OBS:/__ although there is no constraint on the type of @e@ to
--- avoid unnecessary language extensions or cyclic dependencies, the
--- convention throughout the library is that @e@ is an instance of
--- 'ForSyDe.Atom.MoC.MoC'.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.Stream  where
 
 
 infixr 3 :-
--- | As a data type, 'Stream' is defined only as a stream of events,
--- encapsulating them in a structure similar to an infinite list. By
--- doing so, it adheres fully to the
--- <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf Bird-Merteens formalism>
--- <#bird87 [3]>, thus all properties of lists may also be applied to
--- 'Stream's. This has deep repercussions in the execution and
--- evaluation mechanisms of the simulator, also propagated in the
--- library design. For example, lazy evaluation mechanism permits us
--- to create and simulate infinite signals, but on the other hand
--- imposes that the first/previous event is always fully
--- evaluated. Not respecting this condition immediately emerges as a
--- deadlock in case a self-referential calls occurs (i.e. a zero-delay
--- feedback loop). This can be translated into:
+-- | Defines a stream of events, encapsulating them in a structure
+-- isomorphic to an infinite list <ForSyDe-Atom.html#bird87 [Bird87]>,
+-- thus all properties of lists may also be applied to
+-- 'Stream's. While, in combination with lazy evaluation, it is
+-- possible to create and simulate infinite signals, we need to ensure
+-- that the first/previous event is always fully evaluated. This can
+-- be translated into the following rule:
 --
--- [design rule #2] all process network paths associated with a
--- feedback loop must contain (at least) one delay process to ensure
--- an initial event.
+-- [zero-delay feedbacks] are forbidden, due to un-evaluated
+-- self-referential calls. In a feedback loop, there always has to be
+-- enough events to ensure the data flow.
 --
--- The above rule, although limiting the design options and denying
--- the simulation of network structures that otherwise might be sane
--- or synthesizable, is often featured in the execution model for many
--- systems based on the data flow assumption (e.g. Kahn Process
--- Networks <#kahn76 [4]>). It is no wonder that the inherent
--- execution model of ForSyDe process networks is data flow, as
--- this has been already shown by Reekie in his
--- <http://ptolemy.eecs.berkeley.edu/~johnr/papers/thesis.html process nets>,
--- and we follow precisely the same model. It imposes an uninterrupted
--- stream of data in order to have an evaluatable kernel every time a
--- new token is produced (i.e. to avoid deadlocks). Thus we can
--- enunciate:
+-- This rule imposes that the stream of data is uninterrupted in order
+-- to have an evaluatable kernel every time a new event is produced
+-- (i.e. to avoid deadlocks). Thus we can add the rule:
 --
--- [design rule #3] all processes are forbidden to "clean up" any
--- produced tokens. In other words, for each new input at any instant
--- in time, a process must produce /at least/ one output event.
---
--- Coming back to the implementation at hand, the order of a signal is
--- determined by the order of application of its constructors. So the
--- finite signal @{e0, e1, e2, e3}@ is created using the operations
---
--- > e0 :- e1 :- e2 :- e3 :- NullS
---
+-- [cleaning of output events] is also forbidden.  In other words, for
+-- each new input at any instant in time, a process must react with
+-- /at least/ one output event.
 data Stream e = NullS         -- ^ terminates a signal
               | e :- Stream e -- ^ the default constructor appends an
                               -- event to the head of the stream
