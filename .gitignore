@@ -5,8 +5,10 @@
 TAGS
 *#*
 *auto*
-includes/type-level
-includes/parameterized-data
-includes/forsyde-tikz
 *.dat
 *.gnuplot
+!/dist
+/dist/*
+!/dist/doc
+/dist/doc/*
+!/dist/doc/html

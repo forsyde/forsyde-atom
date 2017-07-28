@@ -63,3 +63,7 @@ clean:
 superclean: clean
 	rm -rf ./figs/*
 	rm -f *.pdf
+
+publish:
+	git add ../dist/doc/html/forsyde-atom/
+	cd .. && git subtree push --prefix dist/doc/html/forsyde-atom/ origin gh-pages

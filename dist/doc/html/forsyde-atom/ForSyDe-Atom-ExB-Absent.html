@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ForSyDe.Atom.ExB.Absent</title><link href="ocean.css" rel="stylesheet" type="text/css" title="ocean" /><script src="haddock-util.js" type="text/javascript"></script><script type="text/javascript">//<![CDATA[
+window.onload = function () {pageLoad();setSynopsis("mini_ForSyDe-Atom-ExB-Absent.html");};
+//]]>
+</script></head><body><div id="package-header"><ul class="links" id="page-menu"><li><a href="src/ForSyDe-Atom-ExB-Absent.html">Source</a></li><li><a href="index.html">Contents</a></li><li><a href="doc-index.html">Index</a></li></ul><p class="caption">forsyde-atom-0.2.0.0: A shallow-embedded DSL for modeling cyber-physical systems</p></div><div id="content"><div id="module-header"><table class="info"><tr><th>Copyright</th><td>(c) George Ungureanu, KTH/ICT/E 2015-2016</td></tr><tr><th>License</th><td>BSD-style (see the file LICENSE)</td></tr><tr><th>Maintainer</th><td>ugeorge@kth.se</td></tr><tr><th>Stability</th><td>experimental</td></tr><tr><th>Portability</th><td>portable</td></tr><tr><th>Safe Haskell</th><td>Safe</td></tr><tr><th>Language</th><td>Haskell2010</td></tr></table><p class="caption">ForSyDe.Atom.ExB.Absent</p></div><div id="description"><p class="caption">Description</p><div class="doc"><p>This module implements the constructors and assocuated utilities of
+ a type which extends the behavior of a function to express &quot;absent
+ events&quot; (see <a href="ForSyDe-Atom.html#halbwachs91">[Halbwachs91]</a>).</p><p>The <code><a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a></code> type can be used directly with the atom patterns
+ defined in <a href="ForSyDe-Atom-ExB.html">ForSyDe.Atom.ExB</a>, and no helpers or utilities are
+ needed. Example usage:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>res21 (+) (Prst 1) (Prst 2)
+</code></strong>3
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>res21 (+) Abst     Abst
+</code></strong>&#10178;
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>filter Abst         (Prst 1)
+</code></strong>&#10178;
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>filter (Prst False) (Prst 1)
+</code></strong>&#10178;
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>filter (Prst True)  (Prst 1)
+</code></strong>1
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>filter' False 1 :: AbstExt Int
+</code></strong>&#10178;
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>filter' True  1 :: AbstExt Int
+</code></strong>1
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>degrade 0 (Prst 1)
+</code></strong>1
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>degrade 0 Abst
+</code></strong>0
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>ignore11 (+) 1 (Prst 1)
+</code></strong>2
+<code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>ignore11 (+) 1 Abst
+</code></strong>1
+</pre><p>Incorrect usage (not covered by <code>doctest</code>):</p><pre>&#955;&gt; res21 (+) (Prst 1) Abst 
+*** Exception: [ExB.Absent] Illegal occurrence of an absent and present event</pre></div></div><div id="synopsis"><p id="control.syn" class="caption expander" onclick="toggleSection('syn')">Synopsis</p><ul id="section.syn" class="hide" onclick="toggleSection('syn')"><li class="src short"><span class="keyword">data</span> <a href="#t:AbstExt">AbstExt</a> a<ul class="subs"><li>= <a href="#v:Abst">Abst</a></li><li>| <a href="#v:Prst">Prst</a> a</li></ul></li></ul></div><div id="interface"><h1>Documentation</h1><div class="top"><p class="src"><span class="keyword">data</span> <a name="t:AbstExt" class="def">AbstExt</a> a <a href="src/ForSyDe-Atom-ExB-Absent.html#AbstExt" class="link">Source</a></p><div class="doc"><p>The <code><a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a></code> type extends the base type with the '&#8869;'
+ symbol denoting the absence of a value/event (see
+ <a href="ForSyDe-Atom.html#halbwachs91">[Halbwachs91]</a>).</p></div><div class="subs constructors"><p class="caption">Constructors</p><table><tr><td class="src"><a name="v:Abst" class="def">Abst</a></td><td class="doc"><p>&#8869; denotes the absence of a value</p></td></tr><tr><td class="src"><a name="v:Prst" class="def">Prst</a> a</td><td class="doc"><p>&#8868; a present event with a value</p></td></tr></table></div><div class="subs instances"><p id="control.i:AbstExt" class="caption collapser" onclick="toggleSection('i:AbstExt')">Instances</p><div id="section.i:AbstExt" class="show"><table><tr><td class="src clearfix"><span class="inst-left">Functor <a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a></span> <a href="src/ForSyDe-Atom-ExB-Absent.html#line-95" class="link">Source</a></td><td class="doc"><p><code>Functor</code> instance. Bypasses the special values and maps a
+ function to the wrapped value. Provides the <code>(&lt;$&gt;)</code> operator.</p></td></tr><tr><td class="src clearfix"><span class="inst-left">Applicative <a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a></span> <a href="src/ForSyDe-Atom-ExB-Absent.html#line-101" class="link">Source</a></td><td class="doc"><p><code>Applicative</code> instance. Check source code for the lifting
+ rules. Provides the <code>(&lt;*&gt;)</code> operator</p></td></tr><tr><td class="src clearfix"><span class="inst-left"><a href="ForSyDe-Atom-ExB.html#t:ExB">ExB</a> <a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a></span> <a href="src/ForSyDe-Atom-ExB-Absent.html#line-62" class="link">Source</a></td><td class="doc"><p>Implements the absent semantics of the extended behavior atoms.</p></td></tr><tr><td class="src clearfix"><span class="inst-left">Eq a =&gt; Eq (<a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a> a)</span> <a href="src/ForSyDe-Atom-ExB-Absent.html#line-59" class="link">Source</a></td><td class="doc empty">&nbsp;</td></tr><tr><td class="src clearfix"><span class="inst-left">Read a =&gt; Read (<a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a> a)</span> <a href="src/ForSyDe-Atom-ExB-Absent.html#line-86" class="link">Source</a></td><td class="doc"><p>Reads the '_' character to an <code><a href="ForSyDe-Atom-ExB-Absent.html#v:Abst">Abst</a></code> and a normal value to
+ <code><a href="ForSyDe-Atom-ExB-Absent.html#v:Prst">Prst</a></code>-wrapped one.</p></td></tr><tr><td class="src clearfix"><span class="inst-left">Show a =&gt; Show (<a href="ForSyDe-Atom-ExB-Absent.html#t:AbstExt">AbstExt</a> a)</span> <a href="src/ForSyDe-Atom-ExB-Absent.html#line-79" class="link">Source</a></td><td class="doc"><p>Shows <code><a href="ForSyDe-Atom-ExB-Absent.html#v:Abst">Abst</a></code> as '&#8869;', while a present event is represented
+ with its value.</p></td></tr></table></div></div></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.16.1</p></div></body></html>
