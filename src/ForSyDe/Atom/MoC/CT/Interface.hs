@@ -80,7 +80,7 @@ toDE4 c s1 s2 s3 s4 = (toDE c s1, toDE c s2, toDE c s3, toDE c s4)
 -- >>> zipx v1
 -- { <1,1,1,1> @0s, <2,2,2,2> @2s, <2,2,3,3> @4s, <3,3,3,3> @6s}
 --
--- See 'ForSyCt.Atom.MoC.DE.zipx' from the "ForSyCt.Atom.MoC.DE"
+-- See 'ForSyDe.Atom.MoC.DE.zipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
 zipx ::V.Vector (CT.Signal a) -> CT.Signal (V.Vector a)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
@@ -95,7 +95,7 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- >>> unzipx 4 s1
 -- <{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
 --
--- See 'ForSyCt.Atom.MoC.DE.unzipx' from the "ForSyCt.Atom.MoC.DE"
+-- See 'ForSyDe.Atom.MoC.DE.unzipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
 unzipx :: Integer -> CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
 unzipx = V.unzipx id
