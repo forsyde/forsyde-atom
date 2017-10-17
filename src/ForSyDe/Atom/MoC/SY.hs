@@ -78,7 +78,7 @@ module ForSyDe.Atom.MoC.SY (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, unit, unit2, unit3, unit4, signal,
+  Signal, unit, unit2, unit3, unit4, signal, readSignal,
   
   -- * @SY@ process constuctors
 
