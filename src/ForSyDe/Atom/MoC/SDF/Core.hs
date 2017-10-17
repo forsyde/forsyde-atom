@@ -105,4 +105,12 @@ signal2 (l1,l2)       = (signal l1, signal l2)
 signal3 (l1,l2,l3)    = (signal l1, signal l2, signal l3)
 signal4 (l1,l2,l3,l4) = (signal l1, signal l2, signal l3, signal l4)
 
+-- | Reads a signal from a string. Like with the @read@ function from
+-- @Prelude@, you must specify the tipe of the signal.
+--
+-- >>> readSignal "{1,2,3,4,5}" :: Signal Int
+-- {1,2,3,4,5}
+readSignal :: Read a => String -> Signal a
+readSignal = read
+
 ----------------------------------------------------------------------

@@ -95,7 +95,7 @@ module ForSyDe.Atom.MoC.SDF (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, Prod, Cons, signal,
+  Signal, Prod, Cons, signal, readSignal,
 
   -- | These SY process constructors are basically specific
   -- instantiations of the patterns of atoms defined in

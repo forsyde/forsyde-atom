@@ -132,7 +132,7 @@ module ForSyDe.Atom.MoC.DE (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, unit, unit2, unit3, unit4, infinite,
+  Signal, unit, unit2, unit3, unit4, infinite, until,
   signal, checkSignal, readSignal,
   
   -- * @DE@ process constuctors
@@ -206,3 +206,5 @@ import ForSyDe.Atom.MoC.DE.Hybrid
 import ForSyDe.Atom.MoC.DE.Interface
 import ForSyDe.Atom.MoC.DE.Lib
 import ForSyDe.Atom.MoC.TimeStamp
+
+import Prelude hiding (until)
