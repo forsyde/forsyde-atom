@@ -9,7 +9,14 @@ model. For a technical report, check the extended API documentation at
 [forsyde.github.io/forsyde-atom](https://forsyde.github.io/forsyde-atom),
 which was generated with Haddock.
 
----- 
+----
+
+**OBS:** the examples and case studies are being migrated to the 
+[forsye-atom-examples](https://github.com/forsyde/forsyde-atom-examples) 
+repository. Please refer to that repository for further reports and 
+instructions. 
+
+----
 
 Ideas based on the projects `forsyde-patterns` (George Ungureanu),
 `forsyde-appl` (Mikkel Jakobsen) and the `ForSyDe. library (KTH-SAM
