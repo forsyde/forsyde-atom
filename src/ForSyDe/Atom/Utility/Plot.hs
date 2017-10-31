@@ -546,6 +546,7 @@ showLatex pdata = putStrLn $ mkLatex pdata
 -- the project web page.
 plotLatex :: PlotData -> IO ()
 plotLatex pdata@(cfg,_,_) = do
+  createDirectoryIfMissing True filepath
   writeFile filename $ mkLatexFile $ mkLatex pdata
   when isVerbose $ putStrLn ("Dumped LaTeX file " ++ filename)
   _ <- if fireLatex then
