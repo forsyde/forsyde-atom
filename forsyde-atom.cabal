@@ -98,7 +98,6 @@ library
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances
   build-depends:     base>=4.6 && <6
-                   , doctest >= 0.8
                    , numbers >= 3000
                    , time
                    , directory >= 1.2.2
@@ -129,7 +128,8 @@ test-suite doctests
   default-language: Haskell2010
   ghc-options:      -threaded
   main-is:          tests/TestsDoc.hs
-  build-depends:    base>=4.6 && <6, doctest >= 0.8
+  build-depends:    base>=4.6 && <6
+                  , doctest >= 0.8
 
 source-repository head
   type:     git
