@@ -31,6 +31,7 @@ Installation and usage
 This package is *cabal*ized, thus one shoud use `cabal` to install
 it. It is recommended to install and test inside a sandbox:
 
+    cabal update                      # downloads the most recent list of packages from the Hackage repository
     cabal sandbox init                # initializes the sandbox
     cabal configure                   # configures the package
     cabal install --dependencies-only # (optional) installs dependencies inside the sandbox
