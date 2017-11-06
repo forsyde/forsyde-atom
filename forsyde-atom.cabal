@@ -129,6 +129,7 @@ test-suite doctests
   ghc-options:      -threaded
   main-is:          tests/TestsDoc.hs
   build-depends:    base>=4.6 && <6
+                  , numbers >= 3000
                   , doctest >= 0.8
 
 source-repository head

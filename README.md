@@ -26,18 +26,30 @@ group)
 Installation and usage
 ----------------------
 
+### The `forsyde-atom` libraries
+
 This package is *cabal*ized, thus one shoud use `cabal` to install
 it. It is recommended to install and test inside a sandbox:
 
-    cabal sandbox init    # initializes the sandbox
-    cabal install --dependencies-only # installs dependencies inside the sandbox
-    cabal configure       # condfigures the package
-    cabal install         # installs the library inside the sandbox
-    cabal repl            # starts GHCi with the sandbox loaded
-    cabal sandbox delete  # deletes the sandbox and everything in it
-    
-Generating the documentation
-----------------------------
+    cabal sandbox init                # initializes the sandbox
+    cabal configure                   # configures the package
+    cabal install --dependencies-only # (optional) installs dependencies inside the sandbox
+    cabal install                     # installs the library inside the sandbox
+    cabal repl                        # starts GHCi with the sandbox loaded
+    cabal sandbox delete              # deletes the sandbox and everything in it
+	
+### The test suite
+
+The test suite and its dependencies can be installed and run by
+explicitly adding the flag `--enable-tests` to the previous
+installation commands, namely:
+
+    cabal configure --enable-tests 
+    # cabal install --enable-tests --dependencies-only
+    cabal install --enable-tests
+    cabal test                        # runs the test suite 
+   
+### Generating the documentation
 
 A haddock extended API + technical report documentation can be
 generated from the version found in the `docs` branch. It contains an
