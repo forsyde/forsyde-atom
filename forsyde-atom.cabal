@@ -1,5 +1,5 @@
 name:                forsyde-atom
-version:             0.2.1.0
+version:             0.2.2.0
 synopsis:            A shallow-embedded DSL for modeling cyber-physical systems 
 description:         
   The ForSyDe (Formal System Design) methodology has been developed
