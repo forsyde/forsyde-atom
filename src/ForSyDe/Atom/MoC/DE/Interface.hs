@@ -5,6 +5,7 @@ module ForSyDe.Atom.MoC.DE.Interface where
 
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 import           ForSyDe.Atom.MoC.Stream (Stream(..))
+import           ForSyDe.Atom.MoC.Time   (Time(..))
 import           ForSyDe.Atom.MoC.TimeStamp
 import qualified ForSyDe.Atom.Skeleton.Vector as V (
   Vector, zipx, unzipx, fanout, unit, length, vector, reverse)
@@ -62,29 +63,23 @@ toSY4 s1 s2 s3 s4
 
 
 -- | Semantic preserving transformation between a (set of) DE
--- signal(s) and the equivalent CT signals, provided there is a
--- relation between the timestamps and real time. There is no
--- interpolation or other convertion method involved, the CT events
--- being represented as constant functions during their time span.
+-- signal(s) and the equivalent CT signals. The
+-- 'ForSyDe.Atom.MoC.DE.DE' events must carry a function of 'Time'
+-- which will be lifted by providing it with 'ForSyDe.Atom.MoC.CT.CT'
+-- implicit time semantics.
 --
 -- The following constructors are provided:
 --
 -- > toCT, toCT2, toCT3, toCT4
 --
--- TODO: example
+-- TODO: below is incorrect
 --
 -- <<docfiles/figs/moc-de-toct.png>>
-toCT2 :: DE.Signal a             -- ^ first input DE signal
-      -> DE.Signal b             -- ^ second input DE signal
+toCT2 :: DE.Signal (Time -> a)  -- ^ first input DE signal
+      -> DE.Signal (Time -> b)  -- ^ second input DE signal
       -> (CT.Signal a, CT.Signal b)
       -- ^ two output 'ForSyDe.Atom.MoC.CT.CT' signals
-toCT  :: DE.Signal a
-      -> (CT.Signal a)
-toCT3 :: DE.Signal a -> DE.Signal b -> DE.Signal c
-      -> (CT.Signal a, CT.Signal b, CT.Signal c)
-toCT4 :: DE.Signal a -> DE.Signal b -> DE.Signal c -> DE.Signal d
-      -> (CT.Signal a, CT.Signal b, CT.Signal c, CT.Signal d)
-eventToCT (DE.DE t a) = CT.CT t 0 (\_->a)
+eventToCT (DE.DE t a) = CT.CT t 0 a
 toCT  s1          = eventToCT <$> s1
 toCT2 s1 s2       = (toCT, toCT) $$ (s1,s2)
 toCT3 s1 s2 s3    = (toCT, toCT, toCT) $$$ (s1,s2,s3)

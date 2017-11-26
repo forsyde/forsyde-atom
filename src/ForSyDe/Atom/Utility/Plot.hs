@@ -72,14 +72,14 @@ import qualified ForSyDe.Atom.Skeleton.Vector as V (
 data Config =
   Cfg { verbose :: Bool     -- ^ verbose printouts on terminal
       , path    :: String   -- ^ directory where all dumped files will be found
-      , file    :: String   -- ^ base name for dumped files
+      , title    :: String   -- ^ base name for dumped files
       , rate    :: Float    -- ^ sampling rate if relevant. Useful for explicit-tagged signals, ignored otherwise.
       , xmax    :: Float    -- ^ Maximum X coordinate (e.g. timestamp or index) for the data being dumped. Mandatory for infinite structures (e.g. 'ForSyDe.Atom.MoC.DE.DE' or 'ForSyDe.Atom.MoC.CT.CT' signals), optional otherwise.
       , labels  :: [String] -- ^ list of labels with the names of the structures plotted
       , fire    :: Bool     -- ^ if relevant, fires a plotting or compiling program.
       , mklatex :: Bool     -- ^ if relevant, dumps a LaTeX script loading the plot.
-      , mkeps   :: Bool     -- ^ if relevant. dumps a PostScript file with the plot.
-      , mkpdf   :: Bool     -- ^ if relevant, dumps a PDF file with the plot.
+      , mkeps   :: Bool     -- ^ if relevant. dumps a PostScript title with the plot.
+      , mkpdf   :: Bool     -- ^ if relevant, dumps a PDF title with the plot.
       } deriving (Show)
 
 -- | Default configuration: verbose, dump everything possible, fire
@@ -88,9 +88,9 @@ data Config =
 -- Example usage:
 --
 -- >>> defaultCfg {xmax = 15, verbose = False, labels = ["john","doe"]}
--- Cfg {verbose = False, path = "./fig", file = "plot", rate = 1.0e-2, xmax = 15.0, labels = ["john","doe"], fire = True, mklatex = True, mkeps = True, mkpdf = True}
+-- Cfg {verbose = False, path = "./fig", title = "plot", rate = 1.0e-2, xmax = 15.0, labels = ["john","doe"], fire = True, mklatex = True, mkeps = True, mkpdf = True}
 defaultCfg = Cfg { path    = "./fig"
-                 , file    = "plot"
+                 , title    = "plot"
                  , rate    = 0.01
                  , xmax    = 200
                  , labels  = replicate 10 ""
@@ -104,7 +104,7 @@ defaultCfg = Cfg { path    = "./fig"
 -- | Silent configuration: does not fire any program or print our
 -- unnecessary info. Check source for settings.
 silentCfg = Cfg  { path    = "./fig"
-                 , file  = "plot"
+                 , title  = "plot"
                  , rate    = 0.01
                  , xmax    = 200
                  , labels  = replicate 10 ""
@@ -118,7 +118,7 @@ silentCfg = Cfg  { path    = "./fig"
 -- | Clean configuration: verbose, does not dump more than necessary,
 -- fire whatever program needed. Check source for settings.
 noJunkCfg = Cfg  { path    = "./fig"
-                 , file  = "plot"
+                 , title  = "plot"
                  , rate    = 0.01
                  , xmax    = 200
                  , labels  = repeat ""
@@ -343,7 +343,7 @@ dumpDat (cfg, _, pdata) = do
     dump (lbl,samp)  = let name = mkFileNm lbl
                        in do writeFile name (dumpSamp samp)
                              return name
-    mkFileNm label = dpath ++ "/" ++ replChar "<" '_' label ++ ".dat"
+    mkFileNm label = dpath ++ "/" ++ replChar "$<>{}" '_' label ++ ".dat"
     dumpSamp = concatMap (\(x,y) -> x ++"    "++ y ++ "\n")
     allLabels= drop 2 $ foldl (\s (l,_)-> s ++ ", " ++ l) "" pdata
     -- extract settings
@@ -364,7 +364,7 @@ dumpDat (cfg, _, pdata) = do
 plotGnu :: PlotData -> IO ()
 plotGnu pdata@(cfg,info,samps) = do
   datFiles <- dumpDat $ alterForGnuPlot pdata
-  -- Write the gnuplot file to a file; Try several times to be able
+  -- Write the gnuplot title to a file; Try several times to be able
   -- to open multiple plots in the same session
   script <- tryNTimes 10 basename $ writePlotScript datFiles
   _ <- if fireGnuplot then system ("gnuplot -persist " ++ script)
@@ -376,7 +376,7 @@ plotGnu pdata@(cfg,info,samps) = do
     -- extract settings
     fireGnuplot = fire cfg
     isVerbose   = verbose cfg
-    basename    = path cfg ++ "/" ++ file cfg
+    basename    = path cfg ++ "/" ++ title cfg
 
 -- | Similar to 'plotGnu' but creates a heatmap plot using the GNUplot
 -- engine. For this, the input needs to contain at least two columns
@@ -398,7 +398,7 @@ heatmapGnu pdata@(cfg,info,samps) = do
     -- extract settings
     fireGnuplot = fire cfg
     isVerbose   = verbose cfg
-    basename    = path cfg ++ "/" ++ file cfg ++ "-heat"
+    basename    = path cfg ++ "/" ++ title cfg ++ "-heat"
 
 ----------- not exported -----------
 
@@ -436,7 +436,8 @@ alterForGnuHeatmap (cfg,info,lsamp) = (cfg, info, map alter lsamp)
 
 mkPlotScript :: Config -> PInfo -> [FilePath] -> String 
 mkPlotScript cfg info files =
-  "set xzeroaxis\nset xlabel \"" ++ unitOfMeasure ++ "\" \n"
+  (if plotTitle == "plot" then "" else "set title \"" ++ plotTitle ++  "\"\n")
+  ++ "set xzeroaxis\nset xlabel \"" ++ unitOfMeasure ++ "\" \n"
   ++ "plot " ++ plotCmds ++ "\n"
   ++ epsCmd ++ latexCmd ++ pdfCmd
   where
@@ -458,11 +459,10 @@ mkPlotScript cfg info files =
                  else ""
     pdfCmd     = if plotPdf then
                    "set terminal pdf\n"
-                   ++ "set output \"fig/ct-moc-graph.pdf\"\n"
+                   ++ "set output \"" ++ plotName ++".pdf\"\n"
                    ++ "replot\n"
                  else ""
-    plotName   = plotPath ++ "/" ++ plotId
-                 ++ intercalate "_" (zipWith (\_ l -> l) files plotLb)
+    plotName   = plotPath ++ "/" ++ plotId ++ "-" ++ plotTitle
     -- extract styles
     unitOfMeasure = measure  info
     plotStyle     = style    info
@@ -470,6 +470,7 @@ mkPlotScript cfg info files =
     isStacking    = stacking info
     -- extract settings
     plotPath   = path    cfg
+    plotTitle  = title   cfg
     plotEps    = mkeps   cfg
     plotLatex  = mklatex cfg
     plotPdf    = mkpdf   cfg
@@ -477,7 +478,8 @@ mkPlotScript cfg info files =
 
 mkHeatmapScript :: Config -> PInfo -> [FilePath] -> String 
 mkHeatmapScript cfg info files =
-  "set xlabel \"index\" \n"
+  (if plotTitle == "plot" then "" else "set title \"" ++ plotTitle ++  "\"\n")
+  ++ "set xlabel \"index\" \n"
   ++ "set ylabel \"" ++ unitOfMeasure ++ "\" \n"
   ++ "set yrange [-0.5" ++ scale ++ ":" ++ plotXmax
   ++ "+0.5" ++ scale ++ "]\n"
@@ -504,11 +506,10 @@ mkHeatmapScript cfg info files =
                  else ""
     pdfCmd     = if plotPdf then
                    "set terminal pdf\n"
-                   ++ "set output \"fig/ct-moc-graph.pdf\"\n"
+                   ++ "set output \"" ++ plotName ++".pdf\"\n"
                    ++ "replot\n"
                  else ""
-    plotName   = plotPath ++ "/" ++ plotId
-                 ++ intercalate "_" (zipWith (\_ l -> l) files plotLb)
+    plotName   = plotPath ++ "/" ++ plotId ++ "-" ++ plotTitle
     -- extract styles
     unitOfMeasure = measure  info
     plotStyle     = style    info
@@ -519,6 +520,7 @@ mkHeatmapScript cfg info files =
     scaley        = if isSparse then "($2*"++ plotRate ++ ")" else "2"
     -- extract settings
     plotPath   = path    cfg
+    plotTitle  = title   cfg
     plotEps    = mkeps   cfg
     plotLatex  = mklatex cfg
     plotPdf    = mkpdf   cfg
@@ -531,7 +533,7 @@ mkHeatmapScript cfg info files =
 
 -- | Prints out a LaTeX environment from a 'prepare'd data set. This
 -- environment should be paste inside a @tikzpicture@ in a document
--- file which imports the ForSyDe-LaTeX package.
+-- title which imports the ForSyDe-LaTeX package.
 showLatex :: PlotData -> IO ()
 showLatex pdata = putStrLn $ mkLatex pdata
 
@@ -548,7 +550,7 @@ plotLatex :: PlotData -> IO ()
 plotLatex pdata@(cfg,_,_) = do
   createDirectoryIfMissing True filepath
   writeFile filename $ mkLatexFile $ mkLatex pdata
-  when isVerbose $ putStrLn ("Dumped LaTeX file " ++ filename)
+  when isVerbose $ putStrLn ("Dumped LaTeX title " ++ filename)
   _ <- if fireLatex then
          system ("pdflatex -output-directory=" ++ filepath
                  ++ " " ++ filename)
@@ -557,7 +559,7 @@ plotLatex pdata@(cfg,_,_) = do
   where
     -- extract settings
     isVerbose = verbose cfg
-    filename  = path cfg ++ "/" ++ file cfg ++ ".tex"
+    filename  = path cfg ++ "/" ++ title cfg ++ ".tex"
     filepath  = path cfg
     fireLatex = fire cfg
   
