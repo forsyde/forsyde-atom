@@ -36,7 +36,7 @@ import qualified ForSyDe.Atom.MoC.CT.Core as CT
 -- >>> toSY2 s1 s2
 -- ({0s,2s,6s,8s,9s},{1,1,1,1,1},{1,2,3,4,5})
 --
--- <<docfiles/figs/moc-de-tosy.png>>
+-- <<fig/moc-de-tosy.png>>
 toSY2 :: DE.Signal a             -- ^ first input DE signal
       -> DE.Signal b             -- ^ second input DE signal
       -> (SY.Signal TimeStamp, SY.Signal a, SY.Signal b)
@@ -74,7 +74,7 @@ toSY4 s1 s2 s3 s4
 --
 -- TODO: below is incorrect
 --
--- <<docfiles/figs/moc-de-toct.png>>
+-- <<fig/moc-de-toct.png>>
 toCT2 :: DE.Signal (Time -> a)  -- ^ first input DE signal
       -> DE.Signal (Time -> b)  -- ^ second input DE signal
       -> (CT.Signal a, CT.Signal b)
@@ -100,7 +100,7 @@ toCT4 s1 s2 s3 s4 = (toCT, toCT, toCT, toCT) $$$$ (s1,s2,s3,s4)
 -- >>> zipx v1
 -- { <1,1,1,1> @0s, <2,2,2,2> @2s, <2,2,3,3> @4s, <3,3,3,3> @6s, <4,4,4,4> @8s, <5,5,5,5> @9s}
 --
--- <<docfiles/figs/moc-de-zipx.png>>
+-- <<fig/moc-de-zipx.png>>
 zipx ::V.Vector (DE.Signal a) -> DE.Signal (V.Vector a)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
@@ -116,7 +116,7 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- >>> unzipx 4 s1
 -- <{ 1 @0s, 1 @2s, 1 @6s, 1 @8s, 1 @9s},{ 2 @0s, 2 @2s, 2 @6s, 2 @8s, 2 @9s},{ 3 @0s, 3 @2s, 3 @6s, 3 @8s, 3 @9s},{ 4 @0s, 4 @2s, 4 @6s, 4 @8s, 4 @9s}>
 --
--- <<docfiles/figs/moc-de-unzipx.png>>
+-- <<fig/moc-de-unzipx.png>>
 unzipx :: Integer -> DE.Signal (V.Vector a) -> V.Vector (DE.Signal a)
 unzipx n = V.reverse . V.unzipx id n
 

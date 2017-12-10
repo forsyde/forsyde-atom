@@ -35,7 +35,7 @@ import           ForSyDe.Atom.Utility
 -- >>> delay 3 0 s
 -- { 0 @0s, 1 @3s, 2 @5s, 3 @9s, 4 @11s, 5 @12s}
 --
--- <<docfiles/figs/moc-de-pattern-delay.png>>
+-- <<fig/moc-de-pattern-delay.png>>
 delay :: TimeStamp        -- ^ time delay
       -> a          -- ^ initial value
       -> Signal a   -- ^ input signal
@@ -52,7 +52,7 @@ delay t v = MoC.delay (unit (t, v))
 -- >>> delay' s1 s2
 -- { 1 @0s, 3 @2s, 4 @6s, 5 @7s, 6 @10s, 7 @11s}
 --
--- <<docfiles/figs/moc-de-pattern-delayp.png>>
+-- <<fig/moc-de-pattern-delayp.png>>
 delay' :: Signal a  -- ^ signal "borrowing" the initial event
       -> Signal a   -- ^ input signal
       -> Signal a   -- ^ output signal
@@ -79,7 +79,7 @@ delay' = MoC.delay
 -- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
 -- ({ 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s},{ 0 @0s, -1 @2s, -2 @6s, -3 @8s, -4 @9s})
 --
--- <<docfiles/figs/moc-de-pattern-comb.png>>
+-- <<fig/moc-de-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
        -> Signal a1                 -- ^ first input signal
        -> Signal a2                 -- ^ second input signal
@@ -151,7 +151,7 @@ comb44 = MoC.comb44
 -- >>> reconfig11 sf s1
 -- { 2 @0s, 2 @2s, 4 @3s, 4 @5s, 6 @7s, 8 @9s}
 --
--- <<docfiles/figs/moc-de-pattern-reconfig.png>>
+-- <<fig/moc-de-pattern-reconfig.png>>
 reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
            -- ^ signal carrying functions
            -> Signal a1
@@ -222,7 +222,7 @@ reconfig44 = MoC.reconfig44
 -- >>> constant1 2
 -- { 2 @0s}
 --
--- <<docfiles/figs/moc-de-pattern-constant.png>>
+-- <<fig/moc-de-pattern-constant.png>>
 constant2 :: (b1, b2)         -- ^ values to be repeated
           -> (Signal b1, Signal b2) -- ^ generated signals
 constant1 :: b1 -> Signal b1                                
@@ -250,7 +250,7 @@ constant4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- >>> takeS 7 s2
 -- { 2 @0s, 4 @1s, 6 @2s, 8 @3s, 10 @4s, 12 @5s, 14 @6s}
 --
--- <<docfiles/figs/moc-de-pattern-generate.png>>
+-- <<fig/moc-de-pattern-generate.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
           -- ^ function to generate next value
           -> ((TimeStamp, b1), (TimeStamp, b2))
@@ -287,7 +287,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- >>> takeS 7 $ stated11 (+) (6,1) s
 -- { 1 @0s, 2 @6s, 3 @8s, 5 @12s, 7 @14s, 8 @15s, 10 @18s}
 --
--- <<docfiles/figs/moc-de-pattern-stated.png>>
+-- <<fig/moc-de-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ next state function
            -> ((TimeStamp, b1), (TimeStamp, b2))
@@ -392,7 +392,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- >>> takeS 7 $ state11 (+) (6,1) s
 -- { 2 @0s, 3 @2s, 5 @6s, 7 @8s, 8 @9s, 10 @12s, 12 @14s}
 --
--- <<docfiles/figs/moc-de-pattern-state.png>>                   
+-- <<fig/moc-de-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ next state function
            -> ((TimeStamp, b1), (TimeStamp, b2))
@@ -498,7 +498,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 -- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
 -- { 2 @0s, 3 @6s, 4 @8s, 6 @12s, 8 @14s, 9 @15s, 11 @18s}
 --
--- <<docfiles/figs/moc-de-pattern-moore.png>>          
+-- <<fig/moc-de-pattern-moore.png>>          
 moore22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> (b1, b2))
@@ -616,7 +616,7 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
 -- { 0 @0s, -1 @2s, -1 @6s, -1 @8s, -2 @9s, 0 @12s, 2 @14s}
 --
--- <<docfiles/figs/moc-de-pattern-mealy.png>>
+-- <<fig/moc-de-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)
         -- ^ next state function
         -> (st -> a1 -> a2 -> (b1, b2))
@@ -734,7 +734,7 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- >>> sync2 s1 s2
 -- ({ 1 @0s, 2 @2s, 2 @5s, 3 @6s, 4 @8s, 5 @9s, 5 @10s, 5 @12s},{ 1 @0s, 1 @2s, 2 @5s, 3 @6s, 3 @8s, 3 @9s, 4 @10s, 5 @12s})
 --
--- <<docfiles/figs/moc-de-pattern-sync.png>>
+-- <<fig/moc-de-pattern-sync.png>>
 sync2 :: Signal a1                    -- ^ first input signal
       -> Signal a2                    -- ^ second input signal
       -> (Signal a1, Signal a2)       -- ^ two output signals

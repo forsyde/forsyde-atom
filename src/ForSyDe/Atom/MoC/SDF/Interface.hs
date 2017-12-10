@@ -27,7 +27,7 @@ eventToSY (SDF.SDF a) = SY.SY a
 -- >>> toSY s
 -- {1,2,3,4,5}
 --
--- <<docfiles/figs/moc-sdf-tosy.png>>
+-- <<fig/moc-sdf-tosy.png>>
 toSY2 :: SDF.Signal a -> SDF.Signal b
       -> (SY.Signal a, SY.Signal b)
 toSY  :: SDF.Signal a
@@ -57,7 +57,7 @@ toSY4 s1 s2 s3 s4 = (toSY s1, toSY s2, toSY s3, toSY s4)
 -- >>> zipx r v1
 -- {<1,2,1,11,12,11>,<3,4,2,13,14,12>}
 --
--- <<docfiles/figs/moc-sdf-zipx.png>>
+-- <<fig/moc-sdf-zipx.png>>
 zipx :: V.Vector SDF.Cons       -- ^ consumption rates
      -> V.Vector (SDF.Signal a) -- ^ vector of signals
      -> SDF.Signal (V.Vector a) -- ^ signal of vectors
@@ -89,7 +89,7 @@ zipx rates = V.zipx (V.farm11 transpose rates)
 -- >>> unzipx (V.reverse r) sz
 -- <{1,2,3,4},{1,2},{11,12,13,14},{11,12}>
 --
--- <<docfiles/figs/moc-sdf-unzipx.png>>
+-- <<fig/moc-sdf-unzipx.png>>
 unzipx :: V.Vector SDF.Prod  -- ^ production rates (in reverse order)
        -> SDF.Signal (V.Vector a) -- ^ signal of vectors
        -> V.Vector (SDF.Signal a) -- ^ vector of signals

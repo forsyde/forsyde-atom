@@ -56,10 +56,10 @@ import Prelude hiding (null, last, init, tail, map, reverse, length, concat, tak
 -- >>> S.farm21 (\x -> comb11 (+x)) v1 v2
 -- <{2,3,4,5,6},{3,4,5,6,7},{4,5,6,7,8}>
 --
--- <<docfiles/figs/eqs-skel-vector-farm.png>>
+-- <<fig/eqs-skel-vector-farm.png>>
 --
--- <<docfiles/figs/skel-vector-func-farm.png>>
--- <<docfiles/figs/skel-vector-func-farm-net.png>>
+-- <<fig/skel-vector-func-farm.png>>
+-- <<fig/skel-vector-func-farm-net.png>>
 farm22 :: (a1 -> a2 -> (b1, b2)) -- ^ function (e.g. process)
        -> Vector a1              -- ^ first input vector
        -> Vector a2              -- ^ second input vector
@@ -147,8 +147,8 @@ farm44 = S.farm44
 -- >>> S.reducei (comb21 (+)) s2 v2
 -- {13,16,19,22,25}
 --
--- <<docfiles/figs/skel-vector-func-reducei.png>>
--- <<docfiles/figs/skel-vector-func-reducei-net.png>>
+-- <<fig/skel-vector-func-reducei.png>>
+-- <<fig/skel-vector-func-reducei-net.png>>
 reduce  :: (a -> a -> a) -> Vector a -> a
 reducei :: (a -> a -> a) -> a -> Vector a -> a
 reduce  = S.reduce
@@ -182,13 +182,13 @@ reducei3 p i v1 v2 v3 vs = S.farm41 p v1 v2 v3 vs =<<= i
 -- >>> prefixi (comb21 (+)) s2 v2
 -- <{13,16,19,22,25},{12,14,16,18,20},{11,12,13,14,15}>
 --
--- <<docfiles/figs/eqs-skel-vector-prefix.png>>
+-- <<fig/eqs-skel-vector-prefix.png>>
 --
--- <<docfiles/figs/skel-vector-func-prefix.png>>
--- <<docfiles/figs/skel-vector-func-prefix-net.png>>
+-- <<fig/skel-vector-func-prefix.png>>
+-- <<fig/skel-vector-func-prefix-net.png>>
 --
--- <<docfiles/figs/skel-vector-func-prefixi.png>>
--- <<docfiles/figs/skel-vector-func-prefixi-net.png>>
+-- <<fig/skel-vector-func-prefixi.png>>
+-- <<fig/skel-vector-func-prefixi-net.png>>
 
 prefix  p   = S.farm11 (S.reduce p) . tails
 prefixi p i = S.farm11 (S.reducei p i) . tails
@@ -227,13 +227,13 @@ prefixi p i = S.farm11 (S.reducei p i) . tails
 -- >>> suffixi (comb21 (+)) s2 v2
 -- <{11,12,13,14,15},{12,14,16,18,20},{13,16,19,22,25}>
 --
--- <<docfiles/figs/eqs-skel-vector-suffix.png>>
+-- <<fig/eqs-skel-vector-suffix.png>>
 --
--- <<docfiles/figs/skel-vector-func-suffix.png>>
--- <<docfiles/figs/skel-vector-func-suffix-net.png>>
+-- <<fig/skel-vector-func-suffix.png>>
+-- <<fig/skel-vector-func-suffix-net.png>>
 --
--- <<docfiles/figs/skel-vector-func-suffixi.png>>
--- <<docfiles/figs/skel-vector-func-suffixi-net.png>>
+-- <<fig/skel-vector-func-suffixi.png>>
+-- <<fig/skel-vector-func-suffixi-net.png>>
 
 suffix p    = S.farm11 (S.reduce p) . inits
 suffixi p i = S.farm11 (S.reducei p i) . inits
@@ -274,8 +274,8 @@ suffixi p i = S.farm11 (S.reducei p i) . inits
 -- >>> S.pipe1 (\x -> comb11 (+x)) v2 s1
 -- {11,12,13,14}
 --
--- <<docfiles/figs/skel-vector-func-pipe.png>>
--- <<docfiles/figs/skel-vector-func-pipe-net.png>>
+-- <<fig/skel-vector-func-pipe.png>>
+-- <<fig/skel-vector-func-pipe-net.png>>
 pipe :: Vector (a -> a) -- ^ vector of functions
       -> a               -- ^ input
       -> a               -- ^ output
@@ -323,10 +323,10 @@ pipe4 = S.pipe4
 -- >>> recur1 (\x -> comb11 (+x)) v2 s1
 -- <{11,12,13,14},{10,11,12,13},{8,9,10,11},{5,6,7,8}>
 --
--- <<docfiles/figs/eqs-skel-vector-recur.png>>
+-- <<fig/eqs-skel-vector-recur.png>>
 --
--- <<docfiles/figs/skel-vector-func-recur.png>>
--- <<docfiles/figs/skel-vector-func-recur-net.png>>
+-- <<fig/skel-vector-func-recur.png>>
+-- <<fig/skel-vector-func-recur-net.png>>
 recur :: Vector (a -> a) -- ^ vector of functions
       -> a               -- ^ input
       -> Vector a        -- ^ output 
@@ -367,10 +367,10 @@ recuri4 p v1 v2 v3 v4 s   = S.farm41 p v1 v2 v3 v4 `recuri` s
 -- >>> cascade1 (\x -> comb21 (\y z-> x*(y+z))) vv vs vs
 -- <{16,32,48,64},{8,16,24,32},{-2,-4,-6,-8}>
 --
--- <<docfiles/figs/eqs-skel-vector-cascade.png>>
+-- <<fig/eqs-skel-vector-cascade.png>>
 --
--- <<docfiles/figs/skel-vector-func-cascade.png>>
--- <<docfiles/figs/skel-vector-func-cascade-net.png>>
+-- <<fig/skel-vector-func-cascade.png>>
+-- <<fig/skel-vector-func-cascade-net.png>>
 cascade2 :: (a2 -> a1 -> a -> a -> a)
          -- ^ @function41@ which needs to be applied to @function21@
          -> Vector (Vector a2)
@@ -422,10 +422,10 @@ cascade4 p vv1 vv2 vv3 vv4 vs1 vs2
 -- >>> mesh1 (\x -> comb21 (\y z-> x*(y+z))) vv vs vs
 -- <<{16,32,48,64},{8,16,24,32},{-2,-4,-6,-8}>,<{8,16,24,32},{-6,-12,-18,-24},{-3,-6,-9,-12}>,<{-2,-4,-6,-8},{-3,-6,-9,-12},{2,4,6,8}>>
 --
--- <<docfiles/figs/eqs-skel-vector-mesh.png>>
+-- <<fig/eqs-skel-vector-mesh.png>>
 --
--- <<docfiles/figs/skel-vector-func-mesh.png>>
--- <<docfiles/figs/skel-vector-func-mesh-net.png>>
+-- <<fig/skel-vector-func-mesh.png>>
+-- <<fig/skel-vector-func-mesh-net.png>>
 mesh2 :: (a2 -> a1 -> a -> a -> a)
       -- ^ @function41@ which needs to be applied to @function21@
       -> Vector (Vector a2)
@@ -464,7 +464,7 @@ mesh4 p vv1 vv2 vv3 vv4 vs1 vs2
 -- >>> length $ vector [1,2,3,4,5]
 -- 5
 --
--- <<docfiles/figs/eqs-skel-vector-length.png>>
+-- <<fig/eqs-skel-vector-length.png>>
 length Null = 0
 length v    = S.reduce (+) . S.farm11 (\_ -> 1) $ v
 
@@ -511,7 +511,7 @@ fanoutn n x | n <= 0    = Null
 -- >>> generate 5 (+1) 1
 -- <6,5,4,3,2>
 --
--- <<docfiles/figs/eqs-skel-vector-generate.png>>
+-- <<fig/eqs-skel-vector-generate.png>>
 generate n f i | n <= 0    = Null
                | otherwise = fanoutn n f =/= i
 
@@ -556,7 +556,7 @@ last  = S.last
 -- >>> tail $ vector [1,2,3,4,5]
 -- <2,3,4,5>
 --
--- <<docfiles/figs/eqs-skel-vector-tail.png>>
+-- <<fig/eqs-skel-vector-tail.png>>
 tail Null   = error "[Skel.Vector] cannot return tail of empty vector"
 tail (x:>xs)= xs
 -- tail     = (<@!> 2) . tails
@@ -566,7 +566,7 @@ tail (x:>xs)= xs
 -- >>> init $ vector [1,2,3,4,5]
 -- <1,2,3,4>
 --
--- <<docfiles/figs/eqs-skel-vector-init.png>>
+-- <<fig/eqs-skel-vector-init.png>>
 init Null      = error "init: Vector is empty"
 init (_:>Null) = Null
 init (v:>vs)   = v :> init vs
@@ -577,7 +577,7 @@ init (v:>vs)   = v :> init vs
 -- >>> concat $ vector [vector[1,2,3,4], vector[5,6,7]]
 -- <1,2,3,4,5,6,7>
 --
--- <<docfiles/figs/eqs-skel-vector-concat.png>>
+-- <<fig/eqs-skel-vector-concat.png>>
 concat Null = Null
 concat v    = (<++>) =\= v
 
@@ -586,10 +586,10 @@ concat v    = (<++>) =\= v
 -- >>> reverse $ vector [1,2,3,4,5]
 -- <5,4,3,2,1>
 --
--- <<docfiles/figs/eqs-skel-vector-reverse.png>>
+-- <<fig/eqs-skel-vector-reverse.png>>
 --
--- <<docfiles/figs/skel-vector-comm-reverse.png>>
--- <<docfiles/figs/skel-vector-comm-reverse-net.png>>
+-- <<fig/skel-vector-comm-reverse.png>>
+-- <<fig/skel-vector-comm-reverse-net.png>>
 reverse Null = Null
 reverse v    = S.reduce (\x y -> y <++> x) . S.farm11 unit $ v
 
@@ -598,10 +598,10 @@ reverse v    = S.reduce (\x y -> y <++> x) . S.farm11 unit $ v
 -- >>> inits $ vector [1,2,3,4,5]
 -- <<1>,<1,2>,<1,2,3>,<1,2,3,4>,<1,2,3,4,5>>
 --
--- <<docfiles/figs/eqs-skel-vector-inits.png>>
+-- <<fig/eqs-skel-vector-inits.png>>
 --
--- <<docfiles/figs/skel-vector-comm-inits.png>>
--- <<docfiles/figs/skel-vector-comm-inits-net.png>>
+-- <<fig/skel-vector-comm-inits.png>>
+-- <<fig/skel-vector-comm-inits-net.png>>
 inits Null = error "inits: null vector"
 inits v    = S.reduce sel . S.farm11 (unit . unit) $ v
   where sel x y = x <++> S.farm11 (S.last  x <++>) y
@@ -611,10 +611,10 @@ inits v    = S.reduce sel . S.farm11 (unit . unit) $ v
 -- >>> tails $ vector [1,2,3,4,5]
 -- <<1,2,3,4,5>,<2,3,4,5>,<3,4,5>,<4,5>,<5>>
 --
--- <<docfiles/figs/eqs-skel-vector-tails.png>>
+-- <<fig/eqs-skel-vector-tails.png>>
 --
--- <<docfiles/figs/skel-vector-comm-tails.png>>
--- <<docfiles/figs/skel-vector-comm-tails-net.png>>
+-- <<fig/skel-vector-comm-tails.png>>
+-- <<fig/skel-vector-comm-tails-net.png>>
 tails Null = error "inits: null vector"
 tails v    = S.reduce sel . S.farm11 (unit . unit) $ v
   where sel x y = S.farm11 (<++> S.first y) x <++> y
@@ -624,7 +624,7 @@ tails v    = S.reduce sel . S.farm11 (unit . unit) $ v
 -- >>> get 3 $ vector [1,2,3,4,5]
 -- Just 3
 --
--- <<docfiles/figs/eqs-skel-vector-get.png>>
+-- <<fig/eqs-skel-vector-get.png>>
 get _ Null = Nothing
 get n v    = reducei1 sel Nothing indexes . S.farm11 Just $ v
   where sel i x y = if i == n then x else y
@@ -634,7 +634,7 @@ get n v    = reducei1 sel Nothing indexes . S.farm11 Just $ v
 -- >>> take 5 $ vector [1,2,3,4,5,6,7,8,9]
 -- <1,2,3,4,5>
 --
--- <<docfiles/figs/eqs-skel-vector-take.png>>
+-- <<fig/eqs-skel-vector-take.png>>
 take _ Null = Null
 take n v    = reducei1 sel Null indexes . S.farm11 unit $ v
   where sel i x y = if i < n then x <++> y else x
@@ -644,7 +644,7 @@ take n v    = reducei1 sel Null indexes . S.farm11 unit $ v
 -- >>> drop 5 $ vector [1,2,3,4,5,6,7,8,9]
 -- <6,7,8,9>
 --
--- <<docfiles/figs/eqs-skel-vector-drop.png>>
+-- <<fig/eqs-skel-vector-drop.png>>
 drop _ Null = Null
 drop n v    = reducei1 sel Null indexes . S.farm11 unit $ v
   where sel i x y = if i > n then x <++> y else y
@@ -655,10 +655,10 @@ drop n v    = reducei1 sel Null indexes . S.farm11 unit $ v
 -- >>> filterIdx (\x -> x `mod` 3 == 0) $ vector [0,1,2,3,4,5,6,7,8,9]
 -- <2,5,8>
 --
--- <<docfiles/figs/eqs-skel-vector-filteridx.png>>
+-- <<fig/eqs-skel-vector-filteridx.png>>
 --
--- <<docfiles/figs/skel-vector-comm-filteridx.png>>
--- <<docfiles/figs/skel-vector-comm-filteridx-net.png>>
+-- <<fig/skel-vector-comm-filteridx.png>>
+-- <<fig/skel-vector-comm-filteridx-net.png>>
 filterIdx _ Null = Null
 filterIdx f v    = reducei1 sel Null indexes . S.farm11 unit $ v
   where sel i x y = if f i   then x <++> y else y
@@ -668,10 +668,10 @@ filterIdx f v    = reducei1 sel Null indexes . S.farm11 unit $ v
 -- >>> replace 5 15 $ vector [1,2,3,4,5,6,7,8,9]
 -- <1,2,3,4,15,6,7,8,9>
 --
--- <<docfiles/figs/eqs-skel-vector-replace.png>>
+-- <<fig/eqs-skel-vector-replace.png>>
 --
--- <<docfiles/figs/skel-vector-comm-replace.png>>
--- <<docfiles/figs/skel-vector-comm-replace-net.png>>
+-- <<fig/skel-vector-comm-replace.png>>
+-- <<fig/skel-vector-comm-replace-net.png>>
 replace _ _ Null = Null
 replace n r v    = reducei1 sel Null indexes . S.farm11 unit $ v
   where sel i x y = if i == n then r :> y else x <++> y
@@ -682,7 +682,7 @@ replace n r v    = reducei1 sel Null indexes . S.farm11 unit $ v
 -- >>> takeWhile (<5) $ vector [1,2,3,4,5,6,7,8,9]
 -- <1,2,3,4>
 --
--- <<docfiles/figs/eqs-skel-vector-takewhile.png>>
+-- <<fig/eqs-skel-vector-takewhile.png>>
 takeWhile _ Null = Null
 takeWhile f v    = concat . S.reduce sel . S.farm11 (unit . unit) $ v
   where sel x y = if end x y then x <++> y else x
@@ -694,10 +694,10 @@ takeWhile f v    = concat . S.reduce sel . S.farm11 (unit . unit) $ v
 -- >>> stride 1 3 $ vector [1,2,3,4,5,6,7,8,9]
 -- <1,4,7>
 --
--- <<docfiles/figs/eqs-skel-vector-stride.png>>
+-- <<fig/eqs-skel-vector-stride.png>>
 --
--- <<docfiles/figs/skel-vector-comm-inits.png>>
--- <<docfiles/figs/skel-vector-comm-inits-net.png>>
+-- <<fig/skel-vector-comm-inits.png>>
+-- <<fig/skel-vector-comm-inits-net.png>>
 stride :: Integer -- ^ first index
        -> Integer -- ^ stride length
        -> Vector a -> Vector a
@@ -711,10 +711,10 @@ stride f s v = reducei1 sel Null indexes . S.farm11 unit $ v
 -- >>> group 3 $ vector [1,2,3,4,5,6,7,8]
 -- <<1,2,3>,<4,5,6>,<7,8>>
 --
--- <<docfiles/figs/eqs-skel-vector-group.png>>
+-- <<fig/eqs-skel-vector-group.png>>
 --
--- <<docfiles/figs/skel-vector-comm-group.png>>
--- <<docfiles/figs/skel-vector-comm-group-net.png>>
+-- <<fig/skel-vector-comm-group.png>>
+-- <<fig/skel-vector-comm-group-net.png>>
 group _ Null = unit Null
 group n v = reducei1 sel Null indexes . S.farm11 (unit . unit) $ v
   where sel i x y
@@ -726,8 +726,8 @@ group n v = reducei1 sel Null indexes . S.farm11 (unit . unit) $ v
 -- >>> vector [1,2,3,4] `shiftr` 8
 -- <8,1,2,3>
 --
--- <<docfiles/figs/skel-vector-comm-shiftr.png>>
--- <<docfiles/figs/skel-vector-comm-shiftr-net.png>>
+-- <<fig/skel-vector-comm-shiftr.png>>
+-- <<fig/skel-vector-comm-shiftr-net.png>>
 shiftr vs v = v :> init vs
 
 -- | left-shifts a vector with an element.
@@ -735,8 +735,8 @@ shiftr vs v = v :> init vs
 -- >>> vector [1,2,3,4] `shiftl` 8
 -- <2,3,4,8>
 --
--- <<docfiles/figs/skel-vector-comm-shiftl.png>>
--- <<docfiles/figs/skel-vector-comm-shiftl-net.png>>
+-- <<fig/skel-vector-comm-shiftl.png>>
+-- <<fig/skel-vector-comm-shiftl-net.png>>
 shiftl vs v = tail vs <: v
 
 -- | rotates a vector to the left.
@@ -744,8 +744,8 @@ shiftl vs v = tail vs <: v
 -- >>> rotl $ vector [1,2,3,4]
 -- <2,3,4,1>
 --
--- <<docfiles/figs/skel-vector-comm-rotl.png>>
--- <<docfiles/figs/skel-vector-comm-rotl-net.png>>
+-- <<fig/skel-vector-comm-rotl.png>>
+-- <<fig/skel-vector-comm-rotl-net.png>>
 rotl   Null = Null
 rotl   vs   = tail vs <: S.first vs
 
@@ -754,8 +754,8 @@ rotl   vs   = tail vs <: S.first vs
 -- >>> rotr $ vector [1,2,3,4]
 -- <4,1,2,3>
 --
--- <<docfiles/figs/skel-vector-comm-rotr.png>>
--- <<docfiles/figs/skel-vector-comm-rotr-net.png>>
+-- <<fig/skel-vector-comm-rotr.png>>
+-- <<fig/skel-vector-comm-rotr-net.png>>
 rotr   Null = Null
 rotr   vs   = S.last vs :> init vs
 
@@ -768,10 +768,10 @@ v <@! ix | isNothing e = error "get!: index out of bounds"
          | otherwise   = fromJust e
   where e = get ix v
 
--- | <<docfiles/figs/eqs-skel-vector-odds.png>>
+-- | <<fig/eqs-skel-vector-odds.png>>
 odds      = filterIdx odd
 
--- | <<docfiles/figs/eqs-skel-vector-evens.png>>
+-- | <<fig/eqs-skel-vector-evens.png>>
 evens     = filterIdx even
 
 -- | selects the elements in a vector at the incexes contained by another vector.
@@ -786,10 +786,10 @@ evens     = filterIdx even
 -- >>> gather2 ix v
 -- <<Just 11,Just 13,Just 14>,<Just 13,Just 15,Just 11>,<Just 15,Nothing,Nothing>>
 --
--- <<docfiles/figs/eqs-skel-vector-gather.png>>
+-- <<fig/eqs-skel-vector-gather.png>>
 --
--- <<docfiles/figs/skel-vector-comm-gather.png>>
--- <<docfiles/figs/skel-vector-comm-gather-net.png>>
+-- <<fig/skel-vector-comm-gather.png>>
+-- <<fig/skel-vector-comm-gather-net.png>>
 gather1 :: Vector Integer -- ^ vector of indexes
        -> Vector a       -- ^ input vector
        -> Vector (Maybe a)
@@ -820,10 +820,10 @@ v <<<<<@>>>>> ix = gather5 ix v
 -- >>> scatter (vector [2,4,5]) (vector [0,0,0,0,0,0,0,0]) (vector [1,1,1])
 -- <0,1,0,1,1,0,0,0>
 --
--- <<docfiles/figs/eqs-skel-vector-scatter.png>>
+-- <<fig/eqs-skel-vector-scatter.png>>
 --
--- <<docfiles/figs/skel-vector-comm-scatter.png>>
--- <<docfiles/figs/skel-vector-comm-scatter-net.png>>
+-- <<fig/skel-vector-comm-scatter.png>>
+-- <<fig/skel-vector-comm-scatter-net.png>>
 scatter Null hv _    = hv
 scatter _    hv Null = hv
 scatter ix   hv v    = reducei1 sel hv ix . S.farm11 unit $ v
@@ -831,8 +831,8 @@ scatter ix   hv v    = reducei1 sel hv ix . S.farm11 unit $ v
 
 -- | performs a bit-reverse permutation.
 --
--- <<docfiles/figs/skel-vector-comm-bitrev.png>>
--- <<docfiles/figs/skel-vector-comm-bitrev-net.png>>
+-- <<fig/skel-vector-comm-bitrev.png>>
+-- <<fig/skel-vector-comm-bitrev-net.png>>
 --
 -- >>> bitrev $ vector ["000","001","010","011","100","101","110","111"]
 -- <"111","011","101","001","110","010","100","000">

@@ -59,7 +59,7 @@ module ForSyDe.Atom.MoC.DE (
   -- nature of the evaluation mechanisms. Below you can see an example
   -- of a simple DE process, without behavior extensions:
   --
-  -- <<docfiles/figs/moc-de-example.png>>
+  -- <<fig/moc-de-example.png>>
   --
   -- Below are stated a few particularities of our DE MoC
   -- implementation:
@@ -121,7 +121,7 @@ module ForSyDe.Atom.MoC.DE (
   -- ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we
   -- can safely assume:
   --
-  -- <<docfiles/figs/eqs-moc-timed-context.png>>
+  -- <<fig/eqs-moc-timed-context.png>>
 
   TimeStamp, DE(..),
 

@@ -40,7 +40,7 @@ import qualified ForSyDe.Atom.MoC.SY.Lib
 -- >>> embedSY11 (SY.stated11 (+) 1) s
 -- { 1 @0s, 2 @2s, 4 @6s, 7 @8s, 11 @9s}
 --
--- <<docfiles/figs/moc-de-pattern-embedsy.png>>
+-- <<fig/moc-de-pattern-embedsy.png>>
 embedSY22 :: (SY.Signal a1 -> SY.Signal a2
               -> (SY.Signal b1, SY.Signal b2))
           -- ^ 'ForSyDe.Atom.MoC.SY.SY' process

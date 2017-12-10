@@ -37,7 +37,7 @@ import           Prelude hiding (filter)
 -- >>> delay 0 s
 -- {0,1,2,3,4,5}
 --
--- <<docfiles/figs/moc-sy-pattern-delay.png>>
+-- <<fig/moc-sy-pattern-delay.png>>
 delay :: a     -- ^ initial value
       -> Signal a -- ^ input signal
       -> Signal a -- ^ output signal
@@ -63,7 +63,7 @@ delay i = MoC.delay (unit i)
 -- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
 -- ({2,3,4,5,6},{0,1,2,3,4})
 --
--- <<docfiles/figs/moc-sy-pattern-comb.png>>
+-- <<fig/moc-sy-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
        -> Signal a1              -- ^ first input signal
        -> Signal a2              -- ^ second input signal
@@ -135,7 +135,7 @@ comb44 = MoC.comb44
 -- >>> reconfig11 sf s1
 -- {2,4,4,8,6,12,8}
 --
--- <<docfiles/figs/moc-sy-pattern-reconfig.png>>
+-- <<fig/moc-sy-pattern-reconfig.png>>
 reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
            -- ^ signal carrying functions
            -> Signal a1
@@ -207,7 +207,7 @@ reconfig44 = MoC.reconfig44
 -- >>> takeS 5 s2
 -- {2,2,2,2,2}
 --
--- <<docfiles/figs/moc-sy-pattern-constant.png>>
+-- <<fig/moc-sy-pattern-constant.png>>
 constant2 :: (b1, b2)               -- ^ values to be repeated
           -> (Signal b1, Signal b2) -- ^ generated signals
 constant1 :: b1 -> Signal b1
@@ -236,7 +236,7 @@ constant4 i = MoC.stated04 (,,,) (unit4 i)
 -- >>> takeS 7 s2
 -- {2,4,6,8,10,12,14}
 --
--- <<docfiles/figs/moc-sy-pattern-generate.png>>
+-- <<fig/moc-sy-pattern-generate.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
              -- ^ function to generate next value
              -> (b1, b2)
@@ -272,7 +272,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- >>> stated11 (+) 1 s1
 -- {1,2,4,7,11,16}
 --
--- <<docfiles/figs/moc-sy-pattern-stated.png>>
+-- <<fig/moc-sy-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ next state function
             -> (b1, b2)
@@ -348,7 +348,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- >>> state11 (+) 1 s1
 -- {2,4,7,11,16}
 --
--- <<docfiles/figs/moc-sy-pattern-state.png>>
+-- <<fig/moc-sy-pattern-state.png>>
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ next state function
            -> (b1, b2)
@@ -424,7 +424,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 -- >>> moore11 (+) (+1) 1 s1
 -- {2,3,5,8,12,17}
 --
--- <<docfiles/figs/moc-sy-pattern-moore.png>>
+-- <<fig/moc-sy-pattern-moore.png>>
 moore22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> (b1, b2))
@@ -498,7 +498,7 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- >>> mealy11 (+) (-) 1 s1
 -- {0,0,1,3,6}
 --
--- <<docfiles/figs/moc-sy-pattern-mealy.png>>
+-- <<fig/moc-sy-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> a1 -> a2 -> (b1, b2))
@@ -573,7 +573,7 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- >>> when pred s1
 -- {⟂,⟂,⟂,4,5}
 --
--- <<docfiles/figs/moc-sy-pattern-when.png>>
+-- <<fig/moc-sy-pattern-when.png>>
 when :: Signal (AbstExt Bool) -- ^ Signal of predicates
      -> Signal (AbstExt a)    -- ^ Input signal
      -> Signal (AbstExt a)    -- ^ Output signal
@@ -620,7 +620,7 @@ whenPresent s = when (s `is` (\_ -> True))
 -- >>> filter (>3) s1
 -- {⟂,⟂,⟂,4,5}
 --
--- <<docfiles/figs/moc-sy-pattern-filter.png>>
+-- <<fig/moc-sy-pattern-filter.png>>
 filter :: (a -> Bool)      -- ^ Predicate function
        -> Signal (AbstExt a) -- ^ Input signal
        -> Signal (AbstExt a) -- ^ Output signal
@@ -645,7 +645,7 @@ filter' p s = MoC.comb21 B.filter' ps s
 -- >>> fill 0 s1
 -- {0,0,1,2,0,3}
 --
--- <<docfiles/figs/moc-sy-pattern-fill.png>>
+-- <<fig/moc-sy-pattern-fill.png>>
 fill :: a                  -- ^ Value to fill with
      -> Signal (AbstExt a) -- ^ Input
      -> Signal a           -- ^ Output
@@ -658,7 +658,7 @@ fill x s = MoC.comb11 (B.degrade x) s
 -- >>> hold 0 s1
 -- {0,0,1,2,2,3}
 --
--- <<docfiles/figs/moc-sy-pattern-hold.png>>
+-- <<fig/moc-sy-pattern-hold.png>>
 hold :: a
      -- ^ Value to fill with in case there was no previous value
      -> Signal (AbstExt a) -- ^ Input
@@ -684,7 +684,7 @@ hold init = MoC.state11 fillF (unit init)
 -- >>> reactAbst1 proc s1
 -- {0,1,2,⟂,3,⟂,4} 
 --
--- <<docfiles/figs/moc-sy-pattern-reactAbst.png>>
+-- <<fig/moc-sy-pattern-reactAbst.png>>
 reactAbst2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b)
            -- ^ process which degrades the absent extension,
            -- e.g. holds present values

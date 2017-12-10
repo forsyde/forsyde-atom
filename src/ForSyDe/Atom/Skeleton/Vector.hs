@@ -46,7 +46,7 @@ module ForSyDe.Atom.Skeleton.Vector (
   -- 'Skeleton' Layer. When defining them,
   -- we use the following operators:
   --
-  -- <<docfiles/figs/eqs-skel-vector-operators.png>>
+  -- <<fig/eqs-skel-vector-operators.png>>
   --
   -- where:
   --

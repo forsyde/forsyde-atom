@@ -60,7 +60,7 @@ toDE4 = ($$$$) (toDE, toDE, toDE, toDE)
 -- >>> takeS 6 $ sampDE c s
 -- { 0.0 @0s, 1.0 @1.570796326794s, 1.793238520564752e-12 @3.141592653588s, -1.0 @4.712388980382s, 0.0 @6.283185307176s, 1.0 @7.85398163397s}
 --
--- <<docfiles/figs/moc-ct-tode.png>>
+-- <<fig/moc-ct-tode.png>>
 sampDE2 :: DE.Signal t -- ^ 'ForSyDe.Atom.MoC.DE.DE' timestamp carrier 
       -> CT.Signal a -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
       -> CT.Signal b -- ^ 'ForSyDe.Atom.MoC.CT.CT' input

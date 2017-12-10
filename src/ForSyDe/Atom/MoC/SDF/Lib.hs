@@ -35,7 +35,7 @@ import           ForSyDe.Atom.Utility
 -- >>> delay [0,0,0] s
 -- {0,0,0,1,2,3,4,5}
 -- 
--- <<docfiles/figs/moc-sdf-pattern-delay.png>>
+-- <<fig/moc-sdf-pattern-delay.png>>
 delay :: [a]      -- ^ list of initial values
       -> Signal a -- ^ input signal
       -> Signal a -- ^ output signal
@@ -51,7 +51,7 @@ delay i = MoC.delay (signal i)
 -- >>> delay' s1 s2
 -- {0,0,0,1,2,3,4,5}
 --
--- <<docfiles/figs/moc-sdf-pattern-delayp.png>>
+-- <<fig/moc-sdf-pattern-delayp.png>>
 delay' :: Signal a  -- ^ signal containing the initial tokens
        -> Signal a   -- ^ input signal
        -> Signal a   -- ^ output signal
@@ -82,7 +82,7 @@ delay' = MoC.delay
 -- > λ> comb21 ((3,2),3,f) s1 s2
 -- > *** Exception: [MoC.SDF] Wrong production
 --
--- <<docfiles/figs/moc-sdf-pattern-comb.png>>
+-- <<fig/moc-sdf-pattern-comb.png>>
 comb22 :: ((Cons,Cons), (Prod,Prod),
            [a1] -> [a2] -> ([b1], [b2]))
           -- ^ function on lists of values, tupled with consumption /
@@ -192,7 +192,7 @@ comb44 (c,p,f) s1 s2 s3 s4 = MoC.comb44 (MoC.ctxt44 c p f) s1 s2 s3 s4
 -- >>> reconfig11 (4,1) sf s1
 -- {10,8,42,16,74,24,106}
 --
--- <<docfiles/figs/moc-sdf-pattern-reconfig.png>>
+-- <<fig/moc-sdf-pattern-reconfig.png>>
 reconfig22 :: ((Cons,Cons), (Prod,Prod))
            -> Signal ([a1] -> [a2] -> ([b1], [b2]))
            -- ^ function on lists of values, tupled with consumption /
@@ -294,7 +294,7 @@ reconfig44 (c,p) sf = MoC.reconfig44 (wrap MoC.ctxt44 c p sf)
 -- >>> takeS 5 s2
 -- {2,1,2,1,2}
 --
--- <<docfiles/figs/moc-sdf-pattern-constant.png>>
+-- <<fig/moc-sdf-pattern-constant.png>>
 constant2 :: ([b1], [b2])           -- ^ values to be repeated
           -> (Signal b1, Signal b2) -- ^ generated signals
 constant1 :: ([b1])
@@ -326,7 +326,7 @@ constant4 i = MoC.stated04 (MoC.ctxt44 (1,1,1,1) (1,1,1,1) (,,,)) (signal4 i)
 -- >>> takeS 8 s2
 -- {2,2,2,6,6,6,18,18}
 --
--- <<docfiles/figs/moc-sdf-pattern-generate.png>>
+-- <<fig/moc-sdf-pattern-generate.png>>
 generate2 :: ((Cons,Cons), (Prod,Prod),
               [b1] -> [b2] -> ([b1], [b2]))
              -- ^ function to generate next value, tupled with
@@ -371,7 +371,7 @@ generate4 (c,p,f) i = MoC.stated04 (MoC.ctxt44 c p f) (signal4 i)
 -- >>> stated11 ((1,2),1,f) [1] s
 -- {1,4,11,22}
 --
--- <<docfiles/figs/moc-sdf-pattern-stated.png>>
+-- <<fig/moc-sdf-pattern-stated.png>>
 stated22 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
              [b1] -> [b2] -> [a1] -> [a2] -> ([b1], [b2]))
          -- ^ next state function, tupled with
@@ -502,7 +502,7 @@ stated44 (cns,pns,ns) i = MoC.stated44 (MoC.ctxt84 cns pns ns) (signal4 i)
 -- >>> state11 ((1,2),1,f) [1] s
 -- {4,11,22}
 --
--- <<docfiles/figs/moc-sdf-pattern-state.png>>
+-- <<fig/moc-sdf-pattern-state.png>>
 state22 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
             [b1] -> [b2] -> [a1] -> [a2] -> ([b1], [b2]))
         -- ^ next state function, tupled with consumption /
@@ -627,7 +627,7 @@ state44 (cns,pns,ns) i = MoC.state44 (MoC.ctxt84 cns pns ns) (signal4 i)
 -- >>> moore11 ((1,2),1,ns) (1,2,od) [1] s
 -- {2,2,5,8,12,22,23,44}
 --
--- <<docfiles/figs/moc-sdf-pattern-moore.png>>
+-- <<fig/moc-sdf-pattern-moore.png>>
 moore22 :: ((Cons,Cons,Cons), Prod, [st] -> [a1] -> [a2] -> [st])
         -- ^ next state function, tupled with consumption / production
         -- rates
@@ -762,7 +762,7 @@ moore44 (cns,pns,ns) (cod,pod,od) i = MoC.moore44 (MoC.ctxt51 cns pns ns) (MoC.c
 -- >>> mealy11 ((1,2),1,ns) ((1,1),2,od) [1] s
 -- {2,1,6,8,14,33,26,88}
 --
--- <<docfiles/figs/moc-sdf-pattern-mealy.png>>
+-- <<fig/moc-sdf-pattern-mealy.png>>
 mealy22 :: ((Cons,Cons,Cons), Prod, [st] -> [a1] -> [a2] -> [st])
         -- ^ next state function, tupled with consumption / production
         -- rates

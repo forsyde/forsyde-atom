@@ -120,13 +120,13 @@ infixl 3 -<-, -*, -&-
 -- to, for example, a process firing. The formal description of such a
 -- "formatted function" taken as argument by a MoC entity is:
 --
--- <<docfiles/figs/eqs-moc-atom-formatted-func.png>>
+-- <<fig/eqs-moc-atom-formatted-func.png>>
 --
 -- where /a/ and /b/ might be Cartesian products of different types,
 -- corresponding to how many signals the constructor is applied to or
 -- how many signals it yields, and each type is expressed as:
 --
--- <<docfiles/figs/eqs-moc-atom-formatted-arg.png>>
+-- <<fig/eqs-moc-atom-formatted-arg.png>>
 --
 -- While, as you can see above, the execution context can be extracted
 -- from the type information, working with type-level parameters is
@@ -147,7 +147,7 @@ infixl 3 -<-, -*, -&-
 -- and 'Res'. 
 class (Applicative e) => MoC e where
 
-  -- |<<docfiles/figs/eqs-moc-atom-function.png>>
+  -- |<<fig/eqs-moc-atom-function.png>>
   --
   -- This is a type family alias for a context-bound function passed
   -- as an argument to a MoC atom. In the most simple case it can be
@@ -159,7 +159,7 @@ class (Applicative e) => MoC e where
   -- performance.
   type Fun e a b
 
-  -- |<<docfiles/figs/eqs-moc-atom-result.png>>
+  -- |<<fig/eqs-moc-atom-result.png>>
   --
   -- As with 'Fun', this alias hides a context-bound value
   -- (e.g. function return). Although the definition seems to be
@@ -167,7 +167,7 @@ class (Applicative e) => MoC e where
   -- recreate clean types again (see '-*').
   type Ret e b
   
-  -- |<<docfiles/figs/eqs-moc-atom-dot.png>>
+  -- |<<fig/eqs-moc-atom-dot.png>>
   --
   -- This atom is mapping a function on values (in the presence of a
   -- context) to a signal, i.e. stream of tagged events. As ForSyDe
@@ -176,7 +176,7 @@ class (Applicative e) => MoC e where
   -- input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
   (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
   
-  -- | <<docfiles/figs/eqs-moc-atom-star.png>>
+  -- | <<fig/eqs-moc-atom-star.png>>
   -- 
   -- This atom synchronizes two signals, one carrying functions on
   -- values (in the presence of a context), and the other containing
@@ -185,13 +185,13 @@ class (Applicative e) => MoC e where
   -- between two signals <ForSyDe-Atom.html#lee98 [Lee98]>.
   (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
 
-  -- | <<docfiles/figs/eqs-moc-atom-post.png>>
+  -- | <<fig/eqs-moc-atom-post.png>>
   -- 
   -- Artificial /utility/ which drops the context and/or partitioning
   -- yielding a clean signal type. 
   (-*)  :: Stream (e (Ret e b)) -> Stream (e b)
 
-  -- | <<docfiles/figs/eqs-moc-atom-pre.png>>
+  -- | <<fig/eqs-moc-atom-pre.png>>
   -- 
   -- This atom appends a (partition of) events at the beginning of a
   -- signal. This atom is necessary to ensure /complete partial order/
@@ -210,7 +210,7 @@ class (Applicative e) => MoC e where
   -- additional constraints on the first operand being finite.
   (-<-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
    
-  -- | <<docfiles/figs/eqs-moc-atom-phi.png>>
+  -- | <<fig/eqs-moc-atom-phi.png>>
   -- 
   -- This atom allows the manipulation of tags in a signal in a
   -- restrictive way which preserves /monotonicity/ and /continuity/
@@ -227,8 +227,8 @@ class (Applicative e) => MoC e where
   (-&-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
 
 infixl 3 -&>-
--- | <<docfiles/figs/eqs-moc-pattern-delay.png>>
---   <<docfiles/figs/moc-pattern-delay.png>>
+-- | <<fig/eqs-moc-pattern-delay.png>>
+--   <<fig/moc-pattern-delay.png>>
 --
 -- The 'delay' process provides both initial token(s) and shifts the
 -- phase of the signal. In other words, it "delays" a signal with
@@ -245,8 +245,8 @@ i -&>- xs = delay i xs
 -- /argument and result might be individually wrapped with a context/
 -- /and might also express a partition./
 --
--- <<docfiles/figs/eqs-moc-pattern-comb.png>>
--- <<docfiles/figs/moc-pattern-comb.png>>
+-- <<fig/eqs-moc-pattern-comb.png>>
+-- <<fig/moc-pattern-comb.png>>
 --
 -- The @comb@ processes takes care of synchronization between signals
 -- and maps combinatorial functions on their event values. This
@@ -303,8 +303,8 @@ comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 
 -- /argument and result might be individually wrapped with a context/
 -- /and might also express a partition./
 --
--- <<docfiles/figs/eqs-moc-pattern-reconfig.png>>
--- <<docfiles/figs/moc-pattern-reconfig.png>>
+-- <<fig/eqs-moc-pattern-reconfig.png>>
+-- <<fig/moc-pattern-reconfig.png>>
 --
 -- The @reconfig@ processes constructs adaptive processes, where the
 -- first signal carries functions, and it is synchronized with all the
@@ -366,8 +366,8 @@ reconfig84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -
 -- #state22i# /(**) see the documentation for '-<-' for justification/
 -- /of the type/
 --
--- <<docfiles/figs/eqs-moc-pattern-state.png>>
--- <<docfiles/figs/moc-pattern-state.png>>
+-- <<fig/eqs-moc-pattern-state.png>>
+-- <<fig/moc-pattern-state.png>>
 --
 -- The @state@ processes generate process networks corresponding to a
 -- simple state machine like in the graph above. This library provides
@@ -441,8 +441,8 @@ state44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st2
 -- #stated22i# /(**) see the documentation for '-<-' for justification/
 -- /of the type/
 --
--- <<docfiles/figs/eqs-moc-pattern-stated.png>>
--- <<docfiles/figs/moc-pattern-stated.png>>
+-- <<fig/eqs-moc-pattern-stated.png>>
+-- <<fig/moc-pattern-stated.png>>
 -- 
 -- The @state@ processes generate process networks corresponding to a
 -- simple state machine like in the graph above. The difference
@@ -536,8 +536,8 @@ stated44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st
 -- #moore22i# /(***) see the documentation for '-<-' for justification/
 -- /of the type/
 --
--- <<docfiles/figs/eqs-moc-pattern-moore.png>>
--- <<docfiles/figs/moc-pattern-moore.png>>
+-- <<fig/eqs-moc-pattern-moore.png>>
+-- <<fig/moc-pattern-moore.png>>
 --
 -- @moore@ processes model Moore state machines. You can choose one of
 -- the pre-defined patterns:
@@ -604,8 +604,8 @@ moore44 ns od i s1 s2 s3 s4 =        comb14 od st
 -- #mealy22i# /(***) see the documentation for '-<-' for justification/
 -- /of the type/
 --
--- <<docfiles/figs/eqs-moc-pattern-mealy.png>>
--- <<docfiles/figs/moc-pattern-mealy.png>>
+-- <<fig/eqs-moc-pattern-mealy.png>>
+-- <<fig/moc-pattern-mealy.png>>
 --
 -- @mealy@ processes model Mealy state machines. You can choose one of
 -- the pre-defined patterns:
@@ -675,7 +675,7 @@ wres :: p -> b -> (p, b)
 wres p x = (p, x)
 
 -- |
--- <<docfiles/figs/eqs-moc-atom-context.png>>
+-- <<fig/eqs-moc-atom-context.png>>
 --
 -- Wraps a function with the context needed by some MoCs for their
 -- constructors (e.g. rates in SDF).

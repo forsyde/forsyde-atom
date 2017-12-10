@@ -62,7 +62,7 @@ infixl 4 /.\, /*\, /&\, /!\
 --
 -- The types associated with this layer can simply be describes as:
 --
--- <<docfiles/figs/eqs-exb-types.png>>
+-- <<fig/eqs-exb-types.png>>
 --
 -- where  /&#945;/ is a base type and /b/ is the type extension,
 -- i.e. a set of symbols with clearly-defined semantics.
@@ -77,32 +77,32 @@ class Functor b => ExB b where
   -- | Basic functor operator. Lifts a function (from a layer below)
   -- into the domain of the extended behavior layer.
   --
-  -- <<docfiles/figs/eqs-exb-atom-func.png>>
+  -- <<fig/eqs-exb-atom-func.png>>
   (/.\) :: (a -> a') -> b a -> b a'
 
   -- | Applicative operator. Defines a res between two extended
   -- behavior symbols.
   --
-  -- <<docfiles/figs/eqs-exb-atom-app.png>>
+  -- <<fig/eqs-exb-atom-app.png>>
   (/*\) :: b (a -> a') -> b a -> b a'
 
   -- | Predicate operator. Generates a defined behavior based on an
   -- extended Boolean predicate.
   --
-  -- <<docfiles/figs/eqs-exb-atom-phi.png>>
+  -- <<fig/eqs-exb-atom-phi.png>>
   (/&\) :: b Bool -> b a -> b a
 
   -- | Degrade operator. Degrades a behavior-extended value into a
   -- non-extended one (from a layer below), based on a kernel
   -- value. Used also to throw exceptions.
   --
-  -- <<docfiles/figs/eqs-exb-atom-deg.png>>
+  -- <<fig/eqs-exb-atom-deg.png>>
   (/!\) :: a -> b a -> a
 
 
 
 -- |  
--- <<docfiles/figs/eqs-exb-pattern-resolution.png>>
+-- <<fig/eqs-exb-pattern-resolution.png>>
 --
 -- The @res@ behavior pattern lifts a function on values to the
 -- extended behavior domain, and applies a resolution between two
@@ -168,7 +168,7 @@ filter' p a  = (/&\) (extend p) (extend a)
 degrade a = (/!\) a
 
 -- | 
--- <<docfiles/figs/eqs-exb-pattern-ignore.png>>
+-- <<fig/eqs-exb-pattern-ignore.png>>
 --
 -- The @ignoreXY@ pattern takes a function of @Y + X@ arguments, @Y@
 -- basic inputs followed by @X@ behavior-extended inputs. The @X@

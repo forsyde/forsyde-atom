@@ -48,7 +48,7 @@ module ForSyDe.Atom.MoC.CT (
   -- Below is an illustration of the behavior in time of the input and
   -- the output signals of a CT process:
   --
-  -- <<docfiles/figs/moc-ct-example.png>>
+  -- <<fig/moc-ct-example.png>>
   --
   -- Our CT MoC is implemented as an enhanced version of
   -- 'ForSyDe.MoC.DE.DE' with respect to the __CT MoC__ definition, in
@@ -79,7 +79,7 @@ module ForSyDe.Atom.MoC.CT (
   -- it. Capturing the particularities of this MoC, we can formulate
   -- the following properties:
   --
-  -- <<docfiles/figs/misc-ct-model.png>>
+  -- <<fig/misc-ct-model.png>>
   --
   -- 1. 'CT' signals, due to their formation as streams of tagged
   -- events, represent /discrete/ changes in a continuous function
@@ -121,7 +121,7 @@ module ForSyDe.Atom.MoC.CT (
   -- ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we
   -- can safely assume:
   --
-  -- <<docfiles/figs/eqs-moc-timed-context.png>>
+  -- <<fig/eqs-moc-timed-context.png>>
 
   TimeStamp, Time, CT(..),
 
