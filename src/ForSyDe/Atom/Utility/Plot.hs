@@ -28,7 +28,8 @@ module ForSyDe.Atom.Utility.Plot (
   prepare, prepareL, prepareV,
 
   -- ** Dumping and plotting data
-  showDat, dumpDat, plotGnu, heatmapGnu, showLatex, plotLatex,
+  showDat, dumpDat, plotGnu, heatmapGnu,
+  showLatex, dumpLatex, plotLatex,
   
   -- * The data types
 
@@ -72,14 +73,12 @@ import qualified ForSyDe.Atom.Skeleton.Vector as V (
 data Config =
   Cfg { verbose :: Bool     -- ^ verbose printouts on terminal
       , path    :: String   -- ^ directory where all dumped files will be found
-      , title    :: String   -- ^ base name for dumped files
-      , rate    :: Float    -- ^ sampling rate if relevant. Useful for explicit-tagged signals, ignored otherwise.
-      , xmax    :: Float    -- ^ Maximum X coordinate (e.g. timestamp or index) for the data being dumped. Mandatory for infinite structures (e.g. 'ForSyDe.Atom.MoC.DE.DE' or 'ForSyDe.Atom.MoC.CT.CT' signals), optional otherwise.
+      , title    :: String  -- ^ base name for dumped files
+      , rate    :: Float    -- ^ sample rate if relevant. Useful for explicit-tagged signals, ignored otherwise.
+      , xmax    :: Float    -- ^ Maximum X coordinate dumped. Mandatory for infinite structures, optional otherwise.
       , labels  :: [String] -- ^ list of labels with the names of the structures plotted
       , fire    :: Bool     -- ^ if relevant, fires a plotting or compiling program.
-      , mklatex :: Bool     -- ^ if relevant, dumps a LaTeX script loading the plot.
-      , mkeps   :: Bool     -- ^ if relevant. dumps a PostScript title with the plot.
-      , mkpdf   :: Bool     -- ^ if relevant, dumps a PDF title with the plot.
+      , other   :: Bool     -- ^ if relevant, dumps additional scripts and plots.
       } deriving (Show)
 
 -- | Default configuration: verbose, dump everything possible, fire
@@ -88,7 +87,7 @@ data Config =
 -- Example usage:
 --
 -- >>> defaultCfg {xmax = 15, verbose = False, labels = ["john","doe"]}
--- Cfg {verbose = False, path = "./fig", title = "plot", rate = 1.0e-2, xmax = 15.0, labels = ["john","doe"], fire = True, mklatex = True, mkeps = True, mkpdf = True}
+-- Cfg {verbose = False, path = "./fig", title = "plot", rate = 1.0e-2, xmax = 15.0, labels = ["john","doe"], fire = True, other = True}
 defaultCfg = Cfg { path    = "./fig"
                  , title    = "plot"
                  , rate    = 0.01
@@ -96,9 +95,7 @@ defaultCfg = Cfg { path    = "./fig"
                  , labels  = replicate 10 ""
                  , verbose = True
                  , fire    = True
-                 , mklatex = True
-                 , mkeps   = True
-                 , mkpdf   = True
+                 , other   = True
                  }
 
 -- | Silent configuration: does not fire any program or print our
@@ -109,10 +106,8 @@ silentCfg = Cfg  { path    = "./fig"
                  , xmax    = 200
                  , labels  = replicate 10 ""
                  , verbose = False
-                 , fire = False
-                 , mklatex = True
-                 , mkeps   = True
-                 , mkpdf   = True
+                 , fire    = False
+                 , other   = True
                  }
 
 -- | Clean configuration: verbose, does not dump more than necessary,
@@ -123,10 +118,8 @@ noJunkCfg = Cfg  { path    = "./fig"
                  , xmax    = 200
                  , labels  = repeat ""
                  , verbose = True
-                 , fire = True
-                 , mklatex = False
-                 , mkeps   = False
-                 , mkpdf   = False
+                 , fire    = True
+                 , other   = False
                  }
 
 
@@ -447,17 +440,17 @@ mkPlotScript cfg info files =
     stackCmd i = if isStacking then
                    " using ($1+0." ++ show i ++ "):2"
                  else ""
-    epsCmd     = if plotEps then
+    epsCmd     = if plotOther then
                    "set  terminal postscript eps color\n"
                    ++ "set output \"" ++ plotName ++".eps\"\n"
                    ++ "replot \n"
                  else ""
-    latexCmd   = if plotLatex then
+    latexCmd   = if plotOther then
                    "set terminal epslatex color\n"
                    ++ "set output \"" ++ plotName ++"-latex.eps\"\n"
                    ++ "replot\n"
                  else ""
-    pdfCmd     = if plotPdf then
+    pdfCmd     = if plotOther then
                    "set terminal pdf\n"
                    ++ "set output \"" ++ plotName ++".pdf\"\n"
                    ++ "replot\n"
@@ -471,9 +464,7 @@ mkPlotScript cfg info files =
     -- extract settings
     plotPath   = path    cfg
     plotTitle  = title   cfg
-    plotEps    = mkeps   cfg
-    plotLatex  = mklatex cfg
-    plotPdf    = mkpdf   cfg
+    plotOther  = other   cfg
     plotLb     = labels  cfg
 
 mkHeatmapScript :: Config -> PInfo -> [FilePath] -> String 
@@ -494,17 +485,17 @@ mkHeatmapScript cfg info files =
                  ++ "plot \"" ++ f  ++ "\" matrix "
                  ++ "using 1:" ++ scaley ++ ":3 "
                  ++ "with image title \"\""
-    epsCmd     = if plotEps then
+    epsCmd     = if plotOther then
                    "set  terminal postscript eps color\n"
                    ++ "set output \"" ++ plotName ++".eps\"\n"
                    ++ "replot \n"
                  else ""
-    latexCmd   = if plotLatex then
+    latexCmd   = if plotOther then
                    "set terminal epslatex color\n"
                    ++ "set output \"" ++ plotName ++"-latex.eps\"\n"
                    ++ "replot\n"
                  else ""
-    pdfCmd     = if plotPdf then
+    pdfCmd     = if plotOther then
                    "set terminal pdf\n"
                    ++ "set output \"" ++ plotName ++".pdf\"\n"
                    ++ "replot\n"
@@ -521,9 +512,7 @@ mkHeatmapScript cfg info files =
     -- extract settings
     plotPath   = path    cfg
     plotTitle  = title   cfg
-    plotEps    = mkeps   cfg
-    plotLatex  = mklatex cfg
-    plotPdf    = mkpdf   cfg
+    plotOther  = other   cfg
     plotLb     = labels  cfg
     plotXmax   = show $ xmax cfg
     plotRate   = show $ rate cfg
@@ -536,6 +525,26 @@ mkHeatmapScript cfg info files =
 -- title which imports the ForSyDe-LaTeX package.
 showLatex :: PlotData -> IO ()
 showLatex pdata = putStrLn $ mkLatex pdata
+
+-- | Dumps a set of formatted data files with the extension @.flx@
+-- that can be imported by a LaTeX document which uses the
+-- ForSyDe-LaTeX package.
+dumpLatex :: PlotData -> IO [String]
+dumpLatex (cfg, _, pdata) = do
+  createDirectoryIfMissing True dpath
+  files <- mapM dump pdata
+  when verb $ putStrLn ("Dumped " ++ allLabels ++ " in " ++ dpath)
+  return files
+  where
+    dump (lbl,samp)  = let name = mkFileNm lbl
+                       in do writeFile name (dumpSamp samp)
+                             return name
+    mkFileNm label = dpath ++ "/" ++ replChar "$<>{}" '_' label ++ ".flx"
+    dumpSamp = intercalate ",\n" . map (\(x,y) -> y ++" : "++ x)
+    allLabels= drop 2 $ foldl (\s (l,_)-> s ++ ", " ++ l) "" pdata
+    -- extract settings
+    dpath    = path    cfg
+    verb     = verbose cfg
 
 -- | Creates a standalone LaTeX document which uses the ForSyDe-LaTeX
 -- package, plotting a 'prepare'd data set. Depending on the

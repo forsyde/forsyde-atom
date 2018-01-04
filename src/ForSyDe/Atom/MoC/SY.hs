@@ -67,7 +67,6 @@ module ForSyDe.Atom.MoC.SY (
   -- need for an <ForSyDe-Atom-MoC.html#context execution context>
   -- and we can ignore the formatting of functions in
   -- "ForSyDe.Atom.MoC", thus we can safely assume:
-  --
   -- <<fig/eqs-moc-timed-context.png>>
   SY(..),
 

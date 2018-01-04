@@ -1,5 +1,5 @@
 name:                forsyde-atom
-version:             0.2.2.0
+version:             0.2.2.1
 synopsis:            A shallow-embedded DSL for modeling cyber-physical systems 
 description:         
   The ForSyDe (Formal System Design) methodology has been developed
@@ -95,6 +95,7 @@ library
                    , ForSyDe.Atom.Utility
                    , ForSyDe.Atom.Utility.Tuple
                    , ForSyDe.Atom.Utility.Plot
+  ghc-options:       -Wno-duplicate-exports
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances
   build-depends:     base>=4.6 && <6
@@ -132,6 +133,7 @@ test-suite doctests
                   , numbers >= 3000
                   , doctest >= 0.8
 
+                  
 source-repository head
   type:     git
   location: https://github.com/forsyde/forsyde-atom.git

@@ -19,7 +19,7 @@ module ForSyDe.Atom.MoC.CT.Lib where
 
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.CT.Core
-import           ForSyDe.Atom.MoC.Time
+import           ForSyDe.Atom.MoC.Time as T
 import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.Utility
 import           Prelude hiding (const)
@@ -29,11 +29,7 @@ import           Prelude hiding (const)
 
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
--- >>> import qualified Data.Number.FixedFunctions as RatF
--- >>> let exp' = RatF.exp 0.001
 -- >>> let pi'  = realToFrac Prelude.pi
--- >>> let sin' = RatF.sin 0.001
--- >>> let cos' = RatF.cos 0.001
 
 ------- DELAY -------
 
@@ -41,7 +37,7 @@ import           Prelude hiding (const)
 -- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern. In the CT
 -- MoC, this process can be interpreted as an ideal "delay line".
 --
--- >>> let s  = infinite (sin')
+-- >>> let s  = infinite (T.sin)
 -- >>> let s' = delay 2 (\_ -> 0) s
 -- >>> plot 0.5 5 s'
 -- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821}
@@ -58,7 +54,7 @@ delay t v = MoC.delay (unit (t, v))
 -- 'ForSyDe.Atom.MoC.delay' pattern. It "borrows" the first event from
 -- one signal and appends it at the head of another signal.
 --
--- >>> let s  = infinite (sin')
+-- >>> let s  = infinite (T.sin)
 -- >>> let s' = signal [(0, \_ -> 0), (2, \_ -> 1)]
 -- >>> plot 0.5 5 $ delay' s' s
 -- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821}
@@ -76,14 +72,9 @@ delay' = MoC.delay
 -- care of synchronization between input signals. It instantiates the
 -- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22').
 -- 
--- The following constructors are provided:
+-- Constructors: @comb[1-4][1-4]@.
 --
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
---
--- >>> let s1 = infinite (sin')
+-- >>> let s1 = infinite (T.sin)
 -- >>> let s2 = signal [(0,\_->0),(pi',\_->1),(2*pi',\_->0),(3*pi',\_->1)]
 -- >>> plot 0.5 5 $ comb11 (+1) s2
 -- {1,1,1,1,1,1,1,2,2,2}
@@ -150,14 +141,9 @@ comb44 = MoC.comb44
 -- instantiates the @reconfig@ atom pattern (see
 -- 'ForSyDe.Atom.MoC.reconfig22').
 --
--- The following constructors are provided:
+-- Constructors: @reconfig[1-4][1-4]@.
 --
--- > reconfig11, reconfig12, reconfig13, reconfig14,
--- > reconfig21, reconfig22, reconfig23, reconfig24,
--- > reconfig31, reconfig32, reconfig33, reconfig34,
--- > reconfig41, reconfig42, reconfig43, reconfig44,
---
--- >>> let s1 = infinite (sin')
+-- >>> let s1 = infinite (T.sin)
 -- >>> let sf = signal [(0,\_->(*0)),(pi',\_->(+1)),(2*pi',\_->(*0)),(3*pi',\_->(+1))]
 -- >>> plot 0.5 5 $ reconfig11 sf s1
 -- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,5408 % 8329,512 % 2105,25 % 1117}
@@ -239,9 +225,7 @@ reconfig44 = MoC.reconfig44
 -- signal with constant value (i.e. a signal with one event starting
 -- from time 0).
 --
--- The following constructors are provided:
---
--- > constant1, constant2, constant3, constant4,
+-- Constructors: @constant[1-4]@.
 --
 -- >>> plot 0.5 5 $ constant1 2
 -- {2,2,2,2,2,2,2,2,2,2}
@@ -265,11 +249,9 @@ constant4 = ($$$$) (constant1,constant1,constant1,constant1)
 
 -- | A generator for an infinite signal. Similar to 'constant2'.
 --
--- The following constructors are provided:
+-- Constructors: @infinite[1-4]@.
 --
--- > infinite1, infinite2, infinite3, infinite4,
---
--- >>> plot2 0.5 5 $ infinite2 (sin', cos')
+-- >>> plot2 0.5 5 $ infinite2 (T.sin, T.cos)
 -- ({0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821,33859 % 239941,(-2921) % 8329,(-1593) % 2105,(-1092) % 1117},{1 % 1,864 % 985,85 % 157,56 % 785,(-1320) % 3169,(-72771) % 90821,(-237540) % 239941,(-7800) % 8329,(-1376) % 2105,(-235) % 1117})
 --
 -- <<fig/moc-ct-pattern-infinite.png>>
@@ -292,9 +274,7 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- is actually an instantiation of the @stated0X@ constructor
 -- (check 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > generate1, generate2, generate3, generate4,
+-- Constructors: @generate[1-4]@.
 --
 -- >>> let { osc 0 = 1 ; osc 1 = 0 }
 -- >>> plot 1 10 $ generate1 osc (pi', \_->0)
@@ -339,12 +319,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- instantiation of the @state@ MoC constructor (see
 -- 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
+-- Constructors: @stated[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
@@ -445,12 +420,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- state non-transparent. It is an instantiation of the @state@ MoC
 -- constructor (see 'ForSyDe.Atom.MoC.state22').
 --
--- The following constructors are provided:
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
+-- Constructors: @state[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
@@ -545,19 +515,13 @@ state42 ns i = MoC.state42 ns (unit2 i)
 state43 ns i = MoC.state43 ns (unit3 i)
 state44 ns i = MoC.state44 ns (unit4 i)
 
-
 ------- MOORE -------
 
 -- | @moore@ processes model Moore state machines. It is an
 -- instantiation of the @moore@ MoC constructor (see
 -- 'ForSyDe.Atom.MoC.moore22').
 --
--- The following constructors are provided:
---
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
+-- Constructors: @moore[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
@@ -671,15 +635,10 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- instantiation of the @mealy@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.mealy22').
 --
--- The following constructors are provided:
---
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
+-- Constructors: @mealy[1-4][1-4]@.
 --
 -- >>> let { osc (-1) _ = 1; osc 1 _ = (-1) } 
--- >>> let s1 = infinite sin'
+-- >>> let s1 = infinite T.sin
 -- >>> plotFloat 0.5 5 $ mealy11 osc (*) (pi',\_->1) s1
 -- {0.0,0.48020304568527916,0.8407643312101911,0.9974522292993631,0.9091195960870937,0.5983197718589313,0.14111385715655098,0.35070236522991954,0.7567695961995249,0.9776186213070726}
 --
@@ -792,9 +751,7 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- instantiates the @comb@ atom pattern (see
 -- 'ForSyDe.Atom.MoC.comb22').
 --
--- The following constructors are provided:
---
--- > sync2, sync3, sync4,
+-- Constructors: @sync[1-4]@.
 sync2 :: Signal a1                    -- ^ first input signal
       -> Signal a2                    -- ^ second input signal
       -> (Signal a1, Signal a2)       -- ^ two output signals

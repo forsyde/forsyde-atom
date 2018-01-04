@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK not-home, prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016;
@@ -54,9 +54,10 @@
 -- while @N@ represents the number of __/tupled/__ outputs
 -- (i.e. @(b1,b2,...,bN)@). To avoid repetition we only provide
 -- documentation for functions with 2 inputs and 2 outputs
--- (i.e. @function22@). In case the provided functions do not suffice,
--- feel free to implement your own patterns following the examples in
--- the source code.
+-- (i.e. @function22@), while the available ones are mentioned as a
+-- regex (i.e. @function[1-4][1-4]@). In case the provided functions
+-- do not suffice, feel free to implement your own patterns following
+-- the examples in the source code.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom (
   

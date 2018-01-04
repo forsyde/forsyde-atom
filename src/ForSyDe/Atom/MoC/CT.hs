@@ -201,8 +201,8 @@ module ForSyDe.Atom.MoC.CT (
 
   -- ** Interfaces
 
-  toDE, toDE2, toDE3, toDE4,
-  sampDE, sampDE2, sampDE3, sampDE4,
+  toDE1, toDE2, toDE3, toDE4,
+  sampDE1, sampDE2, sampDE3, sampDE4,
   zipx, unzipx, unzipx'
   
   ) where

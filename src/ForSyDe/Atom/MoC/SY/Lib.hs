@@ -49,12 +49,7 @@ delay i = MoC.delay (unit i)
 -- care of synchronization between input signals. It instantiates the
 -- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22').
 -- 
--- The following constructors are provided:
---
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
+-- Constructors: @comb[1-4][1-4]@.
 --
 -- >>> let s1 = signal [1..]
 -- >>> let s2 = signal [1,1,1,1,1]
@@ -123,12 +118,7 @@ comb44 = MoC.comb44
 -- arguments. It instantiates the @reconfig@ atom pattern (see
 -- 'ForSyDe.Atom.MoC.reconfig22').
 --
--- The following constructors are provided:
---
--- > reconfig11, reconfig12, reconfig13, reconfig14,
--- > reconfig21, reconfig22, reconfig23, reconfig24,
--- > reconfig31, reconfig32, reconfig33, reconfig34,
--- > reconfig41, reconfig42, reconfig43, reconfig44,
+-- Constructors: @reconfig[1-4][1-4]@.
 --
 -- >>> let sf = signal [(+1),(*2),(+1),(*2),(+1),(*2),(+1)] 
 -- >>> let s1 = signal [1..]
@@ -197,9 +187,7 @@ reconfig44 = MoC.reconfig44
 -- is actually an instantiation of the @stated0X@ constructor
 -- (check 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > constant1, constant2, constant3, constant4,
+-- Constructors: @constant[1-4]@.
 --
 -- >>> let (s1, s2) = constant2 (1,2)
 -- >>> takeS 3 s1
@@ -226,9 +214,7 @@ constant4 i = MoC.stated04 (,,,) (unit4 i)
 -- is actually an instantiation of the @stated0X@ constructor
 -- (check 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > generate1, generate2, generate3, generate4,
+-- Constructors: @generate[1-4]@.
 --
 -- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) (1,2)  
 -- >>> takeS 5 s1
@@ -261,12 +247,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- instantiation of the @state@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
+-- Constructors: @stated[1-4][1-4]@.
 --
 -- >>> let s1 = signal [1,2,3,4,5]  
 -- >>> stated11 (+) 1 s1
@@ -337,12 +318,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- instantiation of the @stated@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.state22').
 --
--- The following constructors are provided:
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
+-- Constructors: @state[1-4][1-4]@.
 --
 -- >>> let s1 = signal [1,2,3,4,5]  
 -- >>> state11 (+) 1 s1
@@ -413,12 +389,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 -- instantiation of the @moore@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.moore22').
 --
--- The following constructors are provided:
---
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
+-- Constructors: @moore[1-4][1-4]@.
 --
 -- >>> let s1 = signal [1,2,3,4,5]  
 -- >>> moore11 (+) (+1) 1 s1
@@ -487,12 +458,7 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- instantiation of the @mealy@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.mealy22').
 --
--- The following constructors are provided:
---
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
+-- Constructors: @mealy[1-4][1-4]@.
 --
 -- >>> let s1 = signal [1,2,3,4,5]  
 -- >>> mealy11 (+) (-) 1 s1
@@ -673,9 +639,7 @@ hold init = MoC.state11 fillF (unit init)
 -- signals for processes which would otherwise degrade the
 -- absent-extension (e.g. state machines with 'ignore22' behavior).
 --
--- The following constructors are provided:
---
--- > reactAbst1, reactAbst2, reactAbst3, reactAbst4,
+-- Constructors: @reactAbst[1-4]@.
 --
 -- >>> let s1 = readSignal "{1,1,1,_,1,_,1}" :: Signal (AbstExt Int)
 -- >>> let proc = stated11 (B.ignore11 (+)) 0
