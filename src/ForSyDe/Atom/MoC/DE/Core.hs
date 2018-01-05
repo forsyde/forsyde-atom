@@ -86,9 +86,7 @@ unit (t,v) = (DE 0 v :- DE t v :- NullS)
 -- unit signal(s), in this case a signal with one event with the
 -- period @tag@ carrying @value@.
 --
--- The following helpers are exported:
---
--- > unit, unit2, unit3, unit4,
+-- Helpers: @unit@ and @unit[2-4]@.
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)

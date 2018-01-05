@@ -23,13 +23,19 @@ import           ForSyDe.Atom.MoC.Time as T
 import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.Utility
 import           Prelude hiding (const)
-
+import ForSyDe.Atom.Utility.Plot
 
 ------- DOCTEST SETUP -------
 
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
--- >>> let pi'  = realToFrac Prelude.pi
+-- >>> import ForSyDe.Atom.MoC.Time as Time
+-- >>> import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
+-- >>> let pi'  = TimeStamp.pi
+-- >>> let exp' = Time.exp
+-- >>> let sin' = Time.sin
+-- >>> let cos' = Time.cos
+-- >>> let cfg  = defaultCfg {xmax=10, rate=0.1}
 
 ------- DELAY -------
 
@@ -37,10 +43,11 @@ import           Prelude hiding (const)
 -- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern. In the CT
 -- MoC, this process can be interpreted as an ideal "delay line".
 --
--- >>> let s  = infinite (T.sin)
+-- >>> let s  = infinite (sin')
 -- >>> let s' = delay 2 (\_ -> 0) s
--- >>> plot 0.5 5 s'
--- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821}
+-- >>> dumpDat $ prepare cfg {labels=["delay"]} $ s'
+-- Dumped delay in ./fig
+-- ["./fig/delay.dat"]
 --
 -- <<fig/moc-ct-pattern-delay.png>>
 delay :: TimeStamp   -- ^ time delay
@@ -54,10 +61,11 @@ delay t v = MoC.delay (unit (t, v))
 -- 'ForSyDe.Atom.MoC.delay' pattern. It "borrows" the first event from
 -- one signal and appends it at the head of another signal.
 --
--- >>> let s  = infinite (T.sin)
+-- >>> let s  = infinite (sin')
 -- >>> let s' = signal [(0, \_ -> 0), (2, \_ -> 1)]
--- >>> plot 0.5 5 $ delay' s' s
--- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821}
+-- >>> dumpDat $ prepare cfg {labels=["delayp"]} $ delay' s' s
+-- Dumped delayp in ./fig
+-- ["./fig/delayp.dat"]
 --
 -- <<fig/moc-ct-pattern-delayp.png>>
 delay' :: Signal a  -- ^ signal "borrowing" the initial event
@@ -74,12 +82,16 @@ delay' = MoC.delay
 -- 
 -- Constructors: @comb[1-4][1-4]@.
 --
--- >>> let s1 = infinite (T.sin)
+-- >>> let s1 = infinite (sin')
 -- >>> let s2 = signal [(0,\_->0),(pi',\_->1),(2*pi',\_->0),(3*pi',\_->1)]
--- >>> plot 0.5 5 $ comb11 (+1) s2
--- {1,1,1,1,1,1,1,2,2,2}
--- >>> plot2 0.5 5 $ ForSyDe.Atom.MoC.CT.Lib.comb22 (\a b-> (a+b,a*b)) s1 s2
--- ({0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821,33859 % 239941,5408 % 8329,512 % 2105,25 % 1117},{0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,(-2921) % 8329,(-1593) % 2105,(-1092) % 1117})
+-- >>> let o1 = comb11 (+1) s2
+-- >>> let (o2_1, o2_2) = comb22 (\a b-> (a+b,a*b)) s1 s2
+-- >>> dumpDat $ prepare cfg {labels=["comb11"]} o1  
+-- Dumped comb11 in ./fig
+-- ["./fig/comb11.dat"]
+-- >>> dumpDat $ prepareL cfg {labels=["comb22-1","comb22-2"]} [o2_1, o2_2]
+-- Dumped comb22-1, comb22-2 in ./fig
+-- ["./fig/comb22-1.dat","./fig/comb22-2.dat"]
 --
 -- <<fig/moc-ct-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
@@ -143,10 +155,11 @@ comb44 = MoC.comb44
 --
 -- Constructors: @reconfig[1-4][1-4]@.
 --
--- >>> let s1 = infinite (T.sin)
+-- >>> let s1 = infinite (sin')
 -- >>> let sf = signal [(0,\_->(*0)),(pi',\_->(+1)),(2*pi',\_->(*0)),(3*pi',\_->(+1))]
--- >>> plot 0.5 5 $ reconfig11 sf s1
--- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,5408 % 8329,512 % 2105,25 % 1117}
+-- >>> dumpDat $ prepare cfg {labels=["reconfig"]} $ reconfig11 sf s1
+-- Dumped reconfig in ./fig
+-- ["./fig/reconfig.dat"]
 reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
            -- ^ signal carrying functions
            -> Signal a1
@@ -227,8 +240,9 @@ reconfig44 = MoC.reconfig44
 --
 -- Constructors: @constant[1-4]@.
 --
--- >>> plot 0.5 5 $ constant1 2
--- {2,2,2,2,2,2,2,2,2,2}
+-- >>> dumpDat $ prepare cfg {labels=["constant"]} $ constant1 2
+-- Dumped constant in ./fig
+-- ["./fig/constant.dat"]
 --
 -- <<fig/moc-ct-pattern-constant.png>>
 constant2 :: (b1, b2)         -- ^ values to be repeated
@@ -251,8 +265,10 @@ constant4 = ($$$$) (constant1,constant1,constant1,constant1)
 --
 -- Constructors: @infinite[1-4]@.
 --
--- >>> plot2 0.5 5 $ infinite2 (T.sin, T.cos)
--- ({0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821,33859 % 239941,(-2921) % 8329,(-1593) % 2105,(-1092) % 1117},{1 % 1,864 % 985,85 % 157,56 % 785,(-1320) % 3169,(-72771) % 90821,(-237540) % 239941,(-7800) % 8329,(-1376) % 2105,(-235) % 1117})
+-- >>> let (inf1, inf2) = infinite2 (sin', cos')
+-- >>> dumpDat $ prepareL cfg {labels=["infinite2-1", "infinite2-2"]} [inf1, inf2] 
+-- Dumped infinite2-1, infinite2-2 in ./fig
+-- ["./fig/infinite2-1.dat","./fig/infinite2-2.dat"]
 --
 -- <<fig/moc-ct-pattern-infinite.png>>
 infinite2 :: (Time -> b1, Time -> b2)         -- ^ values to be repeated
@@ -277,8 +293,9 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- Constructors: @generate[1-4]@.
 --
 -- >>> let { osc 0 = 1 ; osc 1 = 0 }
--- >>> plot 1 10 $ generate1 osc (pi', \_->0)
--- {0,0,0,0,1,1,1,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["generate"]} $ generate1 osc (pi', \_->0)
+-- Dumped generate in ./fig
+-- ["./fig/generate.dat"]
 --
 -- <<fig/moc-ct-pattern-generate.png>>
 --
@@ -290,8 +307,9 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- >>> let vc t = vs * (1 - exp' (-t / (r * c))) -- Vc(t) : voltage charging through capacitor
 -- >>> let ns v = vs + (-1 * v)                  -- next state : charging / discharging
 -- >>> let rcOsc = generate1 ns (milisec 500, vc)
--- >>> plot 0.2 2 rcOsc
--- {0 % 1,255840 % 130321,33955596480 % 16983563041,98 % 361,235298 % 47045881,0 % 1,255840 % 130321,33955596480 % 16983563041,98 % 361,235298 % 47045881}
+-- >>> dumpDat $ prepare cfg {labels=["rcosc"]} $ rcOsc
+-- Dumped rcosc in ./fig
+-- ["./fig/rcosc.dat"]
 --
 -- <<fig/moc-ct-pattern-generate1.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
@@ -323,8 +341,9 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
--- >>> plot 0.5 10 $ stated11 osc (1,\_->0) s1
--- {0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["stated"]} $ stated11 osc (1,\_->0) s1
+-- Dumped stated in ./fig
+-- ["./fig/stated.dat"]
 --
 -- <<fig/moc-ct-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -424,8 +443,9 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
--- >>> plot 0.5 10 $ state11 osc (1,\_->0) s1
--- {1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["state"]} $ state11 osc (1,\_->0) s1
+-- Dumped state in ./fig
+-- ["./fig/state.dat"]
 --
 -- <<fig/moc-ct-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -525,8 +545,9 @@ state44 ns i = MoC.state44 ns (unit4 i)
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
--- >>> plot 0.5 10 $ moore11 osc (*3) (1,\_->0) s1
--- {0,0,3,3,0,0,3,3,0,0,3,3,0,0,0,0,0,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["moore"]} $ moore11 osc (*3) (1,\_->0) s1
+-- Dumped moore in ./fig
+-- ["./fig/moore.dat"]
 --
 -- <<fig/moc-ct-pattern-moore.png>>          
 moore22 :: (st -> a1 -> a2 -> st)
@@ -638,9 +659,10 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- Constructors: @mealy[1-4][1-4]@.
 --
 -- >>> let { osc (-1) _ = 1; osc 1 _ = (-1) } 
--- >>> let s1 = infinite T.sin
--- >>> plotFloat 0.5 5 $ mealy11 osc (*) (pi',\_->1) s1
--- {0.0,0.48020304568527916,0.8407643312101911,0.9974522292993631,0.9091195960870937,0.5983197718589313,0.14111385715655098,0.35070236522991954,0.7567695961995249,0.9776186213070726}
+-- >>> let s1 = infinite sin'
+-- >>> dumpDat $ prepare cfg {labels=["mealy"]} $ mealy11 osc (*) (pi',\_->1) s1
+-- Dumped mealy in ./fig
+-- ["./fig/mealy.dat"]
 --
 -- <<fig/moc-ct-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)

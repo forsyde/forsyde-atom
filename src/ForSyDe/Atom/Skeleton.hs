@@ -162,16 +162,7 @@ class Functor c => Skeleton c where
 -- processes), the resulting structure could be regarded as a "farm of
 -- data-parallel processes".
 --
--- The following constructors are provided:
---
--- >  farm11, farm12, farm13, farm14,
--- >  farm21, farm22, farm23, farm24,
--- >  farm31, farm32, farm33, farm34,
--- >  farm41, farm42, farm43, farm44,
--- >  farm51, farm52, farm53, farm54,
--- >  farm61, farm62, farm63, farm64,
--- >  farm71, farm72, farm73, farm74,
--- >  farm81, farm82, farm83, farm84,
+-- Constructors: @farm[1-8][1-4]@.
 --
 -- <<fig/eqs-skel-pattern-farm.png>>
 -- <<fig/skel-pattern-farm.png>>
@@ -249,10 +240,7 @@ pipe = (=<<=)
 -- ('pipe') skeleton apt for successive partial application and create
 -- more robust parameterizable pipeline networks.
 --
--- The following constructors are provided:
---
--- > pipe1, pipe2, pipe3, pipe4,
--- > pipe5, pipe6, pipe7, pipe8,
+-- Constructors: @comb[1-8]@.
 --
 -- <<fig/eqs-skel-pattern-pipe1.png>>
 -- <<fig/skel-pattern-pipe1.png>>

@@ -127,11 +127,12 @@ library
 test-suite doctests
   type:             exitcode-stdio-1.0
   default-language: Haskell2010
-  ghc-options:      -threaded
+  ghc-options:      -threaded -isrc
   main-is:          tests/TestsDoc.hs
   build-depends:    base>=4.6 && <6
                   , numbers >= 3000
                   , doctest >= 0.8
+                  , forsyde-atom
 
                   
 source-repository head

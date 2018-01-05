@@ -26,12 +26,7 @@ import qualified ForSyDe.Atom.MoC.SY.Lib
 -- tags. Seen from outside, this process behaves like a DE process
 -- with "instantaneous response", even for feedback loops.
 --
--- The following constructors are provided:
---
--- > embedSY11, embedSY12, embedSY13, embedSY14,
--- > embedSY21, embedSY22, embedSY23, embedSY24,
--- > embedSY31, embedSY32, embedSY33, embedSY34,
--- > embedSY41, embedSY42, embedSY43, embedSY44,
+-- Constructors: @embedSY[1-4][1-4]@.
 --
 -- For the following example, see the difference between its output
 -- and the one of 'ForSyDe.Atom.MoC.DE.stated22'
@@ -49,13 +44,13 @@ embedSY22 :: (SY.Signal a1 -> SY.Signal a2
           -> (DE.Signal b1, DE.Signal b2)
           -- ^ two output 'ForSyDe.Atom.MoC.DE.DE' signals
 
-embedSY11 syproc de1 = let (ts, sy1) = DE.toSY de1
+embedSY11 syproc de1 = let (ts, sy1) = DE.toSY1 de1
                        in  SY.toDE ts $     syproc sy1 
-embedSY12 syproc de1 = let (ts, sy1) = DE.toSY de1
+embedSY12 syproc de1 = let (ts, sy1) = DE.toSY1 de1
                        in  SY.toDE2 ts <>   syproc sy1
-embedSY13 syproc de1 = let (ts, sy1) = DE.toSY de1
+embedSY13 syproc de1 = let (ts, sy1) = DE.toSY1 de1
                        in  SY.toDE3 ts <>>  syproc sy1
-embedSY14 syproc de1 = let (ts, sy1) = DE.toSY de1
+embedSY14 syproc de1 = let (ts, sy1) = DE.toSY1 de1
                        in  SY.toDE4 ts <>>> syproc sy1
 
 embedSY21 syproc de1 de2 = let (ts, sy1, sy2) = DE.toSY2 de1 de2

@@ -75,7 +75,7 @@ data Config =
       , path    :: String   -- ^ directory where all dumped files will be found
       , title    :: String  -- ^ base name for dumped files
       , rate    :: Float    -- ^ sample rate if relevant. Useful for explicit-tagged signals, ignored otherwise.
-      , xmax    :: Float    -- ^ Maximum X coordinate dumped. Mandatory for infinite structures, optional otherwise.
+      , xmax    :: Float    -- ^ Maximum X coordinate. Mandatory for infinite structures, optional otherwise.
       , labels  :: [String] -- ^ list of labels with the names of the structures plotted
       , fire    :: Bool     -- ^ if relevant, fires a plotting or compiling program.
       , other   :: Bool     -- ^ if relevant, dumps additional scripts and plots.

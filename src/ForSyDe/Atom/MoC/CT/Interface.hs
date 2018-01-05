@@ -6,7 +6,7 @@ module ForSyDe.Atom.MoC.CT.Interface where
 import ForSyDe.Atom.MoC ((-.-), (-*-))
 import ForSyDe.Atom.MoC.CT.Core as CT
 import ForSyDe.Atom.MoC.DE.Core as DE
-import ForSyDe.Atom.MoC.DE.Interface (toCT)
+import ForSyDe.Atom.MoC.DE.Interface (toCT1)
 import ForSyDe.Atom.MoC.Stream (Stream(..))
 import ForSyDe.Atom.MoC.Time (Time(..))
 import qualified ForSyDe.Atom.Skeleton.Vector as V (
@@ -75,7 +75,7 @@ sampDE4 :: DE.Signal t
 
 sampDE1 carrier = fmap evalEvent . sync carrier
   where evalEvent e@(CT ts _ _) = DE.DE ts (CT.evalTs ts e)
-        sync c s = (\_ x -> x) -.- (toCT $ (\_->(\_->())) -.- c) -*- s
+        sync c s = (\_ x -> x) -.- (toCT1 $ (\_->(\_->())) -.- c) -*- s
 sampDE2 c s1 s2       = (sampDE1 c s1, sampDE1 c s2)
 sampDE3 c s1 s2 s3    = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3) 
 sampDE4 c s1 s2 s3 s4 = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3, sampDE1 c s4)

@@ -108,16 +108,7 @@ class Functor b => ExB b where
 -- extended behavior domain, and applies a resolution between two
 -- extended behavior symbols.
 --
--- These are the functions exported:
---
--- > res11, res12, res13, res14,
--- > res21, res22, res23, res24,
--- > res31, res32, res33, res34,
--- > res41, res42, res43, res44,
--- > res51, res52, res53, res54,
--- > res61, res62, res63, res64,
--- > res71, res72, res73, res74,
--- > res81, res82, res83, res84,
+-- Constructors: @res[1-8][1-4]@.
 res22 :: ExB b
   => (a1 -> a2 -> (a1', a2')) -- ^ function on values
   -> b a1                     -- ^ first input
@@ -183,12 +174,7 @@ degrade a = (/!\) a
 -- state (&#8712; /&#945;/) if the inputs (their res) belongs
 -- to the set of extended values (&#8712; /b/).
 --
--- You can choose from the following exported functions:
---
--- > ignore11, ignore12, ignore13, ignore14,
--- > ignore21, ignore22, ignore23, ignore24,
--- > ignore31, ignore32, ignore33, ignore34,
--- > ignore41, ignore42, ignore43, ignore44,
+-- Constructors: @ignore[1-4][1-4]@.
 ignore22 :: ExB b
          => (a1 -> a2 -> a1' -> a2' -> (a1, a2))
          -- ^ function of @Y + X@ arguments

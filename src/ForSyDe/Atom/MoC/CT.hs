@@ -135,8 +135,8 @@ module ForSyDe.Atom.MoC.CT (
   Signal, unit, unit2, unit3, unit4, infinite,
   signal, checkSignal, 
 
-  plot, plot2, plot3, plot4,
-  plotFloat, plotFloat2, plotFloat3, plotFloat4,
+  -- plot, plot2, plot3, plot4,
+  -- plotFloat, plotFloat2, plotFloat3, plotFloat4,
   
   -- * @CT@ process constuctors
 
@@ -148,14 +148,22 @@ module ForSyDe.Atom.MoC.CT (
   -- In the examples below we have imported and instantiated the
   -- functions such as @e'@ @pi'@, @sin'@ and @cos'@ from the
   -- collection of utilities in "ForSyDe.Atom.MoC.Time" and
-  -- "ForSyDe.Atom.MoC.TimeStamp" :
+  -- "ForSyDe.Atom.MoC.TimeStamp". Also, for the sake of documentation
+  -- the interactive examples are only dumping the CT signals in data
+  -- files using the 'dumpDat' utility defined in
+  -- "ForSyDe.Atom.Utility.Plot", according to the custom @cfg@
+  -- structure. These files can be further plotted by any tool of
+  -- choice, or using the plotting utilities provided in the
+  -- "ForSyDe.Atom.Utility.Plot" module.
   --
+  -- > import ForSyDe.Atom.Utility.Plot
   -- > import ForSyDe.Atom.MoC.Time as Time
   -- > import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
   -- > let pi'  = TimeStamp.pi
   -- > let exp' = Time.exp
   -- > let sin' = Time.sin
   -- > let cos' = Time.cos
+  -- > let cfg  = defaultCfg {xmax=10, rate=0.1}
 
   -- ** Simple
 
