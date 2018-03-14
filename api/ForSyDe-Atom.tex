@@ -1,0 +1,727 @@
+\haddockmoduleheading{ForSyDe.Atom}
+\label{module:ForSyDe.Atom}
+\haddockbeginheader
+{\haddockverb\begin{verbatim}
+module ForSyDe.Atom (
+    ExB(extend, (/.\), (/*\), (/&\), (/!\)),  Stream(NullS, (:-)), 
+    module ForSyDe.Atom.MoC.Stream,  Time,  TimeStamp, 
+    MoC(Fun, Ret, (-.-), (-*-), (-*), (-<-), (-&-)), 
+    Skeleton((=.=), (=*=), (=\=), (=<<=), first, last), 
+    module ForSyDe.Atom.Utility,  (||<)
+  ) where\end{verbatim}}
+\haddockendheader
+
+The formal foundation upon which ForSyDe \href{#sander04}{[Sander04]}
+ defines its semantics is the \emph{tagged signal model}
+ \href{ForSyDe-Atom.html#lee98}{[Lee98]}.  This is a denotational
+ framework introduced by Lee and Sangiovanni-Vincentelli as a common
+ meta model for describing properties of concurrent systems in
+ general terms as sets of possible behaviors. Systems are regarded
+ as \emph{compositions} of \emph{processes} acting on \emph{signals} which are sets
+ of \emph{tagged events}. Signals are characterized by a \emph{tag system}
+ which determines causality between events, and could model time,
+ precedence relationships, synchronization points, and other key
+ properties. Based on how tag systems are defined, one can identify
+ several \emph{Models of Computations (MoCs)} as classes of behaviors
+ dictating the semantics of execution and concurrency in a network
+ of processes.\par
+These concepts are the supporting pillars of ForSyDe's philosophy,
+ and state the purpose of the \haddocktt{forsyde-atom} library: it is supposed
+ to be a modelling framework used as a proof-of-concept for the
+ atom-based approach to cyber-physical systems
+ \href{ForSyDe-Atom.html#ungureanu17}{[Ungureanu17]}. This approach
+ extends the tagged signal model by systematically deconstructing
+ processes to their basic semantics and recreating them using a
+ minimal language of primitive building blocks called \emph{atoms}. It
+ also tries to expand the scope of this model by exploiting more
+ aspects than just timing, by adding primitives for parallelism,
+ behavior, etc.\par
+The API documentation is structured as follows: this page provides
+ an overview of the general notions and concepts, gently introducing
+ the separate modules and the motivation behind them. Each major
+ module corresponds to a separate \emph{layer}
+ \href{ForSyDe-Atom.html#ungureanu17}{[Ungureanu17]} implemented as a type
+ class. The documentation pages for each layer and for each of their
+ instances contains in-depth knowledge and examples, and can be
+ accessed from the contents page or by following the links
+ suggested. For more complex examples and tutorials follow the links
+ in the \href{https://github.com/forsyde/forsyde-atom}{project web page}.\par
+ \textbf{IMPORTANT!!!} All multi-parameter patterns and
+ utilities provided by the library API as higher-order functions are
+ named along the lines of \haddocktt{functionMN} where \haddocktt{M} represents the
+ number of \textbf{\emph{curried}} inputs (i.e. \haddocktt{a1\ ->\ a2\ ->\ ...\ ->\ aM}),
+ while \haddocktt{N} represents the number of \textbf{\emph{tupled}} outputs
+ (i.e. \haddocktt{(b1,b2,...,bN)}). To avoid repetition we only provide
+ documentation for functions with 2 inputs and 2 outputs
+ (i.e. \haddocktt{function22}), while the available ones are mentioned as a
+ regex (i.e. \haddocktt{function{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}). In case the provided functions
+ do not suffice, feel free to implement your own patterns following
+ the examples in the source code.\par
+
+\section{The layered process model}
+The \haddocktt{forsyde-atom} project is led by three main policies:\par
+\begin{enumerate}
+\item 
+in order to cope with the complexity of cyber-physical systems
+ (CPS) it tries to separate the concerns such as computation,
+ timing, synchronization, parallelism, structure, behavior, etc.\par
+
+\item 
+in order to have a small, ideally minimal grammar to reason
+ about systems correctness, it aims to provide primitive
+ (indivisible) operators called \emph{atoms} as building blocks for
+ independently developing complex aspects of a system's execution
+ through means of composition or generalization.\par
+
+\item 
+in order to express complex behaviors with a minimal grammar,
+ it decouples structure (composition) from meaning (semantics),
+ the only semantics carriers being atoms. Thus complex behaviors
+ can be described in terms of \emph{patterns of atoms}. Using ad-hoc
+ polymorphism, atoms can be overloaded with different semantics
+ triggered by the data type they input, whereas their composition
+ is always the same.\par
+
+\end{enumerate}
+\begin{description}
+\item[\haddocktt{atom}] the elementary (primitive, indivisible) constructor
+ which embeds a set of semantics relevant for their respective
+ layer (e.g. timing, behavioural, structural, etc.)
+\item[\haddocktt{atom\ patterns}] meaningful compositions of atoms. They are
+ provided as constructors which need to be properly instantiated
+ in order to be used. We also use the term "pattern" to
+ differentiate atom compositions as constructors from atoms as
+ constructors.
+\end{description}The first policy, i.e. the separation of concerns led to the
+ so-called \emph{layered process model} which is reflected in the
+ library by providing separate major modules associated with each
+ layer. Layers as such are independent collections of entities for
+ modeling different aspects of CPS. These aspects interact through
+ means of higher-order functions, wrapping each other in as
+ structured fashion in a way which can be visualized as below.\par
+                 
+ (image: fig/misc-layered-model.png)\par
+                 Layers are implemented as type classes which imply:\par
+                 \begin{itemize}
+                 \item
+                 \textbf{atoms} as function signatures belonging to the type class;\par
+                 
+                 \item
+                 \textbf{patterns} which are compositions atoms, provided as constructors;\par
+                 
+                 \item
+                 \textbf{data types} for all the classes of behaviors concerning the
+ aspect described by the layer in question. These types
+ instantiate the above type class and overload the atoms with
+ semantics in accordance to the behavior described. For example,
+ the \haddockid{MoC} layer is currently instantiated by
+ types describing the \haddockid{CT},
+ \haddockid{DE}, \haddockid{SY} and
+ \haddockid{SDF} MoCs.\par
+                 
+                 \end{itemize}
+                 In order to model interleaving aspects of CPS, layers interact
+ with each other through means of higher order functions. As such,
+ each layer describes some atoms as higher-order functions which
+ take entities belonging to another layer as arguments.
+ Intrinsically, the data types belonging to a layer may be wrapping
+ types of other layers, as depicted in the \href{#layered-model}{figure}
+ above. For a short comprehensive overview on layers, please refer
+ to \href{ForSyDe-Atom.html#ungureanu17}{[Ungureanu17]}.\par
+                 By convention, the first (innermost) layer is always the
+ \emph{function layer} which describes arbitrary functions on data and
+ expresses the system's functional aspects. In the following
+ paragraphs we will give an overview of the "outer" layers
+ currently implemented in \haddocktt{forsyde-atom}, which in comparison,
+ express the extra-functional aspects of a system (timing,
+ behavior, synchronization, and so on).\par
+                 
+\section{The Extended Behavior (ExB) Layer}
+As seen in \href{#layered-model}{layered process model}, the extended
+ behavior layer expands the set of possible behaviors implied by a
+ layer (typically the function layer), by defining a set of
+ symbols with \emph{known} semantics, and adding it to (i.e. wrapping)
+ the pool of possible values or states.\par
+While semantically the \haddockid{ExB} layer extends the value pool in
+ order to express special events (e.g. error messages or even the
+ complete absence of events), it practically provides an
+ independent environment to model events with a default/known
+ response, independently of the data path. These responses are
+ particularly captured by atoms, thus enforcing the high-level
+ separation of concerns between e.g. control and data paths.\par
+This layer provides:\par
+\begin{itemize}
+\item
+a set of extended behavior atoms defining the interfaces for
+ the resolution and response functions, as part of the \haddockid{ExB} type
+ class \emph{(see below)}.\par
+
+\item
+a library of function wrappers as specific atom patterns
+ (\emph{Check the \haddocktt{ForSyDe.Atom.ExB} module for extensive}
+ \emph{documentation}).\par
+
+\item
+a set of data types defining classes of behaviors and
+ instantiating the \haddockid{ExB} type class (\emph{check the links in the}
+ \emph{\href{#section.i:ExB}{instances} section for extensive documentation}).\par
+
+\end{itemize}
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Functor\ b\ =>\ ExB\ b\ where
+\end{tabular}]\haddockbegindoc
+Class which defines the atoms for the extended behavior layer.\par
+As its name suggests, this layer is extending the behavior of
+ processes (or merely of functions if we ignore timing semantics
+ completely), by expanding the domains of the wrapped layer
+ (e.g. the set of values) with symbols having clearly-defined
+ semantics (e.g. special events with known responses).\par
+The types associated with this layer can simply be describes as:\par
+(image: fig/eqs-exb-types.png)\par
+where  \emph{α} is a base type and \emph{b} is the type extension,
+ i.e. a set of symbols with clearly-defined semantics.\par
+Extended behavior atoms are functions of these types, defined as
+ interfaces in the \haddockid{ExB} type class.\par
+
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ ExB\ AbstExt
+\end{tabular}]\haddockbegindoc
+Implements the absent semantics of the extended behavior atoms.\par
+
+\end{haddockdesc}
+\section{The Model of Computation (MoC) Layer}
+This layer represents a major part of the \haddocktt{forsyde-atom}
+ library and is concerned in modeling the timing aspects of
+ CPS. While its foundations have been layered in the classical
+ ForSyDe \href{#sander04}{[Sander04]}, it is mainly inspired from
+ \href{#lee98}{[Lee98]} an it tries to follow the tagged signal model as
+ closely as it is permitted by the host language, and with the
+ adaptations require by the atom approach.\par
+Although a short introduction of the tagged signal model has been
+ written in the introduction of this documentation, we feel
+ obliged to provide a primer in the classical ForSyDe theory in
+ order to understand how everything fits together.\par
+
+\subsection{Signals}
+\href{#lee98}{[Lee98]} defines signals as (ordered) sets of events
+ where each event is composed of a tag \emph{T} and a value
+ \emph{V}. Similarly, in ForSyDe a signal is defined as a (partially or
+ totally) \emph{ordered sequence} of events that enables processes to
+ communicate and synchronize. Sequencing might infer an implicit
+ order of events, but more importantly it determines an order of
+ evaluation, which is a key piece of a simulation engine.\par
+(image: fig/misc-tagged-signal.png)\par
+In ForSyDe-Atom, sequencing is achieved using the \haddockid{Stream} data
+ type, inspired from \href{#reekie95}{[Reekie95]}. In ForSyDe-Atom,
+ signals are streams that carry \emph{events}, where each type of event
+ is identified by a type constructor which defines its tag
+ system. In other words, we can state that through its tag system,
+ a signal is \emph{bound} to a MoC.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+data\ Stream\ e
+\end{tabular}]\haddockbegindoc
+\haddockbeginconstrs
+\haddockdecltt{=} & \haddockdecltt{NullS} & terminates a signal \\
+\haddockdecltt{|} & \haddockdecltt{e (:-) (Stream e)} & the default constructor appends an
+ event to the head of the stream \\
+\end{tabulary}\par
+\haddockbeginconstrs
+\end{tabulary}\par
+Defines a stream of events, encapsulating them in a structure
+ isomorphic to an infinite list \href{ForSyDe-Atom.html#bird87}{[Bird87]},
+ thus all properties of lists may also be applied to
+ \haddockid{Stream}s. While, in combination with lazy evaluation, it is
+ possible to create and simulate infinite signals, we need to ensure
+ that the first/previous event is always fully evaluated. This can
+ be translated into the following rule:\par
+\begin{description}
+\item[zero-delay feedbacks] are forbidden, due to un-evaluated
+ self-referential calls. In a feedback loop, there always has to be
+ enough events to ensure the data flow.
+\end{description}This rule imposes that the stream of data is uninterrupted in order
+ to have an evaluatable kernel every time a new event is produced
+ (i.e. to avoid deadlocks). Thus we can add the rule:\par
+                 \begin{description}
+                 \item[cleaning of output events] is also forbidden.  In other words, for
+ each new input at any instant in time, a process must react with
+ \emph{at least} one output event.
+                 \end{description}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Functor\ Stream
+\end{tabular}]\haddockbegindoc
+allows for the mapping of an arbitrary function \haddocktt{(a\ ->\ b)} upon
+ all the events of a \haddocktt{(Stream\ a)}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Applicative\ Stream
+\end{tabular}]\haddockbegindoc
+enables the \haddockid{Stream} to behave like a \haddockid{ZipList}\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Foldable\ Stream
+\end{tabular}]\haddockbegindoc
+provides folding functions useful for implementing utilities, such as \haddockid{length}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Read\ a\ =>\ Read\ (Stream\ a)
+\end{tabular}]\haddockbegindoc
+signal \haddocktt{(1\ :-\ 2\ :-\ NullS)} is read using the string \haddocktt{"{\char '173}1,2{\char '175}"}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Show\ a\ =>\ Show\ (Stream\ a)
+\end{tabular}]\haddockbegindoc
+signal \haddocktt{(1\ :-\ 2\ :-\ NullS)} is represented as \haddocktt{{\char '173}1,2{\char '175}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{SY} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{SDF} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{DE} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{CT} signals.\par
+
+\end{haddockdesc}
+For extended documentation and a list of all utilities associated
+ with the \haddockid{Stream} type you can consult:\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+module\ ForSyDe.Atom.MoC.Stream
+\end{tabular}]
+\end{haddockdesc}
+\subsection{Processes}
+As described in \href{#lee98}{[Lee98]}, processes are either "set of
+ possible behaviors" of signals or "relations" between multiple
+ signals. One can describe complex systems by composing processes,
+ which in this case is interpreted as the "intersection of the
+ behaviors of each of the processes being involved".\par
+\begin{description}
+\item[monotonicity] In order to ensure causal order and determinancy,
+ processes need to be \emph{monotonic} \href{#lee98}{[Lee98]}. A signal's
+ tags (if explicit) \emph{must be} a partial or total order and all tag
+ alterations must be monotonic.
+\end{description}ForSyDe inherits this definition with respect to a functional
+ view, thus a \textbf{process} \emph{p} is a functional mapping over (the
+ history of) signals. A process can \emph{only} be instantiated using a
+ \textbf{process constructor} \emph{pc}, which is a higher order function
+ embedding MoC semantics and/or a specific composition, but
+ lacking functionality.\par
+                 
+ (image: fig/misc-process.png)\par
+                 Since processes are functions, process composition is equivalent
+ to function composition. This means that composing two processes
+ \haddocktt{p1} and \haddocktt{p2} grants the process \haddocktt{p2\ .\ p1}\par
+                 \begin{quote}
+                 {\haddockverb\begin{verbatim}
+                 p1      :: Signal α -> Signal β
+p2      :: Signal β -> Signal γ
+p2 . p1 :: Signal α -> Signal γ\end{verbatim}}
+                 \end{quote}
+                 This implies that there is a signal \haddocktt{Signal\ beta\ } that
+  "streams" the result from \haddocktt{p1} to \haddocktt{p2}, as suggested in the
+  drawing:\par
+                 (image: fig/misc-ser-composition.png)\par
+                 \textbf{Process networks} describe ForSyDe systems in terms of
+ compositions of processes and originate from Reekie's process
+ nets \href{#reekie95}{[Reekie95]}. A process network is a process itself,
+ i.e. function from signal(s) to signal(s). The composition above
+ \haddocktt{p2\ .\ p1\ } can also be regarded as a process network.\par
+                 In ForSyDe-Atom atoms can be regarded as process constructors as
+ their instantiations are functions on signals of events.
+ Instantiations of atom patterns are the exact equivalent of
+ process networks, which themselves are also processes, depending
+ on the level of abstraction you are working with (hierarchical
+ blocks vs. flat structures).\par
+                 To understand the versatility of composition and partial
+ application in building process constructors, consider the
+ example above where composition of two processes infers a signal
+ between them. This mechanism also works when composing
+ constructors (un-instantiated atoms), which yields another
+ constructor. By instantiating (fully applying) the new
+ constructor we obtain a process network equivalent to the
+ composition of the respective primitive processes obtained by
+ instantiating (fully applying) the component atoms, like in the
+ example below:\par
+                 (image: fig/misc-process-constructor.png)\par
+                 Now if we visualize process networks as graphs, where processes
+ are nodes and signals are edges, a meaningful process composition
+ could be regarded as graph patterns. Therefore it is safe to
+ associate process constructors as patterns in process networks.\par
+                 
+\subsection{Models of Computation}
+As mentioned in the introduction, \emph{MoCs} are classes of behaviors
+ dictating the semantics of execution and concurrency in a network
+ of processes. Based on the definitions of their tag systems
+ ForSyDe identifies MoCs as:\par
+\begin{enumerate}
+\item 
+\emph{timed} where \emph{T} is a totally ordered set and \emph{t} express the
+ notion of physical time (e.g. continuous time
+ \haddockid{CT}, discrete event
+ \haddockid{DE}) or precedence (e.g. synchronous
+ \haddockid{SY});\par
+
+\item 
+\emph{untimed}, where \emph{T} is a partially ordered set and \emph{t} is
+ expressed in terms of constraints on the tags in signals
+ (e.g. dataflow, synchronous data flow
+ \haddockid{SDF}).\par
+
+\end{enumerate}
+As concerning MoCs, ForSyDe implements the execution semantics
+ \emph{through process constructors}, abstracting the timing model and
+ inferring a schedule of the process network. In ForSyDe-Atom all
+ atoms embed operating semantics dictated by a certain MoC and are
+ side-effect-free. This ensures the functional correctness of a
+ system even from early design stages.\par
+
+\subsection{Representing Time}
+For explicit time representation, ForSyDe-atom provides two
+ distinct data types.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ Time\ =\ Rational
+\end{tabular}]\haddockbegindoc
+Type alias for the type to represent metric (continuous)
+ time. Underneath we use \haddockid{Rational} that is able to represent any
+ \emph{t} between \emph{t₁} < \emph{t₂} ∈ \emph{T}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ TimeStamp\ =\ DiffTime
+\end{tabular}]\haddockbegindoc
+Alias for the type representing discrete time. It is inherently
+ quantizable, the quantum being a picosecond (10⁻¹²
+ seconds), thus it can be considered order-isomorphic with a set of
+ integers, i.e. between any two timestamps there is a finite number
+ of timestamps. Moreover, a timestamp can be easily translated into
+ a rational number representing fractions of a second, so the
+ conversion between timestamps (discrete time) and rationals
+ (analog/continuous time) is straightforward.\par
+This type is used in the explicit tags of the
+ \haddockid{DE} MoC (and subsequently the discrete event
+ evaluation engine for simulating the \haddockid{CT} MoC).\par
+
+\end{haddockdesc}
+\subsection{MoC Layer Overview}
+This layer consists of:\par
+\begin{itemize}
+\item
+4 atoms as infix operators, implemented as methods of the type
+ class \haddockid{MoC}. Since each MoC is determined by its tag system, we
+ expose this 
+ which are instances of this class. Thus an event's type will
+ trigger an atom to behave in accordance to its associated MoC.\par
+
+\item
+a library of meaningful atom patterns as process constructors.
+ (\emph{Check the \haddocktt{ForSyDe.Atom.MoC} module for extensive}
+ \emph{documentation}).\par
+
+\item
+a set of data types defining tag systems through the structure
+ of events (i.e. \emph{T} × \emph{V}). They are instances of the \haddockid{MoC}
+ type class and define the rules of execution that will trigger an
+ atom to behave in accordance to its associated MoC. For each
+ supported MoC, \haddocktt{forsyde-atom} provides a module which defines the
+ signal (event) type, but also a set of utilities and process
+ constructors as specific instantiations of atom patterns.
+ (\emph{Check the links in the \href{#section.i:MoC}{instances} section for}
+ \emph{extensive documentation}).\par
+
+\end{itemize}
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Applicative\ e\ =>\ MoC\ e\ where
+\end{tabular}]\haddockbegindoc
+This is a type class defining interfaces for the MoC layer
+ atoms. Each model of computation exposes its tag system through a
+ unique event constructor as an instance of this class, which
+ defines \emph{T} × \emph{V}.\par
+ To express all possible MoCs which can be described using
+ a \emph{tagged} \emph{signal} \emph{model} we need to capture the most general
+ form of their atoms. Recall that all atoms in the layered framework
+ are represented as higher-order functions on structured types
+ (instances of this class), taking functions of other (lower) layers
+ as arguments. While this principle stands also for this layer, the
+ functions taken as arguments need to be formatted for each MoC in
+ particular in order to capture additional information, which we can
+ call in general terms as the \emph{execution context}.\par
+One typical example of additional information is the consumption
+ and production rates of for data flow MoCs (e.g. SDF). In this case
+ the passed functions are defined over "partitions" of events,
+ i.e. groupings of events with the same partial order in relation
+ to, for example, a process firing. The formal description of such a
+ "formatted function" taken as argument by a MoC entity is:\par
+(image: fig/eqs-moc-atom-formatted-func.png)\par
+where \emph{a} and \emph{b} might be Cartesian products of different types,
+ corresponding to how many signals the constructor is applied to or
+ how many signals it yields, and each type is expressed as:\par
+(image: fig/eqs-moc-atom-formatted-arg.png)\par
+While, as you can see above, the execution context can be extracted
+ from the type information, working with type-level parameters is
+ not a trivial task in Haskell, especially if we want to describe a
+ general and extensible type class. This is why we have chosen a
+ pragmatic approach in implementing the \haddockid{MoC} class:\par
+\begin{itemize}
+\item
+any (possible) Cartesian product of \emph{α} is represented using
+ a recursive type, namely a list {\char 91}\emph{α}{\char 93}.\par
+
+\item
+as the execution context cannot (or can hardly) be extracted from
+ the recursive type, in the most general case we pass both context
+ \emph{and} argument as a pair (see each instance in particular). To aid
+ in pairing contexts with each argument in a function, the \haddocktt{ctxt}
+ utilities are provided (see \haddockid{ctxt22}).\par
+
+\item
+this artifice was masked using the generic type families \haddockid{Fun}
+ and \haddocktt{Res}. \par
+
+\end{itemize}
+
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ SY
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the SY
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ SDF
+\end{tabular}]\haddockbegindoc
+Implenents the SDF semantics for the MoC atoms\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ DE
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the DE
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ CT
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the CT
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\section{The Skeleton Layer}
+The skeleton layer describes recursive and regular composition
+ of processes which expose inherent potential for parallelism. As
+ such, it wraps lower layer entities (i.e. processes, signals),
+ into regular structures called \emph{categorical types}. Most of the
+ ground work for this layer is based on the categorical type
+ theory \href{#bird97}{[Bird97]}, which enable the description of
+ algorithmic skeletons as high-level constructs encapsulating
+ parallelism and communication with an associated cost complexity.\par
+This layer provides:\par
+\begin{itemize}
+\item
+3 atoms as infix operators which, as demonstrated in \href{#bird97}{[Bird97]}
+ and \href{#skillicorn05}{[Skillicorn05]}, are enough to describe \emph{all}
+ algorithmic skeletons.\par
+
+\item
+a library of generic skeletons as specific atom patterns.
+ (\emph{Check the \haddocktt{ForSyDe.Atom.Skeleton} module for extensive}
+ \emph{documentation}).\par
+
+\item
+a set of different categorical types which implement these
+ atoms, as instances of the \haddockid{Skeleton} type class. These types
+ provide additional skeletons patterns of atoms which takes as
+ arguments their own type constructors.
+ (\emph{Check the links in the \href{#section.i:Skeleton}{instances} section for}
+ \emph{extensive documentation}).\par
+
+\end{itemize}
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Functor\ c\ =>\ Skeleton\ c\ where
+\end{tabular}]\haddockbegindoc
+Class containing all the Skeleton layer atoms.\par
+This class is instantiated by a set of categorical types,
+ i.e. types which describe an inherent potential for being evaluated
+ in parallel. Skeletons are patterns from this layer. When skeletons
+ take as arguments entities from the MoC layer (i.e. processes), the
+ results themselves are parallel process networks which describe
+ systems with an inherent potential to be implemented on parallel
+ platforms. All skeletons can be described as composition of the
+ three atoms below (\haddockid{=<<=} being just a specific instantiation of
+ \haddockid{={\char '134}=}). This possible due to an existing theorem in the categorical
+ type theory, also called the Bird-Merteens formalism
+ \href{ForSyDe-Atom.html#bird97}{[Bird97]}:\par
+\par
+\begin{description}
+\item[factorization] A function on a categorical type is an algorithmic
+ skeleton (i.e. catamorphism) \emph{iff} it can be represented in a
+ factorized form, i.e. as a \emph{map} composed with a \emph{reduce}.
+\end{description}Consequently, most of the skeletons for the implemented categorical
+ types are described in their factorized form, taking as arguments
+ either:\par
+                 \begin{itemize}
+                 \item
+                 type constructors or functions derived from type constructors\par
+                 
+                 \item
+                 processes, i.e. MoC layer entities\par
+                 
+                 \end{itemize}
+                 Most of the ground-work on algorithmic skeletons on which this
+ module is founded has been laid in \href{ForSyDe-Atom.html#bird97}{[Bird97]},
+ \href{ForSyDe-Atom.html#skillicorn05}{[Skillicorn05]} and it founds many
+ of the frameworks collected in \href{ForSyDe-Atom.html#gorlatch03}{[Gorlatch03]}.\par
+                 
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Skeleton\ Vector
+\end{tabular}]\haddockbegindoc
+Ensures that \haddockid{Vector} is a structure associated with the Skeleton Layer.\par
+
+\end{haddockdesc}
+\section{Utilities}
+The \haddockid{Atom} module exports a set of utility functions,
+ mainly for aiding the designer to avoid working with zipped
+ tuples which might pollute the design. Utilities are function
+ without any semantical value (thus not considered atoms). They
+ operate on and might alter the \emph{structure} of some datum, but it
+ does not affect its state.\par
+For a list of all the provided utilities, please consult the
+ following module:\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+module\ ForSyDe.Atom.Utility
+\end{tabular}]
+\end{haddockdesc}
+Among the most useful utilities we mentions the \haddocktt{unzip}
+ function. Recall that in all our definitions for patterns, they
+ were expressed in the most general form as functions from \emph{n}-ary
+ Cartesian products to \emph{m}-ary Cartesian products. While partial
+ application provides a versatile mechanism that can translate
+ n-ary inputs into curried arguments (which is very powerful in
+ combination with an applicative style), we cannot do so for
+ return types. For the latter we must rely on tuples. But working
+ with tuples of data wrapped in several layers of structures
+ becomes extremely cumbersome. Take for example the case of a
+ process constructed with \emph{pc} in equation (1) below. Using only
+ the provided atoms to implement \emph{pc} would give us a process
+ which returns only one signal of a tuple and not, as we would
+ like, a tuple of signals of events.\par
+(image: fig/misc-unzip.png)\par
+Therefore, by implementing all data types associated with signals
+ and events as instances of \haddockid{Functor}, we were able to provide a
+ (set of) \emph{unzip} utility functions defined as in equation (2)
+ above, in the \haddocktt{ForSyDe.Atom.Utility} module.  Mind that we call
+ \emph{unzip} a utility and not an atom, since it has no
+ synchronization nor behavior semantic. It just conveniently
+ "lifts" the wrapped tuples in order to create "collections" of
+ events and signals, and it is imposed by the mechanisms of the
+ type system in the host language.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+(||<)\ ::\ (Functor\ f1,\ Functor\ f2)\ =>\\\ \ \ \ \ \ \ \ \ f1\ (f2\ (a1,\ a2))\ ->\ (f1\ (f2\ a1),\ f1\ (f2\ a2))
+\end{tabular}]\haddockbegindoc
+This set of utility functions "unzip" nested n-tuples, provided
+ as postfix operators. They are crucial for reconstructing data
+ types from higher-order functions which input functions with
+ multiple outputs. It relies on the nested types being instances of
+ \haddockid{Functor}.\par
+The operator convention is \haddocktt{(|+<+)}, where the number of \haddocktt{|}
+ represent the number of layers the n-tuple is lifted, while the
+ number of \haddocktt{<} + 1 is the order \emph{n} of the n-tuple.\par
+\haddocktt{ForSyDe.Atom.Utility} exports the constructors below. Please
+ follow the examples in the source code if they do not suffice:\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+   |<,    |<<,    |<<<,    |<<<<,    |<<<<<,    |<<<<<<,    |<<<<<<<,    |<<<<<<<<,
+  ||<,   ||<<,   ||<<<,   ||<<<<,   ||<<<<<,   ||<<<<<<,   ||<<<<<<<,   ||<<<<<<<<,
+ |||<,  |||<<,  |||<<<,  |||<<<<,  |||<<<<<,  |||<<<<<<,  |||<<<<<<<,  |||<<<<<<<<,  
+||||<, ||||<<, ||||<<<, ||||<<<<, ||||<<<<<, ||||<<<<<<, ||||<<<<<<<, ||||<<<<<<<<, \end{verbatim}}
+\end{quote}
+Example:\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> :set -XPostfixOperators
+
+>>> ([Just (1,2,3), Nothing, Just (4,5,6)] ||<<)
+([Just 1,Nothing,Just 4],[Just 2,Nothing,Just 5],[Just 3,Nothing,Just 6])
+
+\end{verbatim}}
+\end{quote}
+\end{haddockdesc}
+\section{Bibliography}
+ \href{https://www.cs.ox.ac.uk/files/3378/PRG56.pdf}{[Bird87]} Bird, R. S. (1987). An introduction to the theory of lists. In \emph{Logic of programming and calculi of discrete design} (pp. 5-42). Springer Berlin Heidelberg.\par
+
+ \href{http://dl.acm.org/citation.cfm?id=248932}{[Bird97]} Bird, R. S. {\char '46} de Moor, O. (1997). Algebra of Programming. Prentice-Hall, Inc., Upper Saddle River, NJ, USA. \par
+
+ {\char 91}Fujimoto00{\char 93} Fujimoto, R. M. (2000). Parallel and distributed simulation systems (Vol. 300). New York: Wiley.\par
+
+ \href{http://ieeexplore.ieee.org/document/97300/}{[Halbwachs91]} Halbwachs, N., Caspi, P., Raymond, P., {\char '46} Pilaud, D. (1991). The synchronous data flow programming language LUSTRE. \emph{Proceedings of the IEEE, 79(9)}, 1305-1320.\par
+
+ \href{http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1}{[Gorlatch03]} Fischer, J., Gorlatch, S., {\char '46} Bischof, H. (2003). Foundations of data-parallel skeletons. In \emph{Patterns and skeletons for parallel and distributed computing} (pp. 1-27). Springer London.\par
+
+ {\char 91}Kahn76{\char 93} Kahn, G., {\char '46} MacQueen, D. (1976). Coroutines and networks of parallel processes.\par
+
+ {\char 91}Lee98{\char 93} Lee, E. A., {\char '46} Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. \emph{IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)}, 1217-1229. \par
+
+ \href{http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf}{[Reekie95]} Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.\par
+
+ \href{http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf}{[Sander04]} Sander, I., {\char '46} Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe {\char 91}formal system design{\char 93}. \emph{IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)}, 17-32.\par
+
+ \href{https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false}{[Skillicorn05]} Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.\par
+
+ \href{http://ieeexplore.ieee.org/document/7927270/}{[Ungureanu17]} Ungureanu, G., {\char '46} Sander, I., \emph{A layered formal framework for modeling of cyber-physical systems}, in 2017 Design, Automation {\char '46} Test in Europe Conference {\char '46} Exhibition (DATE), 2017, pp. 1715–1720.\par

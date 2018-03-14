@@ -1,0 +1,334 @@
+\haddockmoduleheading{ForSyDe.Atom.MoC}
+\label{module:ForSyDe.Atom.MoC}
+\haddockbeginheader
+{\haddockverb\begin{verbatim}
+module ForSyDe.Atom.MoC (
+    MoC(Fun, Ret, (-.-), (-*-), (-*), (-<-), (-&-)),  delay,  comb22, 
+    reconfig22,  state22,  stated22,  moore22,  mealy22,  ctxt22,  warg,  wres, 
+    (-*<)
+  ) where\end{verbatim}}
+\haddockendheader
+
+This module exports the core entities of the MoC layer: interfaces
+ for atoms and process constructors as patterns of atoms. It does
+ \emph{NOT} export any implementation or instantiation of any specific
+ MoC.\par
+Current MoC implementations can be used by importing their
+ respective modules:\par
+\begin{itemize}
+\item
+\haddocktt{ForSyDe.Atom.MoC.CT}\par
+
+\item
+\haddocktt{ForSyDe.Atom.MoC.DE}\par
+
+\item
+\haddocktt{ForSyDe.Atom.MoC.SY}\par
+
+\item
+\haddocktt{ForSyDe.Atom.MoC.SDF}\par
+
+\end{itemize}
+\textbf{IMPORTANT!!!}
+ see the \href{ForSyDe-Atom.html#naming_conv}{naming convention} rules
+ on how to interpret, use and develop your own constructors.\par
+
+\section{Atoms}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Applicative\ e\ =>\ MoC\ e\ where
+\end{tabular}]\haddockbegindoc
+This is a type class defining interfaces for the MoC layer
+ atoms. Each model of computation exposes its tag system through a
+ unique event constructor as an instance of this class, which
+ defines \emph{T} × \emph{V}.\par
+ To express all possible MoCs which can be described using
+ a \emph{tagged} \emph{signal} \emph{model} we need to capture the most general
+ form of their atoms. Recall that all atoms in the layered framework
+ are represented as higher-order functions on structured types
+ (instances of this class), taking functions of other (lower) layers
+ as arguments. While this principle stands also for this layer, the
+ functions taken as arguments need to be formatted for each MoC in
+ particular in order to capture additional information, which we can
+ call in general terms as the \emph{execution context}.\par
+One typical example of additional information is the consumption
+ and production rates of for data flow MoCs (e.g. SDF). In this case
+ the passed functions are defined over "partitions" of events,
+ i.e. groupings of events with the same partial order in relation
+ to, for example, a process firing. The formal description of such a
+ "formatted function" taken as argument by a MoC entity is:\par
+(image: fig/eqs-moc-atom-formatted-func.png)\par
+where \emph{a} and \emph{b} might be Cartesian products of different types,
+ corresponding to how many signals the constructor is applied to or
+ how many signals it yields, and each type is expressed as:\par
+(image: fig/eqs-moc-atom-formatted-arg.png)\par
+While, as you can see above, the execution context can be extracted
+ from the type information, working with type-level parameters is
+ not a trivial task in Haskell, especially if we want to describe a
+ general and extensible type class. This is why we have chosen a
+ pragmatic approach in implementing the \haddockid{MoC} class:\par
+\begin{itemize}
+\item
+any (possible) Cartesian product of \emph{α} is represented using
+ a recursive type, namely a list {\char 91}\emph{α}{\char 93}.\par
+
+\item
+as the execution context cannot (or can hardly) be extracted from
+ the recursive type, in the most general case we pass both context
+ \emph{and} argument as a pair (see each instance in particular). To aid
+ in pairing contexts with each argument in a function, the \haddocktt{ctxt}
+ utilities are provided (see \haddockid{ctxt22}).\par
+
+\item
+this artifice was masked using the generic type families \haddockid{Fun}
+ and \haddocktt{Res}. \par
+
+\end{itemize}
+
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ SY
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the SY
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ SDF
+\end{tabular}]\haddockbegindoc
+Implenents the SDF semantics for the MoC atoms\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ DE
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the DE
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ CT
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the CT
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\section{Process constructors}
+Process constructors are defined as patterns of MoC
+ atoms. Check the \href{#naming_conv}{naming convention} of the API in
+ the page description.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+delay\ ::\ MoC\ e\ =>\ Stream\ (e\ a)\ ->\ Stream\ (e\ a)\ ->\ Stream\ (e\ a)
+\end{tabular}]\haddockbegindoc
+(image: fig/eqs-moc-pattern-delay.png)
+   (image: fig/moc-pattern-delay.png)\par
+The \haddockid{delay} process provides both initial token(s) and shifts the
+ phase of the signal. In other words, it "delays" a signal with
+ one or several events.\par
+There is also an infix variant \haddockid{-{\char '46}>-} (\haddocktt{infixl\ 3}). To justify the
+ first argument, see the documentation of the \haddockid{-<-} atom.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+comb22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & MoC e \\
+                     \haddockdecltt{=>} & \haddockdecltt{Fun e a1 (Fun e a2 (Ret e b1, Ret e b2))} & combinational function (\href{#comb22f}{*}) \\
+                                                                                                     \haddockdecltt{->} & \haddockdecltt{Stream (e a1)} & first input signal \\
+                                                                                                                                                          \haddockdecltt{->} & \haddockdecltt{Stream (e a2)} & second input signal \\
+                                                                                                                                                                                                               \haddockdecltt{->} & \haddockdecltt{(Stream (e b1), Stream (e b2))} & two output signals \\
+\end{tabulary}\par
+ \emph{(*) to be read } \haddocktt{a1\ ->\ a2\ ->\ (b1,\ b2)} \emph{where each}
+ \emph{argument and result might be individually wrapped with a context}
+ \emph{and might also express a partition.}\par
+(image: fig/eqs-moc-pattern-comb.png)
+ (image: fig/moc-pattern-comb.png)\par
+The \haddocktt{comb} processes takes care of synchronization between signals
+ and maps combinatorial functions on their event values. \par
+This library exports constructors of type \haddocktt{comb{\char 91}1-8{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+reconfig22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & MoC e \\
+                     \haddockdecltt{=>} & \haddockdecltt{Stream (e (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2))))} & signal carrying functions (\href{#reconfig22f}{*}) \\
+                                                                                                                  \haddockdecltt{->} & \haddockdecltt{Stream (e a1)} & first input signal \\
+                                                                                                                                                                       \haddockdecltt{->} & \haddockdecltt{Stream (e a2)} & second input signal \\
+                                                                                                                                                                                                                            \haddockdecltt{->} & \haddockdecltt{(Stream (e b1), Stream (e b2))} & two output signals \\
+\end{tabulary}\par
+ \emph{(*) to be read } \haddocktt{a1\ ->\ a2\ ->\ (b1,\ b2)} \emph{where each}
+ \emph{argument and result might be individually wrapped with a context}
+ \emph{and might also express a partition.}\par
+(image: fig/eqs-moc-pattern-reconfig.png)
+ (image: fig/moc-pattern-reconfig.png)\par
+The \haddocktt{reconfig} processes constructs adaptive processes, where the
+ first signal carries functions, and it is synchronized with all the
+ other signals. \par
+This library exports constructors of type \haddocktt{reconfig{\char 91}1-8{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+state22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & MoC e \\
+                     \haddockdecltt{=>} & \haddockdecltt{Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e st2))))} & next state function (\href{#state22ns}{*}) \\
+                                                                                                                               \haddockdecltt{->} & \haddockdecltt{(Stream (e st1), Stream (e st2))} & initial state(s) (\href{#state22i}{**}) \\
+                                                                                                                                                                                                       \haddockdecltt{->} & \haddockdecltt{Stream (e a1)} & first input signal \\
+                                                                                                                                                                                                                                                            \haddockdecltt{->} & \haddockdecltt{Stream (e a2)} & second input signal \\
+                                                                                                                                                                                                                                                                                                                 \haddockdecltt{->} & \haddockdecltt{(Stream (e st1), Stream (e st2))} & output signals mirroring the next state(s). \\
+\end{tabulary}\par
+ \emph{(*) meaning } \haddocktt{st1\ ->\ st2\ ->\ a1\ ->\ a2\ ->\ (st1,st2)}
+ \emph{where each argument and result might be individually wrapped}
+ \emph{with a context and might also express a partition.}\par
+ \emph{(**) see the documentation for \haddockid{-<-} for justification}
+ \emph{of the type}\par
+(image: fig/eqs-moc-pattern-state.png)
+ (image: fig/moc-pattern-state.png)\par
+The \haddocktt{state} processes generate process networks corresponding to a
+ simple state machine like in the graph above. \par
+This library exports constructors of type \haddocktt{state{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+stated22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & MoC e \\
+                     \haddockdecltt{=>} & \haddockdecltt{Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e st2))))} & next state function (\href{#stated22ns}{*}) \\
+                                                                                                                               \haddockdecltt{->} & \haddockdecltt{(Stream (e st1), Stream (e st2))} & initial state(s) (\href{#stated22i}{**}) \\
+                                                                                                                                                                                                       \haddockdecltt{->} & \haddockdecltt{Stream (e a1)} & first input signal \\
+                                                                                                                                                                                                                                                            \haddockdecltt{->} & \haddockdecltt{Stream (e a2)} & second input signal \\
+                                                                                                                                                                                                                                                                                                                 \haddockdecltt{->} & \haddockdecltt{(Stream (e st1), Stream (e st2))} & output signals mirroring the next state(s). \\
+\end{tabulary}\par
+ \emph{(*) meaning } \haddocktt{st1\ ->\ st2\ ->\ a1\ ->\ a2\ ->\ (st1,st2)}
+ \emph{where each argument and result might be individually wrapped}
+ \emph{with a context and might also express a partition.}\par
+ \emph{(**) see the documentation for \haddockid{-<-} for justification}
+ \emph{of the type}\par
+(image: fig/eqs-moc-pattern-stated.png)
+ (image: fig/moc-pattern-stated.png)\par
+The \haddocktt{state} processes generate process networks corresponding to a
+ simple state machine like in the graph above. The difference
+ between \haddockid{state22} and \haddockid{stated22} is that the latter outputs the
+ current state rather than the next one. There exists a variant with
+ 0 input signals, in which case the process is a signal
+ generator.\par
+This library exports constructors of type \haddocktt{stated{\char 91}0-4{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+moore22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & MoC e \\
+                     \haddockdecltt{=>} & \haddockdecltt{Fun e st (Fun e a1 (Fun e a2 (Ret e st)))} & next state function (\href{#moore22ns}{*}) \\
+                                                                                                      \haddockdecltt{->} & \haddockdecltt{Fun e st (Ret e b1, Ret e b2)} & output decoder (\href{#moore22od}{**}) \\
+                                                                                                                                                                           \haddockdecltt{->} & \haddockdecltt{Stream (e st)} & initial state (\href{#moore22i}{***}) \\
+                                                                                                                                                                                                                                \haddockdecltt{->} & \haddockdecltt{Stream (e a1)} & first input signal \\
+                                                                                                                                                                                                                                                                                     \haddockdecltt{->} & \haddockdecltt{Stream (e a2)} & second input signal \\
+                                                                                                                                                                                                                                                                                                                                          \haddockdecltt{->} & \haddockdecltt{(Stream (e b1), Stream (e b2))} & output signals \\
+\end{tabulary}\par
+ \emph{(*) meaning } \haddocktt{st\ ->\ a1\ ->\ a2\ ->\ st\ } \emph{where each}
+ \emph{argument and result might be individually wrapped with a context}
+ \emph{and might also express a partition.}\par
+ \emph{(**) meaning } \haddocktt{st\ ->\ (b1,\ b2)\ } \emph{where each argument}
+ \emph{and result might be individually wrapped with a context and might}
+ \emph{also express a partition.}\par
+ \emph{(***) see the documentation for \haddockid{-<-} for justification}
+ \emph{of the type}\par
+(image: fig/eqs-moc-pattern-moore.png)
+ (image: fig/moc-pattern-moore.png)\par
+The \haddocktt{moore} processes model Moore state machines.\par
+This library exports constructors of type \haddocktt{moore{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+mealy22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & MoC e \\
+                     \haddockdecltt{=>} & \haddockdecltt{Fun e st (Fun e a1 (Fun e a2 (Ret e st)))} & next state function (\href{#mealy22ns}{*}) \\
+                                                                                                      \haddockdecltt{->} & \haddockdecltt{Fun e st (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))} & output decoder (\href{#mealy22od}{**}) \\
+                                                                                                                                                                                                 \haddockdecltt{->} & \haddockdecltt{Stream (e st)} & initial state (\href{#mealy22i}{***}) \\
+                                                                                                                                                                                                                                                      \haddockdecltt{->} & \haddockdecltt{Stream (e a1)} & first input signal \\
+                                                                                                                                                                                                                                                                                                           \haddockdecltt{->} & \haddockdecltt{Stream (e a2)} & second input signal \\
+                                                                                                                                                                                                                                                                                                                                                                \haddockdecltt{->} & \haddockdecltt{(Stream (e b1), Stream (e b2))} & output signals \\
+\end{tabulary}\par
+ \emph{(*) meaning } \haddocktt{st\ ->\ a1\ ->\ a2\ ->\ st\ } \emph{where each}
+ \emph{argument and result might be individually wrapped with a context}
+ \emph{and might also express a partition.}\par
+ \emph{(**) meaning } \haddocktt{st\ ->\ a1\ ->\ a2\ ->\ (b1,\ b2)\ } \emph{where}
+ \emph{each argument and result might be individually wrapped with a}
+ \emph{context and might also express a partition.}\par
+ \emph{(***) see the documentation for \haddockid{-<-} for justification}
+ \emph{of the type}\par
+(image: fig/eqs-moc-pattern-mealy.png)
+ (image: fig/moc-pattern-mealy.png)\par
+The \haddocktt{mealy} processes model Mealy state machines.\par
+This library exports constructors of type \haddocktt{mealy{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\section{Utilities}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+ctxt22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(ctx, ctx)} & argument contexts (e.g. consumption rates in SDF) \\
+                                                  \haddockdecltt{->} & \haddockdecltt{(ctx, ctx)} & result contexts (e.g. production rates in SDF) \\
+                                                                                                    \haddockdecltt{->} & \haddockdecltt{(a1
+                                                                                                                                         -> a2
+                                                                                                                                            -> (b1, b2))} & function on values/partitions of values \\
+                                                                                                                                                            \haddockdecltt{->} & \haddockdecltt{(ctx, a1
+                                                                                                                                                                                                      -> (ctx, a2
+                                                                                                                                                                                                               -> ((ctx, b1), (ctx, b2))))} & context-wrapped form of the previous function \\
+\end{tabulary}\par
+(image: fig/eqs-moc-atom-context.png)\par
+Wraps a function with the context needed by some MoCs for their
+ constructors (e.g. rates in SDF).\par
+This library exports wrappers of type \haddocktt{ctxt{\char 91}1-8{\char 93}{\char 91}1-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+warg\ ::\ c\ ->\ (a\ ->\ b)\ ->\ (c,\ a\ ->\ b)
+\end{tabular}]\haddockbegindoc
+Attaches a context parameter to a function argument (e.g
+ consumption rates in SDF). Used as kernel function in defining
+ e.g. \haddockid{ctxt22}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+wres\ ::\ p\ ->\ b\ ->\ (p,\ b)
+\end{tabular}]\haddockbegindoc
+Attaches a context parameter to a function's result (e.g
+ production rates in SDF). Used as kernel function in defining
+ e.g. \haddockid{ctxt22}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+(-*<)\ ::\ MoC\ e\ =>\\\ \ \ \ \ \ \ \ \ Stream\ (e\ (Ret\ e\ b1,\ Ret\ e\ b2))\ ->\ (Stream\ (e\ b1),\ Stream\ (e\ b2))
+\end{tabular}]\haddockbegindoc
+Utilities for extending the \haddockid{-*} atom for dealing with tupled
+ outputs. This library exports operators of form \haddocktt{-*<{\char '173}1,8{\char '175}}.\par
+
+\end{haddockdesc}

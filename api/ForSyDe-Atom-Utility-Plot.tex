@@ -1,0 +1,307 @@
+\haddockmoduleheading{ForSyDe.Atom.Utility.Plot}
+\label{module:ForSyDe.Atom.Utility.Plot}
+\haddockbeginheader
+{\haddockverb\begin{verbatim}
+module ForSyDe.Atom.Utility.Plot (
+    Config(Cfg, verbose, path, title, rate, xmax, labels, fire, other), 
+    defaultCfg,  silentCfg,  noJunkCfg,  prepare,  prepareL,  prepareV, 
+    showDat,  dumpDat,  plotGnu,  heatmapGnu,  showLatex,  dumpLatex, 
+    plotLatex,  Plottable(toCoord),  Plot(sample, sample', takeUntil, getInfo), 
+    PInfo(Info, typeid, command, measure, style, stacking, sparse),  Samples, 
+    PlotData
+  ) where\end{verbatim}}
+\haddockendheader
+
+This module imports plotting and data dumping functions working
+ with "plottable" data types, i.e. instances of the \haddockid{Plot} and
+ \haddockid{Plottable} type classes.\par
+
+\section{User API}
+The following commands are frequently used as part of the
+ normal modeling routine.\par
+
+\subsection{Configuration settings}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+data\ Config
+\end{tabular}]\haddockbegindoc
+\haddockbeginconstrs
+\haddockdecltt{=} & \haddockdecltt{Cfg} & \\
+                    \haddockdecltt{verbose :: Bool} & verbose printouts on terminal
+                    \haddockdecltt{path :: String} & directory where all dumped files will be found
+                    \haddockdecltt{title :: String} & base name for dumped files
+                    \haddockdecltt{rate :: Float} & sample rate if relevant. Useful for explicit-tagged signals, ignored otherwise.
+                    \haddockdecltt{xmax :: Float} & Maximum X coordinate. Mandatory for infinite structures, optional otherwise.
+                    \haddockdecltt{labels :: [String]} & list of labels with the names of the structures plotted
+                    \haddockdecltt{fire :: Bool} & if relevant, fires a plotting or compiling program.
+                    \haddockdecltt{other :: Bool} & if relevant, dumps additional scripts and plots.
+\end{tabulary}\par
+\haddockbeginconstrs
+\end{tabulary}\par
+Record structure containing configuration settings for the
+ plotting commands.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Show\ Config
+\end{tabular}]
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+defaultCfg\ ::\ Config
+\end{tabular}]\haddockbegindoc
+Default configuration: verbose, dump everything possible, fire
+ whatever program needed. Check source for settings.\par
+Example usage:\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> defaultCfg {xmax = 15, verbose = False, labels = ["john","doe"]}
+Cfg {verbose = False, path = "./fig", title = "plot", rate = 1.0e-2, xmax = 15.0, labels = ["john","doe"], fire = True, other = True}
+
+\end{verbatim}}
+\end{quote}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+silentCfg\ ::\ Config
+\end{tabular}]\haddockbegindoc
+Silent configuration: does not fire any program or print our
+ unnecessary info. Check source for settings.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+noJunkCfg\ ::\ Config
+\end{tabular}]\haddockbegindoc
+Clean configuration: verbose, does not dump more than necessary,
+ fire whatever program needed. Check source for settings.\par
+
+\end{haddockdesc}
+\subsection{Data preparation}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+prepare
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & Plot a \\
+                     \haddockdecltt{=>} & \haddockdecltt{Config} & configuration settings \\
+                                                                   \haddockdecltt{->} & \haddockdecltt{a} & plottable data type \\
+                                                                                                            \haddockdecltt{->} & \haddockdecltt{PlotData} & structure ready for dumping \\
+\end{tabulary}\par
+Prepares a single plottable data structure to be dumped and/or
+ plotted.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+prepareL\ ::\ Plot\ a\ =>\ Config\ ->\ {\char 91}a{\char 93}\ ->\ PlotData
+\end{tabular}]\haddockbegindoc
+Prepares a list of plottable data structures to be dumped and/or
+ plotted. See \haddockid{prepare}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+prepareV\ ::\ Plot\ a\ =>\ Config\ ->\ Vector\ a\ ->\ PlotData
+\end{tabular}]\haddockbegindoc
+Prepares a vector of plottable data structures to be dumped
+ and/or plotted. See \haddockid{prepare}.\par
+
+\end{haddockdesc}
+\subsection{Dumping and plotting data}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+showDat\ ::\ PlotData\ ->\ IO\ ()
+\end{tabular}]\haddockbegindoc
+Prints out the sampled contents of a \haddockid{prepare}d data set.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+dumpDat\ ::\ PlotData\ ->\ IO\ {\char 91}String{\char 93}
+\end{tabular}]\haddockbegindoc
+Dumps the sampled contents of a \haddockid{prepare}d data set into separate
+ \haddocktt{.dat} files.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+plotGnu\ ::\ PlotData\ ->\ IO\ ()
+\end{tabular}]\haddockbegindoc
+Generates a GNUplot script and \haddocktt{.dat} files for plotting the
+ sampled contents of a \haddockid{prepare}d data set. Depending on the
+ configuration settings, it also dumps LaTeX and PDF plots, and
+ fires the script.\par
+\textbf{OBS:} needless to say that \href{http://www.gnuplot.info/}{GNUplot}
+ needs to be installed in order to use this command. Also, in order
+ to fire GNUplot from a ghci session you might need to install
+ \haddocktt{gnuplot-x11}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+heatmapGnu\ ::\ PlotData\ ->\ IO\ ()
+\end{tabular}]\haddockbegindoc
+Similar to \haddockid{plotGnu} but creates a heatmap plot using the GNUplot
+ engine. For this, the input needs to contain at least two columns
+ of data, otherwise the plot does not show anything, i.e. the
+ samples need to be lists or vectors of two or more elements.\par
+\textbf{OBS:} same dependencies are needed as for \haddockid{plotGnu}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+showLatex\ ::\ PlotData\ ->\ IO\ ()
+\end{tabular}]\haddockbegindoc
+Prints out a LaTeX environment from a \haddockid{prepare}d data set. This
+ environment should be paste inside a \haddocktt{tikzpicture} in a document
+ title which imports the ForSyDe-LaTeX package.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+dumpLatex\ ::\ PlotData\ ->\ IO\ {\char 91}String{\char 93}
+\end{tabular}]\haddockbegindoc
+Dumps a set of formatted data files with the extension \haddocktt{.flx}
+ that can be imported by a LaTeX document which uses the
+ ForSyDe-LaTeX package.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+plotLatex\ ::\ PlotData\ ->\ IO\ ()
+\end{tabular}]\haddockbegindoc
+Creates a standalone LaTeX document which uses the ForSyDe-LaTeX
+ package, plotting a \haddockid{prepare}d data set. Depending on the
+ configuration settings, the command \haddocktt{pdflatex} may also be invoked
+ to compile a pdf image.\par
+\textbf{OBS:} A LaTeX compiler is required to run the \haddocktt{pdflatex}
+ command. The \href{https://github.com/forsyde/forsyde-latex}{ForSyDe-LaTeX}
+ package also needs to be installed according to the instructions on
+ the project web page.\par
+
+\end{haddockdesc}
+\section{The data types}
+Below the data types involved are shown and the plottable
+ structures are documented.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Plottable\ a\ where
+\end{tabular}]\haddockbegindoc
+This class gathers types which can be sampled and converted to a
+ numerical string which can be read and interpreted by a plotter
+ engine.\par
+
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Show\ a,\ Real\ a)\ =>\ Plottable\ a
+\end{tabular}]\haddockbegindoc
+Real numbers that can be converted to a floating point representation\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Time stamps\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plottable\ (Vector\ a)
+\end{tabular}]\haddockbegindoc
+Vectors of plottable types\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Show\ a,\ Plottable\ a)\ =>\ Plottable\ (AbstExt\ a)
+\end{tabular}]\haddockbegindoc
+Absent-extended plottable types\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Plot\ a\ where
+\end{tabular}]\haddockbegindoc
+This class gathers all ForSyDe-Atom structures that can be
+ plotted.\par
+
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Vector\ a)
+\end{tabular}]\haddockbegindoc
+vectors of coordinates\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{SY} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{SDF} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{DE} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{CT} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+data\ PInfo
+\end{tabular}]\haddockbegindoc
+\haddockbeginconstrs
+\haddockdecltt{=} & \haddockdecltt{Info} & \\
+                    \haddockdecltt{typeid :: String} & id used usually in implicit tags
+                    \haddockdecltt{command :: String} & LaTeX identifier
+                    \haddockdecltt{measure :: String} & unit of measure
+                    \haddockdecltt{style :: String} & style tweaking in the GNUplot script
+                    \haddockdecltt{stacking :: Bool} & if the plot is stacking
+                    \haddockdecltt{sparse :: Bool} & if the sampled data is sparse instead of dense
+\end{tabulary}\par
+\haddockbeginconstrs
+\end{tabulary}\par
+Static information of each plottable data type.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Show\ PInfo
+\end{tabular}]
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ Samples\ =\ {\char 91}(String,\ String){\char 93}
+\end{tabular}]\haddockbegindoc
+Alias for sampled data \par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ PlotData\ =\ (Config,\ PInfo,\ {\char 91}(String,\ Samples){\char 93})
+\end{tabular}]\haddockbegindoc
+Alias for a data set \haddockid{prepare}d to be plotted.\par
+
+\end{haddockdesc}

@@ -1,0 +1,749 @@
+\haddockmoduleheading{ForSyDe.Atom.MoC.CT}
+\label{module:ForSyDe.Atom.MoC.CT}
+\haddockbeginheader
+{\haddockverb\begin{verbatim}
+module ForSyDe.Atom.MoC.CT (
+    TimeStamp,  Time,  CT(CT, tag, phase, func),  Signal,  unit2,  infinite, 
+    signal,  checkSignal,  delay,  delay',  comb22,  reconfig22,  constant2, 
+    infinite2,  generate2,  stated22,  state22,  moore22,  mealy22,  toDE1, 
+    sampDE2,  zipx,  unzipx,  unzipx'
+  ) where\end{verbatim}}
+\haddockendheader
+
+The \haddocktt{CT} library implements the atoms holding the sematics for the
+ continuous time computation model. It also provides a set of
+ helpers for properly instantiating process network patterns as
+ process constructors.\par
+For working with time or timestamps please check the utilities
+ provided by the \haddocktt{ForSyDe.Atom.MoC.Time} and
+ \haddocktt{ForSyDe.Atom.MoC.TimeStamp} modules.\par
+\textbf{IMPORTANT!!!}
+ see the \href{ForSyDe-Atom.html#naming_conv}{naming convention} rules
+ on how to interpret, use and develop your own constructors.\par
+
+\section{Continuous time (\haddocktt{CT}) event}
+According to \href{ForSyDe-Atom.html#lee98}{[Lee98]}, "{\char 91}regarding
+ metric time{\char 93} at a minimum, \emph{T} is an Abelian group, in addition
+ to being totally ordered. A consequence is that \emph{t₂} -
+ \emph{t₁} is itself a tag ∀ \emph{t₁}, \emph{t₂} ∈
+ \emph{T}. In a slightly more elaborate model of computation, \emph{T} has a
+ metric. (...) A continuous-time system is a metric timed system
+ \emph{Q} where \emph{T} is a continuum (a closed connected set)."\par
+The continuous time (\haddocktt{CT}) MoC defines the closest behavior to
+ what we could call "physical time", where signals cover the full
+ span of a simulation as "functions of time" rather than
+ "values". As such, we can state:\par
+\begin{description}
+\item[The CT MoC] is abstracting the execution semantics and describes
+ a system where computation is performed continuously over a
+ (possibly infinite) span of time.
+\end{description}Below is an illustration of the behavior in time of the input and
+ the output signals of a CT process:\par
+                 (image: fig/moc-ct-example.png)\par
+                 Our CT MoC is implemented as an enhanced version of
+ \haddockid{DE} with respect to the \textbf{CT MoC} definition, in
+ the sense that:\par
+                 \begin{enumerate}
+                 \item 
+                 tags \emph{t} are also represented with
+ \haddockid{TimeStamp}s, thus we can say that changes in a
+ CT signal happen at discrete times (see below).\par
+                 
+                 \item 
+                 values are represented as functions over a continuous span of
+ time \emph{f(t)} rather than just a value or a series of values. The
+ time domain is represented with rational numbers which, as
+ compared to floating point numbers, do not suffer from inherent
+ quantisation, being able to model true continuity, i.e. between
+ any two arbitrary points in time there is an infinite amount of
+ intermediate moments.\par
+                 
+                 \item 
+                 The event constructor has also a \emph{phase} component \emph{φ},
+ which is taken into consideration only when evaluating the event
+ function, i.e. \emph{f (t + φ)}. This enables the modeling of
+ "phase dispacements" of delay lines without altering the function
+ itself (and thus increasing the complexity of the un-evaluated
+ function graph). The phase needs to be reset during event
+ synchronization.\par
+                 
+                 \end{enumerate}
+                 These seemingly minor changes have deep implications in the
+ expressiveness of a FoSyDe CT system and how we interpret
+ it. Capturing the particularities of this MoC, we can formulate
+ the following properties:\par
+                 (image: fig/misc-ct-model.png)\par
+                 \begin{enumerate}
+                 \item 
+                 \haddockid{CT} signals, due to their formation as streams of tagged
+ events, represent \emph{discrete} changes in a continuous function
+ over time (e.g. analog signal). While the functions carried by
+ events are infinite (have always happened and will always
+ happen), being carried by events in a tag system suggests that
+ changes occur at discrete times. A CT signal can be represented
+ by the analog circuit above, where the inputs are continuous
+ signals, but the switch is discrete. Like in the
+ \haddockid{DE} MoC, the absolute time 0 represent the time
+ when the system started to be observed.\par
+                 
+                 \item 
+                 the previous property is also proven by the fact that the
+ evaluation engine of ForSyDe-Atom is inherently discrete,
+ i.e. evaluation is performed whenever a new event occurs, in a
+ dataflow manner. Allowing infinitely small distances between tags
+ would hinder the advancement of simulation time.\par
+                 
+                 \item 
+                 events carry \emph{functions} and not \emph{values}. In a lazy
+ evaluation system like Haskell's, functions are kept symbolic
+ until evaluation. This means that in a CT system computations are
+ propagated as function graphs until a result is needed, e.g. a
+ signal is plotted for arbitrary positions in time. This way
+ intermediate quantization errors are eliminated, and the cost of
+ higher plot resolution is the cost of evaluating the final
+ results only.\par
+                 
+                 \item 
+                 needless to say, for each \emph{t} ∈ \emph{T}, a signal is able to
+ return (e.g. plot) the exact value \emph{v} for that particular \emph{t}.\par
+                 
+                 \item 
+                 since itself the \haddockid{CT} MoC is just an enhanced
+ \haddockid{DE} system, all atom evaluation properties are
+ inherited from it: feedback loops need to advance time, atoms are
+ forbidden to clean signals, and the conservative approach makes
+ it ideal for parallel/distributed simulation.\par
+                 
+                 \item 
+                 since \emph{T} is a total order, there is no need for an
+ \href{ForSyDe-Atom-MoC.html#context}{execution context} and we can
+ ignore the formatting of functions in \haddocktt{ForSyDe.Atom.MoC}, thus we
+ can safely assume:\par
+                 
+                 \end{enumerate}
+                 (image: fig/eqs-moc-timed-context.png)\par
+                 
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ TimeStamp\ =\ DiffTime
+\end{tabular}]\haddockbegindoc
+Alias for the type representing discrete time. It is inherently
+ quantizable, the quantum being a picosecond (10⁻¹²
+ seconds), thus it can be considered order-isomorphic with a set of
+ integers, i.e. between any two timestamps there is a finite number
+ of timestamps. Moreover, a timestamp can be easily translated into
+ a rational number representing fractions of a second, so the
+ conversion between timestamps (discrete time) and rationals
+ (analog/continuous time) is straightforward.\par
+This type is used in the explicit tags of the
+ \haddockid{DE} MoC (and subsequently the discrete event
+ evaluation engine for simulating the \haddockid{CT} MoC).\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ Time\ =\ Rational
+\end{tabular}]\haddockbegindoc
+Type alias for the type to represent metric (continuous)
+ time. Underneath we use \haddockid{Rational} that is able to represent any
+ \emph{t} between \emph{t₁} < \emph{t₂} ∈ \emph{T}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+data\ CT\ a
+\end{tabular}]\haddockbegindoc
+\haddockbeginconstrs
+\haddockdecltt{=} & \haddockdecltt{CT} & \\
+                    \haddockdecltt{tag :: TimeStamp} & start time of event
+                    \haddockdecltt{phase :: Time} & phase. Models function delays
+                    \haddockdecltt{func :: Time -> a} & function of time
+\end{tabulary}\par
+\haddockbeginconstrs
+\end{tabulary}\par
+The CT type, identifying a continuous time event and implementing an
+ instance of the \haddockid{MoC} class.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Functor\ CT
+\end{tabular}]\haddockbegindoc
+Allows for mapping of functions on a CT event.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Applicative\ CT
+\end{tabular}]\haddockbegindoc
+Allows for lifting functions on a pair of CT events.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ MoC\ CT
+\end{tabular}]\haddockbegindoc
+Implenents the execution and synchronization semantics for the CT
+ MoC through its atoms.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Show\ a\ =>\ Show\ (CT\ a)
+\end{tabular}]\haddockbegindoc
+A non-ideal instance meant for debug purpose only. For each event
+ it evaluates the function at the tag time \emph{only}!\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ Plottable\ a\ =>\ Plot\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+\haddockid{CT} signals.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ type\ Ret\ CT\ b\ =\ b\\instance\ type\ Fun\ CT\ a\ b\ =\ a\ ->\ b
+\end{tabular}]
+\end{haddockdesc}
+\section{Aliases {\char '46} utilities}
+A set of type synonyms and utilities are provided for
+ convenience. The API type signatures will feature these aliases
+ to hide the cumbersome construction of atoms and patters as seen
+ in \haddocktt{ForSyDe.Atom.MoC}.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ Signal\ a\ =\ Stream\ (CT\ a)
+\end{tabular}]\haddockbegindoc
+Type synonym for a CT signal, i.e. "a signal of CT events"\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+unit2\ ::\ ((TimeStamp,\ Time\ ->\ a1),\ (TimeStamp,\ Time\ ->\ a2))\\\ \ \ \ \ \ \ \ \ ->\ (Signal\ a1,\ Signal\ a2)
+\end{tabular}]\haddockbegindoc
+Wraps a (tuple of) pair(s) \haddocktt{(time,\ function)} into the equivalent
+ unit signal(s), i.e. signal(s) with one event with the period
+ \haddocktt{time} carrying \haddocktt{function}.\par
+Helpers: \haddocktt{unit} and \haddocktt{unit{\char 91}2-4{\char 93}}.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+infinite\ ::\ (Time\ ->\ a)\ ->\ Signal\ a
+\end{tabular}]\haddockbegindoc
+Creates an infinite signal.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+signal\ ::\ {\char 91}(TimeStamp,\ Time\ ->\ a){\char 93}\ ->\ Signal\ a
+\end{tabular}]\haddockbegindoc
+Transforms a list of tuples such as the ones taken by \haddocktt{event}
+ into a CT signal\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+checkSignal\ ::\ Stream\ (CT\ a)\ ->\ Stream\ (CT\ a)
+\end{tabular}]\haddockbegindoc
+Checks if a signal is well-formed or not, according to the CT MoC
+ interpretation in \haddocktt{ForSyDe-Atom}.\par
+
+\end{haddockdesc}
+\section{\haddocktt{CT} process constuctors}
+The CT process constructors are basically specific
+ instantiations of patterns defined in \haddocktt{ForSyDe.Atom.MoC}. Some
+ might also be wrapping functions in an extended behavioural
+ model.\par
+In the examples below we have imported and instantiated the
+ functions such as \haddocktt{e'} \haddocktt{pi'}, \haddocktt{sin'} and \haddocktt{cos'} from the
+ collection of utilities in \haddocktt{ForSyDe.Atom.MoC.Time} and
+ \haddocktt{ForSyDe.Atom.MoC.TimeStamp}. Also, for the sake of documentation
+ the interactive examples are only dumping the CT signals in data
+ files using the \haddocktt{dumpDat} utility defined in
+ \haddocktt{ForSyDe.Atom.Utility.Plot}, according to the custom \haddocktt{cfg}
+ structure. These files can be further plotted by any tool of
+ choice, or using the plotting utilities provided in the
+ \haddocktt{ForSyDe.Atom.Utility.Plot} module.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+import ForSyDe.Atom.Utility.Plot
+import ForSyDe.Atom.MoC.Time as Time
+import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
+let pi'  = TimeStamp.pi
+let exp' = Time.exp
+let sin' = Time.sin
+let cos' = Time.cos
+let cfg  = defaultCfg {xmax=10, rate=0.1}\end{verbatim}}
+\end{quote}
+
+\subsection{Simple}
+These are mainly direct instantiations of patterns defined in
+ \haddocktt{ForSyDe.Atom.MoC}, using DE-specific utilities.\par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+delay
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{TimeStamp} & time delay \\
+                                                 \haddockdecltt{->} & \haddockdecltt{(Time
+                                                                                      -> a)} & initial value \\
+                                                                                               \haddockdecltt{->} & \haddockdecltt{Signal a} & input signal \\
+                                                                                                                                               \haddockdecltt{->} & \haddockdecltt{Signal a} & output signal \\
+\end{tabulary}\par
+The \haddocktt{delay} process "delays" a signal with one
+ event. Instantiates the \haddockid{delay} pattern. In the CT
+ MoC, this process can be interpreted as an ideal "delay line".\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let s  = infinite (sin')
+
+>>> let s' = delay 2 (\_ -> 0) s
+
+>>> dumpDat $ prepare cfg {labels=["delay"]} $ s'
+Dumped delay in ./fig
+["./fig/delay.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-delay.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+delay'
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{Signal a} & signal "borrowing" the initial event \\
+                                                \haddockdecltt{->} & \haddockdecltt{Signal a} & input signal \\
+                                                                                                \haddockdecltt{->} & \haddockdecltt{Signal a} & output signal \\
+\end{tabulary}\par
+Similar to the previous, but this is the raw instantiation of the
+ \haddockid{delay} pattern. It "borrows" the first event from
+ one signal and appends it at the head of another signal.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let s  = infinite (sin')
+
+>>> let s' = signal [(0, \_ -> 0), (2, \_ -> 1)]
+
+>>> dumpDat $ prepare cfg {labels=["delayp"]} $ delay' s' s
+Dumped delayp in ./fig
+["./fig/delayp.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-delayp.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+comb22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(a1
+                                     -> a2 -> (b1, b2))} & function on values \\
+                                                           \haddockdecltt{->} & \haddockdecltt{Signal a1} & first input signal \\
+                                                                                                            \haddockdecltt{->} & \haddockdecltt{Signal a2} & second input signal \\
+                                                                                                                                                             \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & two output signals \\
+\end{tabulary}\par
+\haddocktt{comb} processes map combinatorial functions on signals and take
+ care of synchronization between input signals. It instantiates the
+ \haddocktt{comb} pattern (see \haddockid{comb22}).\par
+Constructors: \haddocktt{comb{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let s1 = infinite (sin')
+
+>>> let s2 = signal [(0,\_->0),(pi',\_->1),(2*pi',\_->0),(3*pi',\_->1)]
+
+>>> let o1 = comb11 (+1) s2
+
+>>> let (o2_1, o2_2) = comb22 (\a b-> (a+b,a*b)) s1 s2
+
+>>> dumpDat $ prepare cfg {labels=["comb11"]} o1
+Dumped comb11 in ./fig
+["./fig/comb11.dat"]
+
+>>> dumpDat $ prepareL cfg {labels=["comb22-1","comb22-2"]} [o2_1, o2_2]
+Dumped comb22-1, comb22-2 in ./fig
+["./fig/comb22-1.dat","./fig/comb22-2.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-comb.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+reconfig22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{Signal (a1
+                                            -> a2
+                                               -> (b1, b2))} & signal carrying functions \\
+                                                               \haddockdecltt{->} & \haddockdecltt{Signal a1} & first input signal carrying arguments \\
+                                                                                                                \haddockdecltt{->} & \haddockdecltt{Signal a2} & second input signal carrying arguments \\
+                                                                                                                                                                 \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & two output signals \\
+\end{tabulary}\par
+\haddocktt{reconfig} creates a CT adaptive process where the first signal
+ carries functions and the other carry the arguments. It
+ instantiates the \haddocktt{reconfig} atom pattern (see
+ \haddockid{reconfig22}).\par
+Constructors: \haddocktt{reconfig{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let s1 = infinite (sin')
+
+>>> let sf = signal [(0,\_->(*0)),(pi',\_->(+1)),(2*pi',\_->(*0)),(3*pi',\_->(+1))]
+
+>>> dumpDat $ prepare cfg {labels=["reconfig"]} $ reconfig11 sf s1
+Dumped reconfig in ./fig
+["./fig/reconfig.dat"]
+
+\end{verbatim}}
+\end{quote}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+constant2
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(b1, b2)} & values to be repeated \\
+                                                \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & generated signals \\
+\end{tabulary}\par
+A generator for a constant signal. As compared with the
+ \haddockid{constant2}, it just constructs an infinite
+ signal with constant value (i.e. a signal with one event starting
+ from time 0).\par
+Constructors: \haddocktt{constant{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> dumpDat $ prepare cfg {labels=["constant"]} $ constant1 2
+Dumped constant in ./fig
+["./fig/constant.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-constant.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+infinite2
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(Time -> b1, Time
+                                                 -> b2)} & values to be repeated \\
+                                                           \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & generated signals \\
+\end{tabulary}\par
+A generator for an infinite signal. Similar to \haddockid{constant2}.\par
+Constructors: \haddocktt{infinite{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let (inf1, inf2) = infinite2 (sin', cos')
+
+>>> dumpDat $ prepareL cfg {labels=["infinite2-1", "infinite2-2"]} [inf1, inf2]
+Dumped infinite2-1, infinite2-2 in ./fig
+["./fig/infinite2-1.dat","./fig/infinite2-2.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-infinite.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+generate2
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(b1
+                                     -> b2
+                                        -> (b1, b2))} & function to generate next value \\
+                                                        \haddockdecltt{->} & \haddockdecltt{((TimeStamp, Time
+                                                                                                         -> b1), (TimeStamp, Time
+                                                                                                                             -> b2))} & kernel values tupled with their generation rate. \\
+                                                                                                                                        \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & generated signals \\
+\end{tabulary}\par
+A signal generator based on a function and a kernel value. It
+ is actually an instantiation of the \haddocktt{stated0X} constructor
+ (check \haddockid{stated22}).\par
+Constructors: \haddocktt{generate{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let { osc 0 = 1 ; osc 1 = 0 }
+
+>>> dumpDat $ prepare cfg {labels=["generate"]} $ generate1 osc (pi', \_->0)
+Dumped generate in ./fig
+["./fig/generate.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-generate.png)\par
+           Another example simulating an RC oscillator:\par
+           \begin{quote}
+           {\haddockverb\begin{verbatim}
+           >>> let vs = 2                                -- Vs : supply voltage
+
+>>> let r  = 100                              -- R : resistance
+
+>>> let c  = 0.0005                           -- C : capacitance
+
+>>> let vc t = vs * (1 - exp' (-t / (r * c))) -- Vc(t) : voltage charging through capacitor
+
+>>> let ns v = vs + (-1 * v)                  -- next state : charging / discharging
+
+>>> let rcOsc = generate1 ns (milisec 500, vc)
+
+>>> dumpDat $ prepare cfg {labels=["rcosc"]} $ rcOsc
+Dumped rcosc in ./fig
+["./fig/rcosc.dat"]
+
+\end{verbatim}}
+           \end{quote}(image: fig/moc-ct-pattern-generate1.png)\par
+                      
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+stated22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(b1
+                                     -> b2
+                                        -> a1
+                                           -> a2
+                                              -> (b1, b2))} & next state function \\
+                                                              \haddockdecltt{->} & \haddockdecltt{((TimeStamp, Time
+                                                                                                               -> b1), (TimeStamp, Time
+                                                                                                                                   -> b2))} & initial state values tupled with their initial delay \\
+                                                                                                                                              \haddockdecltt{->} & \haddockdecltt{Signal a1} & first input signal \\
+                                                                                                                                                                                               \haddockdecltt{->} & \haddockdecltt{Signal a2} & second input signal \\
+                                                                                                                                                                                                                                                \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & output signals \\
+\end{tabulary}\par
+\haddocktt{stated} is a state machine without an output decoder. It is an
+ instantiation of the \haddocktt{state} MoC constructor (see
+ \haddockid{stated22}).\par
+Constructors: \haddocktt{stated{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let { osc 0 a = a; osc _ a = 0 }
+
+>>> let s1 = signal [(0,\_->1), (6,\_->0)]
+
+>>> dumpDat $ prepare cfg {labels=["stated"]} $ stated11 osc (1,\_->0) s1
+Dumped stated in ./fig
+["./fig/stated.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-stated.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+state22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(b1
+                                     -> b2
+                                        -> a1
+                                           -> a2
+                                              -> (b1, b2))} & next state function \\
+                                                              \haddockdecltt{->} & \haddockdecltt{((TimeStamp, Time
+                                                                                                               -> b1), (TimeStamp, Time
+                                                                                                                                   -> b2))} & initial state values tupled with their initial delay \\
+                                                                                                                                              \haddockdecltt{->} & \haddockdecltt{Signal a1} & first input signal \\
+                                                                                                                                                                                               \haddockdecltt{->} & \haddockdecltt{Signal a2} & second input signal \\
+                                                                                                                                                                                                                                                \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & output signals \\
+\end{tabulary}\par
+\haddocktt{state} is a state machine without an output decoder, and the
+ state non-transparent. It is an instantiation of the \haddocktt{state} MoC
+ constructor (see \haddockid{state22}).\par
+Constructors: \haddocktt{state{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let { osc 0 a = a; osc _ a = 0 }
+
+>>> let s1 = signal [(0,\_->1), (6,\_->0)]
+
+>>> dumpDat $ prepare cfg {labels=["state"]} $ state11 osc (1,\_->0) s1
+Dumped state in ./fig
+["./fig/state.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-state.png)                   \par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+moore22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(st
+                                     -> a1
+                                        -> a2 -> st)} & next state function \\
+                                                        \haddockdecltt{->} & \haddockdecltt{(st
+                                                                                             -> (b1, b2))} & output decoder \\
+                                                                                                             \haddockdecltt{->} & \haddockdecltt{(TimeStamp, Time
+                                                                                                                                                             -> st)} & initial state: tag and value \\
+                                                                                                                                                                       \haddockdecltt{->} & \haddockdecltt{Signal a1} & \\
+                                                                                                                                                                                                                        \haddockdecltt{->} & \haddockdecltt{Signal a2} & \\
+                                                                                                                                                                                                                                                                         \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & \\
+\end{tabulary}\par
+\haddocktt{moore} processes model Moore state machines. It is an
+ instantiation of the \haddocktt{moore} MoC constructor (see
+ \haddockid{moore22}).\par
+Constructors: \haddocktt{moore{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let { osc 0 a = a; osc _ a = 0 }
+
+>>> let s1 = signal [(0,\_->1), (6,\_->0)]
+
+>>> dumpDat $ prepare cfg {labels=["moore"]} $ moore11 osc (*3) (1,\_->0) s1
+Dumped moore in ./fig
+["./fig/moore.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-moore.png)          \par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+mealy22
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{(st
+                                     -> a1
+                                        -> a2 -> st)} & next state function \\
+                                                        \haddockdecltt{->} & \haddockdecltt{(st
+                                                                                             -> a1
+                                                                                                -> a2
+                                                                                                   -> (b1, b2))} & outpt decoder \\
+                                                                                                                   \haddockdecltt{->} & \haddockdecltt{(TimeStamp, Time
+                                                                                                                                                                   -> st)} & initial state: tag and value \\
+                                                                                                                                                                             \haddockdecltt{->} & \haddockdecltt{Signal a1} & \\
+                                                                                                                                                                                                                              \haddockdecltt{->} & \haddockdecltt{Signal a2} & \\
+                                                                                                                                                                                                                                                                               \haddockdecltt{->} & \haddockdecltt{(Signal b1, Signal b2)} & \\
+\end{tabulary}\par
+\haddocktt{mealy} processes model Mealy state machines. It is an
+ instantiation of the \haddocktt{mealy} MoC constructor
+ (see \haddockid{mealy22}).\par
+Constructors: \haddocktt{mealy{\char 91}1-4{\char 93}{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let { osc (-1) _ = 1; osc 1 _ = (-1) }
+
+>>> let s1 = infinite sin'
+
+>>> dumpDat $ prepare cfg {labels=["mealy"]} $ mealy11 osc (*) (pi',\_->1) s1
+Dumped mealy in ./fig
+["./fig/mealy.dat"]
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-pattern-mealy.png)\par
+           
+\end{haddockdesc}
+\subsection{Interfaces}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+toDE1\ ::\ Signal\ a\ ->\ Signal\ (Time\ ->\ a)
+\end{tabular}]\haddockbegindoc
+Translates a (set of) \haddockid{CT} signal(s) into
+ \haddockid{DE} semantics without loss of information. In
+ \haddockid{DE}, the abstract function of time inferred by
+ the \haddockid{CT} event loses its abstraction and it is
+ "dropped" to explicit form, under a lower layer. In other words the
+ implicit time semantics are lost, the carried value simply becoming
+ an ordinary function.\par
+Constructors: \haddocktt{toDE{\char 91}1-4{\char 93}}.\par
+(image: fig/moc-ct-tode.png)\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+sampDE2
+\end{tabular}]\haddockbegindoc
+\haddockbeginargs
+\haddockdecltt{::} & \haddockdecltt{Signal t} & \haddockid{DE} timestamp carrier  \\
+                                                \haddockdecltt{->} & \haddockdecltt{Signal a} & \haddockid{CT} input \\
+                                                                                                \haddockdecltt{->} & \haddockdecltt{Signal b} & \haddockid{CT} input \\
+                                                                                                                                                \haddockdecltt{->} & \haddockdecltt{(Signal a, Signal b)} & \haddockid{DE} outputs \\
+\end{tabulary}\par
+Synchronizes a (set of) \haddockid{CT} signal(s) with a
+ \haddockid{DE} carrier which holds the timestamps at
+ which the CT signal must be sampled, and outputs the respective
+ (set of) \haddockid{DE} signal(s).\par
+Constructors: \haddocktt{sampDE{\char 91}1-4{\char 93}}.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let s = CT.infinite (fromRational . sin')
+
+>>> let c = DE.generate1 id (pi'/2, 1)
+
+>>> takeS 6 $ sampDE1 c s
+{ 0.0 @0s, 1.0 @1.570796326794s, 1.793238520564752e-12 @3.141592653588s, -1.0 @4.712388980382s, 0.0 @6.283185307176s, 1.0 @7.85398163397s}
+
+\end{verbatim}}
+\end{quote}(image: fig/moc-ct-sampde.png)\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+zipx\ ::\ Vector\ (Signal\ a)\ ->\ Signal\ (Vector\ a)
+\end{tabular}]\haddockbegindoc
+Synchronizes all the signals contained by a vector and zips them
+ into one signal of vectors. It instantiates the
+ \haddockid{zipx} skeleton.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let s1 = CT.signal [(0,const 1), (2,const 2), (6,const 3)]
+
+>>> let s2 = CT.signal [(0,const 1), (2,const 2), (4,const 3)]
+
+>>> let v1 = V.vector [s1,s1,s2,s2]
+
+>>> zipx v1
+{ <1,1,1,1> @0s, <2,2,2,2> @2s, <2,2,3,3> @4s, <3,3,3,3> @6s}
+
+\end{verbatim}}
+\end{quote}See \haddockid{zipx} from the \haddocktt{ForSyDe.Atom.MoC.DE}
+ library for a comprehensive visual example.\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+unzipx\ ::\ Integer\ ->\ Signal\ (Vector\ a)\ ->\ Vector\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+Unzips the vectors carried by a signal into a vector of
+ signals. It instantiates the \haddockid{unzipx}
+ skeleton. To avoid infinite recurrence, the user needs to provict
+ the length of the output vector.\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let v1 = V.vector [1,2,3,4]
+
+>>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
+
+>>> unzipx 4 s1
+<{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
+
+\end{verbatim}}
+\end{quote}See \haddockid{unzipx} from the \haddocktt{ForSyDe.Atom.MoC.DE}
+ library for a comprehensive visual example.\par
+           
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+unzipx'\ ::\ Signal\ (Vector\ a)\ ->\ Vector\ (Signal\ a)
+\end{tabular}]\haddockbegindoc
+Same as \haddockid{unzipx}, but "sniffs" the first event to determine the length of the output vector. Might have unsafe behavior!\par
+\begin{quote}
+{\haddockverb\begin{verbatim}
+>>> let v1 = V.vector [1,2,3,4]
+
+>>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
+
+>>> unzipx' s1
+<{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
+
+\end{verbatim}}
+\end{quote}
+\end{haddockdesc}

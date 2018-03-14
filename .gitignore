@@ -1,0 +1,7 @@
+_site*
+*~
+#*
+*#
+auto
+.sass-cache
+*.lock

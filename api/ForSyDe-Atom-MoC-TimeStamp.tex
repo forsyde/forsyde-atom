@@ -1,0 +1,95 @@
+\haddockmoduleheading{ForSyDe.Atom.MoC.TimeStamp}
+\label{module:ForSyDe.Atom.MoC.TimeStamp}
+\haddockbeginheader
+{\haddockverb\begin{verbatim}
+module ForSyDe.Atom.MoC.TimeStamp (
+    TimeStamp,  picosec,  nanosec,  microsec,  milisec,  sec,  minutes,  hours, 
+    toTime,  pi, 
+  ) where\end{verbatim}}
+\haddockendheader
+
+This module implements a timestamp data type, based on
+ \haddocktt{Data.Time.Clock}. \par
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+type\ TimeStamp\ =\ DiffTime
+\end{tabular}]\haddockbegindoc
+Alias for the type representing discrete time. It is inherently
+ quantizable, the quantum being a picosecond (10⁻¹²
+ seconds), thus it can be considered order-isomorphic with a set of
+ integers, i.e. between any two timestamps there is a finite number
+ of timestamps. Moreover, a timestamp can be easily translated into
+ a rational number representing fractions of a second, so the
+ conversion between timestamps (discrete time) and rationals
+ (analog/continuous time) is straightforward.\par
+This type is used in the explicit tags of the
+ \haddockid{DE} MoC (and subsequently the discrete event
+ evaluation engine for simulating the \haddockid{CT} MoC).\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+picosec\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of picoseconds.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+nanosec\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of nanoseconds.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+microsec\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of microseconds.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+milisec\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of miliseconds.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+sec\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of seconds.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+minutes\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of minutes.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+hours\ ::\ Integer\ ->\ TimeStamp
+\end{tabular}]\haddockbegindoc
+Specifies a timestamp in terms of hours.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+toTime\ ::\ TimeStamp\ ->\ Rational
+\end{tabular}]\haddockbegindoc
+Converts a timestamp to a rational number, used for describing
+ continuous time.\par
+
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+pi\ ::\ TimeStamp
+\end{tabular}]\haddockbegindoc
+\haddockid{TimeStamp} representation of the number π. Converted from
+ the \haddocktt{Prelude} equivalent, which is \haddockid{Floating}.\par
+
+\end{haddockdesc}

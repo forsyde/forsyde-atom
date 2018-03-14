@@ -1,0 +1,21 @@
+name: ForSyDe-Atom
+description: A Layered Framework for Modeling Cyber-Physical Systems
+remote_theme: forsyde/forsyde-web-theme
+
+parent-url: https://forsyde.github.io
+
+maintainer:
+  name: ugeorge
+  url: https://github.com/ugeorge
+
+github-releases:
+  zip_url: https://api.github.com/repos/forsyde/forsyde-atom/zipball/master
+  tar_url: https://api.github.com/repos/forsyde/forsyde-atom/tarball/master
+
+## paths to exclude from the site generation
+exclude: [script, Gemfile, Gemfile.lock, README.md]
+
+plugins:
+- jekyll-seo-tag
+- jekyll-remote-theme
+- jekyll-sitemap
