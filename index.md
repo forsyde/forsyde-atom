@@ -15,7 +15,7 @@ The [ForSyDe-Atom]() project is a spin-off from the [ForSyDe-Shallow]({{site.par
 
 Excerpt from [Ungureanu and Sander, (2017)](https://forsyde.github.io/publications_bib.html#UngMed2018a):
 
-> The purity inherent from describing behavior as *side-effect free* functions ensures that each and every entity is independent and contains self-sufficient semantics, enabling both the modeling and the simulation of *true concurrency* without the need of a global state or controller. Binding together concepts from a wide pool of formalisms this *unified* framework exhibits three essential properties: 
+> Binding together concepts from a wide pool of formalisms this *unified* framework exhibits three essential properties: 
 > 1. it slices processes in *structured enclosing **layers*** abstracting different behavioural aspects, as an embodiment of separation of concerns; 
 > 1. it provides *primitive, indivisible building blocks* for each layer, named ***atoms***, as the outcome of deconstructing the abstract semantics to their core; 
 > 1. it describes composition in terms of ***patterns*** of building blocks, as a means of both modeling complex behavior within a layer, as well as abstracting it in a hierarchical manner. We demonstrate the potential for modeling, analysis and synthesis through a comprehensible example.
@@ -64,5 +64,5 @@ Here you can find links to further documentation resources:
 
  * [**The API documentation**](api) generated with Haddock.
 
- * [**The `forsyde-atom-examples` repository**](https://github.com/forsyde/forsyde-atom-examples) contain examples and documented experients in form of Haskell packages wuth [literate code](https://en.wikipedia.org/wiki/Literate_programming).
+ * [**The `forsyde-atom-examples` repository**](https://github.com/forsyde/forsyde-atom-examples) contain examples and documented experients in form of Haskell packages with [literate code](https://en.wikipedia.org/wiki/Literate_programming).
 

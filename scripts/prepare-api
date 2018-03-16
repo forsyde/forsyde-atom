@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+# sed -i 's/<link href="ocean.css"[^>]*>//g' *.html
+sed -i 's/<link [^>]*>//g' *.html
+sed -i 's|<script [^>]*></script>||g' *.html
+
+for f in *.html; do
+    echo -e "---
+layout: haddock
+---
+$(cat $f)" > $f
+done
