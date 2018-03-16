@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <meta name="description" content="ForSyDe-Atom : A Layered Framework for Modeling Cyber-Physical Systems">
+    
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
+    <link href="/assets/css/academicons.min.css" rel="stylesheet"/>
+    <link href="/assets/css/docs.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/ico/favicon.ico?">
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>    
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="/assets/js/docs.min.js"></script>
+    <script src="/assets/js/navbar.js"></script>
+    <!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>ForSyDe-Atom | A Layered Framework for Modeling Cyber-Physical Systems</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="ForSyDe-Atom" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A Layered Framework for Modeling Cyber-Physical Systems" />
+<meta property="og:description" content="A Layered Framework for Modeling Cyber-Physical Systems" />
+<link rel="canonical" href="http://localhost:4000/" />
+<meta property="og:url" content="http://localhost:4000/" />
+<meta property="og:site_name" content="ForSyDe-Atom" />
+<script type="application/ld+json">
+{"name":"ForSyDe-Atom","description":"A Layered Framework for Modeling Cyber-Physical Systems","@type":"WebSite","url":"http://localhost:4000/","headline":"ForSyDe-Atom","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    
+    
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <!-- Main navigation -->
+    <!-- =========================================== -->
+    <header class="navbar navbar-static-top bs-docs-nav" id="top">
+      
+      <div class="container">
+  <div class="navbar-header" role="banner">
+    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://forsyde.github.io/index.html">ForSyDe</a>
+  </div>
+  <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="https://forsyde.github.io/news.html">News</a>
+      </li>
+      <li>
+        <a href="https://forsyde.github.io/tools.html">Tools</a>
+      </li>
+      <li>
+        <a href="https://forsyde.github.io/publications.html">Publications</a>
+      </li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li class="scrambled">
+	<a data-domain="kth" data-dept="dev" data-name="forsyde" data-tld="se" href="#" class="eggs" onclick="window.location.href = 'mailto:' +
+													      this.dataset.name + '-' + this.dataset.dept + '@' +
+													      this.dataset.domain + '.' + this.dataset.tld"></a>
+      </li>
+      <li>
+	<a href="https://github.com/forsyde">GitHub</a>
+      </li>
+      <li>
+	<a href="https://forsyde.github.io/feed.xml">RSS Feed</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+    </header>
+
+    <!-- Title -->
+    <!-- =========================================== -->
+    <div id="header_wrap" class="outer">
+      <div class="title-md-9">
+      
+      <header class="inner">
+
+  <h1 id="project_title"><a href="http://localhost:4000">ForSyDe-Atom</a></h1>
+  <h2 id="project_tagline">A Layered Framework for Modeling Cyber-Physical Systems</h2>
+
+  
+  <section id="downloads">
+
+    <a class="zip_download_link" href="https://api.github.com/repos/forsyde/forsyde-atom/zipball/master">Download this project as a .zip file</a>
+    <a class="tar_download_link" href="https://api.github.com/repos/forsyde/forsyde-atom/tarball/master">Download this project as a tar.gz file</a>
+  </section>
+  
+  
+</header>
+
+      </div>1
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer container">
+      <div class="col-md-9" role="main">
+	<section id="main_content" class="inner">
+          <h1 id="overview">Overview</h1>
+
+<p><a href="https://travis-ci.org/forsyde/forsyde-atom"><img src="https://travis-ci.org/forsyde/forsyde-atom.svg?branch=master" alt="Build Status" /></a>
+<img src="assets/images/active.svg" alt="Development Status" /></p>
+
+<p>The <a href="">ForSyDe-Atom</a> project is a spin-off from the <a href="https://forsyde.github.io/forsyde-shallow">ForSyDe-Shallow</a> library, which further explores the power of functional programming as a system design paradigm. It is a pure functional framework for describing, analyzing and simulating cyber-physical systems (CPS) as <em>networks of processes</em> communicating through <em>signals</em>, and makes heavy use of concepts like <a href="https://wiki.haskell.org/Applicative_functor">applicative functors</a> and <a href="https://en.wikibooks.org/wiki/Haskell/Classes_and_types">type classes</a>.</p>
+
+<p>Excerpt from <a href="https://forsyde.github.io/publications_bib.html#UngMed2018a">Ungureanu and Sander, (2017)</a>:</p>
+
+<blockquote>
+  <p>Binding together concepts from a wide pool of formalisms this <em>unified</em> framework exhibits three essential properties:</p>
+  <ol>
+    <li>it slices processes in <em>structured enclosing <strong>layers</strong></em> abstracting different behavioural aspects, as an embodiment of separation of concerns;</li>
+    <li>it provides <em>primitive, indivisible building blocks</em> for each layer, named <strong><em>atoms</em></strong>, as the outcome of deconstructing the abstract semantics to their core;</li>
+    <li>it describes composition in terms of <strong><em>patterns</em></strong> of building blocks, as a means of both modeling complex behavior within a layer, as well as abstracting it in a hierarchical manner. We demonstrate the potential for modeling, analysis and synthesis through a comprehensible example.</li>
+  </ol>
+</blockquote>
+
+<p align="center"><img src="https://forsyde.github.io/forsyde-latex/assets/svg/example-pictures-layered.svg" /></p>
+<p align="center">The layered process model.</p>
+
+<h1 id="quick-start-for-the-impatient">Quick-start for the impatient</h1>
+
+<p>If you cannot wait to get your hands dirty with ForSyDe-Atom, follow the instructions below. Otherwise we do recommend you to take it easy and <a href="#documentation-and-resources">discover the full features</a> of this EDSL.</p>
+
+<p>Before you try anything, make sure you have <a href="https://www.haskell.org/platform/">Haskell Platform</a> installed on your machine. Once this is done, get the <code class="highlighter-rouge">forsyde-atom</code> package through any means suit you best, e.g. by cloning the <a href="https://github.com/forsyde/forsyde-atom">repository</a> or by downloading and extracting one of the archives above.</p>
+
+<p>Installing the package is as simple as typing in the terminal:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd path/to/forsyde-atom
+cabal install
+</code></pre></div></div>
+
+<p>You need to be patient until the installation finishes. Afterwards you can start a new interpreter session</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ghci
+</code></pre></div></div>
+
+<p>and import the newly installed libraries and try them out</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Prelude&gt; import ForSyDe.Atom
+Prelude ForSyDe.Atom&gt; import ForSyDe.Atom.MoC.SY as SY
+Prelude ForSyDe.Atom SY&gt; let s = SY.signal [1..4]
+Prelude ForSyDe.Atom SY&gt; SY.moore11 (+) (*2) 0 s
+{0,2,6,12,20}
+</code></pre></div></div>
+
+<p>The example above implements a Moore finite state machine that calculates the running sum and multiplies the output with 2. It instantiates the <a href="api/ForSyDe-Atom-MoC.html#v:moore22"><code class="highlighter-rouge">moore</code></a> pattern with one input and one output (as seen below) with the <a href="api/ForSyDe-Atom-MoC-SY.html">synchronous (SY) MoC semantics</a> using the <a href="http://localhost:4000/api/ForSyDe-Atom-MoC.html#v:moore22"><code class="highlighter-rouge">SY.moore11</code></a> helper.</p>
+
+<p align="center"><img src="assets/images/moore.png" /></p>
+<p align="center">The atom pattern of a Moore state machine.</p>
+
+<h1 id="documentation-and-resources">Documentation and resources</h1>
+
+<p>Here you can find links to further documentation resources:</p>
+
+<ul>
+  <li>
+    <p><a href="setup"><strong>The setup page</strong></a> contains detailed instructions on how to install and use the libraries.</p>
+  </li>
+  <li>
+    <p><a href="assets/manual.pdf"><strong>The ForSyDe-Atom User Manual</strong></a> is a living document built mainly from the literate sources in the <a href="https://github.com/forsyde/forsyde-atom"><code class="highlighter-rouge">forsyde-atom</code></a> and <a href="https://github.com/forsyde/forsyde-atom-examples"><code class="highlighter-rouge">forsyde-atom-examples</code></a> repositories.</p>
+  </li>
+  <li>
+    <p><a href="publications"><strong>Some scientific publications</strong></a> about ForSyDe-Atom.</p>
+  </li>
+  <li>
+    <p><a href="api"><strong>The API documentation</strong></a> generated with Haddock.</p>
+  </li>
+  <li>
+    <p><a href="https://github.com/forsyde/forsyde-atom-examples"><strong>The <code class="highlighter-rouge">forsyde-atom-examples</code> repository</strong></a> contain examples and documented experients in form of Haskell packages with <a href="https://en.wikipedia.org/wiki/Literate_programming">literate code</a>.</p>
+  </li>
+</ul>
+
+
+	</section>
+      </div>
+      <!-- Page navigation -- taken from http://mistic100.github.io/jekyll-bootstrap-doc/
+	   =========================================== -->
+      <div class="col-md-3" role="complementary">
+        <div class="bs-docs-sidebar hidden-print">
+	  
+          <ul class="nav bs-docs-sidenav">
+          </ul>
+          <a class="back-to-top" href="#header_wrap">
+            <i class="glyphicon glyphicon-chevron-up"></i> Back to top
+          </a>
+	  
+        </div>
+      </div>
+      <div id="push"></div>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer hidden-print">
+      <div class="title-md-9">
+      <footer class="inner">
+  <ul class="bs-docs-social-buttons">
+    <li>
+      <a class="social fab fa-github-square fa-1x" width="90" height="20" href="https://github.com/forsyde"></a>
+    </li>
+    <li>
+      <a class="social ai ai-researchgate-square ai-1x" width="90" height="20" href="https://www.researchgate.net/project/ForSyDe-Formal-System-Design"></a>
+    </li>
+    <li>
+      <a class="social fas fa-rss-square fa-1x" width="90" height="20" href="https://forsyde.github.io/feed.xml"></a>
+    </li>
+  </ul>
+  
+  <p class="copyright">&#169;2018 The ForSyDe Group @ KTH, under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+  <p>Site published with <a href="https://pages.github.com">GitHub Pages</a>. See the <a href="/acknowledgements.html">acknowledgements page</a> for more.</p>
+</footer>
+
+      </div>
+    </div>    
+  </body>
+</html>
