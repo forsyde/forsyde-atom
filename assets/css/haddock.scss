@@ -4,3 +4,17 @@ hide:    true
 
 @import "forsyde-web-theme";
 @import "haddock";
+
+
+.prompt {
+  display: none;
+}
+
+ul.nav {
+  display: block !important;
+  margin: 0.1em 0 0.8em 2em;
+}
+
+ul.bs-docs-sidenav {
+  margin: unset;
+}
