@@ -62,7 +62,7 @@ Here you can find links to further documentation resources:
 
  * [**Some scientific publications**](publications) about ForSyDe-Atom.
 
- * [**The API documentation**](api) generated with Haddock.
+ * [**The API documentation**](api/) generated with Haddock, acts also as an extended technical documentation. The module [`ForSyDe.Atom`](api/ForSyDe-Atom.html) shows an overview of the formal descriptions and the reasoning behind the implementation. 
 
  * [**The `forsyde-atom-examples` repository**](https://github.com/forsyde/forsyde-atom-examples) contain examples and documented experients in form of Haskell packages with [literate code](https://en.wikipedia.org/wiki/Literate_programming).
 
