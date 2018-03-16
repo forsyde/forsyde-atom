@@ -1,6 +1,6 @@
 name: ForSyDe-Atom
 description: A Layered Framework for Modeling Cyber-Physical Systems
-remote_theme: ugeorge/forsyde-web-theme@0.1.2
+remote_theme: ugeorge/forsyde-web-theme
 
 parent-url: https://forsyde.github.io
 
