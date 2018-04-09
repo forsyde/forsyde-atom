@@ -150,22 +150,22 @@ comb44 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
        -> (Signal b1, Signal b2, Signal b3, Signal b4)
        
-comb11 (c,p,f) s1          = MoC.comb11 (MoC.ctxt11 c p f) s1
-comb21 (c,p,f) s1 s2       = MoC.comb21 (MoC.ctxt21 c p f) s1 s2
-comb31 (c,p,f) s1 s2 s3    = MoC.comb31 (MoC.ctxt31 c p f) s1 s2 s3
-comb41 (c,p,f) s1 s2 s3 s4 = MoC.comb41 (MoC.ctxt41 c p f) s1 s2 s3 s4
-comb12 (c,p,f) s1          = MoC.comb12 (MoC.ctxt12 c p f) s1
-comb22 (c,p,f) s1 s2       = MoC.comb22 (MoC.ctxt22 c p f) s1 s2
-comb32 (c,p,f) s1 s2 s3    = MoC.comb32 (MoC.ctxt32 c p f) s1 s2 s3
-comb42 (c,p,f) s1 s2 s3 s4 = MoC.comb42 (MoC.ctxt42 c p f) s1 s2 s3 s4
-comb13 (c,p,f) s1          = MoC.comb13 (MoC.ctxt13 c p f) s1
-comb23 (c,p,f) s1 s2       = MoC.comb23 (MoC.ctxt23 c p f) s1 s2
-comb33 (c,p,f) s1 s2 s3    = MoC.comb33 (MoC.ctxt33 c p f) s1 s2 s3
-comb43 (c,p,f) s1 s2 s3 s4 = MoC.comb43 (MoC.ctxt43 c p f) s1 s2 s3 s4
-comb14 (c,p,f) s1          = MoC.comb14 (MoC.ctxt14 c p f) s1
-comb24 (c,p,f) s1 s2       = MoC.comb24 (MoC.ctxt24 c p f) s1 s2
-comb34 (c,p,f) s1 s2 s3    = MoC.comb34 (MoC.ctxt34 c p f) s1 s2 s3
-comb44 (c,p,f) s1 s2 s3 s4 = MoC.comb44 (MoC.ctxt44 c p f) s1 s2 s3 s4
+comb11 cpf s1          = MoC.comb11 (scen11 cpf) s1
+comb21 cpf s1 s2       = MoC.comb21 (scen21 cpf) s1 s2
+comb31 cpf s1 s2 s3    = MoC.comb31 (scen31 cpf) s1 s2 s3
+comb41 cpf s1 s2 s3 s4 = MoC.comb41 (scen41 cpf) s1 s2 s3 s4
+comb12 cpf s1          = MoC.comb12 (scen12 cpf) s1
+comb22 cpf s1 s2       = MoC.comb22 (scen22 cpf) s1 s2
+comb32 cpf s1 s2 s3    = MoC.comb32 (scen32 cpf) s1 s2 s3
+comb42 cpf s1 s2 s3 s4 = MoC.comb42 (scen42 cpf) s1 s2 s3 s4
+comb13 cpf s1          = MoC.comb13 (scen13 cpf) s1
+comb23 cpf s1 s2       = MoC.comb23 (scen23 cpf) s1 s2
+comb33 cpf s1 s2 s3    = MoC.comb33 (scen33 cpf) s1 s2 s3
+comb43 cpf s1 s2 s3 s4 = MoC.comb43 (scen43 cpf) s1 s2 s3 s4
+comb14 cpf s1          = MoC.comb14 (scen14 cpf) s1
+comb24 cpf s1 s2       = MoC.comb24 (scen24 cpf) s1 s2
+comb34 cpf s1 s2 s3    = MoC.comb34 (scen34 cpf) s1 s2 s3
+comb44 cpf s1 s2 s3 s4 = MoC.comb44 (scen44 cpf) s1 s2 s3 s4
 
 ------- RECONFIG -------
 
@@ -260,23 +260,23 @@ reconfig44 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod))
            -> Signal ([a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2], [b3], [b4]))
            -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
            -> (Signal b1, Signal b2, Signal b3, Signal b4)
-wrap ctxt c p sf = (fmap . fmap) (\f->ctxt c p f) sf
-reconfig11 (c,p) sf = MoC.reconfig11 (wrap MoC.ctxt11 c p sf)
-reconfig12 (c,p) sf = MoC.reconfig12 (wrap MoC.ctxt12 c p sf)
-reconfig13 (c,p) sf = MoC.reconfig13 (wrap MoC.ctxt13 c p sf)
-reconfig14 (c,p) sf = MoC.reconfig14 (wrap MoC.ctxt14 c p sf)
-reconfig21 (c,p) sf = MoC.reconfig21 (wrap MoC.ctxt21 c p sf)
-reconfig22 (c,p) sf = MoC.reconfig22 (wrap MoC.ctxt22 c p sf)
-reconfig23 (c,p) sf = MoC.reconfig23 (wrap MoC.ctxt23 c p sf)
-reconfig24 (c,p) sf = MoC.reconfig24 (wrap MoC.ctxt24 c p sf)
-reconfig31 (c,p) sf = MoC.reconfig31 (wrap MoC.ctxt31 c p sf)
-reconfig32 (c,p) sf = MoC.reconfig32 (wrap MoC.ctxt32 c p sf)
-reconfig33 (c,p) sf = MoC.reconfig33 (wrap MoC.ctxt33 c p sf)
-reconfig34 (c,p) sf = MoC.reconfig34 (wrap MoC.ctxt34 c p sf)
-reconfig41 (c,p) sf = MoC.reconfig41 (wrap MoC.ctxt41 c p sf)
-reconfig42 (c,p) sf = MoC.reconfig42 (wrap MoC.ctxt42 c p sf)
-reconfig43 (c,p) sf = MoC.reconfig43 (wrap MoC.ctxt43 c p sf)
-reconfig44 (c,p) sf = MoC.reconfig44 (wrap MoC.ctxt44 c p sf)
+wrap ctxt c p sf = (fmap . fmap) (\f->ctxt (c,p,f)) sf
+reconfig11 (c,p) sf = MoC.reconfig11 (wrap scen11 c p sf)
+reconfig12 (c,p) sf = MoC.reconfig12 (wrap scen12 c p sf)
+reconfig13 (c,p) sf = MoC.reconfig13 (wrap scen13 c p sf)
+reconfig14 (c,p) sf = MoC.reconfig14 (wrap scen14 c p sf)
+reconfig21 (c,p) sf = MoC.reconfig21 (wrap scen21 c p sf)
+reconfig22 (c,p) sf = MoC.reconfig22 (wrap scen22 c p sf)
+reconfig23 (c,p) sf = MoC.reconfig23 (wrap scen23 c p sf)
+reconfig24 (c,p) sf = MoC.reconfig24 (wrap scen24 c p sf)
+reconfig31 (c,p) sf = MoC.reconfig31 (wrap scen31 c p sf)
+reconfig32 (c,p) sf = MoC.reconfig32 (wrap scen32 c p sf)
+reconfig33 (c,p) sf = MoC.reconfig33 (wrap scen33 c p sf)
+reconfig34 (c,p) sf = MoC.reconfig34 (wrap scen34 c p sf)
+reconfig41 (c,p) sf = MoC.reconfig41 (wrap scen41 c p sf)
+reconfig42 (c,p) sf = MoC.reconfig42 (wrap scen42 c p sf)
+reconfig43 (c,p) sf = MoC.reconfig43 (wrap scen43 c p sf)
+reconfig44 (c,p) sf = MoC.reconfig44 (wrap scen44 c p sf)
 
 ------- CONSTANT -------
 
@@ -348,10 +348,10 @@ generate4 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
           -> ([b1], [b2], [b3], [b4])
           -> (Signal b1, Signal b2, Signal b3, Signal b4) 
 
-generate1 (c,p,f) i = MoC.stated01 (MoC.ctxt11 c p f) (signal  i)
-generate2 (c,p,f) i = MoC.stated02 (MoC.ctxt22 c p f) (signal2 i)
-generate3 (c,p,f) i = MoC.stated03 (MoC.ctxt33 c p f) (signal3 i)
-generate4 (c,p,f) i = MoC.stated04 (MoC.ctxt44 c p f) (signal4 i)
+generate1 cpf i = MoC.stated01 (scen11 cpf) (signal  i)
+generate2 cpf i = MoC.stated02 (scen22 cpf) (signal2 i)
+generate3 cpf i = MoC.stated03 (scen33 cpf) (signal3 i)
+generate4 cpf i = MoC.stated04 (scen44 cpf) (signal4 i)
 
 ------- STATED -------
 
@@ -467,22 +467,22 @@ stated44 :: ((Cons,Cons,Cons,Cons,Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
          -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
          -> (Signal b1, Signal b2, Signal b3, Signal b4)
            
-stated11 (cns,pns,ns) i = MoC.stated11 (MoC.ctxt21 cns pns ns) (signal  i)
-stated12 (cns,pns,ns) i = MoC.stated12 (MoC.ctxt32 cns pns ns) (signal2 i)
-stated13 (cns,pns,ns) i = MoC.stated13 (MoC.ctxt43 cns pns ns) (signal3 i)
-stated14 (cns,pns,ns) i = MoC.stated14 (MoC.ctxt54 cns pns ns) (signal4 i)
-stated21 (cns,pns,ns) i = MoC.stated21 (MoC.ctxt31 cns pns ns) (signal  i)
-stated22 (cns,pns,ns) i = MoC.stated22 (MoC.ctxt42 cns pns ns) (signal2 i)
-stated23 (cns,pns,ns) i = MoC.stated23 (MoC.ctxt53 cns pns ns) (signal3 i)
-stated24 (cns,pns,ns) i = MoC.stated24 (MoC.ctxt64 cns pns ns) (signal4 i)
-stated31 (cns,pns,ns) i = MoC.stated31 (MoC.ctxt41 cns pns ns) (signal  i)
-stated32 (cns,pns,ns) i = MoC.stated32 (MoC.ctxt52 cns pns ns) (signal2 i)
-stated33 (cns,pns,ns) i = MoC.stated33 (MoC.ctxt63 cns pns ns) (signal3 i)
-stated34 (cns,pns,ns) i = MoC.stated34 (MoC.ctxt74 cns pns ns) (signal4 i)
-stated41 (cns,pns,ns) i = MoC.stated41 (MoC.ctxt51 cns pns ns) (signal  i)
-stated42 (cns,pns,ns) i = MoC.stated42 (MoC.ctxt62 cns pns ns) (signal2 i)
-stated43 (cns,pns,ns) i = MoC.stated43 (MoC.ctxt73 cns pns ns) (signal3 i)
-stated44 (cns,pns,ns) i = MoC.stated44 (MoC.ctxt84 cns pns ns) (signal4 i)
+stated11 ns i = MoC.stated11 (scen21 ns) (signal  i)
+stated12 ns i = MoC.stated12 (scen32 ns) (signal2 i)
+stated13 ns i = MoC.stated13 (scen43 ns) (signal3 i)
+stated14 ns i = MoC.stated14 (scen54 ns) (signal4 i)
+stated21 ns i = MoC.stated21 (scen31 ns) (signal  i)
+stated22 ns i = MoC.stated22 (scen42 ns) (signal2 i)
+stated23 ns i = MoC.stated23 (scen53 ns) (signal3 i)
+stated24 ns i = MoC.stated24 (scen64 ns) (signal4 i)
+stated31 ns i = MoC.stated31 (scen41 ns) (signal  i)
+stated32 ns i = MoC.stated32 (scen52 ns) (signal2 i)
+stated33 ns i = MoC.stated33 (scen63 ns) (signal3 i)
+stated34 ns i = MoC.stated34 (scen74 ns) (signal4 i)
+stated41 ns i = MoC.stated41 (scen51 ns) (signal  i)
+stated42 ns i = MoC.stated42 (scen62 ns) (signal2 i)
+stated43 ns i = MoC.stated43 (scen73 ns) (signal3 i)
+stated44 ns i = MoC.stated44 (scen84 ns) (signal4 i)
 
 ------- STATE -------
 
@@ -591,22 +591,22 @@ state44 :: ((Cons,Cons,Cons,Cons,Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> (Signal b1, Signal b2, Signal b3, Signal b4)
            
-state11 (cns,pns,ns) i = MoC.state11 (MoC.ctxt21 cns pns ns) (signal  i)
-state12 (cns,pns,ns) i = MoC.state12 (MoC.ctxt32 cns pns ns) (signal2 i)
-state13 (cns,pns,ns) i = MoC.state13 (MoC.ctxt43 cns pns ns) (signal3 i)
-state14 (cns,pns,ns) i = MoC.state14 (MoC.ctxt54 cns pns ns) (signal4 i)
-state21 (cns,pns,ns) i = MoC.state21 (MoC.ctxt31 cns pns ns) (signal  i)
-state22 (cns,pns,ns) i = MoC.state22 (MoC.ctxt42 cns pns ns) (signal2 i)
-state23 (cns,pns,ns) i = MoC.state23 (MoC.ctxt53 cns pns ns) (signal3 i)
-state24 (cns,pns,ns) i = MoC.state24 (MoC.ctxt64 cns pns ns) (signal4 i)
-state31 (cns,pns,ns) i = MoC.state31 (MoC.ctxt41 cns pns ns) (signal  i)
-state32 (cns,pns,ns) i = MoC.state32 (MoC.ctxt52 cns pns ns) (signal2 i)
-state33 (cns,pns,ns) i = MoC.state33 (MoC.ctxt63 cns pns ns) (signal3 i)
-state34 (cns,pns,ns) i = MoC.state34 (MoC.ctxt74 cns pns ns) (signal4 i)
-state41 (cns,pns,ns) i = MoC.state41 (MoC.ctxt51 cns pns ns) (signal  i)
-state42 (cns,pns,ns) i = MoC.state42 (MoC.ctxt62 cns pns ns) (signal2 i)
-state43 (cns,pns,ns) i = MoC.state43 (MoC.ctxt73 cns pns ns) (signal3 i)
-state44 (cns,pns,ns) i = MoC.state44 (MoC.ctxt84 cns pns ns) (signal4 i)
+state11 ns i = MoC.state11 (scen21 ns) (signal  i)
+state12 ns i = MoC.state12 (scen32 ns) (signal2 i)
+state13 ns i = MoC.state13 (scen43 ns) (signal3 i)
+state14 ns i = MoC.state14 (scen54 ns) (signal4 i)
+state21 ns i = MoC.state21 (scen31 ns) (signal  i)
+state22 ns i = MoC.state22 (scen42 ns) (signal2 i)
+state23 ns i = MoC.state23 (scen53 ns) (signal3 i)
+state24 ns i = MoC.state24 (scen64 ns) (signal4 i)
+state31 ns i = MoC.state31 (scen41 ns) (signal  i)
+state32 ns i = MoC.state32 (scen52 ns) (signal2 i)
+state33 ns i = MoC.state33 (scen63 ns) (signal3 i)
+state34 ns i = MoC.state34 (scen74 ns) (signal4 i)
+state41 ns i = MoC.state41 (scen51 ns) (signal  i)
+state42 ns i = MoC.state42 (scen62 ns) (signal2 i)
+state43 ns i = MoC.state43 (scen73 ns) (signal3 i)
+state44 ns i = MoC.state44 (scen84 ns) (signal4 i)
 
 ------- MOORE -------
 
@@ -725,22 +725,22 @@ moore44 :: ((Cons,Cons,Cons,Cons,Cons), Prod,
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
-moore11 (cns,pns,ns) (cod,pod,od) i = MoC.moore11 (MoC.ctxt21 cns pns ns) (MoC.ctxt11 cod pod od) (signal i)
-moore12 (cns,pns,ns) (cod,pod,od) i = MoC.moore12 (MoC.ctxt21 cns pns ns) (MoC.ctxt12 cod pod od) (signal i)
-moore13 (cns,pns,ns) (cod,pod,od) i = MoC.moore13 (MoC.ctxt21 cns pns ns) (MoC.ctxt13 cod pod od) (signal i)
-moore14 (cns,pns,ns) (cod,pod,od) i = MoC.moore14 (MoC.ctxt21 cns pns ns) (MoC.ctxt14 cod pod od) (signal i)
-moore21 (cns,pns,ns) (cod,pod,od) i = MoC.moore21 (MoC.ctxt31 cns pns ns) (MoC.ctxt11 cod pod od) (signal i)
-moore22 (cns,pns,ns) (cod,pod,od) i = MoC.moore22 (MoC.ctxt31 cns pns ns) (MoC.ctxt12 cod pod od) (signal i)
-moore23 (cns,pns,ns) (cod,pod,od) i = MoC.moore23 (MoC.ctxt31 cns pns ns) (MoC.ctxt13 cod pod od) (signal i)
-moore24 (cns,pns,ns) (cod,pod,od) i = MoC.moore24 (MoC.ctxt31 cns pns ns) (MoC.ctxt14 cod pod od) (signal i)
-moore31 (cns,pns,ns) (cod,pod,od) i = MoC.moore31 (MoC.ctxt41 cns pns ns) (MoC.ctxt11 cod pod od) (signal i)
-moore32 (cns,pns,ns) (cod,pod,od) i = MoC.moore32 (MoC.ctxt41 cns pns ns) (MoC.ctxt12 cod pod od) (signal i)
-moore33 (cns,pns,ns) (cod,pod,od) i = MoC.moore33 (MoC.ctxt41 cns pns ns) (MoC.ctxt13 cod pod od) (signal i)
-moore34 (cns,pns,ns) (cod,pod,od) i = MoC.moore34 (MoC.ctxt41 cns pns ns) (MoC.ctxt14 cod pod od) (signal i)
-moore41 (cns,pns,ns) (cod,pod,od) i = MoC.moore41 (MoC.ctxt51 cns pns ns) (MoC.ctxt11 cod pod od) (signal i)
-moore42 (cns,pns,ns) (cod,pod,od) i = MoC.moore42 (MoC.ctxt51 cns pns ns) (MoC.ctxt12 cod pod od) (signal i)
-moore43 (cns,pns,ns) (cod,pod,od) i = MoC.moore43 (MoC.ctxt51 cns pns ns) (MoC.ctxt13 cod pod od) (signal i)
-moore44 (cns,pns,ns) (cod,pod,od) i = MoC.moore44 (MoC.ctxt51 cns pns ns) (MoC.ctxt14 cod pod od) (signal i)
+moore11 ns od i = MoC.moore11 (scen21 ns) (scen11 od) (signal i)
+moore12 ns od i = MoC.moore12 (scen21 ns) (scen12 od) (signal i)
+moore13 ns od i = MoC.moore13 (scen21 ns) (scen13 od) (signal i)
+moore14 ns od i = MoC.moore14 (scen21 ns) (scen14 od) (signal i)
+moore21 ns od i = MoC.moore21 (scen31 ns) (scen11 od) (signal i)
+moore22 ns od i = MoC.moore22 (scen31 ns) (scen12 od) (signal i)
+moore23 ns od i = MoC.moore23 (scen31 ns) (scen13 od) (signal i)
+moore24 ns od i = MoC.moore24 (scen31 ns) (scen14 od) (signal i)
+moore31 ns od i = MoC.moore31 (scen41 ns) (scen11 od) (signal i)
+moore32 ns od i = MoC.moore32 (scen41 ns) (scen12 od) (signal i)
+moore33 ns od i = MoC.moore33 (scen41 ns) (scen13 od) (signal i)
+moore34 ns od i = MoC.moore34 (scen41 ns) (scen14 od) (signal i)
+moore41 ns od i = MoC.moore41 (scen51 ns) (scen11 od) (signal i)
+moore42 ns od i = MoC.moore42 (scen51 ns) (scen12 od) (signal i)
+moore43 ns od i = MoC.moore43 (scen51 ns) (scen13 od) (signal i)
+moore44 ns od i = MoC.moore44 (scen51 ns) (scen14 od) (signal i)
 
 
 ------- MEALY -------
@@ -869,20 +869,20 @@ mealy44 :: ((Cons,Cons,Cons,Cons,Cons), Prod,
         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
         -> (Signal b1, Signal b2, Signal b3, Signal b4)
 
-mealy11 (cns,pns,ns) (cod,pod,od) i = MoC.mealy11 (MoC.ctxt21 cns pns ns) (MoC.ctxt21 cod pod od) (signal i)
-mealy12 (cns,pns,ns) (cod,pod,od) i = MoC.mealy12 (MoC.ctxt21 cns pns ns) (MoC.ctxt22 cod pod od) (signal i)
-mealy13 (cns,pns,ns) (cod,pod,od) i = MoC.mealy13 (MoC.ctxt21 cns pns ns) (MoC.ctxt23 cod pod od) (signal i)
-mealy14 (cns,pns,ns) (cod,pod,od) i = MoC.mealy14 (MoC.ctxt21 cns pns ns) (MoC.ctxt24 cod pod od) (signal i)
-mealy21 (cns,pns,ns) (cod,pod,od) i = MoC.mealy21 (MoC.ctxt31 cns pns ns) (MoC.ctxt31 cod pod od) (signal i)
-mealy22 (cns,pns,ns) (cod,pod,od) i = MoC.mealy22 (MoC.ctxt31 cns pns ns) (MoC.ctxt32 cod pod od) (signal i)
-mealy23 (cns,pns,ns) (cod,pod,od) i = MoC.mealy23 (MoC.ctxt31 cns pns ns) (MoC.ctxt33 cod pod od) (signal i)
-mealy24 (cns,pns,ns) (cod,pod,od) i = MoC.mealy24 (MoC.ctxt31 cns pns ns) (MoC.ctxt34 cod pod od) (signal i)
-mealy31 (cns,pns,ns) (cod,pod,od) i = MoC.mealy31 (MoC.ctxt41 cns pns ns) (MoC.ctxt41 cod pod od) (signal i)
-mealy32 (cns,pns,ns) (cod,pod,od) i = MoC.mealy32 (MoC.ctxt41 cns pns ns) (MoC.ctxt42 cod pod od) (signal i)
-mealy33 (cns,pns,ns) (cod,pod,od) i = MoC.mealy33 (MoC.ctxt41 cns pns ns) (MoC.ctxt43 cod pod od) (signal i)
-mealy34 (cns,pns,ns) (cod,pod,od) i = MoC.mealy34 (MoC.ctxt41 cns pns ns) (MoC.ctxt44 cod pod od) (signal i)
-mealy41 (cns,pns,ns) (cod,pod,od) i = MoC.mealy41 (MoC.ctxt51 cns pns ns) (MoC.ctxt51 cod pod od) (signal i)
-mealy42 (cns,pns,ns) (cod,pod,od) i = MoC.mealy42 (MoC.ctxt51 cns pns ns) (MoC.ctxt52 cod pod od) (signal i)
-mealy43 (cns,pns,ns) (cod,pod,od) i = MoC.mealy43 (MoC.ctxt51 cns pns ns) (MoC.ctxt53 cod pod od) (signal i)
-mealy44 (cns,pns,ns) (cod,pod,od) i = MoC.mealy44 (MoC.ctxt51 cns pns ns) (MoC.ctxt54 cod pod od) (signal i)
+mealy11 ns od i = MoC.mealy11 (scen21 ns) (scen21 od) (signal i)
+mealy12 ns od i = MoC.mealy12 (scen21 ns) (scen22 od) (signal i)
+mealy13 ns od i = MoC.mealy13 (scen21 ns) (scen23 od) (signal i)
+mealy14 ns od i = MoC.mealy14 (scen21 ns) (scen24 od) (signal i)
+mealy21 ns od i = MoC.mealy21 (scen31 ns) (scen31 od) (signal i)
+mealy22 ns od i = MoC.mealy22 (scen31 ns) (scen32 od) (signal i)
+mealy23 ns od i = MoC.mealy23 (scen31 ns) (scen33 od) (signal i)
+mealy24 ns od i = MoC.mealy24 (scen31 ns) (scen34 od) (signal i)
+mealy31 ns od i = MoC.mealy31 (scen41 ns) (scen41 od) (signal i)
+mealy32 ns od i = MoC.mealy32 (scen41 ns) (scen42 od) (signal i)
+mealy33 ns od i = MoC.mealy33 (scen41 ns) (scen43 od) (signal i)
+mealy34 ns od i = MoC.mealy34 (scen41 ns) (scen44 od) (signal i)
+mealy41 ns od i = MoC.mealy41 (scen51 ns) (scen51 od) (signal i)
+mealy42 ns od i = MoC.mealy42 (scen51 ns) (scen52 od) (signal i)
+mealy43 ns od i = MoC.mealy43 (scen51 ns) (scen53 od) (signal i)
+mealy44 ns od i = MoC.mealy44 (scen51 ns) (scen54 od) (signal i)
 
