@@ -84,11 +84,120 @@ kernel42 sc = SA.kernel42 (smap scen42 sc)
 kernel43 sc = SA.kernel43 (smap scen43 sc)
 kernel44 sc = SA.kernel44 (smap scen44 sc)
 
+
 detector11 :: Cons
            -> (s -> [a1] -> s)    -- ^ next state function (@f@)
            -> (s -> (Prod, [y]))  -- ^ scenario selection (@g@)
            ->  s                  -- ^ initial state (@s0@)
            -> Signal a1           -- ^ Input
            -> Signal y            -- ^ Output
-detector11 c ns od s0
-  = SA.detector11 (\s -> arg1 c $ ns s) od (SDF s0)
+detector21 :: (Cons, Cons)
+           -> (s -> [a1] -> [a2] -> s) 
+           -> (s -> (Prod, [y]))
+           ->  s 
+           -> Signal a1 -> Signal a2
+           -> Signal y           
+detector31 :: (Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> s)
+           -> (s -> (Prod, [y]))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> Signal y
+detector41 :: (Cons, Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> [a4] -> s)
+           -> (s -> (Prod, [y]))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> Signal y
+detector12 :: Cons
+           -> (s -> [a1] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2])))
+           -> s
+           -> Signal a1
+           -> (Signal y1, Signal y2)
+detector22 :: (Cons, Cons)
+           -> (s -> [a1] -> [a2] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2])))
+           -> s
+           -> Signal a1 -> Signal a2
+           -> (Signal y1, Signal y2)
+detector32 :: (Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2])))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal y1, Signal y2)
+detector42 :: (Cons, Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> [a4] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2])))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal y1, Signal y2)
+detector13 :: Cons
+           -> (s -> [a1] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3])))
+           -> s
+           -> Signal a1
+           -> (Signal y1, Signal y2, Signal y3)
+detector23 :: (Cons, Cons)
+           -> (s -> [a1] -> [a2] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3])))
+           -> s
+           -> Signal a1 -> Signal a2
+           -> (Signal y1, Signal y2, Signal y3)
+detector33 :: (Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3])))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal y1, Signal y2, Signal y3)
+detector43 :: (Cons, Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> [a4] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3])))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal y1, Signal y2, Signal y3)  
+detector14 :: Cons
+           -> (s -> [a1] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3]), (Prod, [y4])))
+           -> s
+           -> Signal a1
+           -> (Signal y1, Signal y2, Signal y3, Signal y4)
+detector24 :: (Cons, Cons)
+           -> (s -> [a1] -> [a2] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3]), (Prod, [y4])))
+           -> s
+           -> Signal a1 -> Signal a2
+           -> (Signal y1, Signal y2, Signal y3, Signal y4)
+detector34 :: (Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3]), (Prod, [y4])))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3
+           -> (Signal y1, Signal y2, Signal y3, Signal y4)
+detector44 :: (Cons, Cons, Cons, Cons)
+           -> (s -> [a1] -> [a2] -> [a3] -> [a4] -> s)
+           -> (s -> ((Prod, [y1]), (Prod, [y2]), (Prod, [y3]), (Prod, [y4])))
+           -> s
+           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
+           -> (Signal y1, Signal y2, Signal y3, Signal y4)
+           
+wrapFromSecond f wrap = \s -> wrap $ f s
+detector11 c ns od s0 = SA.detector11 (wrapFromSecond ns (arg1 c)) od (SDF s0)
+detector21 c ns od s0 = SA.detector21 (wrapFromSecond ns (arg2 c)) od (SDF s0)
+detector31 c ns od s0 = SA.detector31 (wrapFromSecond ns (arg3 c)) od (SDF s0)
+detector41 c ns od s0 = SA.detector41 (wrapFromSecond ns (arg4 c)) od (SDF s0)
+detector12 c ns od s0 = SA.detector12 (wrapFromSecond ns (arg1 c)) od (SDF s0)
+detector22 c ns od s0 = SA.detector22 (wrapFromSecond ns (arg2 c)) od (SDF s0)
+detector32 c ns od s0 = SA.detector32 (wrapFromSecond ns (arg3 c)) od (SDF s0)
+detector42 c ns od s0 = SA.detector42 (wrapFromSecond ns (arg4 c)) od (SDF s0)
+detector13 c ns od s0 = SA.detector13 (wrapFromSecond ns (arg1 c)) od (SDF s0)
+detector23 c ns od s0 = SA.detector23 (wrapFromSecond ns (arg2 c)) od (SDF s0)
+detector33 c ns od s0 = SA.detector33 (wrapFromSecond ns (arg3 c)) od (SDF s0)
+detector43 c ns od s0 = SA.detector43 (wrapFromSecond ns (arg4 c)) od (SDF s0)
+detector14 c ns od s0 = SA.detector14 (wrapFromSecond ns (arg1 c)) od (SDF s0)
+detector24 c ns od s0 = SA.detector24 (wrapFromSecond ns (arg2 c)) od (SDF s0)
+detector34 c ns od s0 = SA.detector34 (wrapFromSecond ns (arg3 c)) od (SDF s0)
+detector44 c ns od s0 = SA.detector44 (wrapFromSecond ns (arg4 c)) od (SDF s0)
+
+

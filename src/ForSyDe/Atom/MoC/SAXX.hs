@@ -37,10 +37,6 @@ kernel64 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*-
 kernel74 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<<)
 kernel84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
-
-(-$-) :: MoC e => (a -> b) -> Stream (e a) -> Stream (e b)
-(-$-) = fmap . fmap
-
 detector11 ns od i s1 = (od -$- g -*) 
   where g  = ns -$- st -*- s1
         st = i :- g
