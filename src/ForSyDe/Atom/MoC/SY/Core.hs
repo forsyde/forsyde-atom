@@ -66,9 +66,7 @@ unit  :: a -> Signal a
 unit  = pure . pure
 -- | Wraps a (tuple of) value(s) into the equivalent unit signal(s).
 --
--- The following helpers are exported:
---
--- > unit, unit2, unit3, unit4,
+-- Helpers: @unit@, @unit2@, @unit3@, @unit4@.
 unit2 = ($$) (unit, unit)
 unit3 = ($$$) (unit, unit, unit)
 unit4 = ($$$$) (unit, unit, unit, unit)

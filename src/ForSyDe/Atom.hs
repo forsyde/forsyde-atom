@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK not-home, prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016;
@@ -54,9 +54,10 @@
 -- while @N@ represents the number of __/tupled/__ outputs
 -- (i.e. @(b1,b2,...,bN)@). To avoid repetition we only provide
 -- documentation for functions with 2 inputs and 2 outputs
--- (i.e. @function22@). In case the provided functions do not suffice,
--- feel free to implement your own patterns following the examples in
--- the source code.
+-- (i.e. @function22@), while the available ones are mentioned as a
+-- regex (i.e. @function[1-4][1-4]@). In case the provided functions
+-- do not suffice, feel free to implement your own patterns following
+-- the examples in the source code.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom (
   
@@ -101,7 +102,7 @@ module ForSyDe.Atom (
   -- structured fashion in a way which can be visualized as below.
   --
   -- #layered-model#
-  -- <<docfiles/figs/misc-layered-model.png>>
+  -- <<fig/misc-layered-model.png>>
   --
   -- Layers are implemented as type classes which imply:
   --
@@ -192,7 +193,7 @@ module ForSyDe.Atom (
   -- order of events, but more importantly it determines an order of
   -- evaluation, which is a key piece of a simulation engine.
   --
-  -- <<docfiles/figs/misc-tagged-signal.png>>
+  -- <<fig/misc-tagged-signal.png>>
   --
   -- In ForSyDe-Atom, sequencing is achieved using the 'Stream' data
   -- type, inspired from <#reekie95 [Reekie95]>. In ForSyDe-Atom,
@@ -229,7 +230,7 @@ module ForSyDe.Atom (
   -- lacking functionality.
   --
   -- #proc-definition#
-  -- <<docfiles/figs/misc-process.png>>
+  -- <<fig/misc-process.png>>
   --
   -- Since processes are functions, process composition is equivalent
   -- to function composition. This means that composing two processes
@@ -243,7 +244,7 @@ module ForSyDe.Atom (
   --  "streams" the result from @p1@ to @p2@, as suggested in the
   --  drawing:
   --
-  -- <<docfiles/figs/misc-ser-composition.png>>
+  -- <<fig/misc-ser-composition.png>>
   --
   -- __Process networks__ describe ForSyDe systems in terms of
   -- compositions of processes and originate from Reekie's process
@@ -269,7 +270,7 @@ module ForSyDe.Atom (
   -- instantiating (fully applying) the component atoms, like in the
   -- example below:
   --
-  -- <<docfiles/figs/misc-process-constructor.png>>
+  -- <<fig/misc-process-constructor.png>>
   --
   -- Now if we visualize process networks as graphs, where processes
   -- are nodes and signals are edges, a meaningful process composition
@@ -393,7 +394,7 @@ module ForSyDe.Atom (
   -- which returns only one signal of a tuple and not, as we would
   -- like, a tuple of signals of events.
   --
-  -- <<docfiles/figs/misc-unzip.png>>
+  -- <<fig/misc-unzip.png>>
   --
   -- Therefore, by implementing all data types associated with signals
   -- and events as instances of 'Functor', we were able to provide a

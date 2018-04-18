@@ -48,7 +48,7 @@ module ForSyDe.Atom.MoC.CT (
   -- Below is an illustration of the behavior in time of the input and
   -- the output signals of a CT process:
   --
-  -- <<docfiles/figs/moc-ct-example.png>>
+  -- <<fig/moc-ct-example.png>>
   --
   -- Our CT MoC is implemented as an enhanced version of
   -- 'ForSyDe.MoC.DE.DE' with respect to the __CT MoC__ definition, in
@@ -79,7 +79,7 @@ module ForSyDe.Atom.MoC.CT (
   -- it. Capturing the particularities of this MoC, we can formulate
   -- the following properties:
   --
-  -- <<docfiles/figs/misc-ct-model.png>>
+  -- <<fig/misc-ct-model.png>>
   --
   -- 1. 'CT' signals, due to their formation as streams of tagged
   -- events, represent /discrete/ changes in a continuous function
@@ -121,7 +121,7 @@ module ForSyDe.Atom.MoC.CT (
   -- ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we
   -- can safely assume:
   --
-  -- <<docfiles/figs/eqs-moc-timed-context.png>>
+  -- <<fig/eqs-moc-timed-context.png>>
 
   TimeStamp, Time, CT(..),
 
@@ -135,8 +135,8 @@ module ForSyDe.Atom.MoC.CT (
   Signal, unit, unit2, unit3, unit4, infinite,
   signal, checkSignal, 
 
-  plot, plot2, plot3, plot4,
-  plotFloat, plotFloat2, plotFloat3, plotFloat4,
+  -- plot, plot2, plot3, plot4,
+  -- plotFloat, plotFloat2, plotFloat3, plotFloat4,
   
   -- * @CT@ process constuctors
 
@@ -148,14 +148,22 @@ module ForSyDe.Atom.MoC.CT (
   -- In the examples below we have imported and instantiated the
   -- functions such as @e'@ @pi'@, @sin'@ and @cos'@ from the
   -- collection of utilities in "ForSyDe.Atom.MoC.Time" and
-  -- "ForSyDe.Atom.MoC.TimeStamp" :
+  -- "ForSyDe.Atom.MoC.TimeStamp". Also, for the sake of documentation
+  -- the interactive examples are only dumping the CT signals in data
+  -- files using the 'dumpDat' utility defined in
+  -- "ForSyDe.Atom.Utility.Plot", according to the custom @cfg@
+  -- structure. These files can be further plotted by any tool of
+  -- choice, or using the plotting utilities provided in the
+  -- "ForSyDe.Atom.Utility.Plot" module.
   --
+  -- > import ForSyDe.Atom.Utility.Plot
   -- > import ForSyDe.Atom.MoC.Time as Time
   -- > import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
   -- > let pi'  = TimeStamp.pi
   -- > let exp' = Time.exp
   -- > let sin' = Time.sin
   -- > let cos' = Time.cos
+  -- > let cfg  = defaultCfg {xmax=10, rate=0.1}
 
   -- ** Simple
 
@@ -201,7 +209,8 @@ module ForSyDe.Atom.MoC.CT (
 
   -- ** Interfaces
 
-  toDE, toDE2, toDE3, toDE4,
+  toDE1, toDE2, toDE3, toDE4,
+  sampDE1, sampDE2, sampDE3, sampDE4,
   zipx, unzipx, unzipx'
   
   ) where

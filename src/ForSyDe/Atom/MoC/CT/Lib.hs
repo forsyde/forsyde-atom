@@ -19,21 +19,23 @@ module ForSyDe.Atom.MoC.CT.Lib where
 
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.CT.Core
-import           ForSyDe.Atom.MoC.Time
+import           ForSyDe.Atom.MoC.Time as T
 import           ForSyDe.Atom.MoC.TimeStamp
 import           ForSyDe.Atom.Utility
 import           Prelude hiding (const)
-
+import ForSyDe.Atom.Utility.Plot
 
 ------- DOCTEST SETUP -------
 
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
--- >>> import qualified Data.Number.FixedFunctions as RatF
--- >>> let exp' = RatF.exp 0.001
--- >>> let pi'  = realToFrac Prelude.pi
--- >>> let sin' = RatF.sin 0.001
--- >>> let cos' = RatF.cos 0.001
+-- >>> import ForSyDe.Atom.MoC.Time as Time
+-- >>> import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
+-- >>> let pi'  = TimeStamp.pi
+-- >>> let exp' = Time.exp
+-- >>> let sin' = Time.sin
+-- >>> let cos' = Time.cos
+-- >>> let cfg  = defaultCfg {xmax=10, rate=0.1}
 
 ------- DELAY -------
 
@@ -43,10 +45,11 @@ import           Prelude hiding (const)
 --
 -- >>> let s  = infinite (sin')
 -- >>> let s' = delay 2 (\_ -> 0) s
--- >>> plot 0.5 5 s'
--- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821}
+-- >>> dumpDat $ prepare cfg {labels=["delay"]} $ s'
+-- Dumped delay in ./fig
+-- ["./fig/delay.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-delay.png>>
+-- <<fig/moc-ct-pattern-delay.png>>
 delay :: TimeStamp   -- ^ time delay
       -> (Time -> a) -- ^ initial value
       -> Signal a    -- ^ input signal
@@ -60,10 +63,11 @@ delay t v = MoC.delay (unit (t, v))
 --
 -- >>> let s  = infinite (sin')
 -- >>> let s' = signal [(0, \_ -> 0), (2, \_ -> 1)]
--- >>> plot 0.5 5 $ delay' s' s
--- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821}
+-- >>> dumpDat $ prepare cfg {labels=["delayp"]} $ delay' s' s
+-- Dumped delayp in ./fig
+-- ["./fig/delayp.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-delayp.png>>
+-- <<fig/moc-ct-pattern-delayp.png>>
 delay' :: Signal a  -- ^ signal "borrowing" the initial event
       -> Signal a   -- ^ input signal
       -> Signal a   -- ^ output signal
@@ -76,21 +80,20 @@ delay' = MoC.delay
 -- care of synchronization between input signals. It instantiates the
 -- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22').
 -- 
--- The following constructors are provided:
---
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
+-- Constructors: @comb[1-4][1-4]@.
 --
 -- >>> let s1 = infinite (sin')
 -- >>> let s2 = signal [(0,\_->0),(pi',\_->1),(2*pi',\_->0),(3*pi',\_->1)]
--- >>> plot 0.5 5 $ comb11 (+1) s2
--- {1,1,1,1,1,1,1,2,2,2}
--- >>> plot2 0.5 5 $ ForSyDe.Atom.MoC.CT.Lib.comb22 (\a b-> (a+b,a*b)) s1 s2
--- ({0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821,33859 % 239941,5408 % 8329,512 % 2105,25 % 1117},{0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,(-2921) % 8329,(-1593) % 2105,(-1092) % 1117})
+-- >>> let o1 = comb11 (+1) s2
+-- >>> let (o2_1, o2_2) = comb22 (\a b-> (a+b,a*b)) s1 s2
+-- >>> dumpDat $ prepare cfg {labels=["comb11"]} o1  
+-- Dumped comb11 in ./fig
+-- ["./fig/comb11.dat"]
+-- >>> dumpDat $ prepareL cfg {labels=["comb22-1","comb22-2"]} [o2_1, o2_2]
+-- Dumped comb22-1, comb22-2 in ./fig
+-- ["./fig/comb22-1.dat","./fig/comb22-2.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-comb.png>>
+-- <<fig/moc-ct-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
        -> Signal a1              -- ^ first input signal
        -> Signal a2              -- ^ second input signal
@@ -150,17 +153,13 @@ comb44 = MoC.comb44
 -- instantiates the @reconfig@ atom pattern (see
 -- 'ForSyDe.Atom.MoC.reconfig22').
 --
--- The following constructors are provided:
---
--- > reconfig11, reconfig12, reconfig13, reconfig14,
--- > reconfig21, reconfig22, reconfig23, reconfig24,
--- > reconfig31, reconfig32, reconfig33, reconfig34,
--- > reconfig41, reconfig42, reconfig43, reconfig44,
+-- Constructors: @reconfig[1-4][1-4]@.
 --
 -- >>> let s1 = infinite (sin')
 -- >>> let sf = signal [(0,\_->(*0)),(pi',\_->(+1)),(2*pi',\_->(*0)),(3*pi',\_->(+1))]
--- >>> plot 0.5 5 $ reconfig11 sf s1
--- {0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,0 % 1,5408 % 8329,512 % 2105,25 % 1117}
+-- >>> dumpDat $ prepare cfg {labels=["reconfig"]} $ reconfig11 sf s1
+-- Dumped reconfig in ./fig
+-- ["./fig/reconfig.dat"]
 reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
            -- ^ signal carrying functions
            -> Signal a1
@@ -239,14 +238,13 @@ reconfig44 = MoC.reconfig44
 -- signal with constant value (i.e. a signal with one event starting
 -- from time 0).
 --
--- The following constructors are provided:
+-- Constructors: @constant[1-4]@.
 --
--- > constant1, constant2, constant3, constant4,
+-- >>> dumpDat $ prepare cfg {labels=["constant"]} $ constant1 2
+-- Dumped constant in ./fig
+-- ["./fig/constant.dat"]
 --
--- >>> plot 0.5 5 $ constant1 2
--- {2,2,2,2,2,2,2,2,2,2}
---
--- <<docfiles/figs/moc-ct-pattern-constant.png>>
+-- <<fig/moc-ct-pattern-constant.png>>
 constant2 :: (b1, b2)         -- ^ values to be repeated
           -> (Signal b1, Signal b2) -- ^ generated signals
 constant1 :: b1 -> Signal b1                                
@@ -265,14 +263,14 @@ constant4 = ($$$$) (constant1,constant1,constant1,constant1)
 
 -- | A generator for an infinite signal. Similar to 'constant2'.
 --
--- The following constructors are provided:
+-- Constructors: @infinite[1-4]@.
 --
--- > infinite1, infinite2, infinite3, infinite4,
+-- >>> let (inf1, inf2) = infinite2 (sin', cos')
+-- >>> dumpDat $ prepareL cfg {labels=["infinite2-1", "infinite2-2"]} [inf1, inf2] 
+-- Dumped infinite2-1, infinite2-2 in ./fig
+-- ["./fig/infinite2-1.dat","./fig/infinite2-2.dat"]
 --
--- >>> plot2 0.5 5 $ infinite2 (sin', cos')
--- ({0 % 1,473 % 985,132 % 157,783 % 785,2881 % 3169,54340 % 90821,33859 % 239941,(-2921) % 8329,(-1593) % 2105,(-1092) % 1117},{1 % 1,864 % 985,85 % 157,56 % 785,(-1320) % 3169,(-72771) % 90821,(-237540) % 239941,(-7800) % 8329,(-1376) % 2105,(-235) % 1117})
---
--- <<docfiles/figs/moc-ct-pattern-infinite.png>>
+-- <<fig/moc-ct-pattern-infinite.png>>
 infinite2 :: (Time -> b1, Time -> b2)         -- ^ values to be repeated
           -> (Signal b1, Signal b2) -- ^ generated signals
 infinite1 :: (Time -> b1) -> Signal b1                                
@@ -292,15 +290,14 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- is actually an instantiation of the @stated0X@ constructor
 -- (check 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > generate1, generate2, generate3, generate4,
+-- Constructors: @generate[1-4]@.
 --
 -- >>> let { osc 0 = 1 ; osc 1 = 0 }
--- >>> plot 1 10 $ generate1 osc (pi', \_->0)
--- {0,0,0,0,1,1,1,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["generate"]} $ generate1 osc (pi', \_->0)
+-- Dumped generate in ./fig
+-- ["./fig/generate.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-generate.png>>
+-- <<fig/moc-ct-pattern-generate.png>>
 --
 -- Another example simulating an RC oscillator:
 --
@@ -310,10 +307,11 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- >>> let vc t = vs * (1 - exp' (-t / (r * c))) -- Vc(t) : voltage charging through capacitor
 -- >>> let ns v = vs + (-1 * v)                  -- next state : charging / discharging
 -- >>> let rcOsc = generate1 ns (milisec 500, vc)
--- >>> plot 0.2 2 rcOsc
--- {0 % 1,255840 % 130321,33955596480 % 16983563041,98 % 361,235298 % 47045881,0 % 1,255840 % 130321,33955596480 % 16983563041,98 % 361,235298 % 47045881}
+-- >>> dumpDat $ prepare cfg {labels=["rcosc"]} $ rcOsc
+-- Dumped rcosc in ./fig
+-- ["./fig/rcosc.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-generate1.png>>
+-- <<fig/moc-ct-pattern-generate1.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
           -- ^ function to generate next value
           -> ((TimeStamp, Time -> b1), (TimeStamp, Time -> b2))
@@ -339,19 +337,15 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- instantiation of the @state@ MoC constructor (see
 -- 'ForSyDe.Atom.MoC.stated22').
 --
--- The following constructors are provided:
---
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
+-- Constructors: @stated[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
--- >>> plot 0.5 10 $ stated11 osc (1,\_->0) s1
--- {0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["stated"]} $ stated11 osc (1,\_->0) s1
+-- Dumped stated in ./fig
+-- ["./fig/stated.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-stated.png>>
+-- <<fig/moc-ct-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ next state function
            -> ((TimeStamp, Time -> b1), (TimeStamp, Time -> b2))
@@ -445,19 +439,15 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- state non-transparent. It is an instantiation of the @state@ MoC
 -- constructor (see 'ForSyDe.Atom.MoC.state22').
 --
--- The following constructors are provided:
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
+-- Constructors: @state[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
--- >>> plot 0.5 10 $ state11 osc (1,\_->0) s1
--- {1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["state"]} $ state11 osc (1,\_->0) s1
+-- Dumped state in ./fig
+-- ["./fig/state.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-state.png>>                   
+-- <<fig/moc-ct-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ next state function
            -> ((TimeStamp, Time -> b1), (TimeStamp, Time -> b2))
@@ -545,26 +535,21 @@ state42 ns i = MoC.state42 ns (unit2 i)
 state43 ns i = MoC.state43 ns (unit3 i)
 state44 ns i = MoC.state44 ns (unit4 i)
 
-
 ------- MOORE -------
 
 -- | @moore@ processes model Moore state machines. It is an
 -- instantiation of the @moore@ MoC constructor (see
 -- 'ForSyDe.Atom.MoC.moore22').
 --
--- The following constructors are provided:
---
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
+-- Constructors: @moore[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
 -- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
--- >>> plot 0.5 10 $ moore11 osc (*3) (1,\_->0) s1
--- {0,0,3,3,0,0,3,3,0,0,3,3,0,0,0,0,0,0,0,0}
+-- >>> dumpDat $ prepare cfg {labels=["moore"]} $ moore11 osc (*3) (1,\_->0) s1
+-- Dumped moore in ./fig
+-- ["./fig/moore.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-moore.png>>          
+-- <<fig/moc-ct-pattern-moore.png>>          
 moore22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> (b1, b2))
@@ -671,19 +656,15 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- instantiation of the @mealy@ MoC constructor
 -- (see 'ForSyDe.Atom.MoC.mealy22').
 --
--- The following constructors are provided:
---
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
+-- Constructors: @mealy[1-4][1-4]@.
 --
 -- >>> let { osc (-1) _ = 1; osc 1 _ = (-1) } 
 -- >>> let s1 = infinite sin'
--- >>> plotFloat 0.5 5 $ mealy11 osc (*) (pi',\_->1) s1
--- {0.0,0.48020304568527916,0.8407643312101911,0.9974522292993631,0.9091195960870937,0.5983197718589313,0.14111385715655098,0.35070236522991954,0.7567695961995249,0.9776186213070726}
+-- >>> dumpDat $ prepare cfg {labels=["mealy"]} $ mealy11 osc (*) (pi',\_->1) s1
+-- Dumped mealy in ./fig
+-- ["./fig/mealy.dat"]
 --
--- <<docfiles/figs/moc-ct-pattern-mealy.png>>
+-- <<fig/moc-ct-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)
         -- ^ next state function
         -> (st -> a1 -> a2 -> (b1, b2))
@@ -792,9 +773,7 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- instantiates the @comb@ atom pattern (see
 -- 'ForSyDe.Atom.MoC.comb22').
 --
--- The following constructors are provided:
---
--- > sync2, sync3, sync4,
+-- Constructors: @sync[1-4]@.
 sync2 :: Signal a1                    -- ^ first input signal
       -> Signal a2                    -- ^ second input signal
       -> (Signal a1, Signal a2)       -- ^ two output signals

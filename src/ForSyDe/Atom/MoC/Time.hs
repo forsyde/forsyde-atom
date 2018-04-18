@@ -99,7 +99,7 @@ sqrt = RatF.sqrt 0.000001
 -- | Exponent of 'Time'. Rational representation with a precision of
 -- @0.000001@.
 exp :: Time -> Time
-exp = RatF.cos 0.000001
+exp = RatF.exp 0.000001
 
 -- | Hyperbolic cosine of 'Time'. Rational representation with a
 -- precision of @0.000001@.

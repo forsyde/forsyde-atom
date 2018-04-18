@@ -21,6 +21,8 @@ import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 
+import Prelude hiding (until)
+
 -- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Signal a   = Stream (DE a)
 
@@ -84,9 +86,7 @@ unit (t,v) = (DE 0 v :- DE t v :- NullS)
 -- unit signal(s), in this case a signal with one event with the
 -- period @tag@ carrying @value@.
 --
--- The following helpers are exported:
---
--- > unit, unit2, unit3, unit4,
+-- Helpers: @unit@ and @unit[2-4]@.
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
@@ -99,6 +99,19 @@ infinite v = DE 0 v :- NullS
 -- signal. Checks if it is well-formed.
 signal :: [(TimeStamp, a)] -> Signal a
 signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
+
+-- | Takes the first part of the signal util a given timestamp. The
+-- last event of the resulting signal is at the given timestamp and
+-- carries the previous value. This utility is useful when plotting
+-- a signal, to specify the interval of plotting.
+until :: TimeStamp -> Signal a -> Signal a
+until _ NullS = NullS
+until u (DE t v:-NullS)
+  | t < u     = DE t v :- DE u v :- NullS
+  | otherwise = DE u v :- NullS
+until u (DE t v:-xs)
+  | t < u     = DE t v :- until u xs
+  | otherwise = DE u v :- NullS
 
 -- | Reads a signal from a string and checks if it is well-formed.
 -- Like with the @read@ function from @Prelude@, you must specify the

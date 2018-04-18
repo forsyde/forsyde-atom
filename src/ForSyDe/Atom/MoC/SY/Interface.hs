@@ -29,16 +29,14 @@ import           ForSyDe.Atom.Utility
 -- signal(s), rendering the equivalent synchronized
 -- 'ForSyDe.Atom.MoC.DE.DE' signal(s).
 --
--- The following constructors are provided:
---
--- > toDE, toDE2, toDE3, toDE4
+-- Constructors: @toDE@, @toDE2@, @toDE3@, @toDE4@.
 --
 -- >>> let s1 = SY.signal [0,3,4,6,9]
 -- >>> let s2 = SY.signal [1,2,3,4,5]
 -- >>> toDE s1 s2
 -- { 1 @0s, 2 @3s, 3 @4s, 4 @6s, 5 @9s}
 --
--- <<docfiles/figs/moc-sy-tode.png>>
+-- <<fig/moc-sy-tode.png>>
 toDE2 ::  SY.Signal TimeStamp
       -- ^ SY signal carrying 'ForSyDe.Atom.MoC.DE.DE' timestamps
       -> SY.Signal a                -- ^ first input SY signal
@@ -58,15 +56,13 @@ toDE4 ts s1 s2 s3 s4 = (toDE ts s1, toDE ts s2, toDE ts s3, toDE ts s4)
 -- the event consructor. The total order of SY is interpreted as
 -- partial order by the next SDF process downstream.
 --
--- The following constructors are provided:
---
--- > toSDF, toSDF2, toSDF3, toSDF4
+-- Constructors: @toSDF@, @toSDF2@, @toSDF3@, @toSDF4@.
 --
 -- >>> let s = SY.signal [1,2,3,4,5]
 -- >>> toSDF s
 -- {1,2,3,4,5}
 --
--- <<docfiles/figs/moc-sy-tosdf.png>>
+-- <<fig/moc-sy-tosdf.png>>
 toSDF2 :: SY.Signal a -> SY.Signal b
        -> (SDF.Signal a, SDF.Signal b)
 toSDF  :: SY.Signal a
@@ -95,7 +91,7 @@ toSDF4 s1 s2 s3 s4 = (toSDF s1, toSDF s2, toSDF s3, toSDF s4)
 -- >>> zipx v1
 -- {<1,1,11,11>,<2,2,12,12>,<3,3,13,13>,<4,4,14,14>,<5,5,15,15>}
 --
--- <<docfiles/figs/moc-sy-zipx.png>>
+-- <<fig/moc-sy-zipx.png>>
 zipx ::V.Vector (SY.Signal a) -> SY.Signal (V.Vector a)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
@@ -111,7 +107,7 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- >>> unzipx 4 s1
 -- <{1,1,1,1,1},{2,2,2,2,2},{3,3,3,3,3},{4,4,4,4,4}>
 --
--- <<docfiles/figs/moc-sy-zipx.png>>
+-- <<fig/moc-sy-zipx.png>>
 unzipx :: Integer -> SY.Signal (V.Vector a) -> V.Vector (SY.Signal a)
 unzipx n = V.reverse . V.unzipx id n
 

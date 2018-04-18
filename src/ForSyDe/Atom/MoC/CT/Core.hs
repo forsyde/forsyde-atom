@@ -103,9 +103,7 @@ unit (t,f) = (CT 0 0 f :- CT t 0 f :- NullS)
 -- unit signal(s), i.e. signal(s) with one event with the period
 -- @time@ carrying @function@.
 --
--- The following helpers are exported:
---
--- > unit, unit2, unit3, unit4,
+-- Helpers: @unit@ and @unit[2-4]@.
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)

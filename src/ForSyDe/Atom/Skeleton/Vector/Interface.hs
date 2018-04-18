@@ -37,8 +37,8 @@ mapS = fmap . fmap
 -- There exist helper intances of the 'zipx' skeleton interface for
 -- all supported MoCs.
 --
--- <<docfiles/figs/eqs-skel-vector-zipx.png>>
--- <<docfiles/figs/skel-vector-comm-zipx.png>>
+-- <<fig/eqs-skel-vector-zipx.png>>
+-- <<fig/skel-vector-comm-zipx.png>>
 zipx :: MoC e
      => Vector ((Vector a -> Vector a -> Vector a)
                 -> Fun e (Vector a) (Fun e (Vector a)
@@ -66,8 +66,8 @@ zipx part =  V.reduce1 sync part . farm11 (mapS unit)
 -- There exist helper intances of the 'unzipx' skeleton interface for
 -- all supported MoCs.
 --
--- <<docfiles/figs/eqs-skel-vector-unzipx.png>>
--- <<docfiles/figs/skel-vector-comm-unzipx.png>>
+-- <<fig/eqs-skel-vector-unzipx.png>>
+-- <<fig/skel-vector-comm-unzipx.png>>
 unzipx :: (MoC e)
        => (Vector a -> Vector (Ret e a))
        -> Integer
