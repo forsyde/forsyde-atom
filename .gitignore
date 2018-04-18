@@ -1,3 +1,4 @@
+## Jekyll files
 _site*
 *~
 #*
@@ -5,3 +6,15 @@ _site*
 auto
 .sass-cache
 *.lock
+
+# Haskell files
+*dist*
+*cabal*
+*~
+!*.cabal
+TAGS
+*#*
+*auto*
+*.dat
+*.gnuplot
+fig
