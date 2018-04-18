@@ -15,6 +15,15 @@ github-releases:
 ## paths to exclude from the site generation
 exclude: [Gemfile, Gemfile.lock, README.md, LICENSE, Setup.sh, src, tests, '*.cabal', dist]
 
+## Useful links
+shortcuts:
+ - name: User Manual
+   url: https://forsyde.github.io/forsyde-atom/assets/manual.pdf
+ - name: API Documentation
+   url: https://forsyde.github.io/forsyde-atom/api/
+ - name: Examples
+   url: https://github.com/forsyde/forsyde-atom-examples
+
 plugins:
 - jekyll-seo-tag
 - jekyll-remote-theme
