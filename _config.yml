@@ -13,7 +13,7 @@ github-releases:
   tar_url: https://api.github.com/repos/forsyde/forsyde-atom/tarball/master
 
 ## paths to exclude from the site generation
-exclude: [Gemfile, Gemfile.lock, README.md, LICENSE, Setup.sh, src, tests, '*.cabal', dist]
+exclude: [Gemfile, Gemfile.lock, README.md, LICENSE, Setup.hs, setup.html, src, tests, '*cabal*', dist, fig]
 
 ## Useful links
 shortcuts:
