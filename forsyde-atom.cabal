@@ -1,12 +1,12 @@
 name:                forsyde-atom
 version:             0.2.2.1
 synopsis:            Shallow-embedded DSL for modeling cyber-physical systems 
-description:         This package is a spin-off from the <https://forsyde.github.io/forsyde-shallow/ ForSyDe-Shallow> project, aiming to incorporate a large set of modelling concepts for describing various aspects of cyber-physical systems. For information and examples check the <https://forsyde.github.io/forsyde-atom/ ForSyDe-Atom> web site, or check the API documentation which is structured as a manual itself. For a fluent reading experience, we recommend starting with the "ForSyDe.Atom" module.
+description:         This package is a spin-off from the <https://forsyde.github.io/forsyde-shallow/ ForSyDe-Shallow> project, aiming to incorporate a large set of modelling concepts for describing various aspects of cyber-physical systems. The API documentation is structured as a manual and can be read as such. For a general overview of this library and the formal concepts implemented, we recommend starting your lecture with the "ForSyDe.Atom" module. For more resources, such as tutorials, user manual or publicatons, we recommend visiting the web page at <https://forsyde.github.io/forsyde-atom/>.
 license:             BSD3
 license-file:        LICENSE
 author:              George Ungureanu
 maintainer:          ugeorge@kth.se
-copyright:           Copyright (c) 2015-2016, George Ungureanu, KTH/ICT/ESY
+copyright:           Copyright (c) 2015-2018, George Ungureanu, KTH/EECS
 homepage:            https://forsyde.github.io/forsyde-atom/
 category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple

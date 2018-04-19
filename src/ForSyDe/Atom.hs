@@ -2,39 +2,58 @@
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016;
+-- Copyright   :  (c) George Ungureanu, 2015-2018;
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The formal foundation upon which ForSyDe <#sander04 [Sander04]>
--- defines its semantics is the /tagged signal model/
--- <ForSyDe-Atom.html#lee98 [Lee98]>.  This is a denotational
--- framework introduced by Lee and Sangiovanni-Vincentelli as a common
--- meta model for describing properties of concurrent systems in
--- general terms as sets of possible behaviors. Systems are regarded
--- as /compositions/ of /processes/ acting on /signals/ which are sets
--- of /tagged events/. Signals are characterized by a /tag system/
--- which determines causality between events, and could model time,
--- precedence relationships, synchronization points, and other key
--- properties. Based on how tag systems are defined, one can identify
--- several /Models of Computations (MoCs)/ as classes of behaviors
--- dictating the semantics of execution and concurrency in a network
--- of processes.
+-- The "spiritual parent" of this modeling framework dates as back as
+-- <#sander04 [Sander04]> which presented ForSyDe, an EDSL for
+-- describing heterogeneous systems as /networks of processes/
+-- communicating through /signals/. In ForSyDe, processes alone
+-- capture the timing semantics of execution and synchronization
+-- according to a certain /model of computation (MoC)/. The shallow
+-- implementation of ForSyDe,
+-- @<https://forsyde.github.io/forsyde-shallow/ forsyde-shallow>@
+-- provides libraries of higher-order functions for instantiating
+-- processes called /process constructors/ for several MoCs. The
+-- formal foundation upon which ForSyDe defines its semantics is the
+-- /tagged signal model/ <ForSyDe-Atom.html#lee98 [Lee98]>, which is
+-- a denotational framework introduced by Lee and
+-- Sangiovanni-Vincentelli as a common meta model for describing
+-- properties of concurrent systems in terms of their behavior.
 --
--- These concepts are the supporting pillars of ForSyDe's philosophy,
--- and state the purpose of the @forsyde-atom@ library: it is supposed
--- to be a modelling framework used as a proof-of-concept for the
--- atom-based approach to cyber-physical systems
+-- <<fig/misc-proc-net.png>>
+--
+-- The @<https://forsyde.github.io/forsyde-shallow/ forsyde-atom>@
+-- project started as a proof-of-concept for the atom-based approach
+-- to cyber-physical systems (CPS) introduced in
 -- <ForSyDe-Atom.html#ungureanu17 [Ungureanu17]>. This approach
--- extends the tagged signal model by systematically deconstructing
--- processes to their basic semantics and recreating them using a
--- minimal language of primitive building blocks called /atoms/. It
--- also tries to expand the scope of this model by exploiting more
--- aspects than just timing, by adding primitives for parallelism,
--- behavior, etc.
+-- extends the ideas of the tagged signal model by systematically
+-- deconstructing processes to their basic semantics and recreating
+-- them using a minimal language of primitive building blocks called
+-- /atoms/. It also expands the scope of this model by exploiting more
+-- aspects of cyber-physical systems than just timing, but also adding
+-- primitives for parallelism, behavior extensions, etc, each in its
+-- own interacting environment called /layer/. In order to implement
+-- these concepts we use the following Haskell language features:
+--
+-- * /type classes/ to define semantic environments associated with
+--   __layers__.
+--
+-- * /structured types/ for encoding behaviors or aspects associated
+--   with a behavior. Types which instantiate a the type class of a
+--   layer define classes of behaviors of that certain layer.
+--
+-- * systematic /partial application/ mechanisms in general and
+--   especially /applicative functors/ for defining __atoms__ as
+--   primitive building blocks.
+--
+-- * /function composition/ for chaining atoms in forms of meaningful
+--   __patterns__ implementing common building blocks used in CPS
+--   modeling.
 --
 -- The API documentation is structured as follows: this page provides
 -- an overview of the general notions and concepts, gently introducing
@@ -170,6 +189,21 @@ module ForSyDe.Atom (
   
   -- * The Model of Computation (MoC) Layer
 
+-- The formal foundation upon which ForSyDe 
+-- defines its semantics is the /tagged signal model/
+-- <ForSyDe-Atom.html#lee98 [Lee98]>.  This is a denotational
+-- framework introduced by Lee and Sangiovanni-Vincentelli as a common
+-- meta model for describing properties of concurrent systems in
+-- general terms as sets of possible behaviors. Systems are regarded
+-- as /compositions/ of /processes/ acting on /signals/ which are sets
+-- of /tagged events/. Signals are characterized by a /tag system/
+-- which determines causality between events, and could model time,
+-- precedence relationships, synchronization points, and other key
+-- properties. Based on how tag systems are defined, one can identify
+-- several /Models of Computations (MoCs)/ as classes of behaviors
+-- dictating the semantics of execution and concurrency in a network
+-- of processes.
+  
   -- | This layer represents a major part of the @forsyde-atom@
   -- library and is concerned in modeling the timing aspects of
   -- CPS. While its foundations have been layered in the classical
