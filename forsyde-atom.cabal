@@ -1,66 +1,18 @@
 name:                forsyde-atom
-version:             0.2.0.0
-synopsis:            A shallow-embedded DSL for modeling cyber-physical systems 
-description:         
-  The ForSyDe (Formal System Design) methodology has been developed
-  with the objective to move system design to a higher level of
-  abstraction and to bridge the abstraction gap by transformational
-  design refinement. It targets the modelling and characterization of
-  cyber-physical systems inheriting the theory of 
-  <http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=736561 Models of Computation (MoCs)>,
-  providing both a correct-by-construction execution model and
-  analyzable entry point for further synthesis flows. For more information
-  about ForSyDe and its associated projects please consult the
-  <https://github.com/forsyde ForSyDe webpage>.
-  .
-  The @forsyde-atom@ library is a shallow-embedded DSL implementing
-  the execution semantics of an /atom-based approach/ to ForSyDe. Its
-  purpose is to provide a modeling framework for cyber-physical
-  systems and to serve as a proof-of-concept for a future (non-strict
-  typed) DSL. Adhering to the formalism set by the
-  <http://www.diva-portal.org/smash/get/diva2:9340/FULLTEXT01.pdf PhD Thesis of Ingo Sander>, 
-  the current framework views systems as networks of processes
-  communicating through signals. The /atom-based approach/ to ForSyDe
-  adds some new important concepts:
-  .
-  * the separation of concerns through semantically-independent
-    __/layers/__ of computation, behavior, synchronization and
-    structure. Each layer offers a different analyzable view of a
-    given system and is described using the concept of 
-    /higher-order functions/.
-  * the description of each layer as a network of primitive building
-    blocks called __/atoms/__. Each atom embeds an undividable operation,
-    and wraps functions of lower layers with the semantics dictated by
-    a higher layer. They are described using the powerful concept of
-    /applicative functors/.
-  * the complete __/autonomy/__ of atoms in relation to the patterns
-    they build. As such, process networks or constructors are nothing
-    but /structural/ ad-hoc compositions that aid in achieving complex
-    behaviors whereas the actual behavior is dictated by the atoms
-    alone. This is proved (for the time being) for the
-    /Synchronization Layer/ by implementing all MoCs as instances of
-    /only one type class/.
-  .
-  While the host language limits the possibility of providing general
-  (e.g. proces) constructors due to type-strictness, the
-  @forsyde-atom@ framework is by all means complete. In this sense the
-  user can create her own custom /correct-by-design/ constructors and
-  networks as compositions of the provided atoms and utilities. Also,
-  this haddock-generated page is organized both as an API
-  documentation and as a technical report to facilitate te use and
-  understanding of the formal principles behing the design process.
-
+version:             0.2.2.1
+synopsis:            Shallow-embedded DSL for modeling cyber-physical systems 
+description:         This package is a spin-off from the <https://forsyde.github.io/forsyde-shallow/ ForSyDe-Shallow> project, aiming to incorporate a large set of modelling concepts for describing various aspects of cyber-physical systems. The API documentation is structured as a manual and can be read as such. For a general overview of this library and the formal concepts implemented, we recommend starting your lecture with the "ForSyDe.Atom" module. For more resources, such as tutorials, user manual or publicatons, we recommend visiting the web page at <https://forsyde.github.io/forsyde-atom/>.
 license:             BSD3
 license-file:        LICENSE
 author:              George Ungureanu
 maintainer:          ugeorge@kth.se
-copyright:           Copyright (c) 2015-2016, George Ungureanu, KTH/ICT/ESY
-homepage:            https://github.com/forsyde/forsyde-atom
+copyright:           Copyright (c) 2015-2018, George Ungureanu, KTH/EECS
+homepage:            https://forsyde.github.io/forsyde-atom/
 category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple
 cabal-version:       >=1.22
-tested-with:         GHC==7.10.3 GHC==8.0.1
-extra-doc-files:     docfiles/figs/*.png
+tested-with:         GHC==7.10.3 GHC==8.0.1 GHC==8.2.1
+extra-doc-files:     fig/*.png
 
 library
   exposed-modules:   ForSyDe.Atom
