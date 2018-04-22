@@ -104,7 +104,7 @@ module ForSyDe.Atom (
   -- structured fashion in a way which can be visualized as below.
   --
   -- #layered-model#
-  -- <<docfiles/figs/misc-layered-model.png>>
+  -- <<fig/misc-layered-model.png>>
   --
   -- Layers are implemented as type classes which define:
   --
@@ -181,9 +181,11 @@ module ForSyDe.Atom (
   -- permitted by the host language, and with the adaptations required
   -- by the atom approach.
   --
-  -- Continuing the short description in <#package-header the introduction>,
-  -- the following sections offer a short primer in ForSyDe-Atom and
-  -- how it connects to the classical ForSyDe theory.
+  -- Continuing the short description in <#package-header the
+  -- introduction>, the following sections offer a short primer in
+  -- ForSyDe-Atom and how it connects to the classical ForSyDe theory,
+  -- culminating with an overview of the MoC layer as provided by
+  -- @forsyde-atom@.
 
   -- ** Signals
   
@@ -196,17 +198,17 @@ module ForSyDe.Atom (
   -- determines an order of evaluation, which is a key piece of the
   -- simulation engine.
   --
-  -- <<docfiles/figs/misc-tagged-signal.png>>
+  -- <<fig/misc-tagged-signal.png>>
   --
   -- In ForSyDe, sequencing is achieved using a 'Stream' data type,
   -- inspired from <#reekie95 [Reekie95]>. In ForSyDe-Atom, signals
   -- are streams that carry /events/, where each type of event is
-  -- identified by a type constructor. Practically, a ForSyDe-Atom
-  -- signal is (pseudo-)defined as below, where @e@ is the type of an
-  -- event which, through its definition, it encodes a tag
-  -- system. Since, according to <#lee98 [Lee98]>, MoCs are defined by
-  -- tag systems, we can state that any specific instance of a signal
-  -- describes (i.e. is bound to) a MoC.
+  -- identified by a type constructor. Hence the pseudo-Haskell
+  -- definition for a signal would look like below, where @e@ is the
+  -- type of an event which encodes a tag system through its type
+  -- constructor. Since, according to <#lee98 [Lee98]>, MoCs are
+  -- defined by tag systems, we can state that any specific instance
+  -- of a signal is describing (i.e. is bound to) a MoC.
   --
   -- > type Signal a = exists e . MoC e => Stream (e a) 
 
@@ -256,10 +258,21 @@ module ForSyDe.Atom (
   -- history of) signals. A process can /only/ be instantiated using a
   -- __process constructor__ /pc/, which is a higher order function
   -- embedding MoC semantics and/or a specific composition, but
-  -- lacking functionality.
+  -- lacking functionality. An intuitive way of viewing process
+  -- constructors in general is as "parameterized templates" for
+  -- processes. Stretching this analogy we take the liberty of
+  -- referring to processes as "instances of process constructors".
   --
   -- #proc-definition#
-  -- <<docfiles/figs/misc-process.png>>
+  -- <<fig/misc-process.png>>
+  --
+  -- <<fig/misc-process-template.png>>
+  --
+  -- In the definitions/figure above, \(v_i \in V\) may also denote
+  -- the set of functions, not only values, fact which is taken for
+  -- granted in Haskell. Actually the whole power of ForSyDe as a
+  -- Haskell EDSL is that the designer can send functions as normal
+  -- values in programs. 
   --
   -- Since processes are functions, process composition is equivalent
   -- to function composition. This means that composing two processes
@@ -272,7 +285,7 @@ module ForSyDe.Atom (
   --  This implies that there is a signal @Signal β@ that "streams"
   --  the result from @p1@ to @p2@, as suggested in the drawing:
   --
-  -- <<docfiles/figs/misc-ser-composition.png>>
+  -- <<fig/misc-ser-composition.png>>
   --
   -- __Process networks__ describe ForSyDe systems in terms of
   -- compositions of processes and originate from Reekie's process
@@ -280,88 +293,95 @@ module ForSyDe.Atom (
   -- i.e. function from signal(s) to signal(s). The composition above
   -- @p2 . p1 @ can also be regarded as a process network.
   --
-  -- In ForSyDe-Atom atoms can be regarded as process constructors as
-  -- their instantiations are functions on signals of events.
-  -- Instantiations of atom patterns are the exact equivalent of
-  -- process networks, which themselves are also processes, depending
-  -- on the level of abstraction you are working with (hierarchical
-  -- blocks vs. flat structures).
+  -- In ForSyDe-Atom, MoC atoms are themselves process constructors,
+  -- and follow the process constructor definition: they (may) take
+  -- values as arguments and return processes. Based on that we can
+  -- create the following equivalence table:
   --
-  -- To understand the versatility of composition and partial
-  -- application in building process constructors, consider the
-  -- example above where composition of two processes infers a signal
-  -- between them. This mechanism also works when composing
-  -- constructors (un-instantiated atoms), which yields another
-  -- constructor. By instantiating (fully applying) the new
-  -- constructor we obtain a process network equivalent to the
-  -- composition of the respective primitive processes obtained by
-  -- instantiating (fully applying) the component atoms, like in the
-  -- example below:
+  -- <<fig/misc-atom-forsyde-equiv.png>>
   --
-  -- <<docfiles/figs/misc-process-constructor.png>>
+  -- These equivalences fit well with intuition when considering how
+  -- partial application and composition mechanisms are acting. The
+  -- whole idea of atoms is basically applying Backus' principle of
+  -- combining forms in order to obtain abstractions, which is one of
+  -- the basic principles of the functional programming paradigm. To
+  -- further even more this idea, one could visualize process networks
+  -- as graphs, where processes are nodes and signals are edges. A
+  -- subgraph with a meaningful shape could be considered a /pattern/
+  -- (hence the name atom patterns), and one could find isomorphisms
+  -- between different patterns.
   --
-  -- Now if we visualize process networks as graphs, where processes
-  -- are nodes and signals are edges, a meaningful process composition
-  -- could be regarded as graph patterns. Therefore it is safe to
-  -- associate process constructors as patterns in process networks.
-
+  -- To get a flavor of how (partial) composition of higher order
+  -- function works in ForSyDe-Atom, consider the example below where
+  -- both /pn/ and /p'/ denote the same thing and instantiate the
+  -- pattern in the right hand side, visualized as a graph. The
+  -- circled operators denote the '-.-' and '-*-' atoms presented in
+  -- the next section.
+  --
+  -- <<fig/misc-process-constructor.png>>
+  --
+  
   -- ** Models of Computation
   
-  -- | As mentioned in the introduction, /MoCs/ are classes of behaviors
-  -- dictating the semantics of execution and concurrency in a network
-  -- of processes. Based on the definitions of their tag systems
-  -- ForSyDe identifies MoCs as:
+  -- | MoCs are classes of behaviors dictating the semantics of
+  -- execution and concurrency in a network of processes and,
+  -- according to <#lee98 [Lee98]>, are determined by the tag
+  -- systems. Based on how their tag systems are defined ForSyDe
+  -- identifies MoCs as:
   --
-  -- 1. /timed/ where /T/ is a totally ordered set and /t/ express the
-  -- notion of physical time (e.g. continuous time
-  -- 'ForSyDe.Atom.MoC.CT.CT', discrete event
-  -- 'ForSyDe.Atom.MoC.DE.DE') or precedence (e.g. synchronous
-  -- 'ForSyDe.Atom.MoC.SY.SY');
+  -- 1. /timed/ where /T/ is a totally ordered set and, depending on
+  --   the abstraction level, /t/ might express from the notion of
+  --   physical time (e.g. continuous time 'ForSyDe.Atom.MoC.CT.CT',
+  --   discrete event 'ForSyDe.Atom.MoC.DE.DE') to the notion of
+  --   precedence and causality (e.g. synchronous
+  --   'ForSyDe.Atom.MoC.SY.SY');
   --
   -- 1. /untimed/, where /T/ is a partially ordered set and /t/ is
-  -- expressed in terms of constraints on the tags in signals
-  -- (e.g. dataflow, synchronous data flow
-  -- 'ForSyDe.Atom.MoC.SDF.SDF').
+  --   expressed in terms of constraints on the tags in signals
+  --   (e.g. dataflow, synchronous data flow
+  --   'ForSyDe.Atom.MoC.SDF.SDF').
   --
   -- As concerning MoCs, ForSyDe implements the execution semantics
   -- /through process constructors/, abstracting the timing model and
   -- inferring a schedule of the process network. In ForSyDe-Atom all
-  -- atoms embed operating semantics dictated by a certain MoC and are
-  -- side-effect-free. This ensures the functional correctness of a
-  -- system even from early design stages.
-
+  -- atom instances embed operating semantics dictated by a certain
+  -- MoC and are side-effect-free, ensuring the functional correctness
+  -- of a system even from early design stages.
+  
   -- ** Representing Time
   
-  -- | For explicit time representation, ForSyDe-atom provides two
-  -- distinct data types.
+  -- | Some MoCs require explicit time representation, for which
+  -- @forsyde-atom@ provides two distinct data types.
 
   Time(..), TimeStamp(..),
 
-  -- ** MoC Layer Overview
-
-  -- | This layer consists of:
+  -- ** Layer Overview
+  
+  -- | Now, after the crash course in ForSyDe, we can finally present
+  -- what the MoC layer consists of. Similary to all other laters, the
+  -- MoC layer defines:
   --
-  -- * 4 atoms as infix operators, implemented as methods of the type
-  -- class 'MoC'. Since each MoC is determined by its tag system, we
-  -- expose this 
-  -- which are instances of this class. Thus an event's type will
-  -- trigger an atom to behave in accordance to its associated MoC.
+  -- * 4 atoms provided as infix operators and implemented as type
+  --   class methods for the class 'MoC'. As each atom's semantics is
+  --   overloaded based on the input type, and each input type
+  --   instantiating the class 'MoC' defines an own tag system, we
+  --   enforce Lee's idea <#lee98 [Lee98]> that tag systems determine
+  --   the MoC (semantics). (/See below/)
   --
   -- * a library of meaningful atom patterns as process constructors.
-  -- (/Check the "ForSyDe.Atom.MoC" module for extensive/
-  -- /documentation/).
+  --   (/Check the "ForSyDe.Atom.MoC" module/).
   --
   -- * a set of data types defining tag systems through the structure
-  -- of events (i.e. /T/ &#215; /V/). They are instances of the 'MoC'
-  -- type class and define the rules of execution that will trigger an
-  -- atom to behave in accordance to its associated MoC. For each
-  -- supported MoC, @forsyde-atom@ provides a module which defines the
-  -- signal (event) type, but also a set of utilities and process
-  -- constructors as specific instantiations of atom patterns.
-  -- (/Check the links in the <#section.i:MoC instances> section for/
-  -- /extensive documentation/).
+  --   of events (i.e. /T/ &#215; /V/). They are instances of the
+  --   'MoC' type class and define the rules of execution which will
+  --   trigger an atom to behave in accordance to an associated
+  --   MoC. For each supported MoC, @forsyde-atom@ provides a module
+  --   which defines the signal type, but also a set of utilities and
+  --   process constructors as specific instantiations of atom
+  --   patterns.  (/check the class <#section.i:MoC instances>/).
   
   MoC(..),  
+
 
   -- * The Skeleton Layer
 
@@ -422,7 +442,7 @@ module ForSyDe.Atom (
   -- which returns only one signal of a tuple and not, as we would
   -- like, a tuple of signals of events.
   --
-  -- <<docfiles/figs/misc-unzip.png>>
+  -- <<fig/misc-unzip.png>>
   --
   -- Therefore, by implementing all data types associated with signals
   -- and events as instances of 'Functor', we were able to provide a

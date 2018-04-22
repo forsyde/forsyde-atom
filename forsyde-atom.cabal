@@ -45,12 +45,16 @@ library
                    , ForSyDe.Atom.Skeleton.Vector.Lib
                    , ForSyDe.Atom.Skeleton.Vector.Interface
                    , ForSyDe.Atom.Utility
+                   , ForSyDe.Atom.Utility.Tuple
+                   , ForSyDe.Atom.Utility.Plot
+  ghc-options:       -Wno-duplicate-exports
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances
   build-depends:     base>=4.6 && <6
-                   , doctest >= 0.8
                    , numbers >= 3000
                    , time
+                   , directory >= 1.2.2
+                   , process >= 1.2.3
                        -- HUnit,
                        -- QuickCheck,
                        -- process >= 1.4.2.0,
@@ -75,10 +79,14 @@ library
 test-suite doctests
   type:             exitcode-stdio-1.0
   default-language: Haskell2010
-  ghc-options:      -threaded
+  ghc-options:      -threaded -isrc
   main-is:          tests/TestsDoc.hs
-  build-depends:    base>=4.6 && <6, doctest >= 0.8
+  build-depends:    base>=4.6 && <6
+                  , numbers >= 3000
+                  , doctest >= 0.8
+                  , forsyde-atom
 
+                  
 source-repository head
   type:     git
   location: https://github.com/forsyde/forsyde-atom.git

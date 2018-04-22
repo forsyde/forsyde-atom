@@ -55,7 +55,7 @@ module ForSyDe.Atom.MoC.SDF (
   -- output signals of a SDF process. Events sharing the same partial
   -- ordering in relation to one firing are overlined:
   --
-  -- <<docfiles/figs/moc-sdf-example.png>>
+  -- <<fig/moc-sdf-example.png>>
   --
   -- Implementing the SDF tag system implied a series of engineering
   -- decisions which lead to the following particularities:
@@ -84,7 +84,7 @@ module ForSyDe.Atom.MoC.SDF (
   -- justifies the SDF implementation of 'ForSyDe.Atom.MoC.Fun' and
   -- for 'ForSyDe.Atom.MoC.Ret':
   --
-  -- <<docfiles/figs/eqs-moc-sdf-context.png>>
+  -- <<fig/eqs-moc-sdf-context.png>>
   
   SDF(..),
   
@@ -95,7 +95,7 @@ module ForSyDe.Atom.MoC.SDF (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, Prod, Cons, signal,
+  Signal, Prod, Cons, signal, readSignal,
 
   -- | These SY process constructors are basically specific
   -- instantiations of the patterns of atoms defined in
@@ -142,7 +142,7 @@ module ForSyDe.Atom.MoC.SDF (
 
   -- ** Interfaces
 
-  toSY, toSY2, toSY3, toSY4,
+  toSY1, toSY2, toSY3, toSY4,
   zipx, unzipx  
 
   ) where

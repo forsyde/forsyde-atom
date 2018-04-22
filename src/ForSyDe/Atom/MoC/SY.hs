@@ -43,7 +43,7 @@ module ForSyDe.Atom.MoC.SY (
   -- Below is a /possible/ behavior in time of the input and the
   -- output signals of a SY process, to illustrate these semantics:
   --
-  -- <<docfiles/figs/moc-sy-example.png>>
+  -- <<fig/moc-sy-example.png>>
   --
   -- Implementing the SY tag system is straightforward if we consider
   -- the synchronous 'Signal' as an infinite list. In this case the
@@ -67,8 +67,7 @@ module ForSyDe.Atom.MoC.SY (
   -- need for an <ForSyDe-Atom-MoC.html#context execution context>
   -- and we can ignore the formatting of functions in
   -- "ForSyDe.Atom.MoC", thus we can safely assume:
-  --
-  -- <<docfiles/figs/eqs-moc-timed-context.png>>
+  -- <<fig/eqs-moc-timed-context.png>>
   SY(..),
 
   -- * Aliases & utilities
@@ -78,7 +77,7 @@ module ForSyDe.Atom.MoC.SY (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, unit, unit2, unit3, unit4, signal,
+  Signal, unit, unit2, unit3, unit4, signal, readSignal,
   
   -- * @SY@ process constuctors
 

@@ -59,7 +59,7 @@ module ForSyDe.Atom.MoC.DE (
   -- nature of the evaluation mechanisms. Below you can see an example
   -- of a simple DE process, without behavior extensions:
   --
-  -- <<docfiles/figs/moc-de-example.png>>
+  -- <<fig/moc-de-example.png>>
   --
   -- Below are stated a few particularities of our DE MoC
   -- implementation:
@@ -121,7 +121,7 @@ module ForSyDe.Atom.MoC.DE (
   -- ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we
   -- can safely assume:
   --
-  -- <<docfiles/figs/eqs-moc-timed-context.png>>
+  -- <<fig/eqs-moc-timed-context.png>>
 
   TimeStamp, DE(..),
 
@@ -132,7 +132,7 @@ module ForSyDe.Atom.MoC.DE (
   -- to hide the cumbersome construction of atoms and patters as seen
   -- in "ForSyDe.Atom.MoC".
 
-  Signal, unit, unit2, unit3, unit4, infinite,
+  Signal, unit, unit2, unit3, unit4, infinite, until,
   signal, checkSignal, readSignal,
   
   -- * @DE@ process constuctors
@@ -187,8 +187,8 @@ module ForSyDe.Atom.MoC.DE (
 
   -- ** Interface processes
 
-  toSY, toSY2, toSY3, toSY4,
-  toCT, toCT2, toCT3, toCT4,
+  toSY1, toSY2, toSY3, toSY4,
+  toCT1, toCT2, toCT3, toCT4,
 
   zipx, unzipx, unzipx',
   
@@ -206,3 +206,5 @@ import ForSyDe.Atom.MoC.DE.Hybrid
 import ForSyDe.Atom.MoC.DE.Interface
 import ForSyDe.Atom.MoC.DE.Lib
 import ForSyDe.Atom.MoC.TimeStamp
+
+import Prelude hiding (until)

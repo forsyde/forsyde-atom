@@ -92,7 +92,7 @@ class Functor c => Skeleton c where
   -- | Atom which maps a function on each element of a structure
   -- (i.e. categorical type), defined as:
   --
-  -- <<docfiles/figs/eqs-skel-atom-dot.png>>
+  -- <<fig/eqs-skel-atom-dot.png>>
   --
   -- '=.=' together with '=*=' form the @map@ pattern.
   (=.=)  :: (a -> b) -> c a -> c b
@@ -101,7 +101,7 @@ class Functor c => Skeleton c where
   -- (i.e. categorical type), on the elements of another structure,
   -- defined as:
   --
-  -- <<docfiles/figs/eqs-skel-atom-star.png>>
+  -- <<fig/eqs-skel-atom-star.png>>
   --
   -- '=.=' together with '=*=' form the @map@ pattern.
   (=*=)  :: c (a -> b) -> c a -> c b
@@ -109,7 +109,7 @@ class Functor c => Skeleton c where
   -- | Atom which reduces a structure to an element based on an
   -- /associative/ function, defined as:
   --
-  -- <<docfiles/figs/eqs-skel-atom-red.png>>
+  -- <<fig/eqs-skel-atom-red.png>>
   (=\=)  :: (a -> a -> a) -> c a -> a
 
   -- | Skeleton which /pipes/ an element through all the functions
@@ -119,7 +119,7 @@ class Functor c => Skeleton c where
   -- which might be augmented by instances of this class to include
   -- edge cases.
   --
-  -- <<docfiles/figs/eqs-skel-pattern-pipe.png>>
+  -- <<fig/eqs-skel-pattern-pipe.png>>
   --
   -- As the composition operation is not associative, we cannot treat
   -- @pipe@ as a true reduction. Alas, it can still be exploited in
@@ -137,7 +137,7 @@ class Functor c => Skeleton c where
   -- which might be replaced by instances of this class with a more
   -- efficient implementation.
   --
-  -- <<docfiles/figs/eqs-skel-pattern-first.png>>
+  -- <<fig/eqs-skel-pattern-first.png>>
   first :: c a -> a
   first v = (\x y -> x) =\= v
 
@@ -147,7 +147,7 @@ class Functor c => Skeleton c where
   -- which might be replaced by instances of this class with a more
   -- efficient implementation.
   --
-  -- <<docfiles/figs/eqs-skel-pattern-last.png>>
+  -- <<fig/eqs-skel-pattern-last.png>>
   last :: c a -> a
   last v = (\x y -> y) =\= v
 
@@ -162,19 +162,10 @@ class Functor c => Skeleton c where
 -- processes), the resulting structure could be regarded as a "farm of
 -- data-parallel processes".
 --
--- The following constructors are provided:
+-- Constructors: @farm[1-8][1-4]@.
 --
--- >  farm11, farm12, farm13, farm14,
--- >  farm21, farm22, farm23, farm24,
--- >  farm31, farm32, farm33, farm34,
--- >  farm41, farm42, farm43, farm44,
--- >  farm51, farm52, farm53, farm54,
--- >  farm61, farm62, farm63, farm64,
--- >  farm71, farm72, farm73, farm74,
--- >  farm81, farm82, farm83, farm84,
---
--- <<docfiles/figs/eqs-skel-pattern-farm.png>>
--- <<docfiles/figs/skel-pattern-farm.png>>
+-- <<fig/eqs-skel-pattern-farm.png>>
+-- <<fig/skel-pattern-farm.png>>
 farm22 :: Skeleton c => (a1 -> a2 -> (b1, b2)) -> c a1 -> c a2 -> (c b1, c b2)
 farm11 p v1                      = (p =.= v1)
 farm21 p v1 v2                   = (p =.= v1 =*= v2)
@@ -228,8 +219,8 @@ reduce = (=\=)
 -- (*) if the operation is not associative then the network is
 -- semantically equivalent to @pipe1@ (see 'pipe2').
 --
--- <<docfiles/figs/eqs-skel-pattern-reducei.png>>
--- <<docfiles/figs/skel-pattern-reducei.png>>
+-- <<fig/eqs-skel-pattern-reducei.png>>
+-- <<fig/skel-pattern-reducei.png>>
 reducei :: Skeleton c
         => (a -> a -> a) -- ^ associative function (*)
         -> a             -- ^ initial element of structure
@@ -249,13 +240,10 @@ pipe = (=<<=)
 -- ('pipe') skeleton apt for successive partial application and create
 -- more robust parameterizable pipeline networks.
 --
--- The following constructors are provided:
+-- Constructors: @comb[1-8]@.
 --
--- > pipe1, pipe2, pipe3, pipe4,
--- > pipe5, pipe6, pipe7, pipe8,
---
--- <<docfiles/figs/eqs-skel-pattern-pipe1.png>>
--- <<docfiles/figs/skel-pattern-pipe1.png>>
+-- <<fig/eqs-skel-pattern-pipe1.png>>
+-- <<fig/skel-pattern-pipe1.png>>
 pipe2 :: Skeleton c
       => (a1 -> a2 -> a -> a)
       -> c a1 -> c a2
