@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_HADDOCK prune #-}</span><span>
+</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE PostfixOperators #-}</span><span>
+</span><a name="line-3"></a><span class="hs-comment">----------------------------------------------------------------------</span><span>
+</span><a name="line-4"></a><span class="hs-comment">-- |</span><span>
+</span><a name="line-5"></a><span class="hs-comment">-- Module      :  ForSyDe.Atom.MoC.CT</span><span>
+</span><a name="line-6"></a><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016</span><span>
+</span><a name="line-7"></a><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
+</span><a name="line-8"></a><span class="hs-comment">-- </span><span>
+</span><a name="line-9"></a><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
+</span><a name="line-10"></a><span class="hs-comment">-- Stability   :  experimental</span><span>
+</span><a name="line-11"></a><span class="hs-comment">-- Portability :  portable</span><span>
+</span><a name="line-12"></a><span class="hs-comment">--</span><span>
+</span><a name="line-13"></a><span class="hs-comment">-- The @CT@ library implements the atoms holding the sematics for the</span><span>
+</span><a name="line-14"></a><span class="hs-comment">-- continuous time computation model. It also provides a set of</span><span>
+</span><a name="line-15"></a><span class="hs-comment">-- helpers for properly instantiating process network patterns as</span><span>
+</span><a name="line-16"></a><span class="hs-comment">-- process constructors.</span><span>
+</span><a name="line-17"></a><span class="hs-comment">--</span><span>
+</span><a name="line-18"></a><span class="hs-comment">-- For working with time or timestamps please check the utilities</span><span>
+</span><a name="line-19"></a><span class="hs-comment">-- provided by the &quot;ForSyDe.Atom.MoC.Time&quot; and</span><span>
+</span><a name="line-20"></a><span class="hs-comment">-- &quot;ForSyDe.Atom.MoC.TimeStamp&quot; modules.</span><span>
+</span><a name="line-21"></a><span class="hs-comment">--</span><span>
+</span><a name="line-22"></a><span class="hs-comment">-- __IMPORTANT!!!__</span><span>
+</span><a name="line-23"></a><span class="hs-comment">-- see the &lt;ForSyDe-Atom.html#naming_conv naming convention&gt; rules</span><span>
+</span><a name="line-24"></a><span class="hs-comment">-- on how to interpret, use and develop your own constructors.</span><span>
+</span><a name="line-25"></a><span class="hs-comment">----------------------------------------------------------------------</span><span>
+</span><a name="line-26"></a><span>
+</span><a name="line-27"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.CT</span><span> </span><span class="hs-special">(</span><span>
+</span><a name="line-28"></a><span>
+</span><a name="line-29"></a><span>  </span><span class="hs-comment">-- * Continuous time (@CT@) event</span><span>
+</span><a name="line-30"></a><span>
+</span><a name="line-31"></a><span>  </span><span class="hs-comment">-- | According to &lt;ForSyDe-Atom.html#lee98 [Lee98]&gt;, &quot;[regarding</span><span>
+</span><a name="line-32"></a><span>  </span><span class="hs-comment">-- metric time] at a minimum, /T/ is an Abelian group, in addition</span><span>
+</span><a name="line-33"></a><span>  </span><span class="hs-comment">-- to being totally ordered. A consequence is that /t&amp;#8322;/ -</span><span>
+</span><a name="line-34"></a><span>  </span><span class="hs-comment">-- /t&amp;#8321;/ is itself a tag &amp;#8704; /t&amp;#8321;/, /t&amp;#8322;/ &amp;#8712;</span><span>
+</span><a name="line-35"></a><span>  </span><span class="hs-comment">-- /T/. In a slightly more elaborate model of computation, /T/ has a</span><span>
+</span><a name="line-36"></a><span>  </span><span class="hs-comment">-- metric. (...) A continuous-time system is a metric timed system</span><span>
+</span><a name="line-37"></a><span>  </span><span class="hs-comment">-- /Q/ where /T/ is a continuum (a closed connected set).&quot;</span><span>
+</span><a name="line-38"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-39"></a><span>  </span><span class="hs-comment">-- The continuous time (@CT@) MoC defines the closest behavior to</span><span>
+</span><a name="line-40"></a><span>  </span><span class="hs-comment">-- what we could call &quot;physical time&quot;, where signals cover the full</span><span>
+</span><a name="line-41"></a><span>  </span><span class="hs-comment">-- span of a simulation as &quot;functions of time&quot; rather than</span><span>
+</span><a name="line-42"></a><span>  </span><span class="hs-comment">-- &quot;values&quot;. As such, we can state:</span><span>
+</span><a name="line-43"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-44"></a><span>  </span><span class="hs-comment">-- [The CT MoC] is abstracting the execution semantics and describes</span><span>
+</span><a name="line-45"></a><span>  </span><span class="hs-comment">-- a system where computation is performed continuously over a</span><span>
+</span><a name="line-46"></a><span>  </span><span class="hs-comment">-- (possibly infinite) span of time.</span><span>
+</span><a name="line-47"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-48"></a><span>  </span><span class="hs-comment">-- Below is an illustration of the behavior in time of the input and</span><span>
+</span><a name="line-49"></a><span>  </span><span class="hs-comment">-- the output signals of a CT process:</span><span>
+</span><a name="line-50"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-51"></a><span>  </span><span class="hs-comment">-- &lt;&lt;fig/moc-ct-example.png&gt;&gt;</span><span>
+</span><a name="line-52"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-53"></a><span>  </span><span class="hs-comment">-- Our CT MoC is implemented as an enhanced version of</span><span>
+</span><a name="line-54"></a><span>  </span><span class="hs-comment">-- 'ForSyDe.MoC.DE.DE' with respect to the __CT MoC__ definition, in</span><span>
+</span><a name="line-55"></a><span>  </span><span class="hs-comment">-- the sense that:</span><span>
+</span><a name="line-56"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-57"></a><span>  </span><span class="hs-comment">-- 1. tags /t/ are also represented with</span><span>
+</span><a name="line-58"></a><span>  </span><span class="hs-comment">-- 'ForSyDe.Atom.MoC.TimeStamp's, thus we can say that changes in a</span><span>
+</span><a name="line-59"></a><span>  </span><span class="hs-comment">-- CT signal happen at discrete times (see below).</span><span>
+</span><a name="line-60"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-61"></a><span>  </span><span class="hs-comment">-- 1. values are represented as functions over a continuous span of</span><span>
+</span><a name="line-62"></a><span>  </span><span class="hs-comment">-- time /f(t)/ rather than just a value or a series of values. The</span><span>
+</span><a name="line-63"></a><span>  </span><span class="hs-comment">-- time domain is represented with rational numbers which, as</span><span>
+</span><a name="line-64"></a><span>  </span><span class="hs-comment">-- compared to floating point numbers, do not suffer from inherent</span><span>
+</span><a name="line-65"></a><span>  </span><span class="hs-comment">-- quantisation, being able to model true continuity, i.e. between</span><span>
+</span><a name="line-66"></a><span>  </span><span class="hs-comment">-- any two arbitrary points in time there is an infinite amount of</span><span>
+</span><a name="line-67"></a><span>  </span><span class="hs-comment">-- intermediate moments.</span><span>
+</span><a name="line-68"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-69"></a><span>  </span><span class="hs-comment">-- 1. The event constructor has also a /phase/ component /&amp;#966;/,</span><span>
+</span><a name="line-70"></a><span>  </span><span class="hs-comment">-- which is taken into consideration only when evaluating the event</span><span>
+</span><a name="line-71"></a><span>  </span><span class="hs-comment">-- function, i.e. /f (t + &amp;#966;)/. This enables the modeling of</span><span>
+</span><a name="line-72"></a><span>  </span><span class="hs-comment">-- &quot;phase dispacements&quot; of delay lines without altering the function</span><span>
+</span><a name="line-73"></a><span>  </span><span class="hs-comment">-- itself (and thus increasing the complexity of the un-evaluated</span><span>
+</span><a name="line-74"></a><span>  </span><span class="hs-comment">-- function graph). The phase needs to be reset during event</span><span>
+</span><a name="line-75"></a><span>  </span><span class="hs-comment">-- synchronization.</span><span>
+</span><a name="line-76"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-77"></a><span>  </span><span class="hs-comment">-- These seemingly minor changes have deep implications in the</span><span>
+</span><a name="line-78"></a><span>  </span><span class="hs-comment">-- expressiveness of a FoSyDe CT system and how we interpret</span><span>
+</span><a name="line-79"></a><span>  </span><span class="hs-comment">-- it. Capturing the particularities of this MoC, we can formulate</span><span>
+</span><a name="line-80"></a><span>  </span><span class="hs-comment">-- the following properties:</span><span>
+</span><a name="line-81"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-82"></a><span>  </span><span class="hs-comment">-- &lt;&lt;fig/misc-ct-model.png&gt;&gt;</span><span>
+</span><a name="line-83"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-84"></a><span>  </span><span class="hs-comment">-- 1. 'CT' signals, due to their formation as streams of tagged</span><span>
+</span><a name="line-85"></a><span>  </span><span class="hs-comment">-- events, represent /discrete/ changes in a continuous function</span><span>
+</span><a name="line-86"></a><span>  </span><span class="hs-comment">-- over time (e.g. analog signal). While the functions carried by</span><span>
+</span><a name="line-87"></a><span>  </span><span class="hs-comment">-- events are infinite (have always happened and will always</span><span>
+</span><a name="line-88"></a><span>  </span><span class="hs-comment">-- happen), being carried by events in a tag system suggests that</span><span>
+</span><a name="line-89"></a><span>  </span><span class="hs-comment">-- changes occur at discrete times. A CT signal can be represented</span><span>
+</span><a name="line-90"></a><span>  </span><span class="hs-comment">-- by the analog circuit above, where the inputs are continuous</span><span>
+</span><a name="line-91"></a><span>  </span><span class="hs-comment">-- signals, but the switch is discrete. Like in the</span><span>
+</span><a name="line-92"></a><span>  </span><span class="hs-comment">-- 'ForSyDe.MoC.DE.DE' MoC, the absolute time 0 represent the time</span><span>
+</span><a name="line-93"></a><span>  </span><span class="hs-comment">-- when the system started to be observed.</span><span>
+</span><a name="line-94"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-95"></a><span>  </span><span class="hs-comment">-- 1. the previous property is also proven by the fact that the</span><span>
+</span><a name="line-96"></a><span>  </span><span class="hs-comment">-- evaluation engine of ForSyDe-Atom is inherently discrete,</span><span>
+</span><a name="line-97"></a><span>  </span><span class="hs-comment">-- i.e. evaluation is performed whenever a new event occurs, in a</span><span>
+</span><a name="line-98"></a><span>  </span><span class="hs-comment">-- dataflow manner. Allowing infinitely small distances between tags</span><span>
+</span><a name="line-99"></a><span>  </span><span class="hs-comment">-- would hinder the advancement of simulation time.</span><span>
+</span><a name="line-100"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-101"></a><span>  </span><span class="hs-comment">-- 1. events carry /functions/ and not /values/. In a lazy</span><span>
+</span><a name="line-102"></a><span>  </span><span class="hs-comment">-- evaluation system like Haskell's, functions are kept symbolic</span><span>
+</span><a name="line-103"></a><span>  </span><span class="hs-comment">-- until evaluation. This means that in a CT system computations are</span><span>
+</span><a name="line-104"></a><span>  </span><span class="hs-comment">-- propagated as function graphs until a result is needed, e.g. a</span><span>
+</span><a name="line-105"></a><span>  </span><span class="hs-comment">-- signal is plotted for arbitrary positions in time. This way</span><span>
+</span><a name="line-106"></a><span>  </span><span class="hs-comment">-- intermediate quantization errors are eliminated, and the cost of</span><span>
+</span><a name="line-107"></a><span>  </span><span class="hs-comment">-- higher plot resolution is the cost of evaluating the final</span><span>
+</span><a name="line-108"></a><span>  </span><span class="hs-comment">-- results only.</span><span>
+</span><a name="line-109"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-110"></a><span>  </span><span class="hs-comment">-- 1. needless to say, for each /t/ &amp;#8712; /T/, a signal is able to</span><span>
+</span><a name="line-111"></a><span>  </span><span class="hs-comment">-- return (e.g. plot) the exact value /v/ for that particular /t/.</span><span>
+</span><a name="line-112"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-113"></a><span>  </span><span class="hs-comment">-- 1. since itself the 'ForSyDe.MoC.CT.CT' MoC is just an enhanced</span><span>
+</span><a name="line-114"></a><span>  </span><span class="hs-comment">-- 'ForSyDe.MoC.DE.DE' system, all atom evaluation properties are</span><span>
+</span><a name="line-115"></a><span>  </span><span class="hs-comment">-- inherited from it: feedback loops need to advance time, atoms are</span><span>
+</span><a name="line-116"></a><span>  </span><span class="hs-comment">-- forbidden to clean signals, and the conservative approach makes</span><span>
+</span><a name="line-117"></a><span>  </span><span class="hs-comment">-- it ideal for parallel/distributed simulation.</span><span>
+</span><a name="line-118"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-119"></a><span>  </span><span class="hs-comment">-- 1. since /T/ is a total order, there is no need for an</span><span>
+</span><a name="line-120"></a><span>  </span><span class="hs-comment">-- &lt;ForSyDe-Atom-MoC.html#context execution context&gt; and we can</span><span>
+</span><a name="line-121"></a><span>  </span><span class="hs-comment">-- ignore the formatting of functions in &quot;ForSyDe.Atom.MoC&quot;, thus we</span><span>
+</span><a name="line-122"></a><span>  </span><span class="hs-comment">-- can safely assume:</span><span>
+</span><a name="line-123"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-124"></a><span>  </span><span class="hs-comment">-- &lt;&lt;fig/eqs-moc-timed-context.png&gt;&gt;</span><span>
+</span><a name="line-125"></a><span>
+</span><a name="line-126"></a><span>  </span><a href="ForSyDe.Atom.MoC.TimeStamp.html#TimeStamp"><span class="hs-identifier hs-type">TimeStamp</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.Time.html#Time"><span class="hs-identifier hs-type">Time</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html#CT"><span class="hs-identifier hs-type">CT</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><a name="line-127"></a><span>
+</span><a name="line-128"></a><span>  </span><span class="hs-comment">-- * Aliases &amp; utilities</span><span>
+</span><a name="line-129"></a><span>
+</span><a name="line-130"></a><span>  </span><span class="hs-comment">-- | A set of type synonyms and utilities are provided for</span><span>
+</span><a name="line-131"></a><span>  </span><span class="hs-comment">-- convenience. The API type signatures will feature these aliases</span><span>
+</span><a name="line-132"></a><span>  </span><span class="hs-comment">-- to hide the cumbersome construction of atoms and patters as seen</span><span>
+</span><a name="line-133"></a><span>  </span><span class="hs-comment">-- in &quot;ForSyDe.Atom.MoC&quot;.</span><span>
+</span><a name="line-134"></a><span>
+</span><a name="line-135"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a><span class="hs-special">,</span><span> </span><span class="hs-keyword">unit</span><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html#unit2"><span class="hs-identifier hs-var">unit2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html#unit3"><span class="hs-identifier hs-var">unit3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html#unit4"><span class="hs-identifier hs-var">unit4</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html#infinite"><span class="hs-identifier hs-var">infinite</span></a><span class="hs-special">,</span><span>
+</span><a name="line-136"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html#checkSignal"><span class="hs-identifier hs-var">checkSignal</span></a><span class="hs-special">,</span><span>
+</span><a name="line-137"></a><span>
+</span><a name="line-138"></a><span>  </span><span class="hs-comment">-- plot, plot2, plot3, plot4,</span><span>
+</span><a name="line-139"></a><span>  </span><span class="hs-comment">-- plotFloat, plotFloat2, plotFloat3, plotFloat4,</span><span>
+</span><a name="line-140"></a><span>
+</span><a name="line-141"></a><span>  </span><span class="hs-comment">-- * @CT@ process constuctors</span><span>
+</span><a name="line-142"></a><span>
+</span><a name="line-143"></a><span>  </span><span class="hs-comment">-- | The CT process constructors are basically specific</span><span>
+</span><a name="line-144"></a><span>  </span><span class="hs-comment">-- instantiations of patterns defined in &quot;ForSyDe.Atom.MoC&quot;. Some</span><span>
+</span><a name="line-145"></a><span>  </span><span class="hs-comment">-- might also be wrapping functions in an extended behavioural</span><span>
+</span><a name="line-146"></a><span>  </span><span class="hs-comment">-- model.</span><span>
+</span><a name="line-147"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-148"></a><span>  </span><span class="hs-comment">-- In the examples below we have imported and instantiated the</span><span>
+</span><a name="line-149"></a><span>  </span><span class="hs-comment">-- functions such as @e'@ @pi'@, @sin'@ and @cos'@ from the</span><span>
+</span><a name="line-150"></a><span>  </span><span class="hs-comment">-- collection of utilities in &quot;ForSyDe.Atom.MoC.Time&quot; and</span><span>
+</span><a name="line-151"></a><span>  </span><span class="hs-comment">-- &quot;ForSyDe.Atom.MoC.TimeStamp&quot;. Also, for the sake of documentation</span><span>
+</span><a name="line-152"></a><span>  </span><span class="hs-comment">-- the interactive examples are only dumping the CT signals in data</span><span>
+</span><a name="line-153"></a><span>  </span><span class="hs-comment">-- files using the 'dumpDat' utility defined in</span><span>
+</span><a name="line-154"></a><span>  </span><span class="hs-comment">-- &quot;ForSyDe.Atom.Utility.Plot&quot;, according to the custom @cfg@</span><span>
+</span><a name="line-155"></a><span>  </span><span class="hs-comment">-- structure. These files can be further plotted by any tool of</span><span>
+</span><a name="line-156"></a><span>  </span><span class="hs-comment">-- choice, or using the plotting utilities provided in the</span><span>
+</span><a name="line-157"></a><span>  </span><span class="hs-comment">-- &quot;ForSyDe.Atom.Utility.Plot&quot; module.</span><span>
+</span><a name="line-158"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-159"></a><span>  </span><span class="hs-comment">-- &gt; import ForSyDe.Atom.Utility.Plot</span><span>
+</span><a name="line-160"></a><span>  </span><span class="hs-comment">-- &gt; import ForSyDe.Atom.MoC.Time as Time</span><span>
+</span><a name="line-161"></a><span>  </span><span class="hs-comment">-- &gt; import ForSyDe.Atom.MoC.TimeStamp as TimeStamp</span><span>
+</span><a name="line-162"></a><span>  </span><span class="hs-comment">-- &gt; let pi'  = TimeStamp.pi</span><span>
+</span><a name="line-163"></a><span>  </span><span class="hs-comment">-- &gt; let exp' = Time.exp</span><span>
+</span><a name="line-164"></a><span>  </span><span class="hs-comment">-- &gt; let sin' = Time.sin</span><span>
+</span><a name="line-165"></a><span>  </span><span class="hs-comment">-- &gt; let cos' = Time.cos</span><span>
+</span><a name="line-166"></a><span>  </span><span class="hs-comment">-- &gt; let cfg  = defaultCfg {xmax=10, rate=0.1}</span><span>
+</span><a name="line-167"></a><span>
+</span><a name="line-168"></a><span>  </span><span class="hs-comment">-- ** Simple</span><span>
+</span><a name="line-169"></a><span>
+</span><a name="line-170"></a><span>  </span><span class="hs-comment">-- | These are mainly direct instantiations of patterns defined in</span><span>
+</span><a name="line-171"></a><span>  </span><span class="hs-comment">-- &quot;ForSyDe.Atom.MoC&quot;, using DE-specific utilities.</span><span>
+</span><a name="line-172"></a><span>
+</span><a name="line-173"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#delay"><span class="hs-identifier hs-var">delay</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#delay%27"><span class="hs-identifier hs-var">delay'</span></a><span class="hs-special">,</span><span>
+</span><a name="line-174"></a><span>
+</span><a name="line-175"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb11"><span class="hs-identifier hs-var">comb11</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb12"><span class="hs-identifier hs-var">comb12</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb13"><span class="hs-identifier hs-var">comb13</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb14"><span class="hs-identifier hs-var">comb14</span></a><span class="hs-special">,</span><span>
+</span><a name="line-176"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb21"><span class="hs-identifier hs-var">comb21</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb22"><span class="hs-identifier hs-var">comb22</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb23"><span class="hs-identifier hs-var">comb23</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb24"><span class="hs-identifier hs-var">comb24</span></a><span class="hs-special">,</span><span>
+</span><a name="line-177"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb31"><span class="hs-identifier hs-var">comb31</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb32"><span class="hs-identifier hs-var">comb32</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb33"><span class="hs-identifier hs-var">comb33</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb34"><span class="hs-identifier hs-var">comb34</span></a><span class="hs-special">,</span><span>
+</span><a name="line-178"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb41"><span class="hs-identifier hs-var">comb41</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb42"><span class="hs-identifier hs-var">comb42</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb43"><span class="hs-identifier hs-var">comb43</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#comb44"><span class="hs-identifier hs-var">comb44</span></a><span class="hs-special">,</span><span>
+</span><a name="line-179"></a><span>
+</span><a name="line-180"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig11"><span class="hs-identifier hs-var">reconfig11</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig12"><span class="hs-identifier hs-var">reconfig12</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig13"><span class="hs-identifier hs-var">reconfig13</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig14"><span class="hs-identifier hs-var">reconfig14</span></a><span class="hs-special">,</span><span>
+</span><a name="line-181"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig21"><span class="hs-identifier hs-var">reconfig21</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig22"><span class="hs-identifier hs-var">reconfig22</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig23"><span class="hs-identifier hs-var">reconfig23</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig24"><span class="hs-identifier hs-var">reconfig24</span></a><span class="hs-special">,</span><span>
+</span><a name="line-182"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig31"><span class="hs-identifier hs-var">reconfig31</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig32"><span class="hs-identifier hs-var">reconfig32</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig33"><span class="hs-identifier hs-var">reconfig33</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig34"><span class="hs-identifier hs-var">reconfig34</span></a><span class="hs-special">,</span><span>
+</span><a name="line-183"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig41"><span class="hs-identifier hs-var">reconfig41</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig42"><span class="hs-identifier hs-var">reconfig42</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig43"><span class="hs-identifier hs-var">reconfig43</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#reconfig44"><span class="hs-identifier hs-var">reconfig44</span></a><span class="hs-special">,</span><span>
+</span><a name="line-184"></a><span>
+</span><a name="line-185"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#constant1"><span class="hs-identifier hs-var">constant1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#constant2"><span class="hs-identifier hs-var">constant2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#constant3"><span class="hs-identifier hs-var">constant3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#constant4"><span class="hs-identifier hs-var">constant4</span></a><span class="hs-special">,</span><span>
+</span><a name="line-186"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#infinite1"><span class="hs-identifier hs-var">infinite1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#infinite2"><span class="hs-identifier hs-var">infinite2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#infinite3"><span class="hs-identifier hs-var">infinite3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#infinite4"><span class="hs-identifier hs-var">infinite4</span></a><span class="hs-special">,</span><span>
+</span><a name="line-187"></a><span>
+</span><a name="line-188"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#generate1"><span class="hs-identifier hs-var">generate1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#generate2"><span class="hs-identifier hs-var">generate2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#generate3"><span class="hs-identifier hs-var">generate3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#generate4"><span class="hs-identifier hs-var">generate4</span></a><span class="hs-special">,</span><span>
+</span><a name="line-189"></a><span>
+</span><a name="line-190"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated11"><span class="hs-identifier hs-var">stated11</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated12"><span class="hs-identifier hs-var">stated12</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated13"><span class="hs-identifier hs-var">stated13</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated14"><span class="hs-identifier hs-var">stated14</span></a><span class="hs-special">,</span><span>
+</span><a name="line-191"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated21"><span class="hs-identifier hs-var">stated21</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated22"><span class="hs-identifier hs-var">stated22</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated23"><span class="hs-identifier hs-var">stated23</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated24"><span class="hs-identifier hs-var">stated24</span></a><span class="hs-special">,</span><span>
+</span><a name="line-192"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated31"><span class="hs-identifier hs-var">stated31</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated32"><span class="hs-identifier hs-var">stated32</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated33"><span class="hs-identifier hs-var">stated33</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated34"><span class="hs-identifier hs-var">stated34</span></a><span class="hs-special">,</span><span>
+</span><a name="line-193"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated41"><span class="hs-identifier hs-var">stated41</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated42"><span class="hs-identifier hs-var">stated42</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated43"><span class="hs-identifier hs-var">stated43</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#stated44"><span class="hs-identifier hs-var">stated44</span></a><span class="hs-special">,</span><span>
+</span><a name="line-194"></a><span>
+</span><a name="line-195"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state11"><span class="hs-identifier hs-var">state11</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state12"><span class="hs-identifier hs-var">state12</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state13"><span class="hs-identifier hs-var">state13</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state14"><span class="hs-identifier hs-var">state14</span></a><span class="hs-special">,</span><span>
+</span><a name="line-196"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state21"><span class="hs-identifier hs-var">state21</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state22"><span class="hs-identifier hs-var">state22</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state23"><span class="hs-identifier hs-var">state23</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state24"><span class="hs-identifier hs-var">state24</span></a><span class="hs-special">,</span><span>
+</span><a name="line-197"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state31"><span class="hs-identifier hs-var">state31</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state32"><span class="hs-identifier hs-var">state32</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state33"><span class="hs-identifier hs-var">state33</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state34"><span class="hs-identifier hs-var">state34</span></a><span class="hs-special">,</span><span>
+</span><a name="line-198"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state41"><span class="hs-identifier hs-var">state41</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state42"><span class="hs-identifier hs-var">state42</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state43"><span class="hs-identifier hs-var">state43</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#state44"><span class="hs-identifier hs-var">state44</span></a><span class="hs-special">,</span><span>
+</span><a name="line-199"></a><span>
+</span><a name="line-200"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore11"><span class="hs-identifier hs-var">moore11</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore12"><span class="hs-identifier hs-var">moore12</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore13"><span class="hs-identifier hs-var">moore13</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore14"><span class="hs-identifier hs-var">moore14</span></a><span class="hs-special">,</span><span>
+</span><a name="line-201"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore21"><span class="hs-identifier hs-var">moore21</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore22"><span class="hs-identifier hs-var">moore22</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore23"><span class="hs-identifier hs-var">moore23</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore24"><span class="hs-identifier hs-var">moore24</span></a><span class="hs-special">,</span><span>
+</span><a name="line-202"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore31"><span class="hs-identifier hs-var">moore31</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore32"><span class="hs-identifier hs-var">moore32</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore33"><span class="hs-identifier hs-var">moore33</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore34"><span class="hs-identifier hs-var">moore34</span></a><span class="hs-special">,</span><span>
+</span><a name="line-203"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore41"><span class="hs-identifier hs-var">moore41</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore42"><span class="hs-identifier hs-var">moore42</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore43"><span class="hs-identifier hs-var">moore43</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#moore44"><span class="hs-identifier hs-var">moore44</span></a><span class="hs-special">,</span><span>
+</span><a name="line-204"></a><span>
+</span><a name="line-205"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy11"><span class="hs-identifier hs-var">mealy11</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy12"><span class="hs-identifier hs-var">mealy12</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy13"><span class="hs-identifier hs-var">mealy13</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy14"><span class="hs-identifier hs-var">mealy14</span></a><span class="hs-special">,</span><span>
+</span><a name="line-206"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy21"><span class="hs-identifier hs-var">mealy21</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy22"><span class="hs-identifier hs-var">mealy22</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy23"><span class="hs-identifier hs-var">mealy23</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy24"><span class="hs-identifier hs-var">mealy24</span></a><span class="hs-special">,</span><span>
+</span><a name="line-207"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy31"><span class="hs-identifier hs-var">mealy31</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy32"><span class="hs-identifier hs-var">mealy32</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy33"><span class="hs-identifier hs-var">mealy33</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy34"><span class="hs-identifier hs-var">mealy34</span></a><span class="hs-special">,</span><span>
+</span><a name="line-208"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy41"><span class="hs-identifier hs-var">mealy41</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy42"><span class="hs-identifier hs-var">mealy42</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy43"><span class="hs-identifier hs-var">mealy43</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html#mealy44"><span class="hs-identifier hs-var">mealy44</span></a><span class="hs-special">,</span><span>
+</span><a name="line-209"></a><span>
+</span><a name="line-210"></a><span>  </span><span class="hs-comment">-- ** Interfaces</span><span>
+</span><a name="line-211"></a><span>
+</span><a name="line-212"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#toDE1"><span class="hs-identifier hs-var">toDE1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#toDE2"><span class="hs-identifier hs-var">toDE2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#toDE3"><span class="hs-identifier hs-var">toDE3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#toDE4"><span class="hs-identifier hs-var">toDE4</span></a><span class="hs-special">,</span><span>
+</span><a name="line-213"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#sampDE1"><span class="hs-identifier hs-var">sampDE1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#sampDE2"><span class="hs-identifier hs-var">sampDE2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#sampDE3"><span class="hs-identifier hs-var">sampDE3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#sampDE4"><span class="hs-identifier hs-var">sampDE4</span></a><span class="hs-special">,</span><span>
+</span><a name="line-214"></a><span>  </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#zipx"><span class="hs-identifier hs-var">zipx</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#unzipx"><span class="hs-identifier hs-var">unzipx</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html#unzipx%27"><span class="hs-identifier hs-var">unzipx'</span></a><span>
+</span><a name="line-215"></a><span>
+</span><a name="line-216"></a><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-217"></a><span>
+</span><a name="line-218"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.Time.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Time</span></a><span>
+</span><a name="line-219"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.TimeStamp.html"><span class="hs-identifier">ForSyDe.Atom.MoC.TimeStamp</span></a><span>
+</span><a name="line-220"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.CT.Core</span></a><span>
+</span><a name="line-221"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Lib.html"><span class="hs-identifier">ForSyDe.Atom.MoC.CT.Lib</span></a><span>
+</span><a name="line-222"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.CT.Interface.html"><span class="hs-identifier">ForSyDe.Atom.MoC.CT.Interface</span></a><span>
+</span><a name="line-223"></a></pre></body></html>

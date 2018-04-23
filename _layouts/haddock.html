@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <meta name="description" content="{{ site.name | default: site.github.repository_name }} : {{ site.description | default: site.github.project_tagline }}">
+    
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet" type="text/css" media="screen" >
+    <link href="/assets/css/academicons.min.css" rel="stylesheet" type="text/css" media="screen" >
+    <link href="{{ '/assets/css/docs.min.css' | prepend:site.github.baseurl }}" rel="stylesheet" type="text/css" media="screen" >
+    <link href="{{ '/assets/css/haddock.css?v=' | append: site.github.build_revision | relative_url }}" rel="stylesheet" type="text/css" media="screen" >
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/ico/favicon.ico?">
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>    
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="{{ '/assets/js/docs.min.js?v=' | append: site.github.build_revision | relative_url }}" type="text/javascript"></script>
+    <script src="{{ '/assets/js/navbar-haddock.js?v=' | append: site.github.build_revision | relative_url }}" type="text/javascript"></script>
+    <script src="{{ '/assets/js/haddock-bundle.min.js?v=' | append: site.github.build_revision | relative_url }}" async="async" type="text/javascript"></script>
+
+    {% seo %}
+    
+    {% if jekyll.environment == 'production' %}
+    {% include analytics.html %}
+    {% endif %}
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <!-- Main navigation -->
+    <!-- =========================================== -->
+    <header class="navbar navbar-static-top bs-docs-nav" id="top">
+      {% include navbar.html %}
+    </header>
+
+    <!-- Title -->
+    <!-- =========================================== -->
+    <div id="header_wrap" class="outer">
+      <div class="title-md-9">
+      {% include title.html %}
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer container">
+      <div class="col-md-9" role="main">
+	<section id="main_content" class="inner">
+          {{ content }}
+	</section>
+      </div>
+      {% include side-navbar.html %}
+      <div id="push"></div>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer hidden-print">
+      <div class="title-md-9">
+      {% include footer.html %}
+      </div>
+    </div>    
+  </body>
+</html>
