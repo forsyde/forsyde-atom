@@ -15,6 +15,8 @@ import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
 import qualified ForSyDe.Atom.MoC.CT.Core as CT
 
+import Prelude hiding ((<>))
+
 ------- DOCTEST SETUP -------
 
 -- $setup

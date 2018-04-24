@@ -11,6 +11,8 @@ import           ForSyDe.Atom.Utility
 
 import qualified ForSyDe.Atom.MoC.SY.Lib
 
+import Prelude hiding ((<>))
+
 ------- DOCTEST SETUP -------
 
 -- $setup

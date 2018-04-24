@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
+-- Copyright   :  (c) George Ungureanu, 2015-2017
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -12,8 +12,9 @@
 --
 -- This module exports the core entities of the MoC layer: interfaces
 -- for atoms and process constructors as patterns of atoms. It does
--- /NOT/ export any implementation or instantiation of any specific
--- MoC.
+-- /NOT/ export any implementation or instance of any specific
+-- MoC. For an overview about atoms, layers and patterns, please rever
+-- to the "ForSyDe.Atom" module documentation, and expecially "ForSyDe.Atom#g:3"
 --
 -- Current MoC implementations can be used by importing their
 -- respective modules:
