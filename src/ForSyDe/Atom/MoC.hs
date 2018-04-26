@@ -13,11 +13,13 @@
 -- This module exports the core entities of the MoC layer: interfaces
 -- for atoms and process constructors as patterns of atoms. It does
 -- /NOT/ export any implementation or instance of any specific
--- MoC. For an overview about atoms, layers and patterns, please rever
--- to the "ForSyDe.Atom" module documentation, and expecially "ForSyDe.Atom#g:3"
+-- MoC. For an overview about atoms, layers and patterns, please refer
+-- to the "ForSyDe.Atom" module documentation, and for an overview of
+-- the MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
 --
--- Current MoC implementations can be used by importing their
--- respective modules:
+-- The MoCs currently implemented in ForSyDe-Atom are shown in the
+-- <#i:MoC instances section>, and they can be used in designs by
+-- importing their respective modules:
 --
 -- * "ForSyDe.Atom.MoC.CT"
 -- * "ForSyDe.Atom.MoC.DE"
@@ -38,8 +40,8 @@ module ForSyDe.Atom.MoC(
   -- * Process constructors
 
   -- | Process constructors are defined as patterns of MoC
-  -- atoms. Check the <#naming_conv naming convention> of the API in
-  -- the page description.
+  -- atoms. Check the <ForSyDe-Atom.html#naming_conv naming convention>
+  -- of the API in the page description.
   
   delay, (-&>-),
   
@@ -101,25 +103,31 @@ infixl 3 -<-, -*, -&-
 
 -- | This is a type class defining interfaces for the MoC layer
 -- atoms. Each model of computation exposes its tag system through a
--- unique event constructor as an instance of this class, which
--- defines /T/ &#215; /V/.
+-- unique event type which is an instance of this class, defining
+-- \( T \times V \).
 --
 -- #context# To express all possible MoCs which can be described using
 -- a /tagged/ /signal/ /model/ we need to capture the most general
--- form of their atoms. Recall that all atoms in the layered framework
--- are represented as higher-order functions on structured types
--- (instances of this class), taking functions of other (lower) layers
--- as arguments. While this principle stands also for this layer, the
--- functions taken as arguments need to be formatted for each MoC in
--- particular in order to capture additional information, which we can
--- call in general terms as the /execution context/.
+-- form of their atoms. This means that under the same interface we
+-- need to describe atoms with different execution regimes. Recall
+-- that atoms are in principle applicative functors which act upon one
+-- input signal at the time and partially apply functions. Depending
+-- on the execution regime, these function might or might not need
+-- additional parameters to determine the behavior for evaluating each
+-- argument. These parameters we call, in loose terms, the /execution/
+-- /context/.
+--
+-- [execution context] Additional information which, paired with a
+--   function, completely determines the behavior of a MoC atom
+--   (i.e. process). 
 --
 -- One typical example of additional information is the consumption
--- and production rates of for data flow MoCs (e.g. SDF). In this case
--- the passed functions are defined over "partitions" of events,
--- i.e. groupings of events with the same partial order in relation
--- to, for example, a process firing. The formal description of such a
--- "formatted function" taken as argument by a MoC entity is:
+-- and production rates of for data flow MoCs
+-- (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In this case the passed
+-- functions are defined over "partitions" of events, i.e. groupings
+-- of events with the same partial order in relation to, for example,
+-- a process firing. The formal description of such a "formatted
+-- function" taken as argument by a MoC entity is:
 --
 -- <<fig/eqs-moc-atom-formatted-func.png>>
 --
