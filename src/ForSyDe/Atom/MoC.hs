@@ -111,66 +111,70 @@ infixl 3 -<-, -*, -&-
 -- form of their atoms. This means that under the same interface we
 -- need to describe atoms with different execution regimes. Recall
 -- that atoms are in principle applicative functors which act upon one
--- input signal at the time and partially apply functions. Depending
--- on the execution regime, these function might or might not need
+-- input signal at a time and partially apply functions. Depending on
+-- the execution regime, these function might or might not need
 -- additional parameters to determine the behavior for evaluating each
--- argument. These parameters we call, in loose terms, the /execution/
--- /context/.
+-- argument. These additional parameters we call, in loose terms, as
+-- the /execution context/.
 --
 -- [execution context] Additional information which, paired with a
 --   function, completely determines the behavior of a MoC atom
 --   (i.e. process). 
 --
--- One typical example of additional information is the consumption
--- and production rates of for data flow MoCs
--- (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In this case the passed
--- functions are defined over "partitions" of events, i.e. groupings
--- of events with the same partial order in relation to, for example,
--- a process firing. The formal description of such a "formatted
--- function" taken as argument by a MoC entity is:
---
 -- <<fig/eqs-moc-atom-formatted-func.png>>
 --
--- where /a/ and /b/ might be Cartesian products of different types,
--- corresponding to how many signals the constructor is applied to or
--- how many signals it yields, and each type is expressed as:
+-- The left-hand side expression above shows the most general notation
+-- used to describe a function with /n/ inputs of (possibly different)
+-- types \(\alpha\) and /m/ outputs of (possibly different) types
+-- \(\beta\) executed in context \(\Gamma\). The right-hand side
+-- expression shows that in ForSyDe-Atom context is associated with
+-- each and every argument in order to enable the applicative
+-- mechanisms. Depending on the MoC, \(\breve\alpha\) would translate
+-- to:
 --
 -- <<fig/eqs-moc-atom-formatted-arg.png>>
 --
--- While, as you can see above, the execution context can be extracted
+-- One example of execution context is the consumption and production
+-- rates of for data flow MoCs (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In
+-- this case the passed functions are defined over "sequences" or
+-- "partitions" of events, i.e. groupings of events with the same
+-- partial order in relation to a process firing.
+--
+-- While in the example above the execution context can be extracted
 -- from the type information, working with type-level parameters is
 -- not a trivial task in Haskell, especially if we want to describe a
 -- general and extensible type class. This is why we have chosen a
 -- pragmatic approach in implementing the 'MoC' class:
 --
--- * any (possible) Cartesian product of /&#945;/ is represented using
--- a recursive type, namely a list [/&#945;/].
+-- * any (possible) Cartesian product which denotes a partition of
+--   /&#945;/ is represented using a recursive type, namely a list
+--   [/&#945;/].
 --
 -- * as the execution context cannot (or can hardly) be extracted from
--- the recursive type, in the most general case we pass both context
--- /and/ argument as a pair (see each instance in particular). To aid
--- in pairing contexts with each argument in a function, the @ctxt@
--- utilities are provided (see 'ctxt22').
+--   the recursive type, in the most general case we pass both context
+--   /and/ argument as a pair (see each instance in particular). To
+--   aid in pairing contexts with each argument in a function, the
+--   general purpose @ctxt@ utilities are provided (see 'ctxt22').
 --
--- * this artifice was masked using the generic type families 'Fun'
--- and 'Res'. 
+-- * this artifice is masked using the generic type families 'Fun' and
+--   'Ret'.
 class (Applicative e) => MoC e where
 
-  -- | This is a type family alias for a context-bound function passed
-  -- as an argument to a MoC atom. In the most simple case it can be
-  -- regarded as an enhanced @->@ type operator. While hiding the
-  -- explicit definition of arguments, this implementation choice
-  -- certainly has its advantages in avoiding unnecessary or redundant
-  -- type constructors (see version 0.1.1 and prior). Aliases are
-  -- replaced at compile time, thus not affecting run-time
-  -- performance.
+  -- | This is a type family alias(*) for a context-bound function passed
+  -- as an argument to a MoC atom. It can be regarded as an enhanced
+  -- @->@ type operator, specific to each MoC. 
   -- 
   -- <<fig/eqs-moc-atom-function.png>>
+  --
+  -- /(*) While hiding the explicit definition of arguments, this/
+  -- /implementation choice certainly has its advantages in avoiding/
+  -- /unnecessary or redundant type constructors (see version 0.1.1 and/
+  -- /prior). Aliases are replaced at compile time, thus not affecting/
+  -- /run-time performance./
   type Fun e a b
 
-  -- | As with 'Fun', this alias hides a context-bound value
-  -- (e.g. function return). Although the definition seems to be
-  -- redundant with 'Fun', this alias is needed for utilities to
+  -- | Like 'Fun', this alias hides a context-bound value
+  -- (e.g. function return). This alias is needed for utilities to
   -- recreate clean types again (see '-*').
   -- 
   -- <<fig/eqs-moc-atom-result.png>>
@@ -187,9 +191,10 @@ class (Applicative e) => MoC e where
   
   -- | This atom synchronizes two signals, one carrying functions on
   -- values (in the presence of a context), and the other containing
-  -- values, during which it applies the former on the latter. As
-  -- concerning the process created, this atom defines a /relation/
-  -- between two signals <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- values. During the synchronization it applies the function(s)
+  -- carried by the former signal on the values carried by the
+  -- latter. This atom defines a /relation/ between two signals
+  -- <ForSyDe-Atom.html#lee98 [Lee98]>.
   -- 
   -- <<fig/eqs-moc-atom-star.png>>
   (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
