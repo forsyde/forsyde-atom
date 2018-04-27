@@ -37,7 +37,7 @@ module ForSyDe.Atom.MoC(
   
   MoC(..),
 
-  -- * Process constructors
+  -- * Patterns
 
   -- | Process constructors are defined as patterns of MoC
   -- atoms. Check the <ForSyDe-Atom.html#naming_conv naming convention>
@@ -98,6 +98,10 @@ module ForSyDe.Atom.MoC(
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
+-------------------------------------------------------
+--                       ATOMS                       --
+-------------------------------------------------------
+
 infixl 5 -.-, -*-
 infixl 3 -<-, -*, -&-
 
@@ -147,8 +151,8 @@ infixl 3 -<-, -*, -&-
 -- pragmatic approach in implementing the 'MoC' class:
 --
 -- * any (possible) Cartesian product which denotes a partition of
---   /&#945;/ is represented using a recursive type, namely a list
---   [/&#945;/].
+--   \(\alpha\) is represented using a recursive type, namely a list
+--   \([\alpha]\).
 --
 -- * as the execution context cannot (or can hardly) be extracted from
 --   the recursive type, in the most general case we pass both context
@@ -160,13 +164,13 @@ infixl 3 -<-, -*, -&-
 --   'Ret'.
 class (Applicative e) => MoC e where
 
-  -- | This is a type family alias(*) for a context-bound function passed
-  -- as an argument to a MoC atom. It can be regarded as an enhanced
-  -- @->@ type operator, specific to each MoC. 
+  -- | This is a type family alias \(^1\) for a context-bound function
+  -- passed as an argument to a MoC atom. It can be regarded as an
+  -- enhanced @->@ type operator, specific to each MoC.
   -- 
   -- <<fig/eqs-moc-atom-function.png>>
   --
-  -- /(*) While hiding the explicit definition of arguments, this/
+  -- /\(^1\) While hiding the explicit definition of arguments, this/
   -- /implementation choice certainly has its advantages in avoiding/
   -- /unnecessary or redundant type constructors (see version 0.1.1 and/
   -- /prior). Aliases are replaced at compile time, thus not affecting/
@@ -180,20 +184,20 @@ class (Applicative e) => MoC e where
   -- <<fig/eqs-moc-atom-result.png>>
   type Ret e b
   
-  -- | This atom is mapping a function on values (in the presence of a
-  -- context) to a signal, i.e. stream of tagged events. As ForSyDe
-  -- deals with /determinate/, /functional/ processes, this atom
-  -- defines the (only) /behavior/ of a process in rapport to one
-  -- input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- | The @func@ atom is mapping a function on values (in the
+  -- presence of a context) to a signal, i.e. stream of tagged
+  -- events. As ForSyDe deals with /determinate/, /functional/
+  -- processes, this atom defines the (only) /behavior/ of a process
+  -- in rapport to one input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
   --
   -- <<fig/eqs-moc-atom-dot.png>>
   (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
   
-  -- | This atom synchronizes two signals, one carrying functions on
-  -- values (in the presence of a context), and the other containing
-  -- values. During the synchronization it applies the function(s)
-  -- carried by the former signal on the values carried by the
-  -- latter. This atom defines a /relation/ between two signals
+  -- | The @sync@ atom synchronizes two signals, one carrying
+  -- functions on values (in the presence of a context), and the other
+  -- containing values. During the synchronization it applies the
+  -- function(s) carried by the former signal on the values carried by
+  -- the latter. This atom defines a /relation/ between two signals
   -- <ForSyDe-Atom.html#lee98 [Lee98]>.
   -- 
   -- <<fig/eqs-moc-atom-star.png>>
@@ -205,40 +209,42 @@ class (Applicative e) => MoC e where
   -- <<fig/eqs-moc-atom-post.png>>
   (-*)  :: Stream (e (Ret e b)) -> Stream (e b)
 
-  -- | This atom appends a (partition of) events at the beginning of a
-  -- signal. This atom is necessary to ensure /complete partial order/
+  -- | The @pre@ atom prepends the prefix of the left signal operand
+  -- (i.e. the first event in timed MoCs, or the first /n/ events in
+  -- untimed MoCs) at the beginning of the right signal operand
+  -- \(^1\). This atom is necessary to ensure /complete partial order/
   -- of a signal and assures the /least upper bound/ necessary for
   -- example in the evaluation of feedback loops
   -- <ForSyDe-Atom.html#lee98 [Lee98]>.
   --
   -- <<fig/eqs-moc-atom-pre.png>>
   --
-  -- Notice the difference between the formal and the implemented type
-  -- signatures. In the implementation the value/partition is wrapped
-  -- inside an event type to enable smooth composition. You might also
-  -- notice the type for the "initial event(s)" as being wrapped
-  -- inside a signal constructor. This allows defining an DSL for this
-  -- layer which is centered around signals exclusively, while also
-  -- enabling to define atoms as homomorphisms to certain extent
-  -- <ForSyDe-Atom.html#bird97 [Bird97]>. Certain MoCs might have
-  -- additional constraints on the first operand to be finite.
+  -- /\(^1\) this atom acts like the @pre@ operator in the synchronous/
+  -- /language Lustre <ForSyDe-Atom.html#halbwachs91 [Halbwachs91]>,/
+  -- /and for timed MoCs it behaves the same. For untimed MoCs though,/
+  -- /the length of the prefix of a signal is assumed to be the length/
+  -- /of a signal, since the API does not provide any other means to/
+  -- /pass /n/ as a parameter./
   (-<-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
    
-  -- | This atom allows the manipulation of tags in a signal in a
+  -- | The @phi@ atom manipulates the tags in a signal in a
   -- restrictive way which preserves /monotonicity/ and /continuity/
   -- in a process <ForSyDe-Atom.html#lee98 [Lee98]>, namely by
   -- “phase-shifting” all tags in a signal with the appropriate metric
   -- corresponding to each MoC. Thus it preserves the characteristic
-  -- function intact <ForSyDe-Atom.html#sander04 [Sander04]>.
+  -- function intact <ForSyDe-Atom.html#sander04 [Sander04]>. 
   --
   -- <<fig/eqs-moc-atom-phi.png>>
-  -- 
-  -- As with the '-<-' atom, we can justify the type signature for
-  -- smooth composition and the definition of atoms as homomorphisms
-  -- to certain extent. This in turn allows the interpretation of the
-  -- '-&-' operator as "aligning the phases" of two signals: the
-  -- second operand is aligned based on the first.
+  --
+  -- The metric unit used for phase shifting is inferred from the
+  -- prefix of the left signal operand, while right signal operand is
+  -- the one being manipulated.
   (-&-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
+
+
+--------------------------------------------------------
+--                      PATTERNS                      --
+--------------------------------------------------------
 
 infixl 3 -&>-
 -- | <<fig/eqs-moc-pattern-delay.png>>
@@ -640,6 +646,9 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
   where st                  = i -&>- comb51 ns st s1 s2 s3 s4
 
 
+---------------------------------------------------------
+--                      UTILITIES                      --
+---------------------------------------------------------
 
 -- | Attaches a context parameter to a function argument (e.g
 -- consumption rates in SDF). Used as kernel function in defining
