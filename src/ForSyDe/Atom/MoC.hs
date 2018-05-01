@@ -39,9 +39,10 @@ module ForSyDe.Atom.MoC(
 
   -- * Patterns
 
-  -- | Process constructors are defined as patterns of MoC
-  -- atoms. Check the <ForSyDe-Atom.html#naming_conv naming convention>
-  -- of the API in the page description.
+  -- | The atom patterns of the MoC layer are in fact
+  -- <ForSyDe-Atom.html#g:5 process constructors>. Check the
+  -- <ForSyDe-Atom.html#naming_conv naming convention> of the API in
+  -- the page description.
   
   delay, (-&>-),
   
@@ -139,8 +140,8 @@ infixl 3 -<-, -*, -&-
 -- <<fig/eqs-moc-atom-formatted-arg.png>>
 --
 -- One example of execution context is the consumption and production
--- rates of for data flow MoCs (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In
--- this case the passed functions are defined over "sequences" or
+-- rates for data flow MoCs (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In this
+-- case the passed functions are defined over "sequences" or
 -- "partitions" of events, i.e. groupings of events with the same
 -- partial order in relation to a process firing.
 --
@@ -253,23 +254,21 @@ infixl 3 -&>-
 -- The 'delay' process provides both initial token(s) and shifts the
 -- phase of the signal. In other words, it "delays" a signal with
 -- one or several events.
---
--- There is also an infix variant '-&>-' (@infixl 3@). To justify the
--- first argument, see the documentation of the '-<-' atom.
 delay i xs = i -<- (i -&- xs)
+
+-- | Infix variant for 'delay'.
 i -&>- xs = delay i xs          
 
--- |  #comb22f# /(*) to be read / @a1 -> a2 -> (b1, b2)@ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- | #comb22f# /(*) to be read/ @a1 -> a2 -> (b1, b2)@ /where each/
+-- /argument may be <#context wrapped along with a context>./
 --
 -- <<fig/eqs-moc-pattern-comb.png>>
 -- <<fig/moc-pattern-comb.png>>
 --
--- The @comb@ processes takes care of synchronization between signals
--- and maps combinatorial functions on their event values. 
+-- The @comb@ processes synchronizes multiple input signals and maps
+-- combinatorial functions on the values they carry.
 --
--- This library exports constructors of type @comb[1-8][1-4]@.
+-- This module exports constructors of type @comb[1-8][1-4]@.
 comb22 :: (MoC e)
        => (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))
        -- ^ combinational function (<#comb22f *>)
@@ -310,15 +309,16 @@ comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 
 comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
 -- |  #reconfig22f# /(*) to be read / @a1 -> a2 -> (b1, b2)@ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- /argument may be <#context wrapped along with a context>./
 --
 -- <<fig/eqs-moc-pattern-reconfig.png>>
 -- <<fig/moc-pattern-reconfig.png>>
 --
--- The @reconfig@ processes constructs adaptive processes, where the
--- first signal carries functions, and it is synchronized with all the
--- other signals. 
+-- The @reconfig@ processes constructs adaptive processes, whose
+-- functional behavior "changes in time". Its first input is a signal
+-- carrying functions which is synchronized with all the other input
+-- signals. The output signal carry the results of mapping those
+-- functions at each synchronization/firing point.
 --
 -- This library exports constructors of type @reconfig[1-8][1-4]@.
 reconfig22 :: (MoC e)
@@ -360,19 +360,19 @@ reconfig64 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -
 reconfig74 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<<)
 reconfig84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
--- |
--- #state22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
--- /where each argument and result might be individually wrapped/
--- /with a context and might also express a partition./
+-- | #state22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
+-- /where each argument may be <#context wrapped along with a context>./
 --
--- #state22i# /(**) see the documentation for '-<-' for justification/
--- /of the type/
+-- #state22i# /(**) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-state.png>>
 -- <<fig/moc-pattern-state.png>>
 --
 -- The @state@ processes generate process networks corresponding to a
--- simple state machine like in the graph above. 
+-- simple state machine with "un-latched" outputs like in the graph
+-- above. In other words, the process starts with a state transition
+-- and outputs the next state as the first event.
 --
 -- This library exports constructors of type @state[1-4][1-4]@.
 state22 :: MoC e
@@ -433,21 +433,20 @@ state44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st2
 
 -- | 
 -- #stated22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
--- /where each argument and result might be individually wrapped/
--- /with a context and might also express a partition./
+-- /where each argument may be <#context wrapped along with a context>./
 --
--- #stated22i# /(**) see the documentation for '-<-' for justification/
--- /of the type/
+-- #stated22i# /(**) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-stated.png>>
 -- <<fig/moc-pattern-stated.png>>
 -- 
--- The @state@ processes generate process networks corresponding to a
--- simple state machine like in the graph above. The difference
--- between 'state22' and 'stated22' is that the latter outputs the
--- current state rather than the next one. There exists a variant with
--- 0 input signals, in which case the process is a signal
--- generator.
+-- The @stated@ processes generate process networks corresponding to a
+-- simple state machine with "latched" outputs like in the graph
+-- above. As compared to 'state22', this process outputs the current
+-- state, and the state transition is observed from the second
+-- evaluation onwards. There exists a variant with 0 input signals, in
+-- which case the process is a signal generator.
 --
 -- This library exports constructors of type @stated[0-4][1-4]@.
 stated22 :: MoC e
@@ -517,17 +516,14 @@ stated44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st
                                             (st1,st2,st3,st4) = (i1 -&>- ns1, i2 -&>- ns2, i3 -&>- ns3, i4 -&>- ns4)
                                         in  (st1,st2,st3,st4)
                                             
--- |
--- #moore22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- | #moore22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
+-- /argument may be <#context wrapped along with a context>./
 --
 -- #moore22od# /(**) meaning / @st -> (b1, b2) @ /where each argument/
--- /and result might be individually wrapped with a context and might/
--- /also express a partition./
+-- /may be <#context wrapped along with a context>./
 --
--- #moore22i# /(***) see the documentation for '-<-' for justification/
--- /of the type/
+-- #moore22i# /(***) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-moore.png>>
 -- <<fig/moc-pattern-moore.png>>
@@ -581,17 +577,14 @@ moore43 ns od i s1 s2 s3 s4 =        comb13 od st
 moore44 ns od i s1 s2 s3 s4 =        comb14 od st
   where st                  = i -&>- comb51 ns st s1 s2 s3 s4
 
--- |
--- #mealy22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- | #mealy22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
+-- /argument may be <#context wrapped along with a context>./
 --
 -- #mealy22od# /(**) meaning / @st -> a1 -> a2 -> (b1, b2) @ /where/
--- /each argument and result might be individually wrapped with a/
--- /context and might also express a partition./
+-- /each argument may be <#context wrapped along with a context>./
 --
--- #mealy22i# /(***) see the documentation for '-<-' for justification/
--- /of the type/
+-- #mealy22i# /(***) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-mealy.png>>
 -- <<fig/moc-pattern-mealy.png>>

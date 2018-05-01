@@ -1,4 +1,4 @@
-{-# OPTIONS_HADDOCK hide, show-extensions #-}
+ {-# OPTIONS_HADDOCK hide, show-extensions #-}
 
 module ForSyDe.Atom.MoC.DE.Hybrid where
 
@@ -35,7 +35,7 @@ import Prelude hiding ((<>))
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
 -- >>> embedSY11 (SY.stated11 (+) 1) s
--- { 1 @0s, 2 @2s, 4 @6s, 7 @8s, 11 @9s}
+-- {1@0s,2@2s,4@6s,7@8s,11@9s}
 --
 -- <<fig/moc-de-pattern-embedsy.png>>
 embedSY22 :: (SY.Signal a1 -> SY.Signal a2

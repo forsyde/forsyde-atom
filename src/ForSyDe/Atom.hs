@@ -486,7 +486,7 @@ module ForSyDe.Atom (
 
   -- | #ungureanu17# <http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]> Ungureanu, G., & Sander, I., /A layered formal framework for modeling of cyber-physical systems/, in 2017 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2017, pp. 1715–1720.
   
-  -- | #ungureanu18# [Ungureanu18] Ungureanu, G., de Medeiros, J. E. G. & Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2018
+  -- | #ungureanu18# <https://ieeexplore.ieee.org/document/8342019/ [Ungureanu18]> Ungureanu, G., de Medeiros, J. E. G. & Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2018, pp. 277-280
   
 ) where
 

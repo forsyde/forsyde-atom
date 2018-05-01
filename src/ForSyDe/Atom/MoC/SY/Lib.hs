@@ -47,7 +47,8 @@ delay i = MoC.delay (unit i)
 
 -- | @comb@ processes map combinatorial functions on signals and take
 -- care of synchronization between input signals. It instantiates the
--- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22').
+-- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22' defined in
+-- "ForSyDe.Atom.MoC").
 -- 
 -- Constructors: @comb[1-4][1-4]@.
 --
@@ -116,7 +117,7 @@ comb44 = MoC.comb44
 -- | @reconfig@ creates an synchronous adaptive process where the
 -- first signal carries functions and the other carry the
 -- arguments. It instantiates the @reconfig@ atom pattern (see
--- 'ForSyDe.Atom.MoC.reconfig22').
+-- 'ForSyDe.Atom.MoC.reconfig22' defined in "ForSyDe.Atom.MoC").
 --
 -- Constructors: @reconfig[1-4][1-4]@.
 --
@@ -244,8 +245,8 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 ------- STATED -------
 
 -- | @stated@ is a state machine without an output decoder. It is an
--- instantiation of the @state@ MoC constructor
--- (see 'ForSyDe.Atom.MoC.stated22').
+-- instantiation of the @state@ MoC constructor (see
+-- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
 --
 -- Constructors: @stated[1-4][1-4]@.
 --
@@ -315,8 +316,8 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 ------- STATE -------
                  
 -- | @state@ is a state machine without an output decoder. It is an
--- instantiation of the @stated@ MoC constructor
--- (see 'ForSyDe.Atom.MoC.state22').
+-- instantiation of the @stated@ MoC constructor (see
+-- 'ForSyDe.Atom.MoC.state22' defined in "ForSyDe.Atom.MoC").
 --
 -- Constructors: @state[1-4][1-4]@.
 --
@@ -386,8 +387,8 @@ state44 ns i = MoC.state44 ns (unit4 i)
 ------- MOORE -------
 
 -- | @moore@ processes model Moore state machines. It is an
--- instantiation of the @moore@ MoC constructor
--- (see 'ForSyDe.Atom.MoC.moore22').
+-- instantiation of the @moore@ MoC constructor (see
+-- 'ForSyDe.Atom.MoC.moore22' defined in "ForSyDe.Atom.MoC").
 --
 -- Constructors: @moore[1-4][1-4]@.
 --
@@ -455,8 +456,8 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 ------- MEALY -------
 
 -- | @mealy@ processes model Mealy state machines. It is an
--- instantiation of the @mealy@ MoC constructor
--- (see 'ForSyDe.Atom.MoC.mealy22').
+-- instantiation of the @mealy@ MoC constructor (see
+-- 'ForSyDe.Atom.MoC.mealy22' defined in "ForSyDe.Atom.MoC").
 --
 -- Constructors: @mealy[1-4][1-4]@.
 --
@@ -615,10 +616,11 @@ filter' p s = MoC.comb21 B.filter' ps s
 fill :: a                  -- ^ Value to fill with
      -> Signal (AbstExt a) -- ^ Input
      -> Signal a           -- ^ Output
-fill x s = MoC.comb11 (B.degrade x) s
+fill x s = MoC.comb11 (B.degen x) s
 
 -- | Similar to 'fill', but holds the last non-absent value if there
--- was one. It implements a @state@ pattern (see 'ForSyDe.Atom.MoC.state22').
+-- was one. It implements a @state@ pattern (see
+-- 'ForSyDe.Atom.MoC.state22' defined in "ForSyDe.Atom.MoC").
 --
 -- >>> let s1   = signal [Abst, Abst, Prst 1, Prst 2, Abst, Prst 3]
 -- >>> hold 0 s1
@@ -630,47 +632,50 @@ hold :: a
      -> Signal (AbstExt a) -- ^ Input
      -> Signal a -- ^ Output
 hold init = MoC.state11 fillF (unit init)
-  where fillF st inp = (B.degrade st) inp
+  where fillF st inp = (B.degen st) inp
 
 
 ------- ABSENT EXTENDED WRAPPERS -------
 
--- | Creates a wrapper enabling a reactive behvior to absent-extended
--- signals for processes which would otherwise degrade the
--- absent-extension (e.g. state machines with 'ignore22' behavior).
+-- | Creates a process wrapper which, from the outside it seems like a
+-- combinatorial process which reacts to present events (i.e. simply
+-- propagates absent events), but inside it allows, for example, the
+-- degeneration of the absent extension in order to describe state
+-- processes (e.g. state machines with 'ForSyDe.Atom.ExB.ignore22'
+-- behavior).
 --
--- Constructors: @reactAbst[1-4]@.
+-- Constructors: @reactPres[1-4]@.
 --
 -- >>> let s1 = readSignal "{1,1,1,_,1,_,1}" :: Signal (AbstExt Int)
 -- >>> let proc = stated11 (B.ignore11 (+)) 0
 -- >>> proc s1
 -- {0,1,2,3,3,4,4,5}
--- >>> reactAbst1 proc s1
+-- >>> reactPres1 proc s1
 -- {0,1,2,⟂,3,⟂,4} 
 --
 -- <<fig/moc-sy-pattern-reactAbst.png>>
-reactAbst2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b)
-           -- ^ process which degrades the absent extension,
+reactPres2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b)
+           -- ^ process which degenerates the absent extension,
            -- e.g. holds present values
            -> Signal (AbstExt a1)
            -> Signal (AbstExt a2)
            -> Signal (AbstExt b)
            -- ^ absent-extended signal, properly reacting to the inputs
      
-reactAbst1 p s1          = whenPresent s1 $ comb11 B.extend (p s1)
-reactAbst2 p s1 s2       = whenPresent s1 $ comb11 B.extend (p s1 s2)
-reactAbst3 p s1 s2 s3    = whenPresent s1 $ comb11 B.extend (p s1 s2 s3)
-reactAbst4 p s1 s2 s3 s4 = whenPresent s1 $ comb11 B.extend (p s1 s2 s3 s4)
+reactPres1 p s1          = whenPresent s1 $ comb11 B.extend (p s1)
+reactPres2 p s1 s2       = whenPresent s1 $ comb11 B.extend (p s1 s2)
+reactPres3 p s1 s2 s3    = whenPresent s1 $ comb11 B.extend (p s1 s2 s3)
+reactPres4 p s1 s2 s3 s4 = whenPresent s1 $ comb11 B.extend (p s1 s2 s3 s4)
 
 -- ----------------- DOCUMENTATION -----------------
 
--- -- | @buffer@ processes roughly implement a memory model which stores
--- -- all input present and known values. The atom pattern instantiated
--- -- is @state@ (see 'ForSyDe.Atom.MoC.state22'), while the behavior is
--- -- @store@ (see 'ForSyDe.Atom.Behavior.store2')
--- --
--- -- <<includes/figs/sy-buffer-graph.png>>
--- buffer2 :: [a] -> Signal a -> Signal a -> Signal [a]
+-- -- | @buffer@ processes roughly implement a memory model which
+-- -- stores all input present and known values. The atom pattern
+-- -- instantiated is @state@ (see 'ForSyDe.Atom.MoC.state22' defined
+-- -- in "ForSyDe.Atom.MoC"), while the behavior is @store@ (see
+-- -- 'ForSyDe.Atom.Behavior.store2')
+-- -- <<includes/figs/sy-buffer-graph.png>> -- buffer2 :: [a] ->
+-- -- Signal a -> Signal a -> Signal [a]
 
 
 

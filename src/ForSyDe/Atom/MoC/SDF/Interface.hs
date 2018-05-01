@@ -22,7 +22,7 @@ eventToSY (SDF.SDF a) = SY.SY a
 -- Constructors: @toSY[1-4]@.
 --
 -- >>> let s = SDF.signal [1,2,3,4,5]
--- >>> toSY s
+-- >>> toSY1 s
 -- {1,2,3,4,5}
 --
 -- <<fig/moc-sdf-tosy.png>>
