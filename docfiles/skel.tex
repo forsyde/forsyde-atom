@@ -1,0 +1,78 @@
+\documentclass[]{standalone} 
+\usepackage[tikz,math]{forsyde}
+\usepackage{forsyde-atom-docs}
+
+\begin{document}
+
+\begin{docimage}{pattern-farm}
+\begin{tikzpicture}[scale=.8]
+  \basic[primitive,f=$f$] (a1) <0,3> {\textSkelFun};
+  \basic[primitive] (a2) <1,2> {\textSkelApp};
+  \basic[primitive] (a3) <3,0> {\textSkelApp};
+  \basic[primitive] (uz) <4.5,0> {$\triangleleft$};
+  \foreach \y in {0,2,3} {
+    \coordinate (o\y) at (5.5,\y);
+    \path[v] (o\y) edge (uz) edge[->] ++(1,0); 
+  }
+  \path[v,->]
+  (a1) edge (a2) edge[<-] ++(-1,0)
+  (a2) edge ++(.5,-.5) edge[<-] ++(-2,0)
+  (a3) edge[<-] ++(-.5,.5)  edge[<-] ++(-4,0) edge (uz);
+  \node[] at ($(a2)!.5!(a3)$) {$\cdots$};
+  \node[anchor=west] at ($(o0)!.5!(o2)$) {$\cdots$};
+  \node[anchor=east] at (7.5,1.5) {$\equiv$};
+  \basic[primitive,f=$f$] (c) <9,1.5> {\textSkelFrm};
+  \path[] (c) edge[vn,<-] ++(-2,0) edge[vn,->] ++(2,0);
+\end{tikzpicture}
+\end{docimage}
+
+\begin{docimage}{pattern-pipe1}
+  \begin{tikzpicture}
+    \basic[primitive, f=$f$] (a) {\textSkelFrm};
+    \basic[primitive, below of={a}] (b) {\textSkelPip};
+    \path[] (a) edge[vn,<-] ++(-2,0) edge[v ,->] (b)
+            (b) edge[s,<-] ++(-2,0) edge[s,->] ++(2,0);
+    \path[] (a)++(-2,0) node[anchor=east] {$\SkelVec{c}^n$}
+            (b)++(-2,0) node[anchor=east] {$e$};
+  \end{tikzpicture}
+\end{docimage}
+
+\begin{docimage}{pattern-reducei-old}
+  \begin{tikzpicture}
+    \basic[primitive, f=$f$] (a) {\textSkelFrm};
+    \basic[primitive, f=$f'$, right of={a}] (b) {\textSkelRed};
+    \path (a) ++(-1,.5) coordinate (i1) ++(0,-1) coordinate (i2);
+    \path[] (a) edge[vn,<-] ++(0,-1) edge[v,->] (b)
+            (b) edge[s,->] ++(2,0);
+    \path[] (i1) edge[v,shorten <=-2pt, shorten >=-2pt] (i2) edge[v] ++(-1,0)
+            (i2) edge[s] ++(-1,0)
+            (a) edge[v,<-] ++(-1,0);
+    \path[] (a)++(0,-1) node[anchor=north] {$\SkelVec{c}^n$}
+            (i1)++(-1,0) node[anchor=east] {$\SkelVec{c}$}
+            (i2)++(-1,0) node[anchor=east] {$e$};
+    
+  \end{tikzpicture}
+\end{docimage}
+
+\begin{docimage}{pattern-reducei}
+  \begin{tikzpicture}
+    \basic[primitive, f=$f$] (a) {\textSkelRed};
+    \path (a) ++(-1,.5) coordinate (i1) ++(0,-1) coordinate (i2);
+    \path[] (a) edge[s,->] ++(2,0);
+    \path[] (i1) edge[v,shorten <=-2pt, shorten >=-2pt] (i2) edge[v] ++(-1,0)
+            (i2) edge[s] ++(-1,0)
+            (a) edge[v,<-] ++(-1,0);
+    \path[] (i1)++(-1,0) node[anchor=east] {$\SkelVec{c}$}
+            (i2)++(-1,0) node[anchor=east] {$e$};
+  \end{tikzpicture}
+\end{docimage}
+
+
+\end{document}
+
+
+%%% Local Variables:
+%%% TeX-command-default: "Make"
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

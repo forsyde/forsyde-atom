@@ -60,7 +60,7 @@ module ForSyDe.Atom.Utility.Tuple(
   
   ) where
 
-import Prelude hiding (unzip3, filter)
+import Prelude hiding (unzip3, filter, (<>))
 
 -- | The @at@/xy/ functions return the /y/-th element of an /x/-tuple.
 --

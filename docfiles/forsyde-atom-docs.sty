@@ -1,0 +1,9 @@
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{environ}
+\NewEnviron{docimage}[1]{%
+  \ifthenelse{\equal{\currimage}{#1}}
+  {\BODY}
+  {}%
+}

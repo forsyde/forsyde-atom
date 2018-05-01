@@ -1,0 +1,94 @@
+\documentclass[preview]{standalone} 
+\usepackage[math]{forsyde}
+\usepackage{forsyde-atom-docs}
+
+\begin{document}
+\begin{docimage}{atom-dot}
+  \begin{equation*}%
+    \SkelFun :
+    ({\alpha \rightarrow \beta})
+    \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\beta)
+  \end{equation*}
+\end{docimage} 
+
+\begin{docimage}{atom-star}
+  \begin{equation*}%
+    \SkelApp :
+    \mathcal{C}({\alpha \rightarrow \beta})
+    \rightarrow \mathcal{C}(\alpha) \rightarrow \mathcal{C}(\beta)
+  \end{equation*}
+\end{docimage}
+
+\begin{docimage}{atom-red}
+  \begin{equation*}%
+    \SkelRed :
+    (\alpha \times \alpha \rightarrow \alpha)
+    \rightarrow \mathcal{C}(\alpha) \rightarrow \alpha
+  \end{equation*}
+\end{docimage} 
+
+
+\begin{docimage}{pattern-pipe}
+\begin{align*}
+  \SkelPip &: \mathcal{C}(\alpha \rightarrow \alpha) \times \alpha \rightarrow \alpha \\
+  \SkelPip &= (\circ) \SkelRed
+\end{align*}
+\end{docimage} 
+
+\begin{docimage}{pattern-first}
+\begin{align*}
+  \SkelCons{first} &: \mathcal{C}(\alpha) \rightarrow \alpha \\
+  \SkelCons{first} &= (\lambda\ a\ b \rightarrow a) \SkelRed
+\end{align*}
+\end{docimage} 
+
+\begin{docimage}{pattern-last}
+\begin{align*}
+  \SkelCons{last} &: \mathcal{C}(\alpha) \rightarrow \alpha \\
+  \SkelCons{last} &= (\lambda\ a\ b \rightarrow b) \SkelRed
+\end{align*}
+\end{docimage} 
+
+\begin{docimage}{pattern-farm}
+  \begin{align*}%
+    &\SkelFrm :
+      ({{V}^n \rightarrow {V}^m})
+      \rightarrow \mathcal{C}^n \rightarrow \mathcal{C}^m \\
+    &f \SkelFrm (c_1,c_2,...c_n) =
+      f \SkelFun c_1 \SkelApp c_2 \SkelApp ... \SkelApp c_n \triangleleft
+  \end{align*}
+\end{docimage}
+
+
+\begin{docimage}{pattern-pipe1}
+  \begin{align*}%
+    \SkelCons{pipe} &: (\beta^n \rightarrow \alpha \rightarrow \alpha)
+                      \rightarrow \mathcal{C}(\beta^n) \rightarrow \alpha \rightarrow \alpha \\
+    \SkelCons{pipe} &\ f\ \SkelVec{c}^n\ e = f \SkelFrm \SkelVec{c}^n \SkelPip e
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{pattern-reducei-old}
+  \begin{align*}%
+    \SkelCons{reducei} &: (\beta^n \rightarrow \alpha \times \alpha \rightarrow \alpha)
+                      \rightarrow \alpha \rightarrow \mathcal{C}(\beta^n) \times  \mathcal{C}(\alpha) \rightarrow \alpha \\
+    \SkelCons{reducei} &\ f\ e\ (\SkelVec{c}^n, \SkelVec{c}) = f \SkelFrm (\SkelVec{c}^n, \SkelVec{c}) \SkelPip e
+  \end{align*}
+\end{docimage}
+
+\begin{docimage}{pattern-reducei}
+  \begin{align*}%
+    \SkelCons{reducei} &: (\alpha \times \alpha \rightarrow \alpha)
+                      \rightarrow \alpha \rightarrow \mathcal{C}(\alpha) \rightarrow \alpha \\
+    \SkelCons{reducei} &\ f\ e\ \SkelVec{c} = f \SkelFrm \SkelVec{c} \SkelPip e
+  \end{align*}
+\end{docimage}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% TeX-command-default: "Make"
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

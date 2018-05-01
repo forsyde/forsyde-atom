@@ -39,12 +39,7 @@ import Prelude hiding (null, last, init, tail, map, reverse, length, concat, tak
 -- as argument is a process, then it creates a farm network of data
 -- parallel processes.
 --
--- The following constructors are provided:
---
--- >  farm11, farm12, farm13, farm14,
--- >  farm21, farm22, farm23, farm24,
--- >  farm31, farm32, farm33, farm34,
--- >  farm41, farm42, farm43, farm44,
+-- Constructors: @farm[1-4][1-4]@.
 --
 -- >>> let v1 = vector [1,2,3,4,5]
 -- >>> S.farm21 (+) v1 v1
@@ -262,9 +257,7 @@ suffixi p i = S.farm11 (S.reducei p i) . inits
 -- __OBS:__ the pipelining is done in the order dictated by the
 -- function composition operator: from right to left.
 --
--- The following constructors are provided:
---
--- > pipe, pipe1, pipe2, pipe3, pipe4
+-- Constructors: @pipe[1-4]@.
 --
 -- >>> let v1 = vector [(+1),(+1),(+1)]
 -- >>> S.pipe v1 1
@@ -308,10 +301,7 @@ pipe4 = S.pipe4
 -- function on an arbitrary number of vectors until the desired vector
 -- of functions is obtained.
 --
--- The following constructors are provided:
---
--- > (=/=), recur, recuri
--- > recur1, recur2, recur3, recur4,
+-- Constructors: @(=/=)@, @recur@, @recuri@, @recur[1-4][1-4]@.
 --
 -- >>> let v1 = vector [(+1),(+1),(+1)]
 -- >>> recur v1 1
@@ -352,9 +342,7 @@ recuri4 p v1 v2 v3 v4 s   = S.farm41 p v1 v2 v3 v4 `recuri` s
 -- | @cascade@ creates a \"cascading mesh\" as a result of piping a
 -- vector into a vector of recur arrays. 
 --
--- The following constructors are provided:
---
--- > cascade, cascade1, cascade2, cascade3, cascade4, 
+-- Constructors: @cascade@, @cascade[1-4]@.
 --
 -- >>> let v1 = vector [1,2,3,4]
 -- >>> cascade (+) v1 v1
@@ -407,9 +395,7 @@ cascade4 p vv1 vv2 vv3 vv4 vs1 vs2
 -- | @mesh@ creates a 2D systolic array as a result of piping a vector
 -- into a vector of 1D systolic arrays.
 --
--- The following constructors are provided:
---
--- > mesh, mesh1, mesh2, mesh3, mesh4, 
+-- Constructors: @mesh@, @mesh[1-4]@.
 --
 -- >>> let v1 = vector [1,2,3,4]
 -- >>> mesh (+) v1 v1
@@ -777,9 +763,7 @@ evens     = filterIdx even
 -- | selects the elements in a vector at the incexes contained by another vector.
 --
 -- The following versions of this skeleton are available, the number
--- suggesting how many nested vectors it is operating upon.
---
--- > gather1, gather2, gather3, gather4, gather5
+-- suggesting how many nested vectors it is operating upon: @gather[1-5]@
 --
 -- >>> let ix = vector [vector [1,3,4], vector [3,5,1], vector [5,8,9]]
 -- >>> let v = vector [11,12,13,14,15]

@@ -25,16 +25,18 @@ import           ForSyDe.Atom.Utility
 
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
+-- >>> import ForSyDe.Atom.Utility.Plot
 
 ------- DELAY -------
 
 -- | The @delay@ process "delays" a signal with one
--- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern.
+-- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern defined in
+-- "ForSyDe.Atom.MoC".
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> delay 3 0 s
--- { 0 @0s, 1 @3s, 2 @5s, 3 @9s, 4 @11s, 5 @12s}
---
+-- {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
+-- 
 -- <<fig/moc-de-pattern-delay.png>>
 delay :: TimeStamp        -- ^ time delay
       -> a          -- ^ initial value
@@ -44,13 +46,14 @@ delay :: TimeStamp        -- ^ time delay
 delay t v = MoC.delay (unit (t, v))
 
 -- | Similar to the previous, but this is the raw instantiation of the
--- 'ForSyDe.Atom.MoC.delay' pattern. It "borrows" the first event from
--- one signal and appends it at the head of another signal.
+-- 'ForSyDe.Atom.MoC.delay' pattern from "ForSyDe.Atom.MoC". It
+-- "borrows" the first event from one signal and appends it at the
+-- head of another signal.
 --
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
 -- >>> delay' s1 s2
--- { 1 @0s, 3 @2s, 4 @6s, 5 @7s, 6 @10s, 7 @11s}
+-- {1@0s,3@2s,4@6s,5@7s,6@10s,7@11s}
 --
 -- <<fig/moc-de-pattern-delayp.png>>
 delay' :: Signal a  -- ^ signal "borrowing" the initial event
@@ -63,21 +66,17 @@ delay' = MoC.delay
 
 -- | @comb@ processes map combinatorial functions on signals and take
 -- care of synchronization between input signals. It instantiates the
--- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22').
+-- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22' defined in
+-- "ForSyDe.Atom.MoC").
 -- 
--- The following constructors are provided:
---
--- > comb11, comb12, comb13, comb14,
--- > comb21, comb22, comb23, comb24,
--- > comb31, comb32, comb33, comb34,
--- > comb41, comb42, comb43, comb44,
+-- Constructors: @comb[1-4][1-4]@.
 --
 -- >>> let s1 = infinite 1
 -- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> comb11 (+1) s2
--- { 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s}
+-- {2@0s,3@2s,4@6s,5@8s,6@9s}
 -- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
--- ({ 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s},{ 0 @0s, -1 @2s, -2 @6s, -3 @8s, -4 @9s})
+-- ({2@0s,3@2s,4@6s,5@8s,6@9s},{0@0s,-1@2s,-2@6s,-3@8s,-4@9s})
 --
 -- <<fig/moc-de-pattern-comb.png>>
 comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
@@ -137,19 +136,14 @@ comb44 = MoC.comb44
 -- | @reconfig@ creates a DE adaptive process where the first signal
 -- carries functions and the other carry the arguments. It
 -- instantiates the @reconfig@ atom pattern (see
--- 'ForSyDe.Atom.MoC.reconfig22').
+-- 'ForSyDe.Atom.MoC.reconfig22' defined in "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > reconfig11, reconfig12, reconfig13, reconfig14,
--- > reconfig21, reconfig22, reconfig23, reconfig24,
--- > reconfig31, reconfig32, reconfig33, reconfig34,
--- > reconfig41, reconfig42, reconfig43, reconfig44,
+-- Constructors: @reconfig[1-4][1-4]@.
 --
 -- >>> let sf = signal [(0,(+1)),(2,(*2)),(5,(+1)),(7,(*2))]
 -- >>> let s1 = signal [(0,1),(3,2),(5,3),(9,4)]
 -- >>> reconfig11 sf s1
--- { 2 @0s, 2 @2s, 4 @3s, 4 @5s, 6 @7s, 8 @9s}
+-- {2@0s,2@2s,4@3s,4@5s,6@7s,8@9s}
 --
 -- <<fig/moc-de-pattern-reconfig.png>>
 reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
@@ -215,12 +209,10 @@ reconfig44 = MoC.reconfig44
 -- with constant value (i.e. a signal with one event starting from
 -- time 0).
 --
--- The following constructors are provided:
---
--- > constant1, constant2, constant3, constant4,
+-- Constructors: @constant[1-4]@.
 --
 -- >>> constant1 2
--- { 2 @0s}
+-- {2@0s}
 --
 -- <<fig/moc-de-pattern-constant.png>>
 constant2 :: (b1, b2)         -- ^ values to be repeated
@@ -236,19 +228,17 @@ constant4 = ($$$$) (infinite,infinite,infinite,infinite)
 
 ------- GENERATE -------
 
--- | A signal generator based on a function and a kernel value. It
--- is actually an instantiation of the @stated0X@ constructor
--- (check 'ForSyDe.Atom.MoC.stated22').
+-- | A signal generator based on a function and a kernel value. It is
+-- actually an instantiation of the @stated0X@ constructor (check
+-- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > generate1, generate2, generate3, generate4,
+-- Constructors: @generate[1-4]@.
 --
 -- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) ((3,1),(1,2))
 -- >>> takeS 5 s1
--- { 1 @0s, 2 @3s, 2 @4s, 2 @5s, 3 @6s}
+-- {1@0s,2@3s,2@4s,2@5s,3@6s}
 -- >>> takeS 7 s2
--- { 2 @0s, 4 @1s, 6 @2s, 8 @3s, 10 @4s, 12 @5s, 14 @6s}
+-- {2@0s,4@1s,6@2s,8@3s,10@4s,12@5s,14@6s}
 --
 -- <<fig/moc-de-pattern-generate.png>>
 generate2 :: (b1 -> b2 -> (b1, b2))
@@ -274,18 +264,13 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 
 -- | @stated@ is a state machine without an output decoder. It is an
 -- instantiation of the @state@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.stated22').
+-- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > stated11, stated12, stated13, stated14,
--- > stated21, stated22, stated23, stated24,
--- > stated31, stated32, stated33, stated34,
--- > stated41, stated42, stated43, stated44,
+-- Constructors: @stated[1-4][1-4]@.
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ stated11 (+) (6,1) s
--- { 1 @0s, 2 @6s, 3 @8s, 5 @12s, 7 @14s, 8 @15s, 10 @18s}
+-- {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
 --
 -- <<fig/moc-de-pattern-stated.png>>
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -379,18 +364,14 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 
 -- | @state@ is a state machine without an output decoder, and the
 -- state non-transparent. It is an instantiation of the @state@ MoC
--- constructor (see 'ForSyDe.Atom.MoC.state22').
+-- constructor (see 'ForSyDe.Atom.MoC.state22' defined in
+-- "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > state11, state12, state13, state14,
--- > state21, state22, state23, state24,
--- > state31, state32, state33, state34,
--- > state41, state42, state43, state44,
+-- Constructors: @state[1-4][1-4]@.
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ state11 (+) (6,1) s
--- { 2 @0s, 3 @2s, 5 @6s, 7 @8s, 8 @9s, 10 @12s, 12 @14s}
+-- {2@0s,3@2s,5@6s,7@8s,8@9s,10@12s,12@14s}
 --
 -- <<fig/moc-de-pattern-state.png>>                   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -485,18 +466,13 @@ state44 ns i = MoC.state44 ns (unit4 i)
 
 -- | @moore@ processes model Moore state machines. It is an
 -- instantiation of the @moore@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.moore22').
+-- 'ForSyDe.Atom.MoC.moore22' defined in "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > moore11, moore12, moore13, moore14,
--- > moore21, moore22, moore23, moore24,
--- > moore31, moore32, moore33, moore34,
--- > moore41, moore42, moore43, moore44,
+-- Constructors: @moore[1-4][1-4]@
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
--- { 2 @0s, 3 @6s, 4 @8s, 6 @12s, 8 @14s, 9 @15s, 11 @18s}
+-- {2@0s,3@6s,4@8s,6@12s,8@14s,9@15s,11@18s}
 --
 -- <<fig/moc-de-pattern-moore.png>>          
 moore22 :: (st -> a1 -> a2 -> st)
@@ -602,19 +578,14 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 ------- MEALY -------
 
 -- | @mealy@ processes model Mealy state machines. It is an
--- instantiation of the @mealy@ MoC constructor
--- (see 'ForSyDe.Atom.MoC.mealy22').
+-- instantiation of the @mealy@ MoC constructor (see
+-- 'ForSyDe.Atom.MoC.mealy22' defined in "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > mealy11, mealy12, mealy13, mealy14,
--- > mealy21, mealy22, mealy23, mealy24,
--- > mealy31, mealy32, mealy33, mealy34,
--- > mealy41, mealy42, mealy43, mealy44,
+-- Constructors: @mealy[1-4][1-4]@
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
--- { 0 @0s, -1 @2s, -1 @6s, -1 @8s, -2 @9s, 0 @12s, 2 @14s}
+-- {0@0s,-1@2s,-1@6s,-1@8s,-2@9s,0@12s,2@14s}
 --
 -- <<fig/moc-de-pattern-mealy.png>>
 mealy22 :: (st -> a1 -> a2 -> st)
@@ -722,17 +693,15 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 
 -- | @sync@ synchronizes multiple signals, so that they have the same
 -- set of tags, and consequently, the same number of events. It
--- instantiates the @comb@ atom pattern (see
--- 'ForSyDe.Atom.MoC.comb22').
+-- instantiates the @comb@ atom pattern (see 'ForSyDe.Atom.MoC.comb22'
+-- defined in "ForSyDe.Atom.MoC").
 --
--- The following constructors are provided:
---
--- > sync2, sync3, sync4,
+-- Constructors: @sync[1-4]@
 --
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8,  5@9}"  :: Signal Int
 -- >>> let s2 = readSignal "{1@0, 2@5, 3@6, 4@10, 5@12}" :: Signal Int
 -- >>> sync2 s1 s2
--- ({ 1 @0s, 2 @2s, 2 @5s, 3 @6s, 4 @8s, 5 @9s, 5 @10s, 5 @12s},{ 1 @0s, 1 @2s, 2 @5s, 3 @6s, 3 @8s, 3 @9s, 4 @10s, 5 @12s})
+-- ({1@0s,2@2s,2@5s,3@6s,4@8s,5@9s,5@10s,5@12s},{1@0s,1@2s,2@5s,3@6s,3@8s,3@9s,4@10s,5@12s})
 --
 -- <<fig/moc-de-pattern-sync.png>>
 sync2 :: Signal a1                    -- ^ first input signal

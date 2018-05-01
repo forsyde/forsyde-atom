@@ -1,62 +1,66 @@
 {-# OPTIONS_HADDOCK not-home, prune #-}
------------------------------------------------------------------------------
+----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016;
+-- Copyright   :  (c) George Ungureanu, 2015-2018
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The formal foundation upon which ForSyDe <#sander04 [Sander04]>
--- defines its semantics is the /tagged signal model/
--- <ForSyDe-Atom.html#lee98 [Lee98]>.  This is a denotational
--- framework introduced by Lee and Sangiovanni-Vincentelli as a common
--- meta model for describing properties of concurrent systems in
--- general terms as sets of possible behaviors. Systems are regarded
--- as /compositions/ of /processes/ acting on /signals/ which are sets
--- of /tagged events/. Signals are characterized by a /tag system/
--- which determines causality between events, and could model time,
--- precedence relationships, synchronization points, and other key
--- properties. Based on how tag systems are defined, one can identify
--- several /Models of Computations (MoCs)/ as classes of behaviors
--- dictating the semantics of execution and concurrency in a network
--- of processes.
+-- The "spiritual parent" of this modeling framework dates as back as
+-- <#sander04 [Sander04]> which presented ForSyDe, an EDSL for
+-- describing heterogeneous systems as /networks of processes/
+-- communicating through /signals/. In ForSyDe, processes alone
+-- capture the timing semantics of execution and synchronization
+-- according to a certain /model of computation (MoC)/. The shallow
+-- implementation of ForSyDe,
+-- @<https://forsyde.github.io/forsyde-shallow/ forsyde-shallow>@
+-- provides libraries of higher-order functions for instantiating
+-- processes called /process constructors/ for several MoCs. The
+-- formal foundation upon which ForSyDe defines its semantics is the
+-- /tagged signal model/ <ForSyDe-Atom.html#lee98 [Lee98]>, which is
+-- a denotational framework introduced by Lee and
+-- Sangiovanni-Vincentelli as a common meta model for describing
+-- properties of concurrent systems in terms of their behavior.
 --
--- These concepts are the supporting pillars of ForSyDe's philosophy,
--- and state the purpose of the @forsyde-atom@ library: it is supposed
--- to be a modelling framework used as a proof-of-concept for the
--- atom-based approach to cyber-physical systems
+-- <<fig/misc-process-network.png>>
+--
+-- The @<https://forsyde.github.io/forsyde-atom/ forsyde-atom>@
+-- project started as a proof-of-concept for the atom-based approach
+-- to cyber-physical systems (CPS) introduced in
 -- <ForSyDe-Atom.html#ungureanu17 [Ungureanu17]>. This approach
--- extends the tagged signal model by systematically deconstructing
--- processes to their basic semantics and recreating them using a
--- minimal language of primitive building blocks called /atoms/. It
--- also tries to expand the scope of this model by exploiting more
--- aspects than just timing, by adding primitives for parallelism,
--- behavior, etc.
+-- extends the ideas of the tagged signal model by systematically
+-- deconstructing processes to their basic semantics and recreating
+-- them using a minimal language of primitive building blocks called
+-- /atoms/. It also expands the scope of this model by exploiting more
+-- aspects of cyber-physical systems than just timing, but also adding
+-- primitives for parallelism, behavior extensions, etc, each in its
+-- own interacting environment called /layer/. You can read more about
+-- layers in the <#g:1 corresponding section> further on.
 --
 -- The API documentation is structured as follows: this page provides
--- an overview of the general notions and concepts, gently introducing
--- the separate modules and the motivation behind them. Each major
--- module corresponds to a separate /layer/
--- <ForSyDe-Atom.html#ungureanu17 [Ungureanu17]> implemented as a type
--- class. The documentation pages for each layer and for each of their
--- instances contains in-depth knowledge and examples, and can be
--- accessed from the contents page or by following the links
--- suggested. For more complex examples and tutorials follow the links
--- in the <https://github.com/forsyde/forsyde-atom project web page>.
+-- an overview of the general notions and concepts, introducing the
+-- separate modules and the motivation behind them. Each major module
+-- corresponds to a separate layer described by a type class, and
+-- contains a number of sub-modules, mainly providing instances and
+-- helpers for their respective layer. The documentation for each
+-- module contains in-depth knowledge and examples. For more complex
+-- examples and tutorials follow the links in the
+-- <https://forsyde.github.io/forsyde-atom/ project web page>.
 --
---  #naming_conv# __IMPORTANT!!!__ All multi-parameter patterns and
--- utilities provided by the library API as higher-order functions are
--- named along the lines of @functionMN@ where @M@ represents the
--- number of __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@),
+--  #naming_conv# __IMPORTANT!!!__ All multi-argument functions and
+-- utilities provided by the @<https://forsyde.github.io/forsyde-atom/ forsyde-atom>@
+-- API are named along the lines of @functionMN@ where @M@ represents
+-- the number of __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@),
 -- while @N@ represents the number of __/tupled/__ outputs
 -- (i.e. @(b1,b2,...,bN)@). To avoid repetition we only provide
 -- documentation for functions with 2 inputs and 2 outputs
--- (i.e. @function22@). In case the provided functions do not suffice,
--- feel free to implement your own patterns following the examples in
--- the source code.
+-- (i.e. @function22@), while the available ones are mentioned as a
+-- regex (i.e. @function[1-4][1-4]@). In case the provided functions
+-- do not suffice, feel free to implement your own patterns following
+-- the examples in the source code.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom (
   
@@ -83,14 +87,14 @@ module ForSyDe.Atom (
   -- is always the same.
   --
   -- [@atom@] the elementary (primitive, indivisible) constructor
-  -- which embeds a set of semantics relevant for their respective
-  -- layer (e.g. timing, behavioural, structural, etc.)
+  --   which embeds a set of semantics relevant for their respective
+  --   layer (e.g. timing, behavioural, structural, etc.)
   --
   -- [@atom patterns@] meaningful compositions of atoms. They are
-  -- provided as constructors which need to be properly instantiated
-  -- in order to be used. We also use the term "pattern" to
-  -- differentiate atom compositions as constructors from atoms as
-  -- constructors.
+  --   provided as constructors which need to be properly instantiated
+  --   in order to be used. We also use the term "pattern" to
+  --   differentiate atom compositions as constructors from atoms as
+  --   constructors.
   --
   -- The first policy, i.e. the separation of concerns led to the
   -- so-called /layered process model/ which is reflected in the
@@ -103,29 +107,31 @@ module ForSyDe.Atom (
   -- #layered-model#
   -- <<fig/misc-layered-model.png>>
   --
-  -- Layers are implemented as type classes which imply:
+  -- Layers are implemented as type classes which define:
   --
   -- * __atoms__ as function signatures belonging to the type class;
   --
-  -- * __patterns__ which are compositions atoms, provided as constructors;
+  -- * __patterns__ which are compositions atoms, provided as
+  --   (functional block) constructors, e.g. process constructors in
+  --   the MoC layer;
   --
   -- * __data types__ for all the classes of behaviors concerning the
-  -- aspect described by the layer in question. These types
-  -- instantiate the above type class and overload the atoms with
-  -- semantics in accordance to the behavior described. For example,
-  -- the 'ForSyDe.Atom.MoC.MoC' layer is currently instantiated by
-  -- types describing the 'ForSyDe.Atom.Moc.CT.CT',
-  -- 'ForSyDe.Atom.Moc.DE.DE', 'ForSyDe.Atom.Moc.SY.SY' and
-  -- 'ForSyDe.Atom.Moc.SDF.SDF' MoCs.
+  --   aspect described by the layer in question. These types
+  --   instantiate their respective type class and overload the atoms
+  --   with semantics in accordance to the behavior described. For
+  --   example, the 'ForSyDe.Atom.MoC.MoC' layer is currently
+  --   instantiated by types describing the 'ForSyDe.Atom.Moc.CT.CT',
+  --   'ForSyDe.Atom.Moc.DE.DE', 'ForSyDe.Atom.Moc.SY.SY' and
+  --   'ForSyDe.Atom.Moc.SDF.SDF' MoCs.
   --
   -- In order to model interleaving aspects of CPS, layers interact
   -- with each other through means of higher order functions. As such,
   -- each layer describes some atoms as higher-order functions which
   -- take entities belonging to another layer as arguments.
-  -- Intrinsically, the data types belonging to a layer may be wrapping
-  -- types of other layers, as depicted in the <#layered-model figure>
-  -- above. For a short comprehensive overview on layers, please refer
-  -- to <ForSyDe-Atom.html#ungureanu17 [Ungureanu17]>.
+  -- Intrinsically, the data types belonging to a layer may be
+  -- wrapping types of other layers, as depicted in <#layered-model the figure above>.
+  -- For a short comprehensive overview on layers, please refer to
+  -- <ForSyDe-Atom.html#ungureanu17 [Ungureanu17]>.
   --
   -- By convention, the first (innermost) layer is always the
   -- /function layer/ which describes arbitrary functions on data and
@@ -140,15 +146,15 @@ module ForSyDe.Atom (
   -- | As seen in <#layered-model layered process model>, the extended
   -- behavior layer expands the set of possible behaviors implied by a
   -- layer (typically the function layer), by defining a set of
-  -- symbols with /known/ semantics, and adding it to (i.e. wrapping)
-  -- the pool of possible values or states.
+  -- symbols with /known/ semantics, and adding it to the pool of
+  -- possible values or states.
   --
   -- While semantically the 'ExB' layer extends the value pool in
-  -- order to express special events (e.g. error messages or even the
-  -- complete absence of events), it practically provides an
+  -- order to express special events (e.g. protocol, error messages or
+  -- even the complete absence of events), it practically provides an
   -- independent environment to model events with a default/known
   -- response, independently of the data path. These responses are
-  -- particularly captured by atoms, thus enforcing the high-level
+  -- particularly captured by ExB atoms, thus enforcing the high-level
   -- separation of concerns between e.g. control and data paths.
   --
   -- This layer provides:
@@ -158,12 +164,11 @@ module ForSyDe.Atom (
   -- class /(see below)/.
   --
   -- * a library of function wrappers as specific atom patterns
-  -- (/Check the "ForSyDe.Atom.ExB" module for extensive/
-  -- /documentation/).
+  --   (/check the "ForSyDe.Atom.ExB" module/).
   --
   -- * a set of data types defining classes of behaviors and
-  -- instantiating the 'ExB' type class (/check the links in the/
-  -- /<#section.i:ExB instances> section for extensive documentation/).
+  --   instantiating the 'ExB' type class (/check the/
+  --   /<#i:ExB instances>/).
     
   ExB(..),
   
@@ -171,35 +176,42 @@ module ForSyDe.Atom (
 
   -- | This layer represents a major part of the @forsyde-atom@
   -- library and is concerned in modeling the timing aspects of
-  -- CPS. While its foundations have been layered in the classical
-  -- ForSyDe <#sander04 [Sander04]>, it is mainly inspired from
-  -- <#lee98 [Lee98]> an it tries to follow the tagged signal model as
-  -- closely as it is permitted by the host language, and with the
-  -- adaptations require by the atom approach.
+  -- CPS. While its foundations have been laid in the classical
+  -- ForSyDe <#sander04 [Sander04]>, it mainly tries to follow the
+  -- tagged signal model <#lee98 [Lee98]> as closely as it is
+  -- permitted by the host language, and with the adaptations required
+  -- by the atom approach.
   --
-  -- Although a short introduction of the tagged signal model has been
-  -- written in the introduction of this documentation, we feel
-  -- obliged to provide a primer in the classical ForSyDe theory in
-  -- order to understand how everything fits together.
+  -- Continuing the short description in <#package-header the
+  -- introduction>, the following sections offer a short primer in
+  -- ForSyDe-Atom and how it connects to the classical ForSyDe theory,
+  -- culminating with an overview of the MoC layer as provided by
+  -- @forsyde-atom@.
 
   -- ** Signals
   
-  -- | <#lee98 [Lee98]> defines signals as (ordered) sets of events
-  -- where each event is composed of a tag /T/ and a value
-  -- /V/. Similarly, in ForSyDe a signal is defined as a (partially or
-  -- totally) /ordered sequence/ of events that enables processes to
-  -- communicate and synchronize. Sequencing might infer an implicit
-  -- order of events, but more importantly it determines an order of
-  -- evaluation, which is a key piece of a simulation engine.
+  -- | <#lee98 [Lee98]> defines signals as ordered sets of events
+  -- where each event is composed of a tag /T/ and a value /V/, where
+  -- /T/ defines a total or partial order. Similarly, in ForSyDe a
+  -- signal is defined as a /sequence/ of events that enables
+  -- processes to communicate and synchronize. Sequencing might infer
+  -- an implicit total order of events, but more importantly it
+  -- determines an order of evaluation, which is a key piece of the
+  -- simulation engine.
   --
   -- <<fig/misc-tagged-signal.png>>
   --
-  -- In ForSyDe-Atom, sequencing is achieved using the 'Stream' data
-  -- type, inspired from <#reekie95 [Reekie95]>. In ForSyDe-Atom,
-  -- signals are streams that carry /events/, where each type of event
-  -- is identified by a type constructor which defines its tag
-  -- system. In other words, we can state that through its tag system,
-  -- a signal is /bound/ to a MoC.
+  -- In ForSyDe, sequencing is achieved using a 'Stream' data type,
+  -- inspired from <#reekie95 [Reekie95]>. In ForSyDe-Atom, signals
+  -- are streams that carry /events/, where each type of event is
+  -- identified by a type constructor. Hence the pseudo-Haskell
+  -- definition for a signal would look like below, where @e@ is the
+  -- type of an event which encodes a tag system through its type
+  -- constructor. Since, according to <#lee98 [Lee98]>, MoCs are
+  -- defined by tag systems, we can state that any specific instance
+  -- of a signal is describing (i.e. is bound to) a MoC.
+  --
+  -- > type Signal a = exists e . MoC e => Stream (e a) 
 
   Stream (..),
 
@@ -214,22 +226,54 @@ module ForSyDe.Atom (
   -- possible behaviors" of signals or "relations" between multiple
   -- signals. One can describe complex systems by composing processes,
   -- which in this case is interpreted as the "intersection of the
-  -- behaviors of each of the processes being involved".
+  -- behaviors of each of the processes being involved". According to
+  -- that framework, we can describe ForSyDe-Atom processes as having
+  -- the following properties:
+  --
+  -- [functionality] Processes are functional if provided they are
+  --   stimulated with the /same/ input signals, they react with the
+  --   /same/ output signals every time. This condition is fulfilled
+  --   by Haskell's purity. On the other hand in the current modeling
+  --   framework it is not possible to model non-functional
+  --   processes.
+  --
+  -- [determinancy] A functional process is determinate, which means
+  --   that they describe either /one/ behavior, or unambiguously no
+  --   behavior.
+  --
+  -- [strict causality] Refers to the fact that the distance between
+  --   input signals of a process is strictly preserved at the
+  --   output. This means that ForSyDe-Atom process networks are
+  --   unable to describe and simulate delta-causal or non-causal
+  --   systems (i.e. zero-delay feedback loops) in the MoC
+  --   layer. These problems are solved in other layers (see
+  --   <ForSyDe-Atom.html#ungureanu18 [Ungureanu18]>)
   --
   -- [monotonicity] In order to ensure causal order and determinancy,
-  -- processes need to be /monotonic/ <#lee98 [Lee98]>. A signal's
-  -- tags (if explicit) /must be/ a partial or total order and all tag
-  -- alterations must be monotonic.
+  --   processes need to be /monotonic/. A signal's tags (if explicit)
+  --   /must be/ a partial or total order and all tag alterations must
+  --   be monotonic.
   --
   -- ForSyDe inherits this definition with respect to a functional
   -- view, thus a __process__ /p/ is a functional mapping over (the
   -- history of) signals. A process can /only/ be instantiated using a
   -- __process constructor__ /pc/, which is a higher order function
   -- embedding MoC semantics and/or a specific composition, but
-  -- lacking functionality.
+  -- lacking functionality. An intuitive way of viewing process
+  -- constructors in general is as "parameterized templates" for
+  -- processes. Stretching this analogy we take the liberty of
+  -- referring to processes as "instances of process constructors".
   --
   -- #proc-definition#
   -- <<fig/misc-process.png>>
+  --
+  -- <<fig/misc-process-template.png>>
+  --
+  -- In the definitions/figure above, \(v_i \in V\) may also denote
+  -- the set of functions, not only values, fact which is taken for
+  -- granted in Haskell. Actually the whole power of ForSyDe as a
+  -- Haskell EDSL is that the designer can send functions as normal
+  -- values in programs. 
   --
   -- Since processes are functions, process composition is equivalent
   -- to function composition. This means that composing two processes
@@ -239,9 +283,8 @@ module ForSyDe.Atom (
   -- > p2      :: Signal β -> Signal γ
   -- > p2 . p1 :: Signal α -> Signal γ
   --
-  --  This implies that there is a signal @Signal beta @ that
-  --  "streams" the result from @p1@ to @p2@, as suggested in the
-  --  drawing:
+  --  This implies that there is a signal @Signal β@ that "streams"
+  --  the result from @p1@ to @p2@, as suggested in the drawing:
   --
   -- <<fig/misc-ser-composition.png>>
   --
@@ -251,88 +294,96 @@ module ForSyDe.Atom (
   -- i.e. function from signal(s) to signal(s). The composition above
   -- @p2 . p1 @ can also be regarded as a process network.
   --
-  -- In ForSyDe-Atom atoms can be regarded as process constructors as
-  -- their instantiations are functions on signals of events.
-  -- Instantiations of atom patterns are the exact equivalent of
-  -- process networks, which themselves are also processes, depending
-  -- on the level of abstraction you are working with (hierarchical
-  -- blocks vs. flat structures).
+  -- In ForSyDe-Atom, MoC atoms are themselves process constructors,
+  -- and follow the process constructor definition: they (may) take
+  -- values as arguments and return processes. Based on that we can
+  -- create the following equivalence table:
   --
-  -- To understand the versatility of composition and partial
-  -- application in building process constructors, consider the
-  -- example above where composition of two processes infers a signal
-  -- between them. This mechanism also works when composing
-  -- constructors (un-instantiated atoms), which yields another
-  -- constructor. By instantiating (fully applying) the new
-  -- constructor we obtain a process network equivalent to the
-  -- composition of the respective primitive processes obtained by
-  -- instantiating (fully applying) the component atoms, like in the
-  -- example below:
+  -- <<fig/misc-atom-forsyde-equiv.png>>
+  --
+  -- These equivalences fit well with intuition when considering how
+  -- partial application and composition mechanisms are acting. The
+  -- whole idea of atoms is basically applying Backus' principle of
+  -- combining forms in order to obtain abstractions, which is one of
+  -- the basic principles of the functional programming paradigm. To
+  -- further even more this idea, one could visualize process networks
+  -- as graphs, where processes are nodes and signals are edges. A
+  -- subgraph with a meaningful shape could be considered a /pattern/
+  -- (hence the name atom patterns), and one could find isomorphisms
+  -- between different patterns.
+  --
+  -- To get a flavor of how (partial) composition of higher order
+  -- function works in ForSyDe-Atom, consider the example below where
+  -- both /pn/ and /p'/ denote the same thing and instantiate the
+  -- pattern in the right hand side, visualized as a graph. The
+  -- circled operators denote the '-.-' and '-*-' atoms presented in
+  -- the next section.
   --
   -- <<fig/misc-process-constructor.png>>
   --
-  -- Now if we visualize process networks as graphs, where processes
-  -- are nodes and signals are edges, a meaningful process composition
-  -- could be regarded as graph patterns. Therefore it is safe to
-  -- associate process constructors as patterns in process networks.
-
+  
   -- ** Models of Computation
   
-  -- | As mentioned in the introduction, /MoCs/ are classes of behaviors
-  -- dictating the semantics of execution and concurrency in a network
-  -- of processes. Based on the definitions of their tag systems
-  -- ForSyDe identifies MoCs as:
+  -- | MoCs are classes of behaviors dictating the semantics of
+  -- execution and concurrency in a network of processes and,
+  -- according to <#lee98 [Lee98]>, are determined by the tag
+  -- systems. Based on how their tag systems are defined ForSyDe
+  -- identifies MoCs as:
   --
-  -- 1. /timed/ where /T/ is a totally ordered set and /t/ express the
-  -- notion of physical time (e.g. continuous time
-  -- 'ForSyDe.Atom.MoC.CT.CT', discrete event
-  -- 'ForSyDe.Atom.MoC.DE.DE') or precedence (e.g. synchronous
-  -- 'ForSyDe.Atom.MoC.SY.SY');
+  -- 1. /timed/ where /T/ is a totally ordered set and, depending on
+  --   the abstraction level, /t/ might express from the notion of
+  --   physical time (e.g. continuous time 'ForSyDe.Atom.MoC.CT.CT',
+  --   discrete event 'ForSyDe.Atom.MoC.DE.DE') to the notion of
+  --   precedence and causality (e.g. synchronous
+  --   'ForSyDe.Atom.MoC.SY.SY');
   --
   -- 1. /untimed/, where /T/ is a partially ordered set and /t/ is
-  -- expressed in terms of constraints on the tags in signals
-  -- (e.g. dataflow, synchronous data flow
-  -- 'ForSyDe.Atom.MoC.SDF.SDF').
+  --   expressed in terms of constraints on the tags in signals
+  --   (e.g. dataflow, synchronous data flow
+  --   'ForSyDe.Atom.MoC.SDF.SDF').
   --
   -- As concerning MoCs, ForSyDe implements the execution semantics
-  -- /through process constructors/, abstracting the timing model and
-  -- inferring a schedule of the process network. In ForSyDe-Atom all
-  -- atoms embed operating semantics dictated by a certain MoC and are
-  -- side-effect-free. This ensures the functional correctness of a
-  -- system even from early design stages.
-
+  -- through process constructors, abstracting the timing model and
+  -- inferring a schedule of the process network. Furthermore,
+  -- processes are side-effect-free, ensuring the functional
+  -- correctness of a system even from early design stages. In
+  -- ForSyDe-Atom all instances of MoC atoms embed operating semantics
+  -- dictated by a certain MoC.
+  
   -- ** Representing Time
   
-  -- | For explicit time representation, ForSyDe-atom provides two
-  -- distinct data types.
+  -- | Some MoCs require explicit time representation, for which
+  -- @forsyde-atom@ provides two distinct data types.
 
   Time(..), TimeStamp(..),
 
   -- ** MoC Layer Overview
-
-  -- | This layer consists of:
+  
+  -- | Now, after the crash course in ForSyDe, we can finally present
+  -- what the MoC layer consists of. Similarly to all other layers, the
+  -- MoC layer defines:
   --
-  -- * 4 atoms as infix operators, implemented as methods of the type
-  -- class 'MoC'. Since each MoC is determined by its tag system, we
-  -- expose this 
-  -- which are instances of this class. Thus an event's type will
-  -- trigger an atom to behave in accordance to its associated MoC.
+  -- * 4 atoms provided as infix operators and implemented as type
+  --   class methods for the class 'MoC'. Since each atom's semantics
+  --   is overloaded based on the input type, and each input type
+  --   defines an own tag system, we enforce Lee's idea <#lee98
+  --   [Lee98]> that tag systems determine the MoC (semantics). (/See/
+  --   /below/)
   --
   -- * a library of meaningful atom patterns as process constructors.
-  -- (/Check the "ForSyDe.Atom.MoC" module for extensive/
-  -- /documentation/).
+  --   (/Check the "ForSyDe.Atom.MoC" module/).
   --
-  -- * a set of data types defining tag systems through the structure
-  -- of events (i.e. /T/ &#215; /V/). They are instances of the 'MoC'
-  -- type class and define the rules of execution that will trigger an
-  -- atom to behave in accordance to its associated MoC. For each
-  -- supported MoC, @forsyde-atom@ provides a module which defines the
-  -- signal (event) type, but also a set of utilities and process
-  -- constructors as specific instantiations of atom patterns.
-  -- (/Check the links in the <#section.i:MoC instances> section for/
-  -- /extensive documentation/).
+  -- * a set of data types representing events defining tag systems
+  --   through their structure (i.e. /T/ &#215; /V/). These types are
+  --   instances of the 'MoC' type class and are defining the rules of
+  --   execution which will trigger an atom to behave in accordance to
+  --   an associated MoC. For each supported MoC, @forsyde-atom@
+  --   provides a module which defines the signal type, but also a
+  --   library of utilities and helpers for specific instantiations of
+  --   atom patterns. (/Check the <#i:MoC instances>/).
   
   MoC(..),  
+
 
   -- * The Skeleton Layer
 
@@ -348,62 +399,67 @@ module ForSyDe.Atom (
   -- This layer provides:
   --
   -- * 3 atoms as infix operators which, as demonstrated in <#bird97 [Bird97]>
-  -- and <#skillicorn05 [Skillicorn05]>, are enough to describe /all/
-  -- algorithmic skeletons.
+  --   and <#skillicorn05 [Skillicorn05]>, are enough to describe
+  --   /all/ algorithmic skeletons.
   --
   -- * a library of generic skeletons as specific atom patterns.
-  -- (/Check the "ForSyDe.Atom.Skeleton" module for extensive/
-  -- /documentation/).
+  --   (/Check the "ForSyDe.Atom.Skeleton" module/).
   --
   -- * a set of different categorical types which implement these
-  -- atoms, as instances of the 'Skeleton' type class. These types
-  -- provide additional skeletons patterns of atoms which takes as
-  -- arguments their own type constructors.
-  -- (/Check the links in the <#section.i:Skeleton instances> section for/
-  -- /extensive documentation/).
+  --   atoms, as instances of the 'Skeleton' type class. These types
+  --   provide additional skeletons patterns of atoms which takes as
+  --   arguments their own type constructors.  (/Check the/
+  --   /<#i:Skeleton instances>/).
   
   Skeleton(..),
 
   -- * Utilities
 
-  -- | The 'ForSyDe.Atom' module exports a set of utility functions,
-  -- mainly for aiding the designer to avoid working with zipped
-  -- tuples which might pollute the design. Utilities are function
-  -- without any semantical value (thus not considered atoms). They
-  -- operate on and might alter the /structure/ of some datum, but it
-  -- does not affect its state.
+  -- | The "ForSyDe.Atom" module export a set of utility functions,
+  -- mainly for helping to write more concise code or to perform
+  -- regular chores like plotting, or nicer printouts.
   --
-  -- For a list of all the provided utilities, please consult the
-  -- following module:
+  -- The "ForSyDe.Atom.Utility.Plot" module contains utilities for
+  -- dumping and visualizing the data in ForSyDe-Atom models in
+  -- different formats, e.g. <https://forsyde.github.io/forsyde-latex/ LaTeX>
+  -- or <www.gnuplot.info gnuplot>.
 
-  module ForSyDe.Atom.Utility,
+  module ForSyDe.Atom.Utility.Plot,
+  
+  -- | The "ForSyDe.Atom.Utility.Tuple" library contains functions
+  -- that help in avoiding working with explicitly zipping and
+  -- unzipping structures of /n/-tuples. These utilities work mainly
+  -- on the structures of data without altering the information, thus
+  -- they are not considered atoms and are not associated with any
+  -- layer.
 
-  -- | Among the most useful utilities we mentions the @unzip@
-  -- function. Recall that in all our definitions for patterns, they
-  -- were expressed in the most general form as functions from /n/-ary
-  -- Cartesian products to /m/-ary Cartesian products. While partial
-  -- application provides a versatile mechanism that can translate
-  -- n-ary inputs into curried arguments (which is very powerful in
-  -- combination with an applicative style), we cannot do so for
-  -- return types. For the latter we must rely on tuples. But working
-  -- with tuples of data wrapped in several layers of structures
-  -- becomes extremely cumbersome. Take for example the case of a
-  -- process constructed with /pc/ in equation (1) below. Using only
-  -- the provided atoms to implement /pc/ would give us a process
-  -- which returns only one signal of a tuple and not, as we would
-  -- like, a tuple of signals of events.
+  module ForSyDe.Atom.Utility.Tuple,
+  
+  -- | Among the most useful of these utilities we mentions the
+  -- @unzip@ function. When consulting the ForSyDe-Atom papers or
+  -- further checking the modules' API documentation, you will notice
+  -- that in all our formal definitions, patterns are expressed in the
+  -- most general form as functions from /n/-ary Cartesian products to
+  -- /m/-ary Cartesian products. While partial application provides a
+  -- versatile mechanism which translates n-ary inputs into curried
+  -- arguments (which is a powerful mechanism in combination with an
+  -- applicative style of programming), for the return types we must
+  -- rely on tuples. But working with tuples of data wrapped in
+  -- several layers of structures becomes extremely cumbersome. Take
+  -- for example the case of a process constructed with /pc/ in
+  -- equation (1) below. Using only the atoms defined by
+  -- 'ForSyDe.Atom.MoC.MoC' to implement /pc/ we would be able to
+  -- design a process which returns only one signal carrying tuples
+  -- and not, as we would like, a tuple of signals.
   --
   -- <<fig/misc-unzip.png>>
   --
   -- Therefore, by implementing all data types associated with signals
   -- and events as instances of 'Functor', we were able to provide a
-  -- (set of) /unzip/ utility functions defined as in equation (2)
-  -- above, in the "ForSyDe.Atom.Utility" module.  Mind that we call
-  -- /unzip/ a utility and not an atom, since it has no
-  -- synchronization nor behavior semantic. It just conveniently
-  -- "lifts" the wrapped tuples in order to create "collections" of
-  -- events and signals, and it is imposed by the mechanisms of the
-  -- type system in the host language.
+  -- (set of) /unzip/ utility functions defined like in equation (2)
+  -- above.  Mind that we call /unzip/ a utility and not an atom,
+  -- since it has no behavioral semantic. It just conveniently
+  -- un-wraps tuples and lifts them into layers above.
 
   (||<),
   
@@ -431,6 +487,8 @@ module ForSyDe.Atom (
 
   -- | #ungureanu17# <http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]> Ungureanu, G., & Sander, I., /A layered formal framework for modeling of cyber-physical systems/, in 2017 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2017, pp. 1715–1720.
   
+  -- | #ungureanu18# <https://ieeexplore.ieee.org/document/8342019/ [Ungureanu18]> Ungureanu, G., de Medeiros, J. E. G. & Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2018, pp. 277-280
+  
 ) where
 
 import ForSyDe.Atom.ExB
@@ -439,5 +497,5 @@ import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.Time
 import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Skeleton
-import ForSyDe.Atom.Utility
-
+import ForSyDe.Atom.Utility.Tuple
+import ForSyDe.Atom.Utility.Plot
