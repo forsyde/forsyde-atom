@@ -17,4 +17,5 @@ TAGS
 *auto*
 *.dat
 *.gnuplot
+.stack-work
 fig

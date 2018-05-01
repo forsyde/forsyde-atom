@@ -17,12 +17,17 @@
 @version 0.2.2.1
 
 
--- | This module defines the shallow-embedded <a>Stream</a> datatype and
+-- | This module defines the shallow-embedded <a>Stream</a> data type and
 --   utility functions operating on it. In ForSyDe a signal is represented
 --   as a (partially or totally) <i>ordered</i> sequence of events that
---   enables processes to communicate and synchronize. The <a>Stream</a>
---   type is but an ordered structure to encapsulate events as infinite
---   streams.
+--   enables processes to communicate and synchronize. In ForSyDe-Atom
+--   signals are the main operating type for the MoC layer. The
+--   <a>Stream</a> type is only the base (potentially infinite) structure
+--   which can encapsulate events in order to describe signals.
+--   
+--   For an overview about atoms, layers and patterns, please refer to the
+--   <a>ForSyDe.Atom</a> module documentation, and for an overview of the
+--   MoC layer entities refer to <a>the MoC layer section</a>.
 module ForSyDe.Atom.MoC.Stream
 
 -- | Defines a stream of events, encapsulating them in a structure
@@ -33,9 +38,10 @@ module ForSyDe.Atom.MoC.Stream
 --   fully evaluated. This can be translated into the following rule:
 --   
 --   <ul>
---   <li><i>zero-delay feedbacks</i> are forbidden, due to un-evaluated
---   self-referential calls. In a feedback loop, there always has to be
---   enough events to ensure the data flow.</li>
+--   <li><i>non-causal feedback</i> or "zero-delay" feedback loops are
+--   forbidden, due to un-evaluated self-referential calls. In a feedback
+--   loop, there always has to be enough events to ensure the data
+--   flow.</li>
 --   </ul>
 --   
 --   This rule imposes that the stream of data is uninterrupted in order to
@@ -43,9 +49,10 @@ module ForSyDe.Atom.MoC.Stream
 --   avoid deadlocks). Thus we can add the rule:
 --   
 --   <ul>
---   <li><i>cleaning of output events</i> is also forbidden. In other
---   words, for each new input at any instant in time, a process must react
---   with <i>at least</i> one output event.</li>
+--   <li><i>cleaning of output signals</i> through removing output events
+--   is also forbidden. In other words, for each new input at any instant
+--   in time, a process must react with <i>at least</i> one output
+--   event.</li>
 --   </ul>
 data Stream e
 
@@ -55,7 +62,7 @@ NullS :: Stream e
 -- | the default constructor appends an event to the head of the stream
 (:-) :: e -> Stream e -> Stream e
 
--- | The function <tt>signal</tt> converts a list into a signal.
+-- | The function <a>stream</a> converts a list into a stream.
 stream :: [a] -> Stream a
 
 -- | The function <a>fromStream</a> converts a signal into a list.
@@ -96,13 +103,13 @@ instance GHC.Read.Read a => GHC.Read.Read (ForSyDe.Atom.MoC.Stream.Stream a)
 module ForSyDe.Atom.MoC.TimeStamp
 
 -- | Alias for the type representing discrete time. It is inherently
---   quantizable, the quantum being a picosecond (10⁻¹² seconds), thus it
---   can be considered order-isomorphic with a set of integers, i.e.
---   between any two timestamps there is a finite number of timestamps.
---   Moreover, a timestamp can be easily translated into a rational number
---   representing fractions of a second, so the conversion between
---   timestamps (discrete time) and rationals (analog/continuous time) is
---   straightforward.
+--   quantizable, the quantum being a picosecond ( &lt;math&gt; seconds),
+--   thus it can be considered order-isomorphic with a set of integers,
+--   i.e. between any two timestamps there is a finite number of
+--   timestamps. Moreover, a timestamp can be easily translated into a
+--   rational number representing fractions of a second, so the conversion
+--   between timestamps (discrete time) and rationals (analog/continuous
+--   time) is straightforward.
 --   
 --   This type is used in the explicit tags of the <a>DE</a> MoC (and
 --   subsequently the discrete event evaluation engine for simulating the
@@ -155,7 +162,7 @@ module ForSyDe.Atom.MoC.Time
 
 -- | Type alias for the type to represent metric (continuous) time.
 --   Underneath we use <a>Rational</a> that is able to represent any
---   <i>t</i> between <i>t₁</i> &lt; <i>t₂</i> ∈ <i>T</i>.
+--   &lt;math&gt; between &lt;math&gt;.
 type Time = Rational
 
 -- | Converts <a>TimeStamp</a> into <a>Time</a> representation.
@@ -492,11 +499,14 @@ pipe2 :: Skeleton c => (a1 -> a2 -> a -> a) -> c a1 -> c a2 -> a -> a
 
 -- | This module exports the core entities of the MoC layer: interfaces for
 --   atoms and process constructors as patterns of atoms. It does
---   <i>NOT</i> export any implementation or instantiation of any specific
---   MoC.
+--   <i>NOT</i> export any implementation or instance of any specific MoC.
+--   For an overview about atoms, layers and patterns, please refer to the
+--   <a>ForSyDe.Atom</a> module documentation, and for an overview of the
+--   MoC layer entities refer to <a>the MoC layer section</a>.
 --   
---   Current MoC implementations can be used by importing their respective
---   modules:
+--   The MoCs currently implemented in ForSyDe-Atom are shown in the
+--   <a>instances section</a>, and they can be used in designs by importing
+--   their respective modules:
 --   
 --   <ul>
 --   <li><a>ForSyDe.Atom.MoC.CT</a></li>
@@ -511,67 +521,79 @@ module ForSyDe.Atom.MoC
 
 -- | This is a type class defining interfaces for the MoC layer atoms. Each
 --   model of computation exposes its tag system through a unique event
---   constructor as an instance of this class, which defines <i>T</i> ×
---   <i>V</i>.
+--   type which is an instance of this class, defining &lt;math&gt;.
 --   
 --   To express all possible MoCs which can be described using a
 --   <i>tagged</i> <i>signal</i> <i>model</i> we need to capture the most
---   general form of their atoms. Recall that all atoms in the layered
---   framework are represented as higher-order functions on structured
---   types (instances of this class), taking functions of other (lower)
---   layers as arguments. While this principle stands also for this layer,
---   the functions taken as arguments need to be formatted for each MoC in
---   particular in order to capture additional information, which we can
---   call in general terms as the <i>execution context</i>.
+--   general form of their atoms. This means that under the same interface
+--   we need to describe atoms with different execution regimes. Recall
+--   that atoms are in principle applicative functors which act upon one
+--   input signal at a time and partially apply functions. Depending on the
+--   execution regime, these function might or might not need additional
+--   parameters to determine the behavior for evaluating each argument.
+--   These additional parameters we call, in loose terms, as the
+--   <i>execution context</i>.
 --   
---   One typical example of additional information is the consumption and
---   production rates of for data flow MoCs (e.g. SDF). In this case the
---   passed functions are defined over "partitions" of events, i.e.
---   groupings of events with the same partial order in relation to, for
---   example, a process firing. The formal description of such a "formatted
---   function" taken as argument by a MoC entity is:
---   
---   
---   where <i>a</i> and <i>b</i> might be Cartesian products of different
---   types, corresponding to how many signals the constructor is applied to
---   or how many signals it yields, and each type is expressed as:
+--   <ul>
+--   <li><i>execution context</i> Additional information which, paired with
+--   a function, completely determines the behavior of a MoC atom (i.e.
+--   process).</li>
+--   </ul>
 --   
 --   
---   While, as you can see above, the execution context can be extracted
---   from the type information, working with type-level parameters is not a
+--   The left-hand side expression above shows the most general notation
+--   used to describe a function with <i>n</i> inputs of (possibly
+--   different) types &lt;math&gt; and <i>m</i> outputs of (possibly
+--   different) types &lt;math&gt; executed in context &lt;math&gt;. The
+--   right-hand side expression shows that in ForSyDe-Atom context is
+--   associated with each and every argument in order to enable the
+--   applicative mechanisms. Depending on the MoC, &lt;math&gt; would
+--   translate to:
+--   
+--   
+--   One example of execution context is the consumption and production
+--   rates for data flow MoCs (e.g. <a>SDF</a>). In this case the passed
+--   functions are defined over "sequences" or "partitions" of events, i.e.
+--   groupings of events with the same partial order in relation to a
+--   process firing.
+--   
+--   While in the example above the execution context can be extracted from
+--   the type information, working with type-level parameters is not a
 --   trivial task in Haskell, especially if we want to describe a general
 --   and extensible type class. This is why we have chosen a pragmatic
 --   approach in implementing the <a>MoC</a> class:
 --   
 --   <ul>
---   <li>any (possible) Cartesian product of <i>α</i> is represented using
---   a recursive type, namely a list [<i>α</i>].</li>
+--   <li>any (possible) Cartesian product which denotes a partition of
+--   &lt;math&gt; is represented using a recursive type, namely a list
+--   &lt;math&gt;.</li>
 --   <li>as the execution context cannot (or can hardly) be extracted from
 --   the recursive type, in the most general case we pass both context
 --   <i>and</i> argument as a pair (see each instance in particular). To
---   aid in pairing contexts with each argument in a function, the
---   <tt>ctxt</tt> utilities are provided (see <a>ctxt22</a>).</li>
---   <li>this artifice was masked using the generic type families
---   <a>Fun</a> and <tt>Res</tt>.</li>
+--   aid in pairing contexts with each argument in a function, the general
+--   purpose <tt>ctxt</tt> utilities are provided (see <a>ctxt22</a>).</li>
+--   <li>this artifice is masked using the generic type families <a>Fun</a>
+--   and <a>Ret</a>.</li>
 --   </ul>
 class (Applicative e) => MoC e where {
     type family Fun e a b;
     type family Ret e b;
 }
 
--- | This atom is mapping a function on values (in the presence of a
---   context) to a signal, i.e. stream of tagged events. As ForSyDe deals
---   with <i>determinate</i>, <i>functional</i> processes, this atom
---   defines the (only) <i>behavior</i> of a process in rapport to one
---   input signal <a>[Lee98]</a>.
+-- | The <tt>func</tt> atom is mapping a function on values (in the
+--   presence of a context) to a signal, i.e. stream of tagged events. As
+--   ForSyDe deals with <i>determinate</i>, <i>functional</i> processes,
+--   this atom defines the (only) <i>behavior</i> of a process in rapport
+--   to one input signal <a>[Lee98]</a>.
 --   
 (-.-) :: MoC e => Fun e a b -> Stream (e a) -> Stream (e b)
 
--- | This atom synchronizes two signals, one carrying functions on values
---   (in the presence of a context), and the other containing values,
---   during which it applies the former on the latter. As concerning the
---   process created, this atom defines a <i>relation</i> between two
---   signals <a>[Lee98]</a>.
+-- | The <tt>sync</tt> atom synchronizes two signals, one carrying
+--   functions on values (in the presence of a context), and the other
+--   containing values. During the synchronization it applies the
+--   function(s) carried by the former signal on the values carried by the
+--   latter. This atom defines a <i>relation</i> between two signals
+--   <a>[Lee98]</a>.
 --   
 (-*-) :: MoC e => Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
 
@@ -580,110 +602,114 @@ class (Applicative e) => MoC e where {
 --   
 (-*) :: MoC e => Stream (e (Ret e b)) -> Stream (e b)
 
--- | This atom appends a (partition of) events at the beginning of a
---   signal. This atom is necessary to ensure <i>complete partial order</i>
---   of a signal and assures the <i>least upper bound</i> necessary for
---   example in the evaluation of feedback loops <a>[Lee98]</a>.
+-- | The <tt>pre</tt> atom prepends the prefix of the left signal operand
+--   (i.e. the first event in timed MoCs, or the first <i>n</i> events in
+--   untimed MoCs) at the beginning of the right signal operand
+--   &lt;math&gt;. This atom is necessary to ensure <i>complete partial
+--   order</i> of a signal and assures the <i>least upper bound</i>
+--   necessary for example in the evaluation of feedback loops
+--   <a>[Lee98]</a>.
 --   
 --   
---   Notice the difference between the formal and the implemented type
---   signatures. In the implementation the value/partition is wrapped
---   inside an event type to enable smooth composition. You might also
---   notice the type for the "initial event(s)" as being wrapped inside a
---   signal constructor. This allows defining an DSL for this layer which
---   is centered around signals exclusively, while also enabling to define
---   atoms as homomorphisms to certain extent <a>[Bird97]</a>. Certain MoCs
---   might have additional constraints on the first operand to be finite.
+--   <i>&lt;math&gt; this atom acts like the <tt>pre</tt> operator in the
+--   synchronous</i> <i>language Lustre <a>[Halbwachs91]</a>,</i> <i>and
+--   for timed MoCs it behaves the same. For untimed MoCs though,</i>
+--   <i>the length of the prefix of a signal is assumed to be the
+--   length</i> <i>of a signal, since the API does not provide any other
+--   means to</i> <i>pass </i>n<i> as a parameter.</i>
 (-<-) :: MoC e => Stream (e a) -> Stream (e a) -> Stream (e a)
 
--- | This atom allows the manipulation of tags in a signal in a restrictive
---   way which preserves <i>monotonicity</i> and <i>continuity</i> in a
---   process <a>[Lee98]</a>, namely by “phase-shifting” all tags in a
---   signal with the appropriate metric corresponding to each MoC. Thus it
---   preserves the characteristic function intact <a>[Sander04]</a>.
+-- | The <tt>phi</tt> atom manipulates the tags in a signal in a
+--   restrictive way which preserves <i>monotonicity</i> and
+--   <i>continuity</i> in a process <a>[Lee98]</a>, namely by
+--   “phase-shifting” all tags in a signal with the appropriate metric
+--   corresponding to each MoC. Thus it preserves the characteristic
+--   function intact <a>[Sander04]</a>.
 --   
 --   
---   As with the <a>-&lt;-</a> atom, we can justify the type signature for
---   smooth composition and the definition of atoms as homomorphisms to
---   certain extent. This in turn allows the interpretation of the
---   <a>-&amp;-</a> operator as "aligning the phases" of two signals: the
---   second operand is aligned based on the first.
+--   The metric unit used for phase shifting is inferred from the prefix of
+--   the left signal operand, while right signal operand is the one being
+--   manipulated.
 (-&-) :: MoC e => Stream (e a) -> Stream (e a) -> Stream (e a)
 
 -- | 
 --   The <a>delay</a> process provides both initial token(s) and shifts the
 --   phase of the signal. In other words, it "delays" a signal with one or
 --   several events.
---   
---   There is also an infix variant <a>-&amp;&gt;-</a> (<tt>infixl 3</tt>).
---   To justify the first argument, see the documentation of the
---   <a>-&lt;-</a> atom.
 delay :: MoC e => Stream e a -> Stream e a -> Stream e a
 
--- | <i>(*) to be read </i> <tt>a1 -&gt; a2 -&gt; (b1, b2)</tt> <i>where
---   each</i> <i>argument and result might be individually wrapped with a
---   context</i> <i>and might also express a partition.</i>
+-- | Infix variant for <a>delay</a>.
+(-&>-) :: MoC e => Stream e a -> Stream e a -> Stream e a
+infixl 3 -&>-
+
+-- | <i>(*) to be read</i> <tt>a1 -&gt; a2 -&gt; (b1, b2)</tt> <i>where
+--   each</i> <i>argument may be <a>wrapped along with a context</a>.</i>
 --   
 --   
---   The <tt>comb</tt> processes takes care of synchronization between
---   signals and maps combinatorial functions on their event values.
+--   The <tt>comb</tt> processes synchronizes multiple input signals and
+--   maps combinatorial functions on the values they carry.
 --   
---   This library exports constructors of type <tt>comb[1-8][1-4]</tt>.
+--   This module exports constructors of type <tt>comb[1-8][1-4]</tt>.
 comb22 :: (MoC e) => (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2))) -> Stream (e a1) -> Stream (e a2) -> (Stream (e b1), Stream (e b2))
 
 -- | <i>(*) to be read </i> <tt>a1 -&gt; a2 -&gt; (b1, b2)</tt> <i>where
---   each</i> <i>argument and result might be individually wrapped with a
---   context</i> <i>and might also express a partition.</i>
+--   each</i> <i>argument may be <a>wrapped along with a context</a>.</i>
 --   
 --   
---   The <tt>reconfig</tt> processes constructs adaptive processes, where
---   the first signal carries functions, and it is synchronized with all
---   the other signals.
+--   The <tt>reconfig</tt> processes constructs adaptive processes, whose
+--   functional behavior "changes in time". Its first input is a signal
+--   carrying functions which is synchronized with all the other input
+--   signals. The output signal carry the results of mapping those
+--   functions at each synchronization/firing point.
 --   
 --   This library exports constructors of type <tt>reconfig[1-8][1-4]</tt>.
 reconfig22 :: (MoC e) => Stream (e (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))) -> Stream (e a1) -> Stream (e a2) -> (Stream (e b1), Stream (e b2))
 
 -- | <i>(*) meaning </i> <tt>st1 -&gt; st2 -&gt; a1 -&gt; a2 -&gt;
---   (st1,st2)</tt> <i>where each argument and result might be individually
---   wrapped</i> <i>with a context and might also express a partition.</i>
+--   (st1,st2)</tt> <i>where each argument may be <a>wrapped along with a
+--   context</a>.</i>
 --   
---   <i>(**) see the documentation for <a>-&lt;-</a> for justification</i>
---   <i>of the type</i>
+--   <i>(**) inferred from the prefixes of the signals passed</i> <i>as
+--   arguments. See the documentation for <a>-&lt;-</a> for an
+--   explanation.</i>
 --   
 --   
 --   The <tt>state</tt> processes generate process networks corresponding
---   to a simple state machine like in the graph above.
+--   to a simple state machine with "un-latched" outputs like in the graph
+--   above. In other words, the process starts with a state transition and
+--   outputs the next state as the first event.
 --   
 --   This library exports constructors of type <tt>state[1-4][1-4]</tt>.
 state22 :: MoC e => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e st2)))) -> (Stream (e st1), Stream (e st2)) -> Stream (e a1) -> Stream (e a2) -> (Stream (e st1), Stream (e st2))
 
 -- | <i>(*) meaning </i> <tt>st1 -&gt; st2 -&gt; a1 -&gt; a2 -&gt;
---   (st1,st2)</tt> <i>where each argument and result might be individually
---   wrapped</i> <i>with a context and might also express a partition.</i>
+--   (st1,st2)</tt> <i>where each argument may be <a>wrapped along with a
+--   context</a>.</i>
 --   
---   <i>(**) see the documentation for <a>-&lt;-</a> for justification</i>
---   <i>of the type</i>
+--   <i>(**) inferred from the prefixes of the signals passed</i> <i>as
+--   arguments. See the documentation for <a>-&lt;-</a> for an
+--   explanation.</i>
 --   
 --   
---   The <tt>state</tt> processes generate process networks corresponding
---   to a simple state machine like in the graph above. The difference
---   between <a>state22</a> and <a>stated22</a> is that the latter outputs
---   the current state rather than the next one. There exists a variant
---   with 0 input signals, in which case the process is a signal generator.
+--   The <tt>stated</tt> processes generate process networks corresponding
+--   to a simple state machine with "latched" outputs like in the graph
+--   above. As compared to <a>state22</a>, this process outputs the current
+--   state, and the state transition is observed from the second evaluation
+--   onwards. There exists a variant with 0 input signals, in which case
+--   the process is a signal generator.
 --   
 --   This library exports constructors of type <tt>stated[0-4][1-4]</tt>.
 stated22 :: MoC e => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e st2)))) -> (Stream (e st1), Stream (e st2)) -> Stream (e a1) -> Stream (e a2) -> (Stream (e st1), Stream (e st2))
 
 -- | <i>(*) meaning </i> <tt>st -&gt; a1 -&gt; a2 -&gt; st </tt> <i>where
---   each</i> <i>argument and result might be individually wrapped with a
---   context</i> <i>and might also express a partition.</i>
+--   each</i> <i>argument may be <a>wrapped along with a context</a>.</i>
 --   
 --   <i>(**) meaning </i> <tt>st -&gt; (b1, b2) </tt> <i>where each
---   argument</i> <i>and result might be individually wrapped with a
---   context and might</i> <i>also express a partition.</i>
+--   argument</i> <i>may be <a>wrapped along with a context</a>.</i>
 --   
---   <i>(***) see the documentation for <a>-&lt;-</a> for justification</i>
---   <i>of the type</i>
+--   <i>(***) inferred from the prefixes of the signals passed</i> <i>as
+--   arguments. See the documentation for <a>-&lt;-</a> for an
+--   explanation.</i>
 --   
 --   
 --   The <tt>moore</tt> processes model Moore state machines.
@@ -692,15 +718,15 @@ stated22 :: MoC e => Fun e st1 (Fun e st2 (Fun e a1 (Fun e a2 (Ret e st1, Ret e 
 moore22 :: MoC e => Fun e st (Fun e a1 (Fun e a2 (Ret e st))) -> Fun e st (Ret e b1, Ret e b2) -> Stream (e st) -> Stream (e a1) -> Stream (e a2) -> (Stream (e b1), Stream (e b2))
 
 -- | <i>(*) meaning </i> <tt>st -&gt; a1 -&gt; a2 -&gt; st </tt> <i>where
---   each</i> <i>argument and result might be individually wrapped with a
---   context</i> <i>and might also express a partition.</i>
+--   each</i> <i>argument may be <a>wrapped along with a context</a>.</i>
 --   
 --   <i>(**) meaning </i> <tt>st -&gt; a1 -&gt; a2 -&gt; (b1, b2) </tt>
---   <i>where</i> <i>each argument and result might be individually wrapped
---   with a</i> <i>context and might also express a partition.</i>
+--   <i>where</i> <i>each argument may be <a>wrapped along with a
+--   context</a>.</i>
 --   
---   <i>(***) see the documentation for <a>-&lt;-</a> for justification</i>
---   <i>of the type</i>
+--   <i>(***) inferred from the prefixes of the signals passed</i> <i>as
+--   arguments. See the documentation for <a>-&lt;-</a> for an
+--   explanation.</i>
 --   
 --   
 --   The <tt>mealy</tt> processes model Mealy state machines.
@@ -1407,18 +1433,23 @@ zipx :: MoC e => Vector ((Vector a -> Vector a -> Vector a) -> Fun e (Vector a) 
 unzipx :: (MoC e) => (Vector a -> Vector (Ret e a)) -> Integer -> Stream (e (Vector a)) -> Vector (Stream (e a))
 
 
--- | The <tt>SDF</tt> library implements the atoms holding the sematics for
---   the synchronous data flow computation model. It also provides a set of
---   helpers for properly instantiating process network patterns as process
---   constructors.
+-- | The <tt>SDF</tt> library implements the execution semantics for the
+--   atoms operating according to the synchronous dataflow model of
+--   computation. This module also provides a set of helpers for
+--   instantiating the MoC layer patterns described in the
+--   <a>ForSyDe.Atom.MoC</a> module as meaningful synchronous dataflow
+--   process constructors.
+--   
+--   For an overview about atoms, layers and patterns, please refer to the
+--   <a>ForSyDe.Atom</a> module documentation, and for an overview of the
+--   MoC layer entities refer to <a>the MoC layer section</a>.
 --   
 --   <b>IMPORTANT!!!</b> see the <a>naming convention</a> rules on how to
 --   interpret, use and develop your own constructors.
 module ForSyDe.Atom.MoC.SDF
 
--- | The CT type, identifying a discrete time event and implementing an
---   instance of the <a>MoC</a> class. A discrete event explicitates its
---   tag which is represented as an integer.
+-- | The SDF event. It identifies a synchronous dataflow signal, and wraps
+--   only a value.
 newtype SDF a
 SDF :: a -> SDF a
 [val] :: SDF a -> a
@@ -1645,7 +1676,7 @@ mealy22 :: ((Cons, Cons, Cons), Prod, [st] -> [a1] -> [a2] -> [st]) -> ((Cons, C
 --   <pre>
 --   &gt;&gt;&gt; let s = SDF.signal [1,2,3,4,5]
 --   
---   &gt;&gt;&gt; toSY s
+--   &gt;&gt;&gt; toSY1 s
 --   {1,2,3,4,5}
 --   </pre>
 --   
@@ -1708,7 +1739,8 @@ unzipx :: Vector Prod -> Signal (Vector a) -> Vector (Signal a)
 -- | This module exports the core entities of the extended behavior layer:
 --   interfaces for atoms and common patterns of atoms. It does <i>NOT</i>
 --   export any implementation or instantiation of any specific behavior
---   extension type.
+--   extension type. For an overview about atoms, layers and patterns,
+--   please refer to the <a>ForSyDe.Atom</a> module documentation.
 --   
 --   <b>IMPORTANT!!!</b> see the <a>naming convention</a> rules on how to
 --   interpret, use and develop your own constructors.
@@ -1716,17 +1748,16 @@ module ForSyDe.Atom.ExB
 
 -- | Class which defines the atoms for the extended behavior layer.
 --   
---   As its name suggests, this layer is extending the behavior of
---   processes (or merely of functions if we ignore timing semantics
---   completely), by expanding the domains of the wrapped layer (e.g. the
---   set of values) with symbols having clearly-defined semantics (e.g.
---   special events with known responses).
+--   As its name suggests, this layer is extending the behavior of the
+--   wrapped entity/function by expanding its domains set with symbols
+--   having clearly defined semantics (e.g. special events with known
+--   responses).
 --   
 --   The types associated with this layer can simply be describes as:
 --   
 --   
---   where <i>α</i> is a base type and <i>b</i> is the type extension, i.e.
---   a set of symbols with clearly-defined semantics.
+--   where &lt;math&gt; is a base type and &lt;math&gt; is the type
+--   extension, i.e. a set of symbols with clearly defined semantics.
 --   
 --   Extended behavior atoms are functions of these types, defined as
 --   interfaces in the <a>ExB</a> type class.
@@ -1741,8 +1772,8 @@ extend :: ExB b => a -> b a
 --   
 (/.\) :: ExB b => (a -> a') -> b a -> b a'
 
--- | Applicative operator. Defines a res between two extended behavior
---   symbols.
+-- | Applicative operator. Defines a resolution between two extended
+--   behavior symbols.
 --   
 (/*\) :: ExB b => b (a -> a') -> b a -> b a'
 
@@ -1751,7 +1782,7 @@ extend :: ExB b => a -> b a
 --   
 (/&\) :: ExB b => b Bool -> b a -> b a
 
--- | Degrade operator. Degrades a behavior-extended value into a
+-- | Degenerate operator. Degenerates a behavior-extended value into a
 --   non-extended one (from a layer below), based on a kernel value. Used
 --   also to throw exceptions.
 --   
@@ -1772,22 +1803,22 @@ filter :: ExB b => b Bool -> b a -> b a
 --   arguments.
 filter' :: ExB b => Bool -> a -> b a
 
--- | Prefix name for the degrade operator <a>/!\</a>.
-degrade :: ExB b => a -> b a -> a
+-- | Prefix name for the degenerate operator <a>/!\</a>.
+degen :: ExB b => a -> b a -> a
 
 -- | 
 --   The <tt>ignoreXY</tt> pattern takes a function of <tt>Y + X</tt>
 --   arguments, <tt>Y</tt> basic inputs followed by <tt>X</tt>
---   behavior-extended inputs. The <tt>X</tt> behavior-extended arguments
---   are subjugated to a res, and the result is then degraded using the
---   first <tt>Y</tt> arguments as fallback. The effect is similar to
---   "ignoring" a the result of a res function if ∈ <i>b</i>.
+--   behavior-extended inputs. The function is first lifted and applied on
+--   the <tt>X</tt> behavior-extended arguments, and the result is then
+--   degenerated using the <tt>Y</tt> non-extended arguments as fallback.
+--   The effect is similar to "ignoring" a the result of a function
+--   evaluation if &lt;math&gt;.
 --   
 --   The main application of this pattern is as extended behavior wrapper
---   for state machine functions which do not "understand" extended
---   behavior semantics, i.e. it simply propagates the current state (∈
---   <i>α</i>) if the inputs (their res) belongs to the set of extended
---   values (∈ <i>b</i>).
+--   for stateful processes which do not "understand" extended behavior
+--   semantics, i.e. it simply propagates the current state &lt;math&gt; if
+--   the inputs belongs to the set of extended values &lt;math&gt;.
 --   
 --   Constructors: <tt>ignore[1-4][1-4]</tt>.
 ignore22 :: ExB b => (a1 -> a2 -> a1' -> a2' -> (a1, a2)) -> a1 -> a2 -> b a1' -> b a2' -> (a1, a2)
@@ -1823,10 +1854,10 @@ ignore22 :: ExB b => (a1 -> a2 -> a1' -> a2' -> (a1, a2)) -> a1 -> a2 -> b a1' -
 --   &gt;&gt;&gt; filter' True  1 :: AbstExt Int
 --   1
 --   
---   &gt;&gt;&gt; degrade 0 (Prst 1)
+--   &gt;&gt;&gt; degen 0 (Prst 1)
 --   1
 --   
---   &gt;&gt;&gt; degrade 0 Abst
+--   &gt;&gt;&gt; degen 0 Abst
 --   0
 --   
 --   &gt;&gt;&gt; ignore11 (+) 1 (Prst 1)
@@ -1844,14 +1875,14 @@ ignore22 :: ExB b => (a1 -> a2 -> a1' -> a2' -> (a1, a2)) -> a1 -> a2 -> b a1' -
 --   </pre>
 module ForSyDe.Atom.ExB.Absent
 
--- | The <a>AbstExt</a> type extends the base type with the '⊥' symbol
+-- | The <a>AbstExt</a> type extends the base type with the '(bot)' symbol
 --   denoting the absence of a value/event (see <a>[Halbwachs91]</a>).
 data AbstExt a
 
--- | ⊥ denotes the absence of a value
+-- | &lt;math&gt; denotes the absence of a value
 Abst :: AbstExt a
 
--- | ⊤ a present event with a value
+-- | &lt;math&gt; a present event with a value
 Prst :: a -> AbstExt a
 instance GHC.Classes.Eq a => GHC.Classes.Eq (ForSyDe.Atom.ExB.Absent.AbstExt a)
 instance ForSyDe.Atom.ExB.ExB ForSyDe.Atom.ExB.Absent.AbstExt
@@ -2036,27 +2067,31 @@ instance ForSyDe.Atom.Utility.Plot.Plottable a => ForSyDe.Atom.Utility.Plot.Plot
 instance ForSyDe.Atom.Utility.Plot.Plottable a => ForSyDe.Atom.Utility.Plot.Plot (ForSyDe.Atom.Skeleton.Vector.Core.Vector a)
 
 
--- | The <tt>CT</tt> library implements the atoms holding the sematics for
---   the continuous time computation model. It also provides a set of
---   helpers for properly instantiating process network patterns as process
---   constructors.
+-- | The <tt>CT</tt> library implements the execution semantics for the
+--   atoms operating according to the continuous time model of computation.
+--   This module also provides a set of helpers for instantiating the MoC
+--   layer patterns described in the <a>ForSyDe.Atom.MoC</a> module as
+--   meaningful continuous time process constructors.
 --   
---   For working with time or timestamps please check the utilities
---   provided by the <a>ForSyDe.Atom.MoC.Time</a> and
---   <a>ForSyDe.Atom.MoC.TimeStamp</a> modules.
+--   For an overview about atoms, layers and patterns, please refer to the
+--   <a>ForSyDe.Atom</a> module documentation, and for an overview of the
+--   MoC layer entities refer to <a>the MoC layer section</a>. For working
+--   with time or timestamps please check the utilities provided by the
+--   <a>ForSyDe.Atom.MoC.Time</a> and <a>ForSyDe.Atom.MoC.TimeStamp</a>
+--   modules.
 --   
 --   <b>IMPORTANT!!!</b> see the <a>naming convention</a> rules on how to
 --   interpret, use and develop your own constructors.
 module ForSyDe.Atom.MoC.CT
 
 -- | Alias for the type representing discrete time. It is inherently
---   quantizable, the quantum being a picosecond (10⁻¹² seconds), thus it
---   can be considered order-isomorphic with a set of integers, i.e.
---   between any two timestamps there is a finite number of timestamps.
---   Moreover, a timestamp can be easily translated into a rational number
---   representing fractions of a second, so the conversion between
---   timestamps (discrete time) and rationals (analog/continuous time) is
---   straightforward.
+--   quantizable, the quantum being a picosecond ( &lt;math&gt; seconds),
+--   thus it can be considered order-isomorphic with a set of integers,
+--   i.e. between any two timestamps there is a finite number of
+--   timestamps. Moreover, a timestamp can be easily translated into a
+--   rational number representing fractions of a second, so the conversion
+--   between timestamps (discrete time) and rationals (analog/continuous
+--   time) is straightforward.
 --   
 --   This type is used in the explicit tags of the <a>DE</a> MoC (and
 --   subsequently the discrete event evaluation engine for simulating the
@@ -2065,7 +2100,7 @@ type TimeStamp = DiffTime
 
 -- | Type alias for the type to represent metric (continuous) time.
 --   Underneath we use <a>Rational</a> that is able to represent any
---   <i>t</i> between <i>t₁</i> &lt; <i>t₂</i> ∈ <i>T</i>.
+--   &lt;math&gt; between &lt;math&gt;.
 type Time = Rational
 
 -- | The CT type, identifying a continuous time event and implementing an
@@ -2338,7 +2373,7 @@ toDE1 :: Signal a -> Signal (Time -> a)
 --   &gt;&gt;&gt; let c = DE.generate1 id (pi'/2, 1)
 --   
 --   &gt;&gt;&gt; takeS 6 $ sampDE1 c s
---   { 0.0 @0s, 1.0 @1.570796326794s, 1.793238520564752e-12 @3.141592653588s, -1.0 @4.712388980382s, 0.0 @6.283185307176s, 1.0 @7.85398163397s}
+--   {0.0@0s,1.0@1.570796326794s,1.793238520564752e-12@3.141592653588s,-1.0@4.712388980382s,0.0@6.283185307176s,1.0@7.85398163397s}
 --   </pre>
 --   
 sampDE2 :: Signal t -> Signal a -> Signal b -> (Signal a, Signal b)
@@ -2354,7 +2389,7 @@ sampDE2 :: Signal t -> Signal a -> Signal b -> (Signal a, Signal b)
 --   &gt;&gt;&gt; let v1 = V.vector [s1,s1,s2,s2]
 --   
 --   &gt;&gt;&gt; zipx v1
---   { &lt;1,1,1,1&gt; @0s, &lt;2,2,2,2&gt; @2s, &lt;2,2,3,3&gt; @4s, &lt;3,3,3,3&gt; @6s}
+--   {&lt;1,1,1,1&gt;@0s,&lt;2,2,2,2&gt;@2s,&lt;2,2,3,3&gt;@4s,&lt;3,3,3,3&gt;@6s}
 --   </pre>
 --   
 --   See <a>zipx</a> from the <a>ForSyDe.Atom.MoC.DE</a> library for a
@@ -2371,7 +2406,7 @@ zipx :: Vector (Signal a) -> Signal (Vector a)
 --   &gt;&gt;&gt; let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 --   
 --   &gt;&gt;&gt; unzipx 4 s1
---   &lt;{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}&gt;
+--   &lt;{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}&gt;
 --   </pre>
 --   
 --   See <a>unzipx</a> from the <a>ForSyDe.Atom.MoC.DE</a> library for a
@@ -2379,7 +2414,7 @@ zipx :: Vector (Signal a) -> Signal (Vector a)
 unzipx :: Integer -> Signal (Vector a) -> Vector (Signal a)
 
 -- | Same as <a>unzipx</a>, but "sniffs" the first event to determine the
---   length of the output vector. Might have unsafe behavior!
+--   length of the output vector. Has unsafe behavior!
 --   
 --   <pre>
 --   &gt;&gt;&gt; let v1 = V.vector [1,2,3,4]
@@ -2387,15 +2422,20 @@ unzipx :: Integer -> Signal (Vector a) -> Vector (Signal a)
 --   &gt;&gt;&gt; let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 --   
 --   &gt;&gt;&gt; unzipx' s1
---   &lt;{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}&gt;
+--   &lt;{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}&gt;
 --   </pre>
 unzipx' :: Signal (Vector a) -> Vector (Signal a)
 
 
--- | The <tt>SY</tt> library implements the atoms holding the sematics for
---   the synchronous computation model. It also provides a set of helpers
---   for properly instantiating process network patterns as process
---   constructors.
+-- | The <tt>SY</tt> library implements the execution semantics for the
+--   atoms operating according to the synchronous model of computation.
+--   This module also provides a set of helpers for instantiating the MoC
+--   layer patterns described in the <a>ForSyDe.Atom.MoC</a> module as
+--   meaningful synchronous process constructors.
+--   
+--   For an overview about atoms, layers and patterns, please refer to the
+--   <a>ForSyDe.Atom</a> module documentation, and for an overview of the
+--   MoC layer entities refer to <a>the MoC layer section</a>.
 --   
 --   <b>IMPORTANT!!!</b> see the <a>naming convention</a> rules on how to
 --   interpret, use and develop your own constructors.
@@ -2404,12 +2444,15 @@ module ForSyDe.Atom.MoC.SY
 -- | The SY event. It identifies a synchronous signal.
 newtype SY a
 SY :: a -> SY a
+
+-- | value wrapped by the <a>SY</a> event constructor.
 [val] :: SY a -> a
 
 -- | Type synonym for a SY signal, i.e. "an ordered stream of SY events"
 type Signal a = Stream (SY a)
 
--- | Wraps a (tuple of) value(s) into the equivalent unit signal(s).
+-- | Wraps a (tuple of) value(s) into the equivalent unit signal(s). A unit
+--   signal is a signal with one event, i.e. a singleton.
 --   
 --   Helpers: <tt>unit</tt>, <tt>unit2</tt>, <tt>unit3</tt>,
 --   <tt>unit4</tt>.
@@ -2418,8 +2461,8 @@ unit2 :: () => (a1, a2) -> (Signal a1, Signal a2)
 -- | Transforms a list of values into a SY signal.
 signal :: [a] -> Signal a
 
--- | Reads a signal from a string. Like with the <tt>read</tt> function
---   from <tt>Prelude</tt>, you must specify the tipe of the signal.
+-- | Reads a signal from a string. Like with the <a>read</a> function from
+--   <tt>Prelude</tt>, you must specify the tipe of the signal.
 --   
 --   <pre>
 --   &gt;&gt;&gt; readSignal "{1,2,3,4,5}" :: Signal Int
@@ -2441,7 +2484,8 @@ delay :: a -> Signal a -> Signal a
 
 -- | <tt>comb</tt> processes map combinatorial functions on signals and
 --   take care of synchronization between input signals. It instantiates
---   the <tt>comb</tt> pattern (see <a>comb22</a>).
+--   the <tt>comb</tt> pattern (see <a>comb22</a> defined in
+--   <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>comb[1-4][1-4]</tt>.
 --   
@@ -2461,8 +2505,8 @@ comb22 :: (a1 -> a2 -> (b1, b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal
 
 -- | <tt>reconfig</tt> creates an synchronous adaptive process where the
 --   first signal carries functions and the other carry the arguments. It
---   instantiates the <tt>reconfig</tt> atom pattern (see
---   <a>reconfig22</a>).
+--   instantiates the <tt>reconfig</tt> atom pattern (see <a>reconfig22</a>
+--   defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>reconfig[1-4][1-4]</tt>.
 --   
@@ -2515,7 +2559,7 @@ generate2 :: (b1 -> b2 -> (b1, b2)) -> (b1, b2) -> (Signal b1, Signal b2)
 
 -- | <tt>stated</tt> is a state machine without an output decoder. It is an
 --   instantiation of the <tt>state</tt> MoC constructor (see
---   <a>stated22</a>).
+--   <a>stated22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>stated[1-4][1-4]</tt>.
 --   
@@ -2530,7 +2574,7 @@ stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> (b1, b2) -> Signal a1 -> Signa
 
 -- | <tt>state</tt> is a state machine without an output decoder. It is an
 --   instantiation of the <tt>stated</tt> MoC constructor (see
---   <a>state22</a>).
+--   <a>state22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>state[1-4][1-4]</tt>.
 --   
@@ -2545,7 +2589,7 @@ state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> (b1, b2) -> Signal a1 -> Signal
 
 -- | <tt>moore</tt> processes model Moore state machines. It is an
 --   instantiation of the <tt>moore</tt> MoC constructor (see
---   <a>moore22</a>).
+--   <a>moore22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>moore[1-4][1-4]</tt>.
 --   
@@ -2560,7 +2604,7 @@ moore22 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2)) -> st -> Signal a1 -> Sign
 
 -- | <tt>mealy</tt> processes model Mealy state machines. It is an
 --   instantiation of the <tt>mealy</tt> MoC constructor (see
---   <a>mealy22</a>).
+--   <a>mealy22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>mealy[1-4][1-4]</tt>.
 --   
@@ -2669,7 +2713,8 @@ filter' :: (a -> Bool) -> Signal a -> Signal (AbstExt a)
 fill :: a -> Signal (AbstExt a) -> Signal a
 
 -- | Similar to <a>fill</a>, but holds the last non-absent value if there
---   was one. It implements a <tt>state</tt> pattern (see <a>state22</a>).
+--   was one. It implements a <tt>state</tt> pattern (see <a>state22</a>
+--   defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   <pre>
 --   &gt;&gt;&gt; let s1   = signal [Abst, Abst, Prst 1, Prst 2, Abst, Prst 3]
@@ -2680,12 +2725,13 @@ fill :: a -> Signal (AbstExt a) -> Signal a
 --   
 hold :: a -> Signal (AbstExt a) -> Signal a
 
--- | Creates a wrapper enabling a reactive behvior to absent-extended
---   signals for processes which would otherwise degrade the
---   absent-extension (e.g. state machines with <tt>ignore22</tt>
---   behavior).
+-- | Creates a process wrapper which, from the outside it seems like a
+--   combinatorial process which reacts to present events (i.e. simply
+--   propagates absent events), but inside it allows, for example, the
+--   degeneration of the absent extension in order to describe state
+--   processes (e.g. state machines with <a>ignore22</a> behavior).
 --   
---   Constructors: <tt>reactAbst[1-4]</tt>.
+--   Constructors: <tt>reactPres[1-4]</tt>.
 --   
 --   <pre>
 --   &gt;&gt;&gt; let s1 = readSignal "{1,1,1,_,1,_,1}" :: Signal (AbstExt Int)
@@ -2695,11 +2741,11 @@ hold :: a -> Signal (AbstExt a) -> Signal a
 --   &gt;&gt;&gt; proc s1
 --   {0,1,2,3,3,4,4,5}
 --   
---   &gt;&gt;&gt; reactAbst1 proc s1
+--   &gt;&gt;&gt; reactPres1 proc s1
 --   {0,1,2,⟂,3,⟂,4} 
 --   </pre>
 --   
-reactAbst2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b) -> Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal (AbstExt b)
+reactPres2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b) -> Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal (AbstExt b)
 
 -- | Wraps explicit timestamps to a (set of) <a>SY</a> signal(s), rendering
 --   the equivalent synchronized <a>DE</a> signal(s).
@@ -2713,7 +2759,7 @@ reactAbst2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b) -> Signal
 --   &gt;&gt;&gt; let s2 = SY.signal [1,2,3,4,5]
 --   
 --   &gt;&gt;&gt; toDE s1 s2
---   { 1 @0s, 2 @3s, 3 @4s, 4 @6s, 5 @9s}
+--   {1@0s,2@3s,3@4s,4@6s,5@9s}
 --   </pre>
 --   
 toDE2 :: Signal TimeStamp -> Signal a -> Signal b -> (Signal a, Signal b)
@@ -2773,7 +2819,7 @@ zipx :: Vector (Signal a) -> Signal (Vector a)
 unzipx :: Integer -> Signal (Vector a) -> Vector (Signal a)
 
 -- | Same as <a>unzipx</a>, but "sniffs" the first event to determine the
---   length of the output vector. Might have unsafe behavior!
+--   length of the output vector. <i>Has an unsafe behavior!</i>
 --   
 --   <pre>
 --   &gt;&gt;&gt; let v1 = V.vector [1,2,3,4]
@@ -2789,23 +2835,28 @@ unzipx :: Integer -> Signal (Vector a) -> Vector (Signal a)
 unzipx' :: Signal (Vector a) -> Vector (Signal a)
 
 
--- | The <tt>DE</tt> library implements the atoms holding the sematics for
---   the discrete event computation model. It also provides a set of
---   helpers for properly instantiating process network patterns as process
---   constructors.
+-- | The <tt>DE</tt> library implements the execution semantics for the
+--   atoms operating according to the discrete event model of computation.
+--   This module also provides a set of helpers for instantiating the MoC
+--   layer patterns described in the <a>ForSyDe.Atom.MoC</a> module as
+--   meaningful discrete event process constructors.
+--   
+--   For an overview about atoms, layers and patterns, please refer to the
+--   <a>ForSyDe.Atom</a> module documentation, and for an overview of the
+--   MoC layer entities refer to <a>the MoC layer section</a>.
 --   
 --   <b>IMPORTANT!!!</b> see the <a>naming convention</a> rules on how to
 --   interpret, use and develop your own constructors.
 module ForSyDe.Atom.MoC.DE
 
 -- | Alias for the type representing discrete time. It is inherently
---   quantizable, the quantum being a picosecond (10⁻¹² seconds), thus it
---   can be considered order-isomorphic with a set of integers, i.e.
---   between any two timestamps there is a finite number of timestamps.
---   Moreover, a timestamp can be easily translated into a rational number
---   representing fractions of a second, so the conversion between
---   timestamps (discrete time) and rationals (analog/continuous time) is
---   straightforward.
+--   quantizable, the quantum being a picosecond ( &lt;math&gt; seconds),
+--   thus it can be considered order-isomorphic with a set of integers,
+--   i.e. between any two timestamps there is a finite number of
+--   timestamps. Moreover, a timestamp can be easily translated into a
+--   rational number representing fractions of a second, so the conversion
+--   between timestamps (discrete time) and rationals (analog/continuous
+--   time) is straightforward.
 --   
 --   This type is used in the explicit tags of the <a>DE</a> MoC (and
 --   subsequently the discrete event evaluation engine for simulating the
@@ -2826,8 +2877,8 @@ DE :: TimeStamp -> a -> DE a
 type Signal a = Stream (DE a)
 
 -- | Wraps a (tuple of) pair(s) <tt>(tag, value)</tt> into the equivalent
---   unit signal(s), in this case a signal with one event with the period
---   <tt>tag</tt> carrying <tt>value</tt>.
+--   unit signal(s). A unit signal is a signal with one event with the
+--   period <tt>tag</tt> carrying <tt>value</tt>.
 --   
 --   Helpers: <tt>unit</tt> and <tt>unit[2-4]</tt>.
 unit2 :: () => ((TimeStamp, a1), (TimeStamp, a2)) -> (Signal a1, Signal a2)
@@ -2846,7 +2897,7 @@ until :: TimeStamp -> Signal a -> Signal a
 signal :: [(TimeStamp, a)] -> Signal a
 
 -- | Checks if a signal is well-formed or not, according to the DE MoC
---   interpretation in <tt>ForSyDe-Atom</tt>.
+--   interpretation in ForSyDe-Atom.
 checkSignal :: () => Stream DE a -> Stream DE a
 
 -- | Reads a signal from a string and checks if it is well-formed. Like
@@ -2855,34 +2906,36 @@ checkSignal :: () => Stream DE a -> Stream DE a
 --   
 --   <pre>
 --   &gt;&gt;&gt; readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
---   { 1 @0s, 2 @2s, 3 @5s, 4 @7s, 5 @10s}
+--   {1@0s,2@2s,3@5s,4@7s,5@10s}
 --   </pre>
 --   
 --   Incorrect usage (not covered by <tt>doctest</tt>):
 --   
 --   <pre>
 --   λ&gt; readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
---   { 1 @0s, 2 @2s, 3 @5s*** Exception: [MoC.DE] malformed signal
+--   {1@0s,2@2s,3@5s*** Exception: [MoC.DE] malformed signal
 --   λ&gt; readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 --   *** Exception: [MoC.DE] signal does not start from global 0
 --   </pre>
 readSignal :: Read a => String -> Signal a
 
 -- | The <tt>delay</tt> process "delays" a signal with one event.
---   Instantiates the <a>delay</a> pattern.
+--   Instantiates the <a>delay</a> pattern defined in
+--   <a>ForSyDe.Atom.MoC</a>.
 --   
 --   <pre>
 --   &gt;&gt;&gt; let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; delay 3 0 s
---   { 0 @0s, 1 @3s, 2 @5s, 3 @9s, 4 @11s, 5 @12s}
+--   {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
 --   </pre>
 --   
 delay :: TimeStamp -> a -> Signal a -> Signal a
 
 -- | Similar to the previous, but this is the raw instantiation of the
---   <a>delay</a> pattern. It "borrows" the first event from one signal and
---   appends it at the head of another signal.
+--   <a>delay</a> pattern from <a>ForSyDe.Atom.MoC</a>. It "borrows" the
+--   first event from one signal and appends it at the head of another
+--   signal.
 --   
 --   <pre>
 --   &gt;&gt;&gt; let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
@@ -2890,14 +2943,15 @@ delay :: TimeStamp -> a -> Signal a -> Signal a
 --   &gt;&gt;&gt; let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; delay' s1 s2
---   { 1 @0s, 3 @2s, 4 @6s, 5 @7s, 6 @10s, 7 @11s}
+--   {1@0s,3@2s,4@6s,5@7s,6@10s,7@11s}
 --   </pre>
 --   
 delay' :: Signal a -> Signal a -> Signal a
 
 -- | <tt>comb</tt> processes map combinatorial functions on signals and
 --   take care of synchronization between input signals. It instantiates
---   the <tt>comb</tt> pattern (see <a>comb22</a>).
+--   the <tt>comb</tt> pattern (see <a>comb22</a> defined in
+--   <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>comb[1-4][1-4]</tt>.
 --   
@@ -2907,17 +2961,18 @@ delay' :: Signal a -> Signal a -> Signal a
 --   &gt;&gt;&gt; let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; comb11 (+1) s2
---   { 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s}
+--   {2@0s,3@2s,4@6s,5@8s,6@9s}
 --   
 --   &gt;&gt;&gt; comb22 (\a b-&gt; (a+b,a-b)) s1 s2
---   ({ 2 @0s, 3 @2s, 4 @6s, 5 @8s, 6 @9s},{ 0 @0s, -1 @2s, -2 @6s, -3 @8s, -4 @9s})
+--   ({2@0s,3@2s,4@6s,5@8s,6@9s},{0@0s,-1@2s,-2@6s,-3@8s,-4@9s})
 --   </pre>
 --   
 comb22 :: (a1 -> a2 -> (b1, b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
 
 -- | <tt>reconfig</tt> creates a DE adaptive process where the first signal
 --   carries functions and the other carry the arguments. It instantiates
---   the <tt>reconfig</tt> atom pattern (see <a>reconfig22</a>).
+--   the <tt>reconfig</tt> atom pattern (see <a>reconfig22</a> defined in
+--   <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>reconfig[1-4][1-4]</tt>.
 --   
@@ -2927,14 +2982,15 @@ comb22 :: (a1 -> a2 -> (b1, b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal
 --   &gt;&gt;&gt; let s1 = signal [(0,1),(3,2),(5,3),(9,4)]
 --   
 --   &gt;&gt;&gt; reconfig11 sf s1
---   { 2 @0s, 2 @2s, 4 @3s, 4 @5s, 6 @7s, 8 @9s}
+--   {2@0s,2@2s,4@3s,4@5s,6@7s,8@9s}
 --   </pre>
 --   
 reconfig22 :: Signal (a1 -> a2 -> (b1, b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
 
 -- | <tt>sync</tt> synchronizes multiple signals, so that they have the
 --   same set of tags, and consequently, the same number of events. It
---   instantiates the <tt>comb</tt> atom pattern (see <a>comb22</a>).
+--   instantiates the <tt>comb</tt> atom pattern (see <a>comb22</a> defined
+--   in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>sync[1-4]</tt>
 --   
@@ -2944,7 +3000,7 @@ reconfig22 :: Signal (a1 -> a2 -> (b1, b2)) -> Signal a1 -> Signal a2 -> (Signal
 --   &gt;&gt;&gt; let s2 = readSignal "{1@0, 2@5, 3@6, 4@10, 5@12}" :: Signal Int
 --   
 --   &gt;&gt;&gt; sync2 s1 s2
---   ({ 1 @0s, 2 @2s, 2 @5s, 3 @6s, 4 @8s, 5 @9s, 5 @10s, 5 @12s},{ 1 @0s, 1 @2s, 2 @5s, 3 @6s, 3 @8s, 3 @9s, 4 @10s, 5 @12s})
+--   ({1@0s,2@2s,2@5s,3@6s,4@8s,5@9s,5@10s,5@12s},{1@0s,1@2s,2@5s,3@6s,3@8s,3@9s,4@10s,5@12s})
 --   </pre>
 --   
 sync2 :: Signal a1 -> Signal a2 -> (Signal a1, Signal a2)
@@ -2957,14 +3013,14 @@ sync2 :: Signal a1 -> Signal a2 -> (Signal a1, Signal a2)
 --   
 --   <pre>
 --   &gt;&gt;&gt; constant1 2
---   { 2 @0s}
+--   {2@0s}
 --   </pre>
 --   
 constant2 :: (b1, b2) -> (Signal b1, Signal b2)
 
 -- | A signal generator based on a function and a kernel value. It is
 --   actually an instantiation of the <tt>stated0X</tt> constructor (check
---   <a>stated22</a>).
+--   <a>stated22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>generate[1-4]</tt>.
 --   
@@ -2972,17 +3028,17 @@ constant2 :: (b1, b2) -> (Signal b1, Signal b2)
 --   &gt;&gt;&gt; let (s1,s2) = generate2 (\a b -&gt; (a+1,b+2)) ((3,1),(1,2))
 --   
 --   &gt;&gt;&gt; takeS 5 s1
---   { 1 @0s, 2 @3s, 2 @4s, 2 @5s, 3 @6s}
+--   {1@0s,2@3s,2@4s,2@5s,3@6s}
 --   
 --   &gt;&gt;&gt; takeS 7 s2
---   { 2 @0s, 4 @1s, 6 @2s, 8 @3s, 10 @4s, 12 @5s, 14 @6s}
+--   {2@0s,4@1s,6@2s,8@3s,10@4s,12@5s,14@6s}
 --   </pre>
 --   
 generate2 :: (b1 -> b2 -> (b1, b2)) -> ((TimeStamp, b1), (TimeStamp, b2)) -> (Signal b1, Signal b2)
 
 -- | <tt>stated</tt> is a state machine without an output decoder. It is an
 --   instantiation of the <tt>state</tt> MoC constructor (see
---   <a>stated22</a>).
+--   <a>stated22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>stated[1-4][1-4]</tt>.
 --   
@@ -2990,14 +3046,15 @@ generate2 :: (b1 -> b2 -> (b1, b2)) -> ((TimeStamp, b1), (TimeStamp, b2)) -> (Si
 --   &gt;&gt;&gt; let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; takeS 7 $ stated11 (+) (6,1) s
---   { 1 @0s, 2 @6s, 3 @8s, 5 @12s, 7 @14s, 8 @15s, 10 @18s}
+--   {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
 --   </pre>
 --   
 stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> ((TimeStamp, b1), (TimeStamp, b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
 
 -- | <tt>state</tt> is a state machine without an output decoder, and the
 --   state non-transparent. It is an instantiation of the <tt>state</tt>
---   MoC constructor (see <a>state22</a>).
+--   MoC constructor (see <a>state22</a> defined in
+--   <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>state[1-4][1-4]</tt>.
 --   
@@ -3005,14 +3062,14 @@ stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> ((TimeStamp, b1), (TimeStamp, 
 --   &gt;&gt;&gt; let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; takeS 7 $ state11 (+) (6,1) s
---   { 2 @0s, 3 @2s, 5 @6s, 7 @8s, 8 @9s, 10 @12s, 12 @14s}
+--   {2@0s,3@2s,5@6s,7@8s,8@9s,10@12s,12@14s}
 --   </pre>
 --   
 state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> ((TimeStamp, b1), (TimeStamp, b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
 
 -- | <tt>moore</tt> processes model Moore state machines. It is an
 --   instantiation of the <tt>moore</tt> MoC constructor (see
---   <a>moore22</a>).
+--   <a>moore22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>moore[1-4][1-4]</tt>
 --   
@@ -3020,14 +3077,14 @@ state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2)) -> ((TimeStamp, b1), (TimeStamp, b
 --   &gt;&gt;&gt; let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; takeS 7 $ moore11 (+) (+1) (6,1) s
---   { 2 @0s, 3 @6s, 4 @8s, 6 @12s, 8 @14s, 9 @15s, 11 @18s}
+--   {2@0s,3@6s,4@8s,6@12s,8@14s,9@15s,11@18s}
 --   </pre>
 --   
 moore22 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2)) -> (TimeStamp, st) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
 
 -- | <tt>mealy</tt> processes model Mealy state machines. It is an
 --   instantiation of the <tt>mealy</tt> MoC constructor (see
---   <a>mealy22</a>).
+--   <a>mealy22</a> defined in <a>ForSyDe.Atom.MoC</a>).
 --   
 --   Constructors: <tt>mealy[1-4][1-4]</tt>
 --   
@@ -3035,7 +3092,7 @@ moore22 :: (st -> a1 -> a2 -> st) -> (st -> (b1, b2)) -> (TimeStamp, st) -> Sign
 --   &gt;&gt;&gt; let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 --   
 --   &gt;&gt;&gt; takeS 7 $ mealy11 (+) (-) (6,1) s
---   { 0 @0s, -1 @2s, -1 @6s, -1 @8s, -2 @9s, 0 @12s, 2 @14s}
+--   {0@0s,-1@2s,-1@6s,-1@8s,-2@9s,0@12s,2@14s}
 --   </pre>
 --   
 mealy22 :: (st -> a1 -> a2 -> st) -> (st -> a1 -> a2 -> (b1, b2)) -> (TimeStamp, st) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
@@ -3078,10 +3135,10 @@ toCT2 :: Signal (Time -> a) -> Signal (Time -> b) -> (Signal a, Signal b)
 --   &gt;&gt;&gt; let v1 = V.vector [s1,s1,s2,s2]
 --   
 --   &gt;&gt;&gt; v1
---   &lt;{ 1 @0s, 2 @2s, 3 @6s, 4 @8s, 5 @9s},{ 1 @0s, 2 @2s, 3 @6s, 4 @8s, 5 @9s},{ 1 @0s, 2 @2s, 3 @4s, 4 @8s, 5 @9s},{ 1 @0s, 2 @2s, 3 @4s, 4 @8s, 5 @9s}&gt;
+--   &lt;{1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@2s,3@4s,4@8s,5@9s},{1@0s,2@2s,3@4s,4@8s,5@9s}&gt;
 --   
 --   &gt;&gt;&gt; zipx v1
---   { &lt;1,1,1,1&gt; @0s, &lt;2,2,2,2&gt; @2s, &lt;2,2,3,3&gt; @4s, &lt;3,3,3,3&gt; @6s, &lt;4,4,4,4&gt; @8s, &lt;5,5,5,5&gt; @9s}
+--   {&lt;1,1,1,1&gt;@0s,&lt;2,2,2,2&gt;@2s,&lt;2,2,3,3&gt;@4s,&lt;3,3,3,3&gt;@6s,&lt;4,4,4,4&gt;@8s,&lt;5,5,5,5&gt;@9s}
 --   </pre>
 --   
 zipx :: Vector (Signal a) -> Signal (Vector a)
@@ -3096,10 +3153,10 @@ zipx :: Vector (Signal a) -> Signal (Vector a)
 --   &gt;&gt;&gt; let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)]
 --   
 --   &gt;&gt;&gt; s1
---   { &lt;1,2,3,4&gt; @0s, &lt;1,2,3,4&gt; @2s, &lt;1,2,3,4&gt; @6s, &lt;1,2,3,4&gt; @8s, &lt;1,2,3,4&gt; @9s}
+--   {&lt;1,2,3,4&gt;@0s,&lt;1,2,3,4&gt;@2s,&lt;1,2,3,4&gt;@6s,&lt;1,2,3,4&gt;@8s,&lt;1,2,3,4&gt;@9s}
 --   
 --   &gt;&gt;&gt; unzipx 4 s1
---   &lt;{ 1 @0s, 1 @2s, 1 @6s, 1 @8s, 1 @9s},{ 2 @0s, 2 @2s, 2 @6s, 2 @8s, 2 @9s},{ 3 @0s, 3 @2s, 3 @6s, 3 @8s, 3 @9s},{ 4 @0s, 4 @2s, 4 @6s, 4 @8s, 4 @9s}&gt;
+--   &lt;{1@0s,1@2s,1@6s,1@8s,1@9s},{2@0s,2@2s,2@6s,2@8s,2@9s},{3@0s,3@2s,3@6s,3@8s,3@9s},{4@0s,4@2s,4@6s,4@8s,4@9s}&gt;
 --   </pre>
 --   
 unzipx :: Integer -> Signal (Vector a) -> Vector (Signal a)
@@ -3113,10 +3170,10 @@ unzipx :: Integer -> Signal (Vector a) -> Vector (Signal a)
 --   &gt;&gt;&gt; let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)]
 --   
 --   &gt;&gt;&gt; s1
---   { &lt;1,2,3,4&gt; @0s, &lt;1,2,3,4&gt; @2s, &lt;1,2,3,4&gt; @6s, &lt;1,2,3,4&gt; @8s, &lt;1,2,3,4&gt; @9s}
+--   {&lt;1,2,3,4&gt;@0s,&lt;1,2,3,4&gt;@2s,&lt;1,2,3,4&gt;@6s,&lt;1,2,3,4&gt;@8s,&lt;1,2,3,4&gt;@9s}
 --   
 --   &gt;&gt;&gt; unzipx' s1
---   &lt;{ 1 @0s, 1 @2s, 1 @6s, 1 @8s, 1 @9s},{ 2 @0s, 2 @2s, 2 @6s, 2 @8s, 2 @9s},{ 3 @0s, 3 @2s, 3 @6s, 3 @8s, 3 @9s},{ 4 @0s, 4 @2s, 4 @6s, 4 @8s, 4 @9s}&gt;
+--   &lt;{1@0s,1@2s,1@6s,1@8s,1@9s},{2@0s,2@2s,2@6s,2@8s,2@9s},{3@0s,3@2s,3@6s,3@8s,3@9s},{4@0s,4@2s,4@6s,4@8s,4@9s}&gt;
 --   </pre>
 unzipx' :: Signal (Vector a) -> Vector (Signal a)
 
@@ -3135,7 +3192,7 @@ unzipx' :: Signal (Vector a) -> Vector (Signal a)
 --   &gt;&gt;&gt; let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
 --   
 --   &gt;&gt;&gt; embedSY11 (SY.stated11 (+) 1) s
---   { 1 @0s, 2 @2s, 4 @6s, 7 @8s, 11 @9s}
+--   {1@0s,2@2s,4@6s,7@8s,11@9s}
 --   </pre>
 --   
 embedSY22 :: (Signal a1 -> Signal a2 -> (Signal b1, Signal b2)) -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
@@ -3191,17 +3248,16 @@ module ForSyDe.Atom
 
 -- | Class which defines the atoms for the extended behavior layer.
 --   
---   As its name suggests, this layer is extending the behavior of
---   processes (or merely of functions if we ignore timing semantics
---   completely), by expanding the domains of the wrapped layer (e.g. the
---   set of values) with symbols having clearly-defined semantics (e.g.
---   special events with known responses).
+--   As its name suggests, this layer is extending the behavior of the
+--   wrapped entity/function by expanding its domains set with symbols
+--   having clearly defined semantics (e.g. special events with known
+--   responses).
 --   
 --   The types associated with this layer can simply be describes as:
 --   
 --   
---   where <i>α</i> is a base type and <i>b</i> is the type extension, i.e.
---   a set of symbols with clearly-defined semantics.
+--   where &lt;math&gt; is a base type and &lt;math&gt; is the type
+--   extension, i.e. a set of symbols with clearly defined semantics.
 --   
 --   Extended behavior atoms are functions of these types, defined as
 --   interfaces in the <a>ExB</a> type class.
@@ -3216,8 +3272,8 @@ extend :: ExB b => a -> b a
 --   
 (/.\) :: ExB b => (a -> a') -> b a -> b a'
 
--- | Applicative operator. Defines a res between two extended behavior
---   symbols.
+-- | Applicative operator. Defines a resolution between two extended
+--   behavior symbols.
 --   
 (/*\) :: ExB b => b (a -> a') -> b a -> b a'
 
@@ -3226,7 +3282,7 @@ extend :: ExB b => a -> b a
 --   
 (/&\) :: ExB b => b Bool -> b a -> b a
 
--- | Degrade operator. Degrades a behavior-extended value into a
+-- | Degenerate operator. Degenerates a behavior-extended value into a
 --   non-extended one (from a layer below), based on a kernel value. Used
 --   also to throw exceptions.
 --   
@@ -3240,9 +3296,10 @@ extend :: ExB b => a -> b a
 --   fully evaluated. This can be translated into the following rule:
 --   
 --   <ul>
---   <li><i>zero-delay feedbacks</i> are forbidden, due to un-evaluated
---   self-referential calls. In a feedback loop, there always has to be
---   enough events to ensure the data flow.</li>
+--   <li><i>non-causal feedback</i> or "zero-delay" feedback loops are
+--   forbidden, due to un-evaluated self-referential calls. In a feedback
+--   loop, there always has to be enough events to ensure the data
+--   flow.</li>
 --   </ul>
 --   
 --   This rule imposes that the stream of data is uninterrupted in order to
@@ -3250,9 +3307,10 @@ extend :: ExB b => a -> b a
 --   avoid deadlocks). Thus we can add the rule:
 --   
 --   <ul>
---   <li><i>cleaning of output events</i> is also forbidden. In other
---   words, for each new input at any instant in time, a process must react
---   with <i>at least</i> one output event.</li>
+--   <li><i>cleaning of output signals</i> through removing output events
+--   is also forbidden. In other words, for each new input at any instant
+--   in time, a process must react with <i>at least</i> one output
+--   event.</li>
 --   </ul>
 data Stream e
 
@@ -3264,17 +3322,17 @@ NullS :: Stream e
 
 -- | Type alias for the type to represent metric (continuous) time.
 --   Underneath we use <a>Rational</a> that is able to represent any
---   <i>t</i> between <i>t₁</i> &lt; <i>t₂</i> ∈ <i>T</i>.
+--   &lt;math&gt; between &lt;math&gt;.
 type Time = Rational
 
 -- | Alias for the type representing discrete time. It is inherently
---   quantizable, the quantum being a picosecond (10⁻¹² seconds), thus it
---   can be considered order-isomorphic with a set of integers, i.e.
---   between any two timestamps there is a finite number of timestamps.
---   Moreover, a timestamp can be easily translated into a rational number
---   representing fractions of a second, so the conversion between
---   timestamps (discrete time) and rationals (analog/continuous time) is
---   straightforward.
+--   quantizable, the quantum being a picosecond ( &lt;math&gt; seconds),
+--   thus it can be considered order-isomorphic with a set of integers,
+--   i.e. between any two timestamps there is a finite number of
+--   timestamps. Moreover, a timestamp can be easily translated into a
+--   rational number representing fractions of a second, so the conversion
+--   between timestamps (discrete time) and rationals (analog/continuous
+--   time) is straightforward.
 --   
 --   This type is used in the explicit tags of the <a>DE</a> MoC (and
 --   subsequently the discrete event evaluation engine for simulating the
@@ -3283,67 +3341,79 @@ type TimeStamp = DiffTime
 
 -- | This is a type class defining interfaces for the MoC layer atoms. Each
 --   model of computation exposes its tag system through a unique event
---   constructor as an instance of this class, which defines <i>T</i> ×
---   <i>V</i>.
+--   type which is an instance of this class, defining &lt;math&gt;.
 --   
 --   To express all possible MoCs which can be described using a
 --   <i>tagged</i> <i>signal</i> <i>model</i> we need to capture the most
---   general form of their atoms. Recall that all atoms in the layered
---   framework are represented as higher-order functions on structured
---   types (instances of this class), taking functions of other (lower)
---   layers as arguments. While this principle stands also for this layer,
---   the functions taken as arguments need to be formatted for each MoC in
---   particular in order to capture additional information, which we can
---   call in general terms as the <i>execution context</i>.
+--   general form of their atoms. This means that under the same interface
+--   we need to describe atoms with different execution regimes. Recall
+--   that atoms are in principle applicative functors which act upon one
+--   input signal at a time and partially apply functions. Depending on the
+--   execution regime, these function might or might not need additional
+--   parameters to determine the behavior for evaluating each argument.
+--   These additional parameters we call, in loose terms, as the
+--   <i>execution context</i>.
 --   
---   One typical example of additional information is the consumption and
---   production rates of for data flow MoCs (e.g. SDF). In this case the
---   passed functions are defined over "partitions" of events, i.e.
---   groupings of events with the same partial order in relation to, for
---   example, a process firing. The formal description of such a "formatted
---   function" taken as argument by a MoC entity is:
---   
---   
---   where <i>a</i> and <i>b</i> might be Cartesian products of different
---   types, corresponding to how many signals the constructor is applied to
---   or how many signals it yields, and each type is expressed as:
+--   <ul>
+--   <li><i>execution context</i> Additional information which, paired with
+--   a function, completely determines the behavior of a MoC atom (i.e.
+--   process).</li>
+--   </ul>
 --   
 --   
---   While, as you can see above, the execution context can be extracted
---   from the type information, working with type-level parameters is not a
+--   The left-hand side expression above shows the most general notation
+--   used to describe a function with <i>n</i> inputs of (possibly
+--   different) types &lt;math&gt; and <i>m</i> outputs of (possibly
+--   different) types &lt;math&gt; executed in context &lt;math&gt;. The
+--   right-hand side expression shows that in ForSyDe-Atom context is
+--   associated with each and every argument in order to enable the
+--   applicative mechanisms. Depending on the MoC, &lt;math&gt; would
+--   translate to:
+--   
+--   
+--   One example of execution context is the consumption and production
+--   rates for data flow MoCs (e.g. <a>SDF</a>). In this case the passed
+--   functions are defined over "sequences" or "partitions" of events, i.e.
+--   groupings of events with the same partial order in relation to a
+--   process firing.
+--   
+--   While in the example above the execution context can be extracted from
+--   the type information, working with type-level parameters is not a
 --   trivial task in Haskell, especially if we want to describe a general
 --   and extensible type class. This is why we have chosen a pragmatic
 --   approach in implementing the <a>MoC</a> class:
 --   
 --   <ul>
---   <li>any (possible) Cartesian product of <i>α</i> is represented using
---   a recursive type, namely a list [<i>α</i>].</li>
+--   <li>any (possible) Cartesian product which denotes a partition of
+--   &lt;math&gt; is represented using a recursive type, namely a list
+--   &lt;math&gt;.</li>
 --   <li>as the execution context cannot (or can hardly) be extracted from
 --   the recursive type, in the most general case we pass both context
 --   <i>and</i> argument as a pair (see each instance in particular). To
---   aid in pairing contexts with each argument in a function, the
---   <tt>ctxt</tt> utilities are provided (see <a>ctxt22</a>).</li>
---   <li>this artifice was masked using the generic type families
---   <a>Fun</a> and <tt>Res</tt>.</li>
+--   aid in pairing contexts with each argument in a function, the general
+--   purpose <tt>ctxt</tt> utilities are provided (see <a>ctxt22</a>).</li>
+--   <li>this artifice is masked using the generic type families <a>Fun</a>
+--   and <a>Ret</a>.</li>
 --   </ul>
 class (Applicative e) => MoC e where {
     type family Fun e a b;
     type family Ret e b;
 }
 
--- | This atom is mapping a function on values (in the presence of a
---   context) to a signal, i.e. stream of tagged events. As ForSyDe deals
---   with <i>determinate</i>, <i>functional</i> processes, this atom
---   defines the (only) <i>behavior</i> of a process in rapport to one
---   input signal <a>[Lee98]</a>.
+-- | The <tt>func</tt> atom is mapping a function on values (in the
+--   presence of a context) to a signal, i.e. stream of tagged events. As
+--   ForSyDe deals with <i>determinate</i>, <i>functional</i> processes,
+--   this atom defines the (only) <i>behavior</i> of a process in rapport
+--   to one input signal <a>[Lee98]</a>.
 --   
 (-.-) :: MoC e => Fun e a b -> Stream (e a) -> Stream (e b)
 
--- | This atom synchronizes two signals, one carrying functions on values
---   (in the presence of a context), and the other containing values,
---   during which it applies the former on the latter. As concerning the
---   process created, this atom defines a <i>relation</i> between two
---   signals <a>[Lee98]</a>.
+-- | The <tt>sync</tt> atom synchronizes two signals, one carrying
+--   functions on values (in the presence of a context), and the other
+--   containing values. During the synchronization it applies the
+--   function(s) carried by the former signal on the values carried by the
+--   latter. This atom defines a <i>relation</i> between two signals
+--   <a>[Lee98]</a>.
 --   
 (-*-) :: MoC e => Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
 
@@ -3352,34 +3422,34 @@ class (Applicative e) => MoC e where {
 --   
 (-*) :: MoC e => Stream (e (Ret e b)) -> Stream (e b)
 
--- | This atom appends a (partition of) events at the beginning of a
---   signal. This atom is necessary to ensure <i>complete partial order</i>
---   of a signal and assures the <i>least upper bound</i> necessary for
---   example in the evaluation of feedback loops <a>[Lee98]</a>.
+-- | The <tt>pre</tt> atom prepends the prefix of the left signal operand
+--   (i.e. the first event in timed MoCs, or the first <i>n</i> events in
+--   untimed MoCs) at the beginning of the right signal operand
+--   &lt;math&gt;. This atom is necessary to ensure <i>complete partial
+--   order</i> of a signal and assures the <i>least upper bound</i>
+--   necessary for example in the evaluation of feedback loops
+--   <a>[Lee98]</a>.
 --   
 --   
---   Notice the difference between the formal and the implemented type
---   signatures. In the implementation the value/partition is wrapped
---   inside an event type to enable smooth composition. You might also
---   notice the type for the "initial event(s)" as being wrapped inside a
---   signal constructor. This allows defining an DSL for this layer which
---   is centered around signals exclusively, while also enabling to define
---   atoms as homomorphisms to certain extent <a>[Bird97]</a>. Certain MoCs
---   might have additional constraints on the first operand to be finite.
+--   <i>&lt;math&gt; this atom acts like the <tt>pre</tt> operator in the
+--   synchronous</i> <i>language Lustre <a>[Halbwachs91]</a>,</i> <i>and
+--   for timed MoCs it behaves the same. For untimed MoCs though,</i>
+--   <i>the length of the prefix of a signal is assumed to be the
+--   length</i> <i>of a signal, since the API does not provide any other
+--   means to</i> <i>pass </i>n<i> as a parameter.</i>
 (-<-) :: MoC e => Stream (e a) -> Stream (e a) -> Stream (e a)
 
--- | This atom allows the manipulation of tags in a signal in a restrictive
---   way which preserves <i>monotonicity</i> and <i>continuity</i> in a
---   process <a>[Lee98]</a>, namely by “phase-shifting” all tags in a
---   signal with the appropriate metric corresponding to each MoC. Thus it
---   preserves the characteristic function intact <a>[Sander04]</a>.
+-- | The <tt>phi</tt> atom manipulates the tags in a signal in a
+--   restrictive way which preserves <i>monotonicity</i> and
+--   <i>continuity</i> in a process <a>[Lee98]</a>, namely by
+--   “phase-shifting” all tags in a signal with the appropriate metric
+--   corresponding to each MoC. Thus it preserves the characteristic
+--   function intact <a>[Sander04]</a>.
 --   
 --   
---   As with the <a>-&lt;-</a> atom, we can justify the type signature for
---   smooth composition and the definition of atoms as homomorphisms to
---   certain extent. This in turn allows the interpretation of the
---   <a>-&amp;-</a> operator as "aligning the phases" of two signals: the
---   second operand is aligned based on the first.
+--   The metric unit used for phase shifting is inferred from the prefix of
+--   the left signal operand, while right signal operand is the one being
+--   manipulated.
 (-&-) :: MoC e => Stream (e a) -> Stream (e a) -> Stream (e a)
 
 -- | Class containing all the Skeleton layer atoms.

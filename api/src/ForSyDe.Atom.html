@@ -2,7 +2,7 @@
 </span><a name="line-2"></a><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
 </span><a name="line-3"></a><span class="hs-comment">-- |</span><span>
 </span><a name="line-4"></a><span class="hs-comment">-- Module      :  ForSyDe.Atom</span><span>
-</span><a name="line-5"></a><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, 2015-2018;</span><span>
+</span><a name="line-5"></a><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, 2015-2018</span><span>
 </span><a name="line-6"></a><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
 </span><a name="line-7"></a><span class="hs-comment">-- </span><span>
 </span><a name="line-8"></a><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
@@ -176,7 +176,7 @@
 </span><a name="line-176"></a><span>  </span><span class="hs-comment">-- | This layer represents a major part of the @forsyde-atom@</span><span>
 </span><a name="line-177"></a><span>  </span><span class="hs-comment">-- library and is concerned in modeling the timing aspects of</span><span>
 </span><a name="line-178"></a><span>  </span><span class="hs-comment">-- CPS. While its foundations have been laid in the classical</span><span>
-</span><a name="line-179"></a><span>  </span><span class="hs-comment">-- ForSyDe &lt;#sander04 [Sander04]&gt;, it mainly tries to folllow the</span><span>
+</span><a name="line-179"></a><span>  </span><span class="hs-comment">-- ForSyDe &lt;#sander04 [Sander04]&gt;, it mainly tries to follow the</span><span>
 </span><a name="line-180"></a><span>  </span><span class="hs-comment">-- tagged signal model &lt;#lee98 [Lee98]&gt; as closely as it is</span><span>
 </span><a name="line-181"></a><span>  </span><span class="hs-comment">-- permitted by the host language, and with the adaptations required</span><span>
 </span><a name="line-182"></a><span>  </span><span class="hs-comment">-- by the atom approach.</span><span>
@@ -233,7 +233,7 @@
 </span><a name="line-233"></a><span>  </span><span class="hs-comment">--   stimulated with the /same/ input signals, they react with the</span><span>
 </span><a name="line-234"></a><span>  </span><span class="hs-comment">--   /same/ output signals every time. This condition is fulfilled</span><span>
 </span><a name="line-235"></a><span>  </span><span class="hs-comment">--   by Haskell's purity. On the other hand in the current modeling</span><span>
-</span><a name="line-236"></a><span>  </span><span class="hs-comment">--   framwework it is not possible to model non-functional</span><span>
+</span><a name="line-236"></a><span>  </span><span class="hs-comment">--   framework it is not possible to model non-functional</span><span>
 </span><a name="line-237"></a><span>  </span><span class="hs-comment">--   processes.</span><span>
 </span><a name="line-238"></a><span>  </span><span class="hs-comment">--</span><span>
 </span><a name="line-239"></a><span>  </span><span class="hs-comment">-- [determinancy] A functional process is determinate, which means</span><span>
@@ -359,7 +359,7 @@
 </span><a name="line-359"></a><span>  </span><span class="hs-comment">-- ** MoC Layer Overview</span><span>
 </span><a name="line-360"></a><span>
 </span><a name="line-361"></a><span>  </span><span class="hs-comment">-- | Now, after the crash course in ForSyDe, we can finally present</span><span>
-</span><a name="line-362"></a><span>  </span><span class="hs-comment">-- what the MoC layer consists of. Similary to all other layers, the</span><span>
+</span><a name="line-362"></a><span>  </span><span class="hs-comment">-- what the MoC layer consists of. Similarly to all other layers, the</span><span>
 </span><a name="line-363"></a><span>  </span><span class="hs-comment">-- MoC layer defines:</span><span>
 </span><a name="line-364"></a><span>  </span><span class="hs-comment">--</span><span>
 </span><a name="line-365"></a><span>  </span><span class="hs-comment">-- * 4 atoms provided as infix operators and implemented as type</span><span>
@@ -397,7 +397,7 @@
 </span><a name="line-397"></a><span>  </span><span class="hs-comment">--</span><span>
 </span><a name="line-398"></a><span>  </span><span class="hs-comment">-- This layer provides:</span><span>
 </span><a name="line-399"></a><span>  </span><span class="hs-comment">--</span><span>
-</span><a name="line-400"></a><span>  </span><span class="hs-comment">-- * 3 atoms as infix operators which, as demonstrated in &lt;#bird97[Bird97]&gt;</span><span>
+</span><a name="line-400"></a><span>  </span><span class="hs-comment">-- * 3 atoms as infix operators which, as demonstrated in &lt;#bird97 [Bird97]&gt;</span><span>
 </span><a name="line-401"></a><span>  </span><span class="hs-comment">--   and &lt;#skillicorn05 [Skillicorn05]&gt;, are enough to describe</span><span>
 </span><a name="line-402"></a><span>  </span><span class="hs-comment">--   /all/ algorithmic skeletons.</span><span>
 </span><a name="line-403"></a><span>  </span><span class="hs-comment">--</span><span>
@@ -414,81 +414,88 @@
 </span><a name="line-414"></a><span>
 </span><a name="line-415"></a><span>  </span><span class="hs-comment">-- * Utilities</span><span>
 </span><a name="line-416"></a><span>
-</span><a name="line-417"></a><span>  </span><span class="hs-comment">-- | The 'ForSyDe.Atom' module exports a set of utility functions,</span><span>
-</span><a name="line-418"></a><span>  </span><span class="hs-comment">-- mainly for aiding the designer to avoid working with zipped</span><span>
-</span><a name="line-419"></a><span>  </span><span class="hs-comment">-- tuples which might pollute the design. Utilities are function</span><span>
-</span><a name="line-420"></a><span>  </span><span class="hs-comment">-- without any semantical value (thus not considered atoms). They</span><span>
-</span><a name="line-421"></a><span>  </span><span class="hs-comment">-- operate on and might alter the /structure/ of some datum, but it</span><span>
-</span><a name="line-422"></a><span>  </span><span class="hs-comment">-- does not affect its state.</span><span>
-</span><a name="line-423"></a><span>  </span><span class="hs-comment">--</span><span>
-</span><a name="line-424"></a><span>  </span><span class="hs-comment">-- For a list of all the provided utilities, please consult the</span><span>
-</span><a name="line-425"></a><span>  </span><span class="hs-comment">-- following module:</span><span>
-</span><a name="line-426"></a><span>
-</span><a name="line-427"></a><span>  </span><span class="hs-keyword">module</span><span> </span><a href="ForSyDe.Atom.Utility.html"><span class="hs-identifier">ForSyDe.Atom.Utility</span></a><span class="hs-special">,</span><span>
-</span><a name="line-428"></a><span>
-</span><a name="line-429"></a><span>  </span><span class="hs-comment">-- | Among the most useful utilities we mentions the @unzip@</span><span>
-</span><a name="line-430"></a><span>  </span><span class="hs-comment">-- function. Recall that in all our definitions for patterns, they</span><span>
-</span><a name="line-431"></a><span>  </span><span class="hs-comment">-- were expressed in the most general form as functions from /n/-ary</span><span>
-</span><a name="line-432"></a><span>  </span><span class="hs-comment">-- Cartesian products to /m/-ary Cartesian products. While partial</span><span>
-</span><a name="line-433"></a><span>  </span><span class="hs-comment">-- application provides a versatile mechanism that can translate</span><span>
-</span><a name="line-434"></a><span>  </span><span class="hs-comment">-- n-ary inputs into curried arguments (which is very powerful in</span><span>
-</span><a name="line-435"></a><span>  </span><span class="hs-comment">-- combination with an applicative style), we cannot do so for</span><span>
-</span><a name="line-436"></a><span>  </span><span class="hs-comment">-- return types. For the latter we must rely on tuples. But working</span><span>
-</span><a name="line-437"></a><span>  </span><span class="hs-comment">-- with tuples of data wrapped in several layers of structures</span><span>
-</span><a name="line-438"></a><span>  </span><span class="hs-comment">-- becomes extremely cumbersome. Take for example the case of a</span><span>
-</span><a name="line-439"></a><span>  </span><span class="hs-comment">-- process constructed with /pc/ in equation (1) below. Using only</span><span>
-</span><a name="line-440"></a><span>  </span><span class="hs-comment">-- the provided atoms to implement /pc/ would give us a process</span><span>
-</span><a name="line-441"></a><span>  </span><span class="hs-comment">-- which returns only one signal of a tuple and not, as we would</span><span>
-</span><a name="line-442"></a><span>  </span><span class="hs-comment">-- like, a tuple of signals of events.</span><span>
-</span><a name="line-443"></a><span>  </span><span class="hs-comment">--</span><span>
-</span><a name="line-444"></a><span>  </span><span class="hs-comment">-- &lt;&lt;fig/misc-unzip.png&gt;&gt;</span><span>
-</span><a name="line-445"></a><span>  </span><span class="hs-comment">--</span><span>
-</span><a name="line-446"></a><span>  </span><span class="hs-comment">-- Therefore, by implementing all data types associated with signals</span><span>
-</span><a name="line-447"></a><span>  </span><span class="hs-comment">-- and events as instances of 'Functor', we were able to provide a</span><span>
-</span><a name="line-448"></a><span>  </span><span class="hs-comment">-- (set of) /unzip/ utility functions defined as in equation (2)</span><span>
-</span><a name="line-449"></a><span>  </span><span class="hs-comment">-- above, in the &quot;ForSyDe.Atom.Utility&quot; module.  Mind that we call</span><span>
-</span><a name="line-450"></a><span>  </span><span class="hs-comment">-- /unzip/ a utility and not an atom, since it has no</span><span>
-</span><a name="line-451"></a><span>  </span><span class="hs-comment">-- synchronization nor behavior semantic. It just conveniently</span><span>
-</span><a name="line-452"></a><span>  </span><span class="hs-comment">-- &quot;lifts&quot; the wrapped tuples in order to create &quot;collections&quot; of</span><span>
-</span><a name="line-453"></a><span>  </span><span class="hs-comment">-- events and signals, and it is imposed by the mechanisms of the</span><span>
-</span><a name="line-454"></a><span>  </span><span class="hs-comment">-- type system in the host language.</span><span>
-</span><a name="line-455"></a><span>
-</span><a name="line-456"></a><span>  </span><span class="hs-special">(</span><a href="ForSyDe.Atom.Utility.Tuple.html#%7C%7C%3C"><span class="hs-operator hs-var">||&lt;</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span>
-</span><a name="line-457"></a><span>
-</span><a name="line-458"></a><span>  </span><span class="hs-comment">-- * Bibliography</span><span>
-</span><a name="line-459"></a><span>
-</span><a name="line-460"></a><span>  </span><span class="hs-comment">-- | #bird87# &lt;https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]&gt; Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.</span><span>
-</span><a name="line-461"></a><span>
-</span><a name="line-462"></a><span>  </span><span class="hs-comment">-- | #bird97# &lt;http://dl.acm.org/citation.cfm?id=248932 [Bird97]&gt; Bird, R. S. &amp; de Moor, O. (1997). Algebra of Programming. Prentice-Hall, Inc., Upper Saddle River, NJ, USA. </span><span>
-</span><a name="line-463"></a><span>
-</span><a name="line-464"></a><span>  </span><span class="hs-comment">-- | #fuji00# [Fujimoto00] Fujimoto, R. M. (2000). Parallel and distributed simulation systems (Vol. 300). New York: Wiley.</span><span>
-</span><a name="line-465"></a><span>
-</span><a name="line-466"></a><span>  </span><span class="hs-comment">-- | #halbwachs91# &lt;http://ieeexplore.ieee.org/document/97300/ [Halbwachs91]&gt; Halbwachs, N., Caspi, P., Raymond, P., &amp; Pilaud, D. (1991). The synchronous data flow programming language LUSTRE. /Proceedings of the IEEE, 79(9)/, 1305-1320.</span><span>
-</span><a name="line-467"></a><span>
-</span><a name="line-468"></a><span>  </span><span class="hs-comment">-- | #gorlatch03# &lt;http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [Gorlatch03]&gt; Fischer, J., Gorlatch, S., &amp; Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.</span><span>
-</span><a name="line-469"></a><span>
-</span><a name="line-470"></a><span>  </span><span class="hs-comment">-- | #kahn76# [Kahn76] Kahn, G., &amp; MacQueen, D. (1976). Coroutines and networks of parallel processes.</span><span>
-</span><a name="line-471"></a><span>
-</span><a name="line-472"></a><span>  </span><span class="hs-comment">-- | #lee98# [Lee98] Lee, E. A., &amp; Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229. </span><span>
-</span><a name="line-473"></a><span>
-</span><a name="line-474"></a><span>  </span><span class="hs-comment">-- | #reekie95# &lt;http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [Reekie95]&gt; Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.</span><span>
-</span><a name="line-475"></a><span>
-</span><a name="line-476"></a><span>  </span><span class="hs-comment">-- | #sander04# &lt;http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf [Sander04]&gt; Sander, I., &amp; Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [formal system design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.</span><span>
-</span><a name="line-477"></a><span>
-</span><a name="line-478"></a><span>  </span><span class="hs-comment">-- | #skillicorn05# &lt;https://books.google.se/books?hl=ro&amp;lr=&amp;id=rQwsL5xsZigC&amp;oi=fnd&amp;pg=PP1&amp;dq=skillicorn+foundation+parallel+programming&amp;ots=UJMBr0uO2Q&amp;sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&amp;redir_esc=y#v=onepage&amp;q=skillicorn%20foundation%20parallel%20programming&amp;f=false [Skillicorn05]&gt; Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.</span><span>
-</span><a name="line-479"></a><span>
-</span><a name="line-480"></a><span>  </span><span class="hs-comment">-- | #ungureanu17# &lt;http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]&gt; Ungureanu, G., &amp; Sander, I., /A layered formal framework for modeling of cyber-physical systems/, in 2017 Design, Automation &amp; Test in Europe Conference &amp; Exhibition (DATE), 2017, pp. 1715&#8211;1720.</span><span>
-</span><a name="line-481"></a><span>
-</span><a name="line-482"></a><span>  </span><span class="hs-comment">-- | #ungureanu18# [Ungureanu18] Ungureanu, G., de Medeiros, J. E. G. &amp; Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation &amp; Test in Europe Conference &amp; Exhibition (DATE), 2018</span><span>
-</span><a name="line-483"></a><span>
-</span><a name="line-484"></a><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-485"></a><span>
-</span><a name="line-486"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.ExB.html"><span class="hs-identifier">ForSyDe.Atom.ExB</span></a><span>
-</span><a name="line-487"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.html"><span class="hs-identifier">ForSyDe.Atom.MoC</span></a><span>
-</span><a name="line-488"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Stream</span></a><span>
-</span><a name="line-489"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.Time.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Time</span></a><span>
-</span><a name="line-490"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.TimeStamp.html"><span class="hs-identifier">ForSyDe.Atom.MoC.TimeStamp</span></a><span>
-</span><a name="line-491"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.Skeleton.html"><span class="hs-identifier">ForSyDe.Atom.Skeleton</span></a><span>
-</span><a name="line-492"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.Utility.html"><span class="hs-identifier">ForSyDe.Atom.Utility</span></a><span>
-</span><a name="line-493"></a><span>
-</span><a name="line-494"></a></pre></body></html>
+</span><a name="line-417"></a><span>  </span><span class="hs-comment">-- | The &quot;ForSyDe.Atom&quot; module export a set of utility functions,</span><span>
+</span><a name="line-418"></a><span>  </span><span class="hs-comment">-- mainly for helping to write more concise code or to perform</span><span>
+</span><a name="line-419"></a><span>  </span><span class="hs-comment">-- regular chores like plotting, or nicer printouts.</span><span>
+</span><a name="line-420"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-421"></a><span>  </span><span class="hs-comment">-- The &quot;ForSyDe.Atom.Utility.Plot&quot; module contains utilities for</span><span>
+</span><a name="line-422"></a><span>  </span><span class="hs-comment">-- dumping and visualizing the data in ForSyDe-Atom models in</span><span>
+</span><a name="line-423"></a><span>  </span><span class="hs-comment">-- different formats, e.g. &lt;https://forsyde.github.io/forsyde-latex/ LaTeX&gt;</span><span>
+</span><a name="line-424"></a><span>  </span><span class="hs-comment">-- or &lt;www.gnuplot.info gnuplot&gt;.</span><span>
+</span><a name="line-425"></a><span>
+</span><a name="line-426"></a><span>  </span><span class="hs-keyword">module</span><span> </span><a href="ForSyDe.Atom.Utility.Plot.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Plot</span></a><span class="hs-special">,</span><span>
+</span><a name="line-427"></a><span>
+</span><a name="line-428"></a><span>  </span><span class="hs-comment">-- | The &quot;ForSyDe.Atom.Utility.Tuple&quot; library contains functions</span><span>
+</span><a name="line-429"></a><span>  </span><span class="hs-comment">-- that help in avoiding working with explicitly zipping and</span><span>
+</span><a name="line-430"></a><span>  </span><span class="hs-comment">-- unzipping structures of /n/-tuples. These utilities work mainly</span><span>
+</span><a name="line-431"></a><span>  </span><span class="hs-comment">-- on the structures of data without altering the information, thus</span><span>
+</span><a name="line-432"></a><span>  </span><span class="hs-comment">-- they are not considered atoms and are not associated with any</span><span>
+</span><a name="line-433"></a><span>  </span><span class="hs-comment">-- layer.</span><span>
+</span><a name="line-434"></a><span>
+</span><a name="line-435"></a><span>  </span><span class="hs-keyword">module</span><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Tuple</span></a><span class="hs-special">,</span><span>
+</span><a name="line-436"></a><span>
+</span><a name="line-437"></a><span>  </span><span class="hs-comment">-- | Among the most useful of these utilities we mentions the</span><span>
+</span><a name="line-438"></a><span>  </span><span class="hs-comment">-- @unzip@ function. When consulting the ForSyDe-Atom papers or</span><span>
+</span><a name="line-439"></a><span>  </span><span class="hs-comment">-- further checking the modules' API documentation, you will notice</span><span>
+</span><a name="line-440"></a><span>  </span><span class="hs-comment">-- that in all our formal definitions, patterns are expressed in the</span><span>
+</span><a name="line-441"></a><span>  </span><span class="hs-comment">-- most general form as functions from /n/-ary Cartesian products to</span><span>
+</span><a name="line-442"></a><span>  </span><span class="hs-comment">-- /m/-ary Cartesian products. While partial application provides a</span><span>
+</span><a name="line-443"></a><span>  </span><span class="hs-comment">-- versatile mechanism which translates n-ary inputs into curried</span><span>
+</span><a name="line-444"></a><span>  </span><span class="hs-comment">-- arguments (which is a powerful mechanism in combination with an</span><span>
+</span><a name="line-445"></a><span>  </span><span class="hs-comment">-- applicative style of programming), for the return types we must</span><span>
+</span><a name="line-446"></a><span>  </span><span class="hs-comment">-- rely on tuples. But working with tuples of data wrapped in</span><span>
+</span><a name="line-447"></a><span>  </span><span class="hs-comment">-- several layers of structures becomes extremely cumbersome. Take</span><span>
+</span><a name="line-448"></a><span>  </span><span class="hs-comment">-- for example the case of a process constructed with /pc/ in</span><span>
+</span><a name="line-449"></a><span>  </span><span class="hs-comment">-- equation (1) below. Using only the atoms defined by</span><span>
+</span><a name="line-450"></a><span>  </span><span class="hs-comment">-- 'ForSyDe.Atom.MoC.MoC' to implement /pc/ we would be able to</span><span>
+</span><a name="line-451"></a><span>  </span><span class="hs-comment">-- design a process which returns only one signal carrying tuples</span><span>
+</span><a name="line-452"></a><span>  </span><span class="hs-comment">-- and not, as we would like, a tuple of signals.</span><span>
+</span><a name="line-453"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-454"></a><span>  </span><span class="hs-comment">-- &lt;&lt;fig/misc-unzip.png&gt;&gt;</span><span>
+</span><a name="line-455"></a><span>  </span><span class="hs-comment">--</span><span>
+</span><a name="line-456"></a><span>  </span><span class="hs-comment">-- Therefore, by implementing all data types associated with signals</span><span>
+</span><a name="line-457"></a><span>  </span><span class="hs-comment">-- and events as instances of 'Functor', we were able to provide a</span><span>
+</span><a name="line-458"></a><span>  </span><span class="hs-comment">-- (set of) /unzip/ utility functions defined like in equation (2)</span><span>
+</span><a name="line-459"></a><span>  </span><span class="hs-comment">-- above.  Mind that we call /unzip/ a utility and not an atom,</span><span>
+</span><a name="line-460"></a><span>  </span><span class="hs-comment">-- since it has no behavioral semantic. It just conveniently</span><span>
+</span><a name="line-461"></a><span>  </span><span class="hs-comment">-- un-wraps tuples and lifts them into layers above.</span><span>
+</span><a name="line-462"></a><span>
+</span><a name="line-463"></a><span>  </span><span class="hs-special">(</span><a href="ForSyDe.Atom.Utility.Tuple.html#%7C%7C%3C"><span class="hs-operator hs-var">||&lt;</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><a name="line-464"></a><span>
+</span><a name="line-465"></a><span>  </span><span class="hs-comment">-- * Bibliography</span><span>
+</span><a name="line-466"></a><span>
+</span><a name="line-467"></a><span>  </span><span class="hs-comment">-- | #bird87# &lt;https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]&gt; Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.</span><span>
+</span><a name="line-468"></a><span>
+</span><a name="line-469"></a><span>  </span><span class="hs-comment">-- | #bird97# &lt;http://dl.acm.org/citation.cfm?id=248932 [Bird97]&gt; Bird, R. S. &amp; de Moor, O. (1997). Algebra of Programming. Prentice-Hall, Inc., Upper Saddle River, NJ, USA. </span><span>
+</span><a name="line-470"></a><span>
+</span><a name="line-471"></a><span>  </span><span class="hs-comment">-- | #fuji00# [Fujimoto00] Fujimoto, R. M. (2000). Parallel and distributed simulation systems (Vol. 300). New York: Wiley.</span><span>
+</span><a name="line-472"></a><span>
+</span><a name="line-473"></a><span>  </span><span class="hs-comment">-- | #halbwachs91# &lt;http://ieeexplore.ieee.org/document/97300/ [Halbwachs91]&gt; Halbwachs, N., Caspi, P., Raymond, P., &amp; Pilaud, D. (1991). The synchronous data flow programming language LUSTRE. /Proceedings of the IEEE, 79(9)/, 1305-1320.</span><span>
+</span><a name="line-474"></a><span>
+</span><a name="line-475"></a><span>  </span><span class="hs-comment">-- | #gorlatch03# &lt;http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [Gorlatch03]&gt; Fischer, J., Gorlatch, S., &amp; Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.</span><span>
+</span><a name="line-476"></a><span>
+</span><a name="line-477"></a><span>  </span><span class="hs-comment">-- | #kahn76# [Kahn76] Kahn, G., &amp; MacQueen, D. (1976). Coroutines and networks of parallel processes.</span><span>
+</span><a name="line-478"></a><span>
+</span><a name="line-479"></a><span>  </span><span class="hs-comment">-- | #lee98# [Lee98] Lee, E. A., &amp; Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229. </span><span>
+</span><a name="line-480"></a><span>
+</span><a name="line-481"></a><span>  </span><span class="hs-comment">-- | #reekie95# &lt;http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [Reekie95]&gt; Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.</span><span>
+</span><a name="line-482"></a><span>
+</span><a name="line-483"></a><span>  </span><span class="hs-comment">-- | #sander04# &lt;http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf [Sander04]&gt; Sander, I., &amp; Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [formal system design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.</span><span>
+</span><a name="line-484"></a><span>
+</span><a name="line-485"></a><span>  </span><span class="hs-comment">-- | #skillicorn05# &lt;https://books.google.se/books?hl=ro&amp;lr=&amp;id=rQwsL5xsZigC&amp;oi=fnd&amp;pg=PP1&amp;dq=skillicorn+foundation+parallel+programming&amp;ots=UJMBr0uO2Q&amp;sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&amp;redir_esc=y#v=onepage&amp;q=skillicorn%20foundation%20parallel%20programming&amp;f=false [Skillicorn05]&gt; Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.</span><span>
+</span><a name="line-486"></a><span>
+</span><a name="line-487"></a><span>  </span><span class="hs-comment">-- | #ungureanu17# &lt;http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]&gt; Ungureanu, G., &amp; Sander, I., /A layered formal framework for modeling of cyber-physical systems/, in 2017 Design, Automation &amp; Test in Europe Conference &amp; Exhibition (DATE), 2017, pp. 1715&#8211;1720.</span><span>
+</span><a name="line-488"></a><span>
+</span><a name="line-489"></a><span>  </span><span class="hs-comment">-- | #ungureanu18# &lt;https://ieeexplore.ieee.org/document/8342019/ [Ungureanu18]&gt; Ungureanu, G., de Medeiros, J. E. G. &amp; Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation &amp; Test in Europe Conference &amp; Exhibition (DATE), 2018, pp. 277-280</span><span>
+</span><a name="line-490"></a><span>
+</span><a name="line-491"></a><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-492"></a><span>
+</span><a name="line-493"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.ExB.html"><span class="hs-identifier">ForSyDe.Atom.ExB</span></a><span>
+</span><a name="line-494"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.html"><span class="hs-identifier">ForSyDe.Atom.MoC</span></a><span>
+</span><a name="line-495"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Stream</span></a><span>
+</span><a name="line-496"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.Time.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Time</span></a><span>
+</span><a name="line-497"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.TimeStamp.html"><span class="hs-identifier">ForSyDe.Atom.MoC.TimeStamp</span></a><span>
+</span><a name="line-498"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.Skeleton.html"><span class="hs-identifier">ForSyDe.Atom.Skeleton</span></a><span>
+</span><a name="line-499"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Tuple</span></a><span>
+</span><a name="line-500"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.Utility.Plot.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Plot</span></a><span>
+</span><a name="line-501"></a></pre></body></html>

@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.ExB.Absent
--- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015-2016
+-- Copyright   :  (c) George Ungureanu, 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -31,9 +31,9 @@
 -- ⟂
 -- >>> filter' True  1 :: AbstExt Int
 -- 1
--- >>> degrade 0 (Prst 1)
+-- >>> degen 0 (Prst 1)
 -- 1
--- >>> degrade 0 Abst
+-- >>> degen 0 Abst
 -- 0
 -- >>> ignore11 (+) 1 (Prst 1)
 -- 2
@@ -51,11 +51,11 @@ module ForSyDe.Atom.ExB.Absent where
 import ForSyDe.Atom.ExB
 import Prelude hiding (filter)
 
--- | The 'AbstExt' type extends the base type with the \'&#8869;\'
+-- | The 'AbstExt' type extends the base type with the \'\(\bot\)\'
 -- symbol denoting the absence of a value/event (see
 -- <ForSyDe-Atom.html#halbwachs91 [Halbwachs91]>).
-data AbstExt a = Abst   -- ^ &#8869; denotes the absence of a value
-               | Prst a -- ^ &#8868; a present event with a value
+data AbstExt a = Abst   -- ^ \(\bot\) denotes the absence of a value
+               | Prst a -- ^ \(\top\) a present event with a value
                deriving (Eq)
 
 -- | Implements the absent semantics of the extended behavior atoms.
@@ -74,7 +74,7 @@ instance ExB AbstExt where
   a /!\ _      = a 
   ------------------------
 
--- | Shows 'Abst' as \'&#8869;\', while a present event is represented
+-- | Shows 'Abst' as \(\bot\), while a present event is represented
 -- with its value.
 instance Show a => Show (AbstExt a) where
  showsPrec _ x = showsPrst x
@@ -91,13 +91,13 @@ instance Read a => Read (AbstExt a) where
        [(Prst x, r3) | (x, r3) <- reads s]
 
 -- | 'Functor' instance. Bypasses the special values and maps a
--- function to the wrapped value. Provides the @(\<$\>)@ operator.
+-- function to the wrapped value. 
 instance Functor AbstExt where
   fmap _ Abst      = Abst
   fmap f (Prst x)  = Prst (f x)
 
--- | 'Applicative' instance. Check source code for the lifting
--- rules. Provides the @(\<*\>)@ operator
+-- | 'Applicative' instance, defines a resolution. Check source code
+-- for the lifting rules.
 instance Applicative AbstExt where
   pure = Prst 
   (Prst x) <*> (Prst y) = Prst (x y)

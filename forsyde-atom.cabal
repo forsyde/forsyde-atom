@@ -11,7 +11,7 @@ homepage:            https://forsyde.github.io/forsyde-atom/
 category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple
 cabal-version:       >=1.22
-tested-with:         GHC==7.10.3 GHC==8.0.1 GHC==8.2.1
+tested-with:         GHC==7.10.3 GHC==8.0.1 GHC==8.2.1 GHC==8.4.1
 extra-doc-files:     fig/*.png
 
 library
@@ -47,7 +47,12 @@ library
                    , ForSyDe.Atom.Utility
                    , ForSyDe.Atom.Utility.Tuple
                    , ForSyDe.Atom.Utility.Plot
-  ghc-options:       -Wno-duplicate-exports
+
+  if impl(ghc >= 8.0.0)
+    ghc-options:       -Wno-duplicate-exports
+  else
+    ghc-options:       -fno-warn-duplicate-exports
+        
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances
   build-depends:     base>=4.6 && <6
@@ -55,6 +60,7 @@ library
                    , time
                    , directory >= 1.2.2
                    , process >= 1.2.3
+
                        -- HUnit,
                        -- QuickCheck,
                        -- process >= 1.4.2.0,

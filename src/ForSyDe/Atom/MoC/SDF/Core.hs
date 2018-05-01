@@ -31,12 +31,11 @@ type Prod = Int
 -- | Type synonym for a SY signal, i.e. "a signal of SY events"
 type Signal a   = Stream (SDF a)
 
--- | The CT type, identifying a discrete time event and implementing an
--- instance of the 'MoC' class. A discrete event explicitates its tag
--- which is represented as an integer.
+-- | The SDF event. It identifies a synchronous dataflow signal, and
+-- wraps only a value.
 newtype SDF a = SDF { val :: a }
 
--- | Implenents the SDF semantics for the MoC atoms
+-- | Implenents the SDF semantics for the MoC atoms.
 instance MoC SDF where
   type Fun SDF a b = (Cons, [a] -> b)
   type Ret SDF a   = (Prod, [a])
@@ -68,7 +67,6 @@ instance MoC SDF where
   ---------------------
   (-&-) _ a = a
   ---------------------
-
 
 -- | Allows for mapping of functions on a SDF event.
 instance Functor SDF where
