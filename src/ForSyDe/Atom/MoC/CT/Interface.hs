@@ -13,7 +13,6 @@ import qualified ForSyDe.Atom.Skeleton.Vector as V (
   Vector, zipx, unzipx, fanout, unit, length, vector)
 import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 
-
 ------- DOCTEST SETUP -------
 
 -- $setup
@@ -27,7 +26,6 @@ import ForSyDe.Atom.Utility (($$),($$$),($$$$))
 
 
 ------- MoC INTERFACES -------
-
 
 -- | Translates a (set of) 'ForSyDe.Atom.MoC.CT.CT' signal(s) into
 -- 'ForSyDe.Atom.MoC.DE.DE' semantics without loss of information. In
@@ -56,22 +54,22 @@ toDE4 = ($$$$) (toDE1, toDE1, toDE1, toDE1)
 -- >>> let s = CT.infinite (fromRational . sin')
 -- >>> let c = DE.generate1 id (pi'/2, 1)
 -- >>> takeS 6 $ sampDE1 c s
--- { 0.0 @0s, 1.0 @1.570796326794s, 1.793238520564752e-12 @3.141592653588s, -1.0 @4.712388980382s, 0.0 @6.283185307176s, 1.0 @7.85398163397s}
+-- {0.0@0s,1.0@1.570796326794s,1.793238520564752e-12@3.141592653588s,-1.0@4.712388980382s,0.0@6.283185307176s,1.0@7.85398163397s}
 --
 -- <<fig/moc-ct-sampde.png>>
 sampDE2 :: DE.Signal t -- ^ 'ForSyDe.Atom.MoC.DE.DE' timestamp carrier 
-      -> CT.Signal a -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
-      -> CT.Signal b -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
-      -> (DE.Signal a, DE.Signal b) -- ^ 'ForSyDe.Atom.MoC.DE.DE' outputs
+        -> CT.Signal a -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
+        -> CT.Signal b -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
+        -> (DE.Signal a, DE.Signal b) -- ^ 'ForSyDe.Atom.MoC.DE.DE' outputs
 sampDE1 :: DE.Signal t
-     -> CT.Signal a
-     -> DE.Signal a
+        -> CT.Signal a
+        -> DE.Signal a
 sampDE3 :: DE.Signal t
-      -> CT.Signal a -> CT.Signal b -> CT.Signal c
-      -> (DE.Signal a, DE.Signal b, DE.Signal c)
+        -> CT.Signal a -> CT.Signal b -> CT.Signal c
+        -> (DE.Signal a, DE.Signal b, DE.Signal c)
 sampDE4 :: DE.Signal t
-      -> CT.Signal a -> CT.Signal b -> CT.Signal c -> CT.Signal d
-      -> (DE.Signal a, DE.Signal b, DE.Signal c, DE.Signal d)
+        -> CT.Signal a -> CT.Signal b -> CT.Signal c -> CT.Signal d
+        -> (DE.Signal a, DE.Signal b, DE.Signal c, DE.Signal d)
 
 sampDE1 carrier = fmap evalEvent . sync carrier
   where evalEvent e@(CT ts _ _) = DE.DE ts (CT.evalTs ts e)
@@ -91,7 +89,7 @@ sampDE4 c s1 s2 s3 s4 = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3, sampDE1 c s4)
 -- >>> let s2 = CT.signal [(0,const 1), (2,const 2), (4,const 3)]
 -- >>> let v1 = V.vector [s1,s1,s2,s2]
 -- >>> zipx v1
--- { <1,1,1,1> @0s, <2,2,2,2> @2s, <2,2,3,3> @4s, <3,3,3,3> @6s}
+-- {<1,1,1,1>@0s,<2,2,2,2>@2s,<2,2,3,3>@4s,<3,3,3,3>@6s}
 --
 -- See 'ForSyDe.Atom.MoC.DE.zipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
@@ -106,18 +104,19 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- >>> let v1 = V.vector [1,2,3,4]
 -- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 -- >>> unzipx 4 s1
--- <{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
+-- <{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}>
 --
 -- See 'ForSyDe.Atom.MoC.DE.unzipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
 unzipx :: Integer -> CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
 unzipx = V.unzipx id
 
--- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
+-- | Same as 'unzipx', but \"sniffs\" the first event to determine the
+-- length of the output vector. Has unsafe behavior!
 --
 -- >>> let v1 = V.vector [1,2,3,4]
 -- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 -- >>> unzipx' s1
--- <{ 4 @0s, 4 @2s, 4 @6s},{ 3 @0s, 3 @2s, 3 @6s},{ 2 @0s, 2 @2s, 2 @6s},{ 1 @0s, 1 @2s, 1 @6s}>
+-- <{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}>
 unzipx' :: CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
 unzipx' s@(a:-_) = unzipx (V.length $ CT.evalEv a) s

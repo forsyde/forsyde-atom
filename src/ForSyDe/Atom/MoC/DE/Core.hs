@@ -31,8 +31,7 @@ data DE a  = DE { tag :: TimeStamp,  -- ^ timestamp
                   val :: a           -- ^ the value
                 } deriving (Eq)
 
--- | Implenents the execution and synchronization semantics for the DE
--- MoC through its atoms.
+-- | Implenents the execution semantics for the DE MoC atoms.
 instance MoC DE where
   type Fun DE a b = a -> b
   type Ret DE b   = b 
@@ -58,9 +57,9 @@ instance MoC DE where
   (_ :- NullS) -&- _  = error "[MoC.DE] signal delayed to infinity"
   ---------------------
 
--- | Shows the event with tag @t@ and value @v@ as @ v \@t@.
+-- | Shows the event with tag @t@ and value @v@ as @v\@t@.
 instance Show a => Show (DE a) where
-  showsPrec _ (DE t x) = (++) ( " " ++ show x ++ " @" ++ show t )
+  showsPrec _ (DE t x) = (++) ( show x ++ "@" ++ show t )
 
 -- | Reads the string of type @v\@t@ as an event @DE t v@.
 instance (Read a) => Read (DE a) where
@@ -83,7 +82,7 @@ unit  :: (TimeStamp, a) -> Signal a
 unit (t,v) = (DE 0 v :- DE t v :- NullS)
 
 -- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
--- unit signal(s), in this case a signal with one event with the
+-- unit signal(s). A unit signal is a signal with one event with the
 -- period @tag@ carrying @value@.
 --
 -- Helpers: @unit@ and @unit[2-4]@.
@@ -118,19 +117,19 @@ until u (DE t v:-xs)
 -- type of the signal.
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- { 1 @0s, 2 @2s, 3 @5s, 4 @7s, 5 @10s}
+-- {1@0s,2@2s,3@5s,4@7s,5@10s}
 --
 -- Incorrect usage (not covered by @doctest@):
 --
 -- > λ> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
--- > { 1 @0s, 2 @2s, 3 @5s*** Exception: [MoC.DE] malformed signal
+-- > {1@0s,2@2s,3@5s*** Exception: [MoC.DE] malformed signal
 -- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- > *** Exception: [MoC.DE] signal does not start from global 0
 readSignal :: Read a => String -> Signal a
 readSignal s = checkSignal $ read s
 
 -- | Checks if a signal is well-formed or not, according to the DE MoC
--- interpretation in @ForSyDe-Atom@.
+-- interpretation in ForSyDe-Atom.
 checkSignal NullS = NullS
 checkSignal s@(x:-_)
   | tag x == 0 = checkOrder s
@@ -142,7 +141,7 @@ checkSignal s@(x:-_)
                           | otherwise = error "[MoC.DE] malformed signal"
 
 ----------------------------------------------------------------------------- 
--- These functions are not exported and are used for testing purpose only.
+-- These functions are not exported and are used internally.
 
 infixl 7 %>
 (DE t _) %> (DE _ x) = DE t x

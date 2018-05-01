@@ -25,10 +25,11 @@ import ForSyDe.Atom.Utility
 type Signal a   = Stream (SY a)
 
 -- | The SY event. It identifies a synchronous signal.
-newtype SY a  = SY { val :: a }
+newtype SY a  = SY { val :: a -- ^ value wrapped by the 'SY' event
+                              -- constructor.
+                   }
   
--- | Implenents the execution and synchronization semantics for the SY
--- MoC through its atoms.
+-- | Implenents the execution semantics for the SY MoC atoms.
 instance MoC SY where
   type Fun SY a b = a -> b
   type Ret SY b   = b 
@@ -64,7 +65,8 @@ instance Applicative (SY) where
 
 unit  :: a -> Signal a
 unit  = pure . pure
--- | Wraps a (tuple of) value(s) into the equivalent unit signal(s).
+-- | Wraps a (tuple of) value(s) into the equivalent unit signal(s). A
+-- unit signal is a signal with one event, i.e. a singleton.
 --
 -- Helpers: @unit@, @unit2@, @unit3@, @unit4@.
 unit2 = ($$) (unit, unit)
@@ -75,7 +77,7 @@ unit4 = ($$$$) (unit, unit, unit, unit)
 signal   :: [a] -> Signal a
 signal l = stream (SY <$> l)
 
--- | Reads a signal from a string. Like with the @read@ function from
+-- | Reads a signal from a string. Like with the 'Prelude.read' function from
 -- @Prelude@, you must specify the tipe of the signal.
 --
 -- >>> readSignal "{1,2,3,4,5}" :: Signal Int

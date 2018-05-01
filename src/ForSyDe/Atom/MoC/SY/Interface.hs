@@ -34,7 +34,7 @@ import           ForSyDe.Atom.Utility
 -- >>> let s1 = SY.signal [0,3,4,6,9]
 -- >>> let s2 = SY.signal [1,2,3,4,5]
 -- >>> toDE s1 s2
--- { 1 @0s, 2 @3s, 3 @4s, 4 @6s, 5 @9s}
+-- {1@0s,2@3s,3@4s,4@6s,5@9s}
 --
 -- <<fig/moc-sy-tode.png>>
 toDE2 ::  SY.Signal TimeStamp
@@ -111,7 +111,8 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 unzipx :: Integer -> SY.Signal (V.Vector a) -> V.Vector (SY.Signal a)
 unzipx n = V.reverse . V.unzipx id n
 
--- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
+-- | Same as 'unzipx', but \"sniffs\" the first event to determine the
+-- length of the output vector. /Has an unsafe behavior!/
 --
 -- >>> let v1 = V.vector [1,2,3,4]
 -- >>> let s1 = SY.signal [v1,v1,v1,v1,v1]

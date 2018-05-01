@@ -10,3 +10,5 @@ includes/parameterized-data
 includes/forsyde-tikz
 *.dat
 *.gnuplot
+.stack-work
+fig

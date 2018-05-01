@@ -2,19 +2,25 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Stream
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
+-- Copyright   :  (c) George Ungureanu, 2015-2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module defines the shallow-embedded 'Stream' datatype and
+-- This module defines the shallow-embedded 'Stream' data type and
 -- utility functions operating on it. In ForSyDe a signal is
 -- represented as a (partially or totally) /ordered/ sequence of
--- events that enables processes to communicate and synchronize.  The
--- 'Stream' type is but an ordered structure to encapsulate events as
--- infinite streams.
+-- events that enables processes to communicate and synchronize. In
+-- ForSyDe-Atom signals are the main operating type for the MoC
+-- layer. The 'Stream' type is only the base (potentially infinite)
+-- structure which can encapsulate events in order to describe
+-- signals.
+--
+-- For an overview about atoms, layers and patterns, please refer to
+-- the "ForSyDe.Atom" module documentation, and for an overview of the
+-- MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.Stream  where
 
@@ -28,17 +34,17 @@ infixr 3 :-
 -- that the first/previous event is always fully evaluated. This can
 -- be translated into the following rule:
 --
--- [zero-delay feedbacks] are forbidden, due to un-evaluated
--- self-referential calls. In a feedback loop, there always has to be
--- enough events to ensure the data flow.
+-- [non-causal feedback] or "zero-delay" feedback loops are forbidden,
+-- due to un-evaluated self-referential calls. In a feedback loop,
+-- there always has to be enough events to ensure the data flow.
 --
 -- This rule imposes that the stream of data is uninterrupted in order
 -- to have an evaluatable kernel every time a new event is produced
 -- (i.e. to avoid deadlocks). Thus we can add the rule:
 --
--- [cleaning of output events] is also forbidden.  In other words, for
--- each new input at any instant in time, a process must react with
--- /at least/ one output event.
+-- [cleaning of output signals] through removing output events is also
+-- forbidden.  In other words, for each new input at any instant in
+-- time, a process must react with /at least/ one output event.
 data Stream e = NullS         -- ^ terminates a signal
               | e :- Stream e -- ^ the default constructor appends an
                               -- event to the head of the stream
@@ -83,7 +89,7 @@ instance (Read a) => Read (Stream a) where
       readEvent a     = [(x :- xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readStream c]
       readNull a      = [(NullS,b) | ("}",b) <- lex a]
 
--- | The function 'signal' converts a list into a signal.
+-- | The function 'stream' converts a list into a stream.
 stream :: [a] -> Stream a 
 stream []     = NullS
 stream (x:xs) = x :- (stream xs)

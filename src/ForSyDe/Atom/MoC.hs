@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
+-- Copyright   :  (c) George Ungureanu, 2015-2017
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -12,11 +12,14 @@
 --
 -- This module exports the core entities of the MoC layer: interfaces
 -- for atoms and process constructors as patterns of atoms. It does
--- /NOT/ export any implementation or instantiation of any specific
--- MoC.
+-- /NOT/ export any implementation or instance of any specific
+-- MoC. For an overview about atoms, layers and patterns, please refer
+-- to the "ForSyDe.Atom" module documentation, and for an overview of
+-- the MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
 --
--- Current MoC implementations can be used by importing their
--- respective modules:
+-- The MoCs currently implemented in ForSyDe-Atom are shown in the
+-- <#i:MoC instances section>, and they can be used in designs by
+-- importing their respective modules:
 --
 -- * "ForSyDe.Atom.MoC.CT"
 -- * "ForSyDe.Atom.MoC.DE"
@@ -34,10 +37,11 @@ module ForSyDe.Atom.MoC(
   
   MoC(..),
 
-  -- * Process constructors
+  -- * Patterns
 
-  -- | Process constructors are defined as patterns of MoC
-  -- atoms. Check the <#naming_conv naming convention> of the API in
+  -- | The atom patterns of the MoC layer are in fact
+  -- <ForSyDe-Atom.html#g:5 process constructors>. Check the
+  -- <ForSyDe-Atom.html#naming_conv naming convention> of the API in
   -- the page description.
   
   delay, (-&>-),
@@ -95,92 +99,107 @@ module ForSyDe.Atom.MoC(
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.Utility
 
+-------------------------------------------------------
+--                       ATOMS                       --
+-------------------------------------------------------
+
 infixl 5 -.-, -*-
 infixl 3 -<-, -*, -&-
 
 -- | This is a type class defining interfaces for the MoC layer
 -- atoms. Each model of computation exposes its tag system through a
--- unique event constructor as an instance of this class, which
--- defines /T/ &#215; /V/.
+-- unique event type which is an instance of this class, defining
+-- \( T \times V \).
 --
 -- #context# To express all possible MoCs which can be described using
 -- a /tagged/ /signal/ /model/ we need to capture the most general
--- form of their atoms. Recall that all atoms in the layered framework
--- are represented as higher-order functions on structured types
--- (instances of this class), taking functions of other (lower) layers
--- as arguments. While this principle stands also for this layer, the
--- functions taken as arguments need to be formatted for each MoC in
--- particular in order to capture additional information, which we can
--- call in general terms as the /execution context/.
+-- form of their atoms. This means that under the same interface we
+-- need to describe atoms with different execution regimes. Recall
+-- that atoms are in principle applicative functors which act upon one
+-- input signal at a time and partially apply functions. Depending on
+-- the execution regime, these function might or might not need
+-- additional parameters to determine the behavior for evaluating each
+-- argument. These additional parameters we call, in loose terms, as
+-- the /execution context/.
 --
--- One typical example of additional information is the consumption
--- and production rates of for data flow MoCs (e.g. SDF). In this case
--- the passed functions are defined over "partitions" of events,
--- i.e. groupings of events with the same partial order in relation
--- to, for example, a process firing. The formal description of such a
--- "formatted function" taken as argument by a MoC entity is:
+-- [execution context] Additional information which, paired with a
+--   function, completely determines the behavior of a MoC atom
+--   (i.e. process). 
 --
 -- <<fig/eqs-moc-atom-formatted-func.png>>
 --
--- where /a/ and /b/ might be Cartesian products of different types,
--- corresponding to how many signals the constructor is applied to or
--- how many signals it yields, and each type is expressed as:
+-- The left-hand side expression above shows the most general notation
+-- used to describe a function with /n/ inputs of (possibly different)
+-- types \(\alpha\) and /m/ outputs of (possibly different) types
+-- \(\beta\) executed in context \(\Gamma\). The right-hand side
+-- expression shows that in ForSyDe-Atom context is associated with
+-- each and every argument in order to enable the applicative
+-- mechanisms. Depending on the MoC, \(\breve\alpha\) would translate
+-- to:
 --
 -- <<fig/eqs-moc-atom-formatted-arg.png>>
 --
--- While, as you can see above, the execution context can be extracted
+-- One example of execution context is the consumption and production
+-- rates for data flow MoCs (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In this
+-- case the passed functions are defined over "sequences" or
+-- "partitions" of events, i.e. groupings of events with the same
+-- partial order in relation to a process firing.
+--
+-- While in the example above the execution context can be extracted
 -- from the type information, working with type-level parameters is
 -- not a trivial task in Haskell, especially if we want to describe a
 -- general and extensible type class. This is why we have chosen a
 -- pragmatic approach in implementing the 'MoC' class:
 --
--- * any (possible) Cartesian product of /&#945;/ is represented using
--- a recursive type, namely a list [/&#945;/].
+-- * any (possible) Cartesian product which denotes a partition of
+--   \(\alpha\) is represented using a recursive type, namely a list
+--   \([\alpha]\).
 --
 -- * as the execution context cannot (or can hardly) be extracted from
--- the recursive type, in the most general case we pass both context
--- /and/ argument as a pair (see each instance in particular). To aid
--- in pairing contexts with each argument in a function, the @ctxt@
--- utilities are provided (see 'ctxt22').
+--   the recursive type, in the most general case we pass both context
+--   /and/ argument as a pair (see each instance in particular). To
+--   aid in pairing contexts with each argument in a function, the
+--   general purpose @ctxt@ utilities are provided (see 'ctxt22').
 --
--- * this artifice was masked using the generic type families 'Fun'
--- and 'Res'. 
+-- * this artifice is masked using the generic type families 'Fun' and
+--   'Ret'.
 class (Applicative e) => MoC e where
 
-  -- | This is a type family alias for a context-bound function passed
-  -- as an argument to a MoC atom. In the most simple case it can be
-  -- regarded as an enhanced @->@ type operator. While hiding the
-  -- explicit definition of arguments, this implementation choice
-  -- certainly has its advantages in avoiding unnecessary or redundant
-  -- type constructors (see version 0.1.1 and prior). Aliases are
-  -- replaced at compile time, thus not affecting run-time
-  -- performance.
+  -- | This is a type family alias \(^1\) for a context-bound function
+  -- passed as an argument to a MoC atom. It can be regarded as an
+  -- enhanced @->@ type operator, specific to each MoC.
   -- 
   -- <<fig/eqs-moc-atom-function.png>>
+  --
+  -- /\(^1\) While hiding the explicit definition of arguments, this/
+  -- /implementation choice certainly has its advantages in avoiding/
+  -- /unnecessary or redundant type constructors (see version 0.1.1 and/
+  -- /prior). Aliases are replaced at compile time, thus not affecting/
+  -- /run-time performance./
   type Fun e a b
 
-  -- | As with 'Fun', this alias hides a context-bound value
-  -- (e.g. function return). Although the definition seems to be
-  -- redundant with 'Fun', this alias is needed for utilities to
+  -- | Like 'Fun', this alias hides a context-bound value
+  -- (e.g. function return). This alias is needed for utilities to
   -- recreate clean types again (see '-*').
   -- 
   -- <<fig/eqs-moc-atom-result.png>>
   type Ret e b
   
-  -- | This atom is mapping a function on values (in the presence of a
-  -- context) to a signal, i.e. stream of tagged events. As ForSyDe
-  -- deals with /determinate/, /functional/ processes, this atom
-  -- defines the (only) /behavior/ of a process in rapport to one
-  -- input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- | The @func@ atom is mapping a function on values (in the
+  -- presence of a context) to a signal, i.e. stream of tagged
+  -- events. As ForSyDe deals with /determinate/, /functional/
+  -- processes, this atom defines the (only) /behavior/ of a process
+  -- in rapport to one input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
   --
   -- <<fig/eqs-moc-atom-dot.png>>
   (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
   
-  -- | This atom synchronizes two signals, one carrying functions on
-  -- values (in the presence of a context), and the other containing
-  -- values, during which it applies the former on the latter. As
-  -- concerning the process created, this atom defines a /relation/
-  -- between two signals <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- | The @sync@ atom synchronizes two signals, one carrying
+  -- functions on values (in the presence of a context), and the other
+  -- containing values. During the synchronization it applies the
+  -- function(s) carried by the former signal on the values carried by
+  -- the latter. This atom defines a /relation/ between two signals
+  -- <ForSyDe-Atom.html#lee98 [Lee98]>.
   -- 
   -- <<fig/eqs-moc-atom-star.png>>
   (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
@@ -191,40 +210,42 @@ class (Applicative e) => MoC e where
   -- <<fig/eqs-moc-atom-post.png>>
   (-*)  :: Stream (e (Ret e b)) -> Stream (e b)
 
-  -- | This atom appends a (partition of) events at the beginning of a
-  -- signal. This atom is necessary to ensure /complete partial order/
+  -- | The @pre@ atom prepends the prefix of the left signal operand
+  -- (i.e. the first event in timed MoCs, or the first /n/ events in
+  -- untimed MoCs) at the beginning of the right signal operand
+  -- \(^1\). This atom is necessary to ensure /complete partial order/
   -- of a signal and assures the /least upper bound/ necessary for
   -- example in the evaluation of feedback loops
   -- <ForSyDe-Atom.html#lee98 [Lee98]>.
   --
   -- <<fig/eqs-moc-atom-pre.png>>
   --
-  -- Notice the difference between the formal and the implemented type
-  -- signatures. In the implementation the value/partition is wrapped
-  -- inside an event type to enable smooth composition. You might also
-  -- notice the type for the "initial event(s)" as being wrapped
-  -- inside a signal constructor. This allows defining an DSL for this
-  -- layer which is centered around signals exclusively, while also
-  -- enabling to define atoms as homomorphisms to certain extent
-  -- <ForSyDe-Atom.html#bird97 [Bird97]>. Certain MoCs might have
-  -- additional constraints on the first operand to be finite.
+  -- /\(^1\) this atom acts like the @pre@ operator in the synchronous/
+  -- /language Lustre <ForSyDe-Atom.html#halbwachs91 [Halbwachs91]>,/
+  -- /and for timed MoCs it behaves the same. For untimed MoCs though,/
+  -- /the length of the prefix of a signal is assumed to be the length/
+  -- /of a signal, since the API does not provide any other means to/
+  -- /pass /n/ as a parameter./
   (-<-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
    
-  -- | This atom allows the manipulation of tags in a signal in a
+  -- | The @phi@ atom manipulates the tags in a signal in a
   -- restrictive way which preserves /monotonicity/ and /continuity/
   -- in a process <ForSyDe-Atom.html#lee98 [Lee98]>, namely by
   -- “phase-shifting” all tags in a signal with the appropriate metric
   -- corresponding to each MoC. Thus it preserves the characteristic
-  -- function intact <ForSyDe-Atom.html#sander04 [Sander04]>.
+  -- function intact <ForSyDe-Atom.html#sander04 [Sander04]>. 
   --
   -- <<fig/eqs-moc-atom-phi.png>>
-  -- 
-  -- As with the '-<-' atom, we can justify the type signature for
-  -- smooth composition and the definition of atoms as homomorphisms
-  -- to certain extent. This in turn allows the interpretation of the
-  -- '-&-' operator as "aligning the phases" of two signals: the
-  -- second operand is aligned based on the first.
+  --
+  -- The metric unit used for phase shifting is inferred from the
+  -- prefix of the left signal operand, while right signal operand is
+  -- the one being manipulated.
   (-&-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
+
+
+--------------------------------------------------------
+--                      PATTERNS                      --
+--------------------------------------------------------
 
 infixl 3 -&>-
 -- | <<fig/eqs-moc-pattern-delay.png>>
@@ -233,23 +254,21 @@ infixl 3 -&>-
 -- The 'delay' process provides both initial token(s) and shifts the
 -- phase of the signal. In other words, it "delays" a signal with
 -- one or several events.
---
--- There is also an infix variant '-&>-' (@infixl 3@). To justify the
--- first argument, see the documentation of the '-<-' atom.
 delay i xs = i -<- (i -&- xs)
+
+-- | Infix variant for 'delay'.
 i -&>- xs = delay i xs          
 
--- |  #comb22f# /(*) to be read / @a1 -> a2 -> (b1, b2)@ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- | #comb22f# /(*) to be read/ @a1 -> a2 -> (b1, b2)@ /where each/
+-- /argument may be <#context wrapped along with a context>./
 --
 -- <<fig/eqs-moc-pattern-comb.png>>
 -- <<fig/moc-pattern-comb.png>>
 --
--- The @comb@ processes takes care of synchronization between signals
--- and maps combinatorial functions on their event values. 
+-- The @comb@ processes synchronizes multiple input signals and maps
+-- combinatorial functions on the values they carry.
 --
--- This library exports constructors of type @comb[1-8][1-4]@.
+-- This module exports constructors of type @comb[1-8][1-4]@.
 comb22 :: (MoC e)
        => (Fun e a1 (Fun e a2 (Ret e b1, Ret e b2)))
        -- ^ combinational function (<#comb22f *>)
@@ -290,15 +309,16 @@ comb74 f s1 s2 s3 s4 s5 s6 s7    = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 
 comb84 f s1 s2 s3 s4 s5 s6 s7 s8 = (f -.- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
 -- |  #reconfig22f# /(*) to be read / @a1 -> a2 -> (b1, b2)@ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- /argument may be <#context wrapped along with a context>./
 --
 -- <<fig/eqs-moc-pattern-reconfig.png>>
 -- <<fig/moc-pattern-reconfig.png>>
 --
--- The @reconfig@ processes constructs adaptive processes, where the
--- first signal carries functions, and it is synchronized with all the
--- other signals. 
+-- The @reconfig@ processes constructs adaptive processes, whose
+-- functional behavior "changes in time". Its first input is a signal
+-- carrying functions which is synchronized with all the other input
+-- signals. The output signal carry the results of mapping those
+-- functions at each synchronization/firing point.
 --
 -- This library exports constructors of type @reconfig[1-8][1-4]@.
 reconfig22 :: (MoC e)
@@ -340,19 +360,19 @@ reconfig64 sf s1 s2 s3 s4 s5 s6       = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -
 reconfig74 sf s1 s2 s3 s4 s5 s6 s7    = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*<<<)
 reconfig84 sf s1 s2 s3 s4 s5 s6 s7 s8 = (sf -*- s1 -*- s2 -*- s3 -*- s4 -*- s5 -*- s6 -*- s7 -*- s8 -*<<<)
 
--- |
--- #state22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
--- /where each argument and result might be individually wrapped/
--- /with a context and might also express a partition./
+-- | #state22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
+-- /where each argument may be <#context wrapped along with a context>./
 --
--- #state22i# /(**) see the documentation for '-<-' for justification/
--- /of the type/
+-- #state22i# /(**) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-state.png>>
 -- <<fig/moc-pattern-state.png>>
 --
 -- The @state@ processes generate process networks corresponding to a
--- simple state machine like in the graph above. 
+-- simple state machine with "un-latched" outputs like in the graph
+-- above. In other words, the process starts with a state transition
+-- and outputs the next state as the first event.
 --
 -- This library exports constructors of type @state[1-4][1-4]@.
 state22 :: MoC e
@@ -413,21 +433,20 @@ state44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st2
 
 -- | 
 -- #stated22ns# /(*) meaning / @st1 -> st2 -> a1 -> a2 -> (st1,st2)@
--- /where each argument and result might be individually wrapped/
--- /with a context and might also express a partition./
+-- /where each argument may be <#context wrapped along with a context>./
 --
--- #stated22i# /(**) see the documentation for '-<-' for justification/
--- /of the type/
+-- #stated22i# /(**) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-stated.png>>
 -- <<fig/moc-pattern-stated.png>>
 -- 
--- The @state@ processes generate process networks corresponding to a
--- simple state machine like in the graph above. The difference
--- between 'state22' and 'stated22' is that the latter outputs the
--- current state rather than the next one. There exists a variant with
--- 0 input signals, in which case the process is a signal
--- generator.
+-- The @stated@ processes generate process networks corresponding to a
+-- simple state machine with "latched" outputs like in the graph
+-- above. As compared to 'state22', this process outputs the current
+-- state, and the state transition is observed from the second
+-- evaluation onwards. There exists a variant with 0 input signals, in
+-- which case the process is a signal generator.
 --
 -- This library exports constructors of type @stated[0-4][1-4]@.
 stated22 :: MoC e
@@ -497,17 +516,14 @@ stated44 ns (i1,i2,i3,i4) s1 s2 s3 s4 = let (ns1,ns2,ns3,ns4) = comb84 ns st1 st
                                             (st1,st2,st3,st4) = (i1 -&>- ns1, i2 -&>- ns2, i3 -&>- ns3, i4 -&>- ns4)
                                         in  (st1,st2,st3,st4)
                                             
--- |
--- #moore22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- | #moore22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
+-- /argument may be <#context wrapped along with a context>./
 --
 -- #moore22od# /(**) meaning / @st -> (b1, b2) @ /where each argument/
--- /and result might be individually wrapped with a context and might/
--- /also express a partition./
+-- /may be <#context wrapped along with a context>./
 --
--- #moore22i# /(***) see the documentation for '-<-' for justification/
--- /of the type/
+-- #moore22i# /(***) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-moore.png>>
 -- <<fig/moc-pattern-moore.png>>
@@ -561,17 +577,14 @@ moore43 ns od i s1 s2 s3 s4 =        comb13 od st
 moore44 ns od i s1 s2 s3 s4 =        comb14 od st
   where st                  = i -&>- comb51 ns st s1 s2 s3 s4
 
--- |
--- #mealy22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
--- /argument and result might be individually wrapped with a context/
--- /and might also express a partition./
+-- | #mealy22ns# /(*) meaning / @st -> a1 -> a2 -> st @ /where each/
+-- /argument may be <#context wrapped along with a context>./
 --
 -- #mealy22od# /(**) meaning / @st -> a1 -> a2 -> (b1, b2) @ /where/
--- /each argument and result might be individually wrapped with a/
--- /context and might also express a partition./
+-- /each argument may be <#context wrapped along with a context>./
 --
--- #mealy22i# /(***) see the documentation for '-<-' for justification/
--- /of the type/
+-- #mealy22i# /(***) inferred from the prefixes of the signals passed/
+-- /as arguments. See the documentation for '-<-' for an explanation./
 --
 -- <<fig/eqs-moc-pattern-mealy.png>>
 -- <<fig/moc-pattern-mealy.png>>
@@ -626,6 +639,9 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
   where st                  = i -&>- comb51 ns st s1 s2 s3 s4
 
 
+---------------------------------------------------------
+--                      UTILITIES                      --
+---------------------------------------------------------
 
 -- | Attaches a context parameter to a function argument (e.g
 -- consumption rates in SDF). Used as kernel function in defining

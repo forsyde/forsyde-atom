@@ -20,7 +20,7 @@ import Data.Time.Clock ( DiffTime
                        )
 
 -- | Alias for the type representing discrete time. It is inherently
--- quantizable, the quantum being a picosecond (10&#8315;&#185;&#178;
+-- quantizable, the quantum being a picosecond ( \(10^{-12}\)
 -- seconds), thus it can be considered order-isomorphic with a set of
 -- integers, i.e. between any two timestamps there is a finite number
 -- of timestamps. Moreover, a timestamp can be easily translated into

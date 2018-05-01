@@ -37,8 +37,7 @@ data CT a  = CT { tag   :: TimeStamp
                   -- ^ function of time
                 }
 
--- | Implenents the execution and synchronization semantics for the CT
--- MoC through its atoms.
+-- | Implenents the execution semantics for the CT MoC atoms.
 instance MoC CT where
   ---------------------
   type Fun CT a b = a -> b
@@ -76,12 +75,12 @@ instance Applicative CT where
   pure x = CT 0 0 (\_ -> x)
   (CT t p1 f) <*> (CT _ p2 g) = CT t 0 (\x -> (f (x+p1)) (g (x+p2)))
 
--- | A non-ideal instance meant for debug purpose only. For each event
--- it evaluates the function at the tag time /only/!
+-- | Meant for debug purpose only! It evaluates /only/ the signal at
+-- the start time.
 instance Show a => Show (CT a) where
   showsPrec _ e
-    = (++) ( " "  ++ show (evalTs (tag e) e) ++
-             " @" ++ show (tag e) )
+    = (++) ( show (evalTs (tag e) e) ++
+             "@" ++ show (tag e) )
 
 -----------------------------------------------------------------------------
 -- These functions are not exported and are used for testing purpose only.
