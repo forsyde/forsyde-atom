@@ -1,0 +1,99 @@
+name:                forsyde-atom
+version:             0.2.2.1
+synopsis:            Shallow-embedded DSL for modeling cyber-physical systems 
+description:         This package is a spin-off from the <https://forsyde.github.io/forsyde-shallow/ ForSyDe-Shallow> project, aiming to incorporate a large set of modelling concepts for describing various aspects of cyber-physical systems. The API documentation is structured as a manual and can be read as such. For a general overview of this library and the formal concepts implemented, we recommend starting your lecture with the "ForSyDe.Atom" module. For more resources, such as tutorials, user manual or publicatons, we recommend visiting the web page at <https://forsyde.github.io/forsyde-atom/>.
+license:             BSD3
+license-file:        LICENSE
+author:              George Ungureanu
+maintainer:          ugeorge@kth.se
+copyright:           Copyright (c) 2015-2018, George Ungureanu, KTH/EECS
+homepage:            https://forsyde.github.io/forsyde-atom/
+category:            model, cyber-physical systems, shallow-embedded
+build-type:          Simple
+cabal-version:       >=1.22
+tested-with:         GHC==7.10.3 GHC==8.0.1 GHC==8.2.1 GHC==8.4.1
+extra-doc-files:     fig/*.png
+
+library
+  exposed-modules:   ForSyDe.Atom
+                   , ForSyDe.Atom.ExB
+                   , ForSyDe.Atom.ExB.Absent
+                   , ForSyDe.Atom.MoC
+                   , ForSyDe.Atom.MoC.Stream
+                   , ForSyDe.Atom.MoC.Time
+                   , ForSyDe.Atom.MoC.TimeStamp
+                   , ForSyDe.Atom.MoC.SY
+                   , ForSyDe.Atom.MoC.SY.Core
+                   , ForSyDe.Atom.MoC.SY.Lib
+                   , ForSyDe.Atom.MoC.SY.Interface
+                   , ForSyDe.Atom.MoC.DE
+                   , ForSyDe.Atom.MoC.DE.Core
+                   , ForSyDe.Atom.MoC.DE.Lib
+                   , ForSyDe.Atom.MoC.DE.Interface
+                   , ForSyDe.Atom.MoC.DE.Hybrid
+                   , ForSyDe.Atom.MoC.CT
+                   , ForSyDe.Atom.MoC.CT.Core
+                   , ForSyDe.Atom.MoC.CT.Lib
+                   , ForSyDe.Atom.MoC.CT.Interface
+                   , ForSyDe.Atom.MoC.SDF
+                   , ForSyDe.Atom.MoC.SDF.Core
+                   , ForSyDe.Atom.MoC.SDF.Lib
+                   , ForSyDe.Atom.MoC.SDF.Interface
+                   , ForSyDe.Atom.Skeleton
+                   , ForSyDe.Atom.Skeleton.Vector
+                   , ForSyDe.Atom.Skeleton.Vector.Core
+                   , ForSyDe.Atom.Skeleton.Vector.Lib
+                   , ForSyDe.Atom.Skeleton.Vector.Interface
+                   , ForSyDe.Atom.Utility
+                   , ForSyDe.Atom.Utility.Tuple
+                   , ForSyDe.Atom.Utility.Plot
+
+  if impl(ghc >= 8.0.0)
+    ghc-options:       -Wno-duplicate-exports
+  else
+    ghc-options:       -fno-warn-duplicate-exports
+        
+  default-language:  Haskell2010
+  other-extensions:  PostfixOperators, FlexibleInstances
+  build-depends:     base>=4.6 && <6
+                   , numbers >= 3000
+                   , time
+                   , directory >= 1.2.2
+                   , process >= 1.2.3
+
+                       -- HUnit,
+                       -- QuickCheck,
+                       -- process >= 1.4.2.0,
+                       -- test-framework,
+                       -- test-framework-hunit,
+                       -- test-framework-quickcheck2
+  hs-source-dirs:    src
+
+-- Test-Suite forsyde-testsuite
+--   Type:                exitcode-stdio-1.0
+--   Default-Language:    Haskell2010
+--   Hs-Source-Dirs:      tests
+--   Main-is:             Tests.hs
+--   Build-depends:       base>=4.6 && <6, 
+--                        forsyde-atom, 
+--                        QuickCheck, 
+--                        test-framework,
+--                        test-framework-hunit,
+--                        test-framework-quickcheck2,
+--                        HUnit
+
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  ghc-options:      -threaded -isrc
+  main-is:          tests/TestsDoc.hs
+  build-depends:    base>=4.6 && <6
+                  , numbers >= 3000
+                  , doctest >= 0.8
+                  , forsyde-atom
+
+                  
+source-repository head
+  type:     git
+  location: https://github.com/forsyde/forsyde-atom.git
+  

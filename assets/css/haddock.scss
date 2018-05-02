@@ -10,11 +10,33 @@ hide:    true
   display: none;
 }
 
-.bs-docs-sidebar .nav .nav {
+ul.nav {
   display: block !important;
-  margin: 0.1em 0 0em 1em;
+  margin: unset;
 }
 
-ul.bs-docs-sidenav {
-  margin: unset;
+#downloads {
+  position: absolute;
+  width: 210px;
+  z-index: 10;
+  bottom: -40px;
+  right: 0;
+  height: 70px;
+  background: url("/images/icon_download.png") no-repeat 0% 90%;
+}
+
+#interface td {
+  vertical-align: top;
+  padding-left: 0.5em;
+}
+
+:target:before {
+  content:"";
+  display:block;
+  height:50px; /* fixed header height*/
+  margin:-24px 0 0; /* negative fixed header height */
+}
+
+.mi, .mo {
+  color: #000;
 }
