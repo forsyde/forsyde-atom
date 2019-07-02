@@ -19,6 +19,7 @@ library
                    , ForSyDe.Atom.ExB
                    , ForSyDe.Atom.ExB.Absent
                    , ForSyDe.Atom.MoC
+                   , ForSyDe.Atom.MoC.SAXX
                    , ForSyDe.Atom.MoC.Stream
                    , ForSyDe.Atom.MoC.Time
                    , ForSyDe.Atom.MoC.TimeStamp
@@ -39,6 +40,7 @@ library
                    , ForSyDe.Atom.MoC.SDF.Core
                    , ForSyDe.Atom.MoC.SDF.Lib
                    , ForSyDe.Atom.MoC.SDF.Interface
+                   , ForSyDe.Atom.MoC.SDF.SADF
                    , ForSyDe.Atom.Skeleton
                    , ForSyDe.Atom.Skeleton.Vector
                    , ForSyDe.Atom.Skeleton.Vector.Core

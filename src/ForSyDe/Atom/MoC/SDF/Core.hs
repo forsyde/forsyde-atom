@@ -112,3 +112,36 @@ readSignal :: Read a => String -> Signal a
 readSignal = read
 
 ----------------------------------------------------------------------
+
+scen11 (c,p,f) = ctxt11 c p f 
+scen12 (c,p,f) = ctxt12 c p f 
+scen13 (c,p,f) = ctxt13 c p f 
+scen14 (c,p,f) = ctxt14 c p f 
+scen21 (c,p,f) = ctxt21 c p f 
+scen22 (c,p,f) = ctxt22 c p f 
+scen23 (c,p,f) = ctxt23 c p f 
+scen24 (c,p,f) = ctxt24 c p f
+scen31 (c,p,f) = ctxt31 c p f 
+scen32 (c,p,f) = ctxt32 c p f 
+scen33 (c,p,f) = ctxt33 c p f 
+scen34 (c,p,f) = ctxt34 c p f 
+scen41 (c,p,f) = ctxt41 c p f 
+scen42 (c,p,f) = ctxt42 c p f 
+scen43 (c,p,f) = ctxt43 c p f 
+scen44 (c,p,f) = ctxt44 c p f
+scen51 (c,p,f) = ctxt51 c p f 
+scen52 (c,p,f) = ctxt52 c p f 
+scen53 (c,p,f) = ctxt53 c p f 
+scen54 (c,p,f) = ctxt54 c p f 
+scen61 (c,p,f) = ctxt61 c p f 
+scen62 (c,p,f) = ctxt62 c p f 
+scen63 (c,p,f) = ctxt63 c p f 
+scen64 (c,p,f) = ctxt64 c p f 
+scen71 (c,p,f) = ctxt71 c p f 
+scen72 (c,p,f) = ctxt72 c p f 
+scen73 (c,p,f) = ctxt73 c p f 
+scen74 (c,p,f) = ctxt74 c p f 
+scen81 (c,p,f) = ctxt81 c p f 
+scen82 (c,p,f) = ctxt82 c p f 
+scen83 (c,p,f) = ctxt83 c p f 
+scen84 (c,p,f) = ctxt84 c p f  

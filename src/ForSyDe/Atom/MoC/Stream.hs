@@ -142,6 +142,10 @@ takeWhileS p (x:-xs)
 (+-+) NullS   ys = ys
 (+-+) (x:-xs) ys = x :- (xs +-+ ys)
 
+(-$-) :: Functor e => (a -> b) -> Stream (e a) -> Stream (e b)
+(-$-) = fmap . fmap
+
+
 -- padS :: a -> Stream a -> Stream a
 -- padS y NullS   = y :- padS y NullS
 -- padS y (x:-xs) = x :- (padS y xs)

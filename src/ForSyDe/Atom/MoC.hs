@@ -92,6 +92,9 @@ module ForSyDe.Atom.MoC(
   ctxt13, ctxt23, ctxt33, ctxt43, ctxt53, ctxt63, ctxt73, ctxt83, 
   ctxt14, ctxt24, ctxt34, ctxt44, ctxt54, ctxt64, ctxt74, ctxt84,
   warg, wres,
+
+  arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
+  
   (-*<), (-*<<), (-*<<<), (-*<<<<), (-*<<<<<), (-*<<<<<<), (-*<<<<<<<), (-*<<<<<<<<),
   )
   where
@@ -704,6 +707,14 @@ ctxt64 (c1,c2,c3,c4,c5,c6)       ps f = warg c1 $ ctxt54 (c2,c3,c4,c5,c6) ps . f
 ctxt74 (c1,c2,c3,c4,c5,c6,c7)    ps f = warg c1 $ ctxt64 (c2,c3,c4,c5,c6,c7) ps . f
 ctxt84 (c1,c2,c3,c4,c5,c6,c7,c8) ps f = warg c1 $ ctxt74 (c2,c3,c4,c5,c6,c7,c8) ps . f
 
+arg1 (c1)                      f = warg c1 $ f
+arg2 (c1,c2)                   f = warg c1 $ arg1 c2 . f
+arg3 (c1,c2,c3)                f = warg c1 $ arg2 (c2,c3) . f
+arg4 (c1,c2,c3,c4)             f = warg c1 $ arg3 (c2,c3,c4) . f
+arg5 (c1,c2,c3,c4,c5)          f = warg c1 $ arg4 (c2,c3,c4,c5) . f
+arg6 (c1,c2,c3,c4,c5,c6)       f = warg c1 $ arg5 (c2,c3,c4,c5,c6) . f
+arg7 (c1,c2,c3,c4,c5,c6,c7)    f = warg c1 $ arg6 (c2,c3,c4,c5,c6,c7) . f
+arg8 (c1,c2,c3,c4,c5,c6,c7,c8) f = warg c1 $ arg7 (c2,c3,c4,c5,c6,c7,c8) . f
 
 infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
 -- | Utilities for extending the '-*' atom for dealing with tupled
