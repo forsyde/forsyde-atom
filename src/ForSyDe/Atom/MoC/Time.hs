@@ -14,7 +14,7 @@
 -- most of the functions here are non-ideal approximations or
 -- conversions from floating point equivalents. The trigonometric
 -- functions are imported from the
--- <https://hackage.haskell.org/package/numbers-3000.2.0.1 numbers>
+-- <https://hackage.haskell.org/package/numbers-3000.2.0.2 numbers>
 -- package, with a fixed @eps@ parameter.
 --
 -- These utilities are meant to get started with using the CT MoC, and

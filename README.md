@@ -40,43 +40,55 @@ Installation and usage
 
 ### The `forsyde-atom` libraries
 
-This package is *cabal*ized, thus one shoud use `cabal` to install
-it. It is recommended to install and test inside a sandbox:
+The package can be installed under an isolated sandbox using the [Stack](https://docs.haskellstack.org/en/stable/README/) program, or as a local *Nix project using the new [Cabal](https://www.haskell.org/cabal/users-guide/) build system.
 
-    cabal update                      # downloads the most recent list of packages from the Hackage repository
-    cabal sandbox init                # initializes the sandbox
-    cabal install --dependencies-only # (optional) installs only dependencies inside the sandbox
-    cabal install                     # installs the library inside the sandbox
-    cabal configure                   # configures the package
-	
-Now the `forsyde-atom` package should be installed in a sandbox in the current path. To open an interpreter session with the default ForSyDe-Atom libraries loaded, run the command:
-	
-    cabal repl                        # starts GHCi with the sandbox loaded	
+#### Using Stack
 
-For a quick test that everything works fine, you can try the following example inside the interpreter session. The example implements a Moore finite state machine that calculates the running sum and multiplies the output with 2.
+For a completely hassle-free installation, we recommend using Stack, which acquires the right compliler version and every other dependency. For this, please install Stack [as recommended on their site](https://docs.haskellstack.org/en/stable/README/) (i.e. using `wget` or `curl`). Clone this repository and
+
+	cd path/to/forsyde-atom
+	stack install
+
+#### Using Cabal
+
+Make sure you have the newest [Haskell Platform](https://www.haskell.org/platform/) along with the newest [Cabal](https://www.haskell.org/cabal/) (version >= 3). For instructions on installing using legacy tools, check the [ForSyDe-Atom web page](forsyde.github.io/forsyde-atom).
+	
+	cd path/to/forsyde-atom
+    cabal build
+
+### Quick Start
+	
+Now the `forsyde-atom` package should be installed in a sandbox in the current path. Depending on how you installed the package you need to open an interpreter session with the default ForSyDe-Atom libraries loaded, by running the appropriate command:
+    
+    stack repl                        # starts GHCi with the sandbox loaded 
+
+or
+
+	cabal repl                        # starts GHCi with the library loaded 
+
+respectively.
+	
+Test that the libraries load correctly: this example implements a Moore finite state machine that calculates the running sum and multiplies the output with 2.
 
     *ForSyDe.Atom> import ForSyDe.Atom.MoC.SY as SY
     *ForSyDe.Atom SY> let s = SY.signal [1..4]
     *ForSyDe.Atom SY> SY.moore11 (+) (*2) 0 s
-	{0,2,6,12,20}
-
+    {0,2,6,12,20}
+	
 For more examples, please check the [user manual](https://github.com/forsyde/forsyde-atom-examples/blob/master/manual.pdf) generated from the [`forsyde-atom-examples`](https://github.com/forsyde/forsyde-atom-examples) project.
 
-To uninstall the library and everything that was generated, you can type in:
-
-    cabal sandbox delete              # deletes the sandbox and everything in it
-	
 ### The test suite
 
-The test suite and its dependencies can be installed and run by
-explicitly adding the flag `--enable-tests` to the previous
-installation commands, namely:
+The test suite and its dependencies can be installed and run by typing in:
 
-    cabal install --enable-tests --dependencies-only # (optional)
-    cabal install --enable-tests                     # installs library + test suite
-    cabal configure --enable-tests                   # configures the package to run the test suite
-    cabal test                                       # runs the test suite 
-   
+	stack test
+	
+or 
+
+	cabal test
+	
+respectively.
+	
 ### Getting the documentation
 
 A Haddock extended API + technical report documentation is

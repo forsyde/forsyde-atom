@@ -1,4 +1,4 @@
-*dist*
+dist*
 *cabal*
 *~
 !*.cabal
@@ -12,3 +12,4 @@ includes/forsyde-tikz
 *.gnuplot
 .stack-work
 fig
+*.config

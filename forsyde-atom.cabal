@@ -11,7 +11,7 @@ homepage:            https://forsyde.github.io/forsyde-atom/
 category:            model, cyber-physical systems, shallow-embedded
 build-type:          Simple
 cabal-version:       >=1.22
-tested-with:         GHC==7.10.3 GHC==8.0.1 GHC==8.2.1 GHC==8.4.1
+tested-with:         GHC==7.10.3 GHC==8.0.1 GHC==8.2.1 GHC==8.4.1 GHC==8.6.2
 -- extra-doc-files:     fig/*.png
 
 library
@@ -58,7 +58,7 @@ library
   default-language:  Haskell2010
   other-extensions:  PostfixOperators, FlexibleInstances
   build-depends:     base>=4.6 && <6
-                   , numbers >= 3000
+                   , numbers >= 3000.2.0.2
                    , time
                    , directory >= 1.2.2
                    , process >= 1.2.3
@@ -90,7 +90,7 @@ test-suite doctests
   ghc-options:      -threaded -isrc
   main-is:          tests/TestsDoc.hs
   build-depends:    base>=4.6 && <6
-                  , numbers >= 3000
+                  , numbers >= 3000.2.0.2
                   , doctest >= 0.8
                   , forsyde-atom
 
