@@ -1,7 +1,7 @@
 FILES = eqs-exb \
-	eqs-moc moc moc-sy moc-de moc-ct moc-sdf \
-	eqs-skel skel eqs-skel-vector skel-vector-func skel-vector-comm \
 	misc
+#	eqs-moc moc moc-sy moc-de moc-ct moc-sdf \
+	eqs-skel skel eqs-skel-vector skel-vector-func skel-vector-comm \
 
 target-format=figs/$(1)-$(2).png
 
@@ -18,7 +18,8 @@ make-fig-targets=$(patsubst %,$(call target-format,$(1),%),$(call get-fig-names,
 define compile-latex
 
 	@pdflatex --shell-escape "\def\currimage{$(subst $(1)-,,$(basename $(notdir $(2))))} \input{$(1).tex}"
-	@convert -density 150 $(1).pdf -quality 90 $(2)
+	pdftoppm $(1).pdf $(2) -png
+#	@convert -density 150 $(1).pdf -quality 90 $(2)
 endef
 
 define fig-template
