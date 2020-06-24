@@ -1,10 +1,10 @@
-FILES = misc
-# eqs-exb \
-	misc
-#	eqs-moc moc moc-sy moc-de moc-ct moc-sdf \
+FILES = eqs-exb \
+	eqs-moc moc moc-sy moc-de moc-sdf \
 	eqs-skel skel eqs-skel-vector skel-vector-func skel-vector-comm \
+	misc
+#	moc-ct
 
-target-format=figs/$(1)-$(2)
+target-format=figs/$(1)-$(2).png
 
 ##################### DO NOT CHANGE FROM HERE #####################
 
@@ -18,8 +18,8 @@ make-fig-targets=$(patsubst %,$(call target-format,$(1),%),$(call get-fig-names,
 
 define compile-latex
 
-	@pdflatex --shell-escape "\def\currimage{$(subst $(1)-,,$(basename $(notdir $(2))))} \input{$(1).tex}"
-	pdftoppm $(1).pdf $(2) -png
+	@pdflatex --interaction=batchmode --shell-escape "\def\currimage{$(subst $(1)-,,$(basename $(notdir $(2))))} \input{$(1).tex}" 
+	pdftoppm $(1).pdf $(basename $(2)) -png -f 1 -singlefile
 #	@convert -density 150 $(1).pdf -quality 90 $(2)
 endef
 
@@ -29,7 +29,7 @@ define fig-template
 endef
 
 haddock: prepare $(FIGS) Makefile $(STYLE)
-	@cd .. && cabal haddock --hyperlink-source --css=docfiles/styles/ocean.css
+	cp figs/* ../fig
 
 prepare:
 	$(MKDIR) figs

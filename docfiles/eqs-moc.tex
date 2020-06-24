@@ -1,6 +1,8 @@
 \documentclass[preview]{standalone} 
 \usepackage[math]{forsyde}
+\usepackage{xcolor}
 \usepackage{forsyde-atom-docs}
+\def\MocObs{\MocFun\kern-.65em{\scriptstyle\mathbf ?}}
 
 \begin{document}
 
@@ -47,10 +49,11 @@
   \end{equation*}
 \end{docimage} 
 
+%%%%%%%% ONLY BELOW ARE USED %%%%%%%%%%%%%%
+
 \begin{docimage}{atom-dot}
   \begin{equation*}%
-    \MocFun :
-    ({\dot{\alpha} \rightarrow \beta})
+    \MocFun : (\textcolor{gray}{\Gamma \times} \alpha \rightarrow \beta)
     \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\beta)
   \end{equation*}
 \end{docimage} 
@@ -58,14 +61,22 @@
 \begin{docimage}{atom-star}
   \begin{equation*}%
     \MocApp :
-    \mathcal{S}({\dot{\alpha} \rightarrow \beta})
+    \mathcal{S}({\textcolor{gray}{\Gamma \times} \alpha \rightarrow \beta})
+    \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\beta)
+  \end{equation*}
+\end{docimage}
+
+\begin{docimage}{atom-obs}
+  \begin{equation*}%
+    \MocObs :
+    \mathcal{S}({\textcolor{gray}{\Gamma \times} \alpha \rightarrow \beta})
     \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\beta)
   \end{equation*}
 \end{docimage}
 
 \begin{docimage}{atom-post}
   \begin{equation*}%
-    \mathcal{S}({\dot{\beta}})
+    \mathcal{S}({\textcolor{gray}{\Gamma \times} \beta})
     \rightarrow \mathcal{S}(\beta)
   \end{equation*}
 \end{docimage}
@@ -73,16 +84,14 @@
 \begin{docimage}{atom-pre}
   \begin{equation*}%
     \MocPre :
-    \dot{\alpha}
-    \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha)
+    \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha)
   \end{equation*}
 \end{docimage}
 
 \begin{docimage}{atom-phi}
   \begin{equation*}%
     \MocPhi :
-    T
-    \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha)
+    \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha)
   \end{equation*}
 \end{docimage}
 
@@ -91,8 +100,7 @@
 \begin{docimage}{pattern-delay}
   \begin{equation*}%
     \MocDel :
-    T \times \dot{\alpha}
-    \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha)
+    \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha) \rightarrow \mathcal{S}(\alpha)
   \end{equation*}
 \end{docimage}
 

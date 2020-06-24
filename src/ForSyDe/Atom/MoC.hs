@@ -155,7 +155,7 @@ import ForSyDe.Atom.Utility.Tuple
 --                       ATOMS                       --
 -------------------------------------------------------
 
-infixl 5 -.-, -*-
+infixl 5 -.-, -*-, -?-
 infixl 3 -<-, -*, -&-
 
 -- | This is a type class defining interfaces for the MoC layer atoms. Each model of
@@ -214,81 +214,83 @@ infixl 3 -<-, -*, -&-
 -- * this artifice is masked using the generic type families 'Fun' and 'Ret'.
 class (Applicative e) => MoC e where
 
-  -- | This is a type family alias \(^1\) for a context-bound function
-  -- passed as an argument to a MoC atom. It can be regarded as an
-  -- enhanced @->@ type operator, specific to each MoC.
+  -- | This is a type family alias \(^1\) for a context-bound function passed as an
+  -- argument to a MoC atom. It can be regarded as an enhanced @->@ type operator,
+  -- specific to each MoC.
   -- 
   -- \[ \Gamma_{\alpha,i} \times \alpha_i \rightarrow \beta \]
   --
-  -- /\(^1\) While hiding the explicit definition of arguments, this/
-  -- /implementation choice certainly has its advantages in avoiding/
-  -- /unnecessary or redundant type constructors (see version 0.1.1 and/
-  -- /prior). Aliases are replaced at compile time, thus not affecting/
-  -- /run-time performance./
+  -- /\(^1\) While hiding the explicit definition of arguments, this/ /implementation
+  -- choice certainly has its advantages in avoiding/ /unnecessary or redundant type
+  -- constructors (see version 0.1.1 and/ /prior). Aliases are replaced at compile
+  -- time, thus not affecting/ /run-time performance./
   type Fun e a b
 
-  -- | Like 'Fun', this alias hides a context-bound value
-  -- (e.g. function return). This alias is needed for utilities to
-  -- extract clean context-free types (see '-*').
+  -- | Like 'Fun', this alias hides a context-bound value (e.g. function return). This
+  -- alias is needed for utilities to extract clean context-free types (see '-*').
   -- 
   -- \[\Gamma_{\beta,i}\times \beta \]
   type Ret e b
   
-  -- | The @func@ atom is mapping a function on values (in the
-  -- presence of a context) to a signal, i.e. stream of tagged
-  -- events. As ForSyDe deals with /determinate/, /functional/
-  -- processes, this atom defines the (only) /behavior/ of a process
-  -- in rapport to one input signal <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- | The @func@ atom is mapping a function on values (in the presence of a context)
+  -- to a signal, i.e. stream of tagged events.
   --
   -- <<fig/eqs-moc-atom-dot.png>>
   (-.-) :: Fun e a b -> Stream (e a) -> Stream (e b)
   
-  -- | The @sync@ atom synchronizes two signals, one carrying
-  -- functions on values (in the presence of a context), and the other
-  -- containing values. During the synchronization it applies the
-  -- function(s) carried by the former signal on the values carried by
-  -- the latter. This atom defines a /relation/ between two signals
-  -- <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- | The @sync@ atom synchronizes two signals, one carrying functions on values (in
+  -- the presence of a context), and the other containing values. During the
+  -- synchronization it applies the function(s) carried by the former signal on the
+  -- values carried by the latter. This atom defines a /relation/ between two signals,
+  -- and a process created with it is monotonous, i.e. any new event in any of the
+  -- input signals triggers a reaction at the output.
   -- 
   -- <<fig/eqs-moc-atom-star.png>>
   (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
 
-  -- | Artificial /utility/ which drops the context and/or partitioning
-  -- yielding a clean signal type.
+  -- | The @observe@ atom synchronizes two signals and applies a function but does not
+  -- trigger any reaction at the output. __OBS__: this atom is /illegal/ in most of
+  -- the provided MoCs due to violating the "non-cleaning" rule imposed by the causal
+  -- evaluation of 'Stream'. However it may be used deterministically in certain
+  -- patterns under certain conditions in certain MoCs (e.g. see
+  -- "ForSyDe.Atom.MoC.DEReactor"), or to define MoCs where causality and determinism
+  -- is not a property of the model, but rather of the application (e.g. communicating
+  -- sequential processes).
+  --
+  -- <<fig/eqs-moc-atom-obs.png>>
+  (-?-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
+  (-?-) = error "This MoC does not allow the 'observe' atom"
+  
+  -- | Artificial /utility/ which drops the context and/or partitioning yielding a
+  -- clean signal type.
   --
   -- <<fig/eqs-moc-atom-post.png>>
   (-*)  :: Stream (e (Ret e b)) -> Stream (e b)
 
-  -- | The @pre@ atom prepends the prefix of the left signal operand
-  -- (i.e. the first event in timed MoCs, or the first /n/ events in
-  -- untimed MoCs) at the beginning of the right signal operand
-  -- \(^1\). This atom is necessary to ensure /complete partial order/
-  -- of a signal and assures the /least upper bound/ necessary for
-  -- example in the evaluation of feedback loops
-  -- <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- | The @pre@ atom prepends the prefix of the left signal operand (i.e. the first
+  -- event in timed MoCs, or the first /n/ events in untimed MoCs) at the beginning of
+  -- the right signal operand \(^1\). This atom is necessary to ensure /complete
+  -- partial order/ of a signal and assures the /least upper bound/ necessary for
+  -- example in the evaluation of feedback loops <ForSyDe-Atom.html#lee98 [Lee98]>.
   --
   -- <<fig/eqs-moc-atom-pre.png>>
   --
-  -- /\(^1\) this atom acts like the @pre@ operator in the synchronous/
-  -- /language Lustre <ForSyDe-Atom.html#halbwachs91 [Halbwachs91]>,/
-  -- /and for timed MoCs it behaves the same. For untimed MoCs though,/
-  -- /the length of the prefix of a signal is assumed to be the length/
-  -- /of a signal, since the API does not provide any other means to/
-  -- /pass /n/ as a parameter./
+  -- /\(^1\) this atom acts like the @pre@ operator in the synchronous language /
+  -- /Lustre and for timed MoCs it behaves the same. For untimed MoCs though, the /
+  -- /length of the prefix of a signal is assumed to be the length of a signal, /
+  -- /since the API does not provide any other means to pass /n/ as a parameter./
   (-<-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
    
-  -- | The @phi@ atom manipulates the tags in a signal in a
-  -- restrictive way which preserves /monotonicity/ and /continuity/
-  -- in a process <ForSyDe-Atom.html#lee98 [Lee98]>, namely by
-  -- “phase-shifting” all tags in a signal with the appropriate metric
-  -- corresponding to each MoC. Thus it preserves the characteristic
-  -- function intact <ForSyDe-Atom.html#sander04 [Sander04]>. 
+  -- | The @phi@ atom manipulates the tags in a signal in a restrictive way which
+  -- preserves /monotonicity/ and /continuity/ in a process
+  -- <ForSyDe-Atom.html#lee98 [Lee98]>, namely by “phase-shifting” all tags in a
+  -- signal with the appropriate metric corresponding to each MoC. Thus it preserves
+  -- the characteristic function intact <ForSyDe-Atom.html#sander04 [Sander04]>.
   --
   -- <<fig/eqs-moc-atom-phi.png>>
   --
-  -- The metric unit used for phase shifting is inferred from the
-  -- prefix of the left signal operand, while right signal operand is
-  -- the one being manipulated.
+  -- The metric distance used for phase shifting is inferred from the prefix of the
+  -- left signal operand, while right signal operand is the one being manipulated.
   (-&-) :: Stream (e a) -> Stream (e a) -> Stream (e a)
 
 
@@ -692,21 +694,23 @@ mealy44 ns od i s1 s2 s3 s4 =        comb54 od st s1 s2 s3 s4
 --                      UTILITIES                      --
 ---------------------------------------------------------
 
--- | Attaches a context parameter to a function argument (e.g
+-- Attaches a context parameter to a function argument (e.g
 -- consumption rates in SDF). Used as kernel function in defining
 -- e.g. 'ctxt22'.
 warg :: c -> (a -> b) -> (c, a -> b)
 warg c f = (c, \x -> f x)
 
--- | Attaches a context parameter to a function's result (e.g
+-- Attaches a context parameter to a function's result (e.g
 -- production rates in SDF). Used as kernel function in defining
 -- e.g. 'ctxt22'.
 wres :: p -> b -> (p, b)
 wres p x = (p, x)
 
--- | <<fig/eqs-moc-atom-context.png>>
+-- | \[
+-- \mathtt{ctxt} (\Gamma_{\alpha}, \Gamma_{\beta}, \alpha^m \rightarrow \beta^n) = \Gamma \vdash \alpha^m \rightarrow \beta^n 
+-- \]
 --
--- Wraps a function with the context needed by some MoCs for their
+-- Wraps a function with the <#context context> needed by some MoCs for their
 -- constructors (e.g. rates in SDF).
 --
 -- This library exports wrappers of type @ctxt[1-8][1-4]@.
@@ -764,7 +768,7 @@ arg8 (c1,c2,c3,c4,c5,c6,c7,c8) f = warg c1 $ arg7 (c2,c3,c4,c5,c6,c7,c8) . f
 
 infixl 3 -*<, -*<<, -*<<<, -*<<<<, -*<<<<<, -*<<<<<<, -*<<<<<<<, -*<<<<<<<<
 -- | Utilities for extending the '-*' atom for dealing with tupled
--- outputs. This library exports operators of form @-*<{1,8}@.
+-- outputs. This library exports operators of form @-*<[1-8]@.
 (-*<) :: MoC e => Stream (e (Ret e b1, Ret e b2)) -> (Stream (e b1), Stream (e b2))
 (-*<) p        = ((-*),(-*))                                    $$        (p ||<)  
 (-*<<) p       = ((-*),(-*),(-*))                               $$$       (p ||<<)
