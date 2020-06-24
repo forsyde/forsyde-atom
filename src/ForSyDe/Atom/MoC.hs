@@ -10,13 +10,19 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module exports the core entities of the MoC layer: interfaces
--- for atoms and process constructors as patterns of atoms. It does
--- /NOT/ export any implementation or instance of any specific
--- MoC. For an overview about atoms, layers and patterns, please refer
--- to the "ForSyDe.Atom" module documentation, and for an overview of
--- the MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
+-- This module defines the Model of Computation (MoC) layer, and is concerned in
+-- modeling the timing aspects of CPS. Its formal foundation is the tagged signal
+-- model <ForSyDe-Atom.html#lee98 [Lee98]>, and it follows it as closely as it is
+-- permitted by the host language, and with the adaptations required by the atom
+-- approach.
 --
+-- The MoC layer is defining almost the same DSL as the classic
+-- <https://forsyde.github.io/forsyde-shallow/ ForSyDe> modeling framework, in the
+-- sense that systems are described in terms of /networks/ of /processes/ operating on
+-- /signals/, and processes are only allowed to be instantiated using a finite set of
+-- /process constructors/. Process constructors capture its computational semantics
+-- accodrding to its respective MoC. MoCs are classes of behaviors dictating the
+-- semantics of execution and concurrency in a network of processes.
 -- The MoCs currently implemented in ForSyDe-Atom are shown in the
 -- <#i:MoC instances section>, and they can be used in designs by
 -- importing their respective modules:
@@ -26,23 +32,66 @@
 -- * "ForSyDe.Atom.MoC.SY"
 -- * "ForSyDe.Atom.MoC.SDF"
 --
--- __IMPORTANT!!!__
--- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
--- on how to interpret, use and develop your own constructors.
+-- MoCs are determined by a a signal's tag system. Based on how their tag systems are
+-- defined ForSyDe identifies MoCs as:
+--
+-- * /timed/ where the tag system is a totally ordered set and, depending on the
+--   abstraction level, \(t\in T\) might express a notion of physical time
+--   (e.g. continuous time 'ForSyDe.Atom.MoC.CT.CT', discrete event
+--   'ForSyDe.Atom.MoC.DE.DE') to the notion of precedence and causality
+--   (e.g. synchronous 'ForSyDe.Atom.MoC.SY.SY');
+--
+-- * untimed, where T is a partially ordered set and \(t\in T\) is expressed in terms
+--   of constraints on the tags in signals (e.g. dataflow, synchronous data flow
+--   'ForSyDe.Atom.MoC.SDF.SDF').
 ----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC(
+  -- * Signals
+
+  -- | <ForSyDe-Atom.html#lee98 [Lee98]> defines signals as ordered sets of events
+  -- where each event is composed of a tag \(\in T\) and a value \(\in V\), where \(T\)
+  -- defines a total or partial order. In ForSyDe a signal is defined as a sequence of
+  -- events that enables processes to communicate and synchronize. Sequencing might
+  -- infer an implicit total order of events, but more importantly it determines an
+  -- order of evaluation, which is a key piece of a simulation engine.
+  --
+  -- In ForSyDe, sequencing is achieved using a 'Stream' data type, similar to the one
+  -- described by <ForSyDe-Atom.html#reekie95 [Reekie95]>. In ForSyDe-Atom, signals
+  -- are streams that carry events, where each type of event is identified by a type
+  -- constructor. Hence the pseudo-Haskell definition for a signal would look like
+  -- below, where @e@ is the type of an event which encodes a tag system through its
+  -- type constructor, and is member of the 'MoC' class. Since, according to
+  -- <ForSyDe-Atom.html#lee98 [Lee98]>, MoCs are defined by tag systems, we can state
+  -- that any specific instance of a signal is describing (i.e. is bound to) a MoC.
+  --
+  -- > type Signal a = exists e . MoC e => Stream (e a) 
+
+  Stream (..),
+
+  -- | This module re-exports all utilities on streams. These utilities are meant to
+  -- be used with plotters or testbenches, but should never be used in designs under
+  -- tests, as they do not carry formal semantics.
+
+  module ForSyDe.Atom.MoC.Stream,
   
   -- * Atoms
+
+  -- | These are primitive process constructors capturing an elementary behavior. By
+  -- themselves they are seldom used as-such, but rather as specific compositions of
+  -- atom patterns. For the MoC layer, atoms are defined only as type signatures, and
+  -- are overloaded by each instance of the 'MoC' type class, as follows:
   
   MoC(..),
 
   -- * Patterns
 
   -- | The atom patterns of the MoC layer are in fact
-  -- <ForSyDe-Atom.html#g:5 process constructors>. Check the
-  -- <ForSyDe-Atom.html#naming_conv naming convention> of the API in
-  -- the page description.
+  -- <ForSyDe-Atom.html#g:5 process constructors>. 
+  --
+  -- __IMPORTANT!!!__
+  -- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
+  -- on how to interpret, use and develop your own constructors.
   
   delay, (-&>-),
   
@@ -100,7 +149,7 @@ module ForSyDe.Atom.MoC(
   where
 
 import ForSyDe.Atom.MoC.Stream
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 -------------------------------------------------------
 --                       ATOMS                       --
@@ -109,70 +158,67 @@ import ForSyDe.Atom.Utility
 infixl 5 -.-, -*-
 infixl 3 -<-, -*, -&-
 
--- | This is a type class defining interfaces for the MoC layer
--- atoms. Each model of computation exposes its tag system through a
--- unique event type which is an instance of this class, defining
--- \( T \times V \).
+-- | This is a type class defining interfaces for the MoC layer atoms. Each model of
+-- computation exposes its tag system through a unique event type which is an instance
+-- of this class, defining \( T \times V \).
 --
--- #context# To express all possible MoCs which can be described using
--- a /tagged/ /signal/ /model/ we need to capture the most general
--- form of their atoms. This means that under the same interface we
--- need to describe atoms with different execution regimes. Recall
--- that atoms are in principle applicative functors which act upon one
--- input signal at a time and partially apply functions. Depending on
--- the execution regime, these function might or might not need
--- additional parameters to determine the behavior for evaluating each
--- argument. These additional parameters we call, in loose terms, as
--- the /execution context/.
+-- #context# To express all possible MoCs which can be described in this layer we need
+-- to capture the most general form of their atoms. Depending on the execution regime
+-- of a MoC, its atoms might or might not need additional parameters to determine the
+-- behavior for evaluating each argument. These additional parameters we call, in
+-- loose terms, as the /execution context/.
 --
--- [execution context] Additional information which, paired with a
---   function, completely determines the behavior of a MoC atom
---   (i.e. process). 
+-- [execution context] Additional information which, paired with a function,
+--   completely determines the behavior of a MoC atom (i.e. process).
 --
--- <<fig/eqs-moc-atom-formatted-func.png>>
+-- \[
+-- \Gamma \vdash \alpha^m \rightarrow \beta^n \simeq \Gamma_{\alpha,1} \times \alpha_1
+-- \rightarrow ... \rightarrow \Gamma_{\alpha,m} \times \alpha_m \rightarrow
+-- (\Gamma_{\beta,1}\times \beta_1) \times ... \times (\Gamma_{\beta,n}\times \beta_n)
+-- \]
 --
--- The left-hand side expression above shows the most general notation
--- used to describe a function with /n/ inputs of (possibly different)
--- types \(\alpha\) and /m/ outputs of (possibly different) types
--- \(\beta\) executed in context \(\Gamma\). The right-hand side
--- expression shows that in ForSyDe-Atom context is associated with
--- each and every argument in order to enable the applicative
--- mechanisms. Depending on the MoC, \(\breve\alpha\) would translate
--- to:
+-- The left-hand side expression above shows the most general notation used to
+-- describe a function with /m/ inputs of (possibly different) types \(\alpha\) and
+-- /n/ outputs of (possibly different) types \(\beta\) executed in context
+-- \(\Gamma\). The right-hand side expression shows that in ForSyDe-Atom context is
+-- associated with each and every argument in order to enable the applicative
+-- mechanisms. Depending on the MoC, \(\Gamma_{\alpha,i}\) would translate to e.g.:
 --
--- <<fig/eqs-moc-atom-formatted-arg.png>>
+-- \[
+-- \Gamma_{\alpha,i} \in \begin{cases}
+--   \emptyset, & \text{for all timed MoCs (e.g. SY, DE, CT)} \\
+--   \mathbb{N}, & \text{for static variants of SDF}\\
+--   \mathbb{N}^n, & \text{for CSDF}\\
+--   S \times \mathbb{N} \rightarrow \mathbb{N}, & \text{where } S \text{ is a state space,} \\
+--     & \text{in the most general case of untimed data flow}
+-- \end{cases}
+-- \]
 --
--- One example of execution context is the consumption and production
--- rates for data flow MoCs (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In this
--- case the passed functions are defined over "sequences" or
--- "partitions" of events, i.e. groupings of events with the same
--- partial order in relation to a process firing.
+-- One example of execution context is the consumption and production rates for
+-- synchronous data flow MoCs (e.g. 'ForSyDe.Atom.MoC.SDF.SDF'). In this case the
+-- passed functions are defined over /sequences/ or /partitions/ of events,
+-- i.e. groupings of events with the same partial order in relation to a process
+-- firing.
 --
--- While in the example above the execution context can be extracted
--- from the type information, working with type-level parameters is
--- not a trivial task in Haskell, especially if we want to describe a
--- general and extensible type class. This is why we have chosen a
--- pragmatic approach in implementing the 'MoC' class:
+-- Although a more elegant approach of passing execution context would be using
+-- type-level arithmetics, this is a non-trivial task to implement in Haskell. This is
+-- why we chose the pragmatic approach of /pairing/ a context parameter per argument,
+-- similar to the formula above, where:
 --
--- * any (possible) Cartesian product which denotes a partition of
---   \(\alpha\) is represented using a recursive type, namely a list
---   \([\alpha]\).
+-- * any function representing a partition of \(\alpha\) is operating on a recursive
+--   type, namely a list \([\alpha]\).
 --
--- * as the execution context cannot (or can hardly) be extracted from
---   the recursive type, in the most general case we pass both context
---   /and/ argument as a pair (see each instance in particular). To
---   aid in pairing contexts with each argument in a function, the
---   general purpose @ctxt@ utilities are provided (see 'ctxt22').
+-- * to aid in pairing contexts with each argument in a function, the general purpose
+--   @ctxt@ utilities are provided (see 'ctxt22').
 --
--- * this artifice is masked using the generic type families 'Fun' and
---   'Ret'.
+-- * this artifice is masked using the generic type families 'Fun' and 'Ret'.
 class (Applicative e) => MoC e where
 
   -- | This is a type family alias \(^1\) for a context-bound function
   -- passed as an argument to a MoC atom. It can be regarded as an
   -- enhanced @->@ type operator, specific to each MoC.
   -- 
-  -- <<fig/eqs-moc-atom-function.png>>
+  -- \[ \Gamma_{\alpha,i} \times \alpha_i \rightarrow \beta \]
   --
   -- /\(^1\) While hiding the explicit definition of arguments, this/
   -- /implementation choice certainly has its advantages in avoiding/
@@ -183,9 +229,9 @@ class (Applicative e) => MoC e where
 
   -- | Like 'Fun', this alias hides a context-bound value
   -- (e.g. function return). This alias is needed for utilities to
-  -- recreate clean types again (see '-*').
+  -- extract clean context-free types (see '-*').
   -- 
-  -- <<fig/eqs-moc-atom-result.png>>
+  -- \[\Gamma_{\beta,i}\times \beta \]
   type Ret e b
   
   -- | The @func@ atom is mapping a function on values (in the

@@ -9,7 +9,7 @@ import           ForSyDe.Atom.MoC.Time   (Time(..))
 import           ForSyDe.Atom.MoC.TimeStamp
 import qualified ForSyDe.Atom.Skeleton.Vector as V (
   Vector, zipx, unzipx, fanout, unit, length, vector, reverse)
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
 import qualified ForSyDe.Atom.MoC.SY.Core as SY

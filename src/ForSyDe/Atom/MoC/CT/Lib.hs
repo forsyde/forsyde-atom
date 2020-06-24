@@ -21,7 +21,7 @@ import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.CT.Core
 import           ForSyDe.Atom.MoC.Time as T
 import           ForSyDe.Atom.MoC.TimeStamp
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 import           Prelude hiding (const)
 import ForSyDe.Atom.Utility.Plot
 

@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom
--- Copyright   :  (c) George Ungureanu, 2015-2018
+-- Copyright   :  (c) George Ungureanu, 2015-2020
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
@@ -11,16 +11,14 @@
 --
 -- "ForSyDe.Atom" is a formal framework for modeling and simulating heterogeneous
 -- embedded and cyber-physical systems (CPS) at a high level of abstraction, whose
--- "spiritual parent" is <#sander04 [Sander04]>. This paper presented ForSyDe, an EDSL
--- for modeling heterogeneous systems as /networks of processes/ communicating
--- through /signals/. In ForSyDe, processes alone capture the timing semantics of
--- execution and synchronization according to a certain /model of computation
--- (MoC)/. The shallow implementation of ForSyDe,
--- @<https://forsyde.github.io/forsyde-shallow/ forsyde-shallow>@ provides libraries
--- of higher-order functions for instantiating processes called /process constructors/
--- for several MoCs. 
---
--- <<fig/misc-process-network.png>>
+-- "spiritual parent" is the <https://forsyde.github.io/forsyde-shallow/ ForSyDe>
+-- modeling framework <#sander04 [Sander04]>. In ForSyDe, heterogeneous systems are
+-- modeled as /networks of processes/ communicating through /signals/. In ForSyDe,
+-- processes alone capture the timing semantics of execution and synchronization
+-- according to a certain /model of computation (MoC)/. The shallow implementation of
+-- ForSyDe, @<https://forsyde.github.io/forsyde-shallow/ forsyde-shallow>@ provides
+-- libraries of higher-order functions for instantiating processes called
+-- /process constructors/ for several MoCs. 
 --
 -- The @<https://forsyde.github.io/forsyde-atom/ forsyde-atom>@ project started as a
 -- proof-of-concept for the atom-based approach to CPS introduced in
@@ -37,7 +35,7 @@ module ForSyDe.Atom (
   -- * Prerequisites
   
   -- | The API documentation is meant to be a comprehensive reference guide for an
-  -- iterested user, with enough details, pictures and examples to ease the
+  -- interested user, with enough details, pictures and examples to ease the
   -- understanding of each API element. It is not meant to be an introduction to the
   -- ForSyDe-Atom methodology nor a modeling manual. For proper introductory material
   -- we recommend consulting the following:
@@ -77,6 +75,22 @@ module ForSyDe.Atom (
 
   module ForSyDe.Atom.Utility.Tuple,
   module ForSyDe.Atom.Utility.Plot,
+
+  -- ** Available Layers
+
+  -- | Following are the layers provided by the current version of ForSyDe-Atom. Click
+  -- on any of the links for more documentation:
+  --
+  -- * "ForSyDe.Atom.MoC", a DSL for capturing the semantics of computation and
+  --   concurrency according to a model of computation.
+  --
+  -- * "ForSyDe.Atom.Skeleton" a DSL for describing structured parallelism.
+  --
+  -- * "ForSyDe.Atom.Probability", a DSL for describing numerical values as probability
+  -- * distributions, e.g. Gaussian.
+  --
+  -- * "ForSyDe.Atom.ExB", a DSL for extending the pool of values with logic symbols
+  --   with well-kown semantics (e.g. absent values).
   
   -- ** Naming Convention
   
@@ -84,29 +98,16 @@ module ForSyDe.Atom (
   -- provided by the @<https://forsyde.github.io/forsyde-atom/ forsyde-atom>@ API are
   -- named along the lines of @functionMN@ where @M@ represents the number of
   -- __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
-  -- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid repetition we
-  -- only provide documentation for functions with 2 inputs and 2 outputs
-  -- (i.e. @function22@), while the available ones are mentioned as a regex
-  -- (i.e. @function[1-4][1-4]@). In case the provided functions do not suffice, feel
-  -- free to implement your own patterns following the examples in the source code.
+  -- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). For brevity, we only
+  -- write documentation for functions with 2 inputs and 2 outputs
+  -- (i.e. @function22@), while all the other available ones are mentioned as a regex
+  -- (i.e. @function[1-4][1-4]@). In case the provided functions are not sufficient,
+  -- feel free to implement your own patterns following the examples in the source
+  -- code.
 
-  -- ** Provided Layers
-
-  -- | Following are the layers defined by the current version of ForSyDe-Atom. Click
-  -- on any of the links for more documentation:
-  --
-  -- * "ForSyDe.Atom.ExB", a DSL for extending the pool of values with logic symbols
-  --   with well-kown semantics (e.g. absent values).
-  --
-  -- * "ForSyDe.Atom.Prob", a DSL for describing numerical values as probability
-  -- * distributions, e.g. Gaussian.
-  -- 
-  -- * "ForSyDe.Atom.MoC", a DSL for capturing the semantics of computation and
-  --   concurrency according to a model of computation.
-  --
-  -- * "ForSyDe.Atom.Skeleton" a DSL for describing structured parallelism.
-    
   -- * Bibliography
+
+  -- | Here are gathered pointers to documents referenced throughout the API documentation.
 
   -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
 

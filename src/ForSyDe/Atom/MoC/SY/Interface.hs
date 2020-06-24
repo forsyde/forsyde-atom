@@ -21,7 +21,7 @@ import           ForSyDe.Atom.MoC.Stream (Stream(..))
 import           ForSyDe.Atom.MoC.TimeStamp
 import qualified ForSyDe.Atom.Skeleton.Vector as V (
   Vector, vector, zipx, unzipx, fanout, unit, length, reverse)
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 
 ------- MoC INTERFACES -------
 

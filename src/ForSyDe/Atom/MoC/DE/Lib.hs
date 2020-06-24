@@ -19,7 +19,7 @@ module ForSyDe.Atom.MoC.DE.Lib where
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.DE.Core
 import           ForSyDe.Atom.MoC.TimeStamp
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 
 ------- DOCTEST SETUP -------
 

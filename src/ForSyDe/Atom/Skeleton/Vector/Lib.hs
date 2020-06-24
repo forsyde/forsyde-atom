@@ -17,7 +17,7 @@ module ForSyDe.Atom.Skeleton.Vector.Lib where
 import Data.Maybe
 import ForSyDe.Atom.Skeleton as S
 import ForSyDe.Atom.Skeleton.Vector.Core
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
 

@@ -18,7 +18,7 @@ module ForSyDe.Atom.MoC.SDF.Lib where
 
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.SDF.Core
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 
 ------- DOCTEST SETUP -------
 

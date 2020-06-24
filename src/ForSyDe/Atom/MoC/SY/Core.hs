@@ -18,7 +18,7 @@ module ForSyDe.Atom.MoC.SY.Core where
 
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 -- | Type synonym for a SY signal, i.e. "an ordered stream of SY
 -- events"

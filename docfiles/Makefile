@@ -1,9 +1,10 @@
-FILES = eqs-exb \
+FILES = misc
+# eqs-exb \
 	misc
 #	eqs-moc moc moc-sy moc-de moc-ct moc-sdf \
 	eqs-skel skel eqs-skel-vector skel-vector-func skel-vector-comm \
 
-target-format=figs/$(1)-$(2).png
+target-format=figs/$(1)-$(2)
 
 ##################### DO NOT CHANGE FROM HERE #####################
 

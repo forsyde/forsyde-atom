@@ -11,7 +11,7 @@ import ForSyDe.Atom.MoC.Stream (Stream(..))
 import ForSyDe.Atom.MoC.Time (Time(..))
 import qualified ForSyDe.Atom.Skeleton.Vector as V (
   Vector, zipx, unzipx, fanout, unit, length, vector)
-import ForSyDe.Atom.Utility (($$),($$$),($$$$))
+import ForSyDe.Atom.Utility.Tuple (($$),($$$),($$$$))
 
 ------- DOCTEST SETUP -------
 

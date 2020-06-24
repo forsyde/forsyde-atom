@@ -52,7 +52,7 @@ module ForSyDe.Atom.Skeleton (
   
   ) where
 
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 infixl 4 =.=, =*=
 infixl 2 =\=, =<<=

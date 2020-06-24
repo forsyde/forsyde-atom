@@ -21,7 +21,7 @@ import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.Time
 import ForSyDe.Atom.MoC.TimeStamp
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 
 -- | Type synonym for a CT signal, i.e. "a signal of CT events"

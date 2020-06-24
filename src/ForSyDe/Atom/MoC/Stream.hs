@@ -17,10 +17,6 @@
 -- layer. The 'Stream' type is only the base (potentially infinite)
 -- structure which can encapsulate events in order to describe
 -- signals.
---
--- For an overview about atoms, layers and patterns, please refer to
--- the "ForSyDe.Atom" module documentation, and for an overview of the
--- MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
 -----------------------------------------------------------------------------
 module ForSyDe.Atom.MoC.Stream  where
 
@@ -31,20 +27,25 @@ infixr 3 :-
 -- thus all properties of lists may also be applied to
 -- 'Stream's. While, in combination with lazy evaluation, it is
 -- possible to create and simulate infinite signals, we need to ensure
--- that the first/previous event is always fully evaluated. This can
--- be translated into the following rule:
+-- that the first/previous event is always fully evaluated, which is
+-- equivalent to ensuring the the monotonicity property in dataflow
+-- systems. This translates in the following composition rule:
 --
--- [non-causal feedback] or "zero-delay" feedback loops are forbidden,
--- due to un-evaluated self-referential calls. In a feedback loop,
--- there always has to be enough events to ensure the data flow.
+-- [non-causal feedback is forbidden] also called "zero-delay"
+-- feedback loops, are caused by un-evaluated self-referential
+-- calls. In a feedback loop, there always has to be enough events to
+-- ensure the data flow.
 --
 -- This rule imposes that the stream of data is uninterrupted in order
 -- to have an evaluatable kernel every time a new event is produced
--- (i.e. to avoid deadlocks). Thus we can add the rule:
+-- (i.e. to avoid deadlocks), which is ther equivalent to ensuring
+-- continuity in dataflow systems. This translates in the following
+-- rule:
 --
--- [cleaning of output signals] through removing output events is also
--- forbidden.  In other words, for each new input at any instant in
--- time, a process must react with /at least/ one output event.
+-- [cleaning of signals in a feedback is forbidden] in other words,
+-- whenever a feedback composition occurs, for each new input at any
+-- instant in time, a process must react with /at least/ one output
+-- event.
 data Stream e = NullS         -- ^ terminates a signal
               | e :- Stream e -- ^ the default constructor appends an
                               -- event to the head of the stream

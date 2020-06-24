@@ -20,7 +20,7 @@ module ForSyDe.Atom.MoC.SDF.Core where
 
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 -- | Type synonym for production rate
 type Cons = Int
