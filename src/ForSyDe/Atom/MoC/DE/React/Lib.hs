@@ -73,6 +73,22 @@ delay' ::(Num t, Ord t)
 
 delay' = MoC.delay
 
+
+-- | The @delay@ process "delays" a signal with one
+-- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern defined in
+-- "ForSyDe.Atom.MoC".
+--
+-- >>> let s = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: SignalBase t Int
+-- >>> delay 3 0 s
+-- {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
+-- 
+-- <<fig/moc-de-pattern-delay.png>>
+unsafeDelay :: (Num t, Ord t)
+            => t          -- ^ time delay
+            -> SignalBase t a   -- ^ input signal
+            -> SignalBase t a   -- ^ output signal
+unsafeDelay t MoC.NullS = error "[MoC.DE.RE] cannot delay a non-existing signal" 
+unsafeDelay t s@(RE _ x MoC.:- _) = unit (t,x) -&- s
 --------COMB --------
 
 -- | @comb@ processes map combinatorial functions on signals and take
@@ -580,3 +596,4 @@ mealy33 ns od i s1 s2 s3    =             comb43 (li1 od) st s1 s2 s3
 
 
 ------------------------------
+

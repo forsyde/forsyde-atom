@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleInstances, PostfixOperators #-}
+{-# OPTIONS_HADDOCK hide #-}
 module ForSyDe.Atom.MoC.DE.React.Core where
 
 import ForSyDe.Atom.MoC
@@ -79,14 +80,24 @@ falsify []     = []
   
 -----------------------------------------------------------------------------
 
-unit  :: (Num t, Ord t) => (t, a) -> SignalBase t a 
-unit (t,v) = (RE 0 v :- RE t v :- NullS)
 
+unit  :: (Num t, Ord t) => (t, a) -> SignalBase t a 
 -- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
 -- unit signal(s). A unit signal is a signal with one event with the
 -- period @tag@ carrying @value@.
 --
 -- Helpers: @unit@ and @unit[2-4]@.
+unit2 :: (Num t, Ord t)
+      => ((t,a1),(t, a2))
+      -> (SignalBase t a1, SignalBase t a2)
+unit3 :: (Num t, Ord t)
+      => ((t,a1),(t, a2),(t, a3))
+      -> (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+unit4 :: (Num t, Ord t)
+      => ((t,a1),(t, a2),(t, a3),(t, a4))
+      -> (SignalBase t a1, SignalBase t a2, SignalBase t a3, SignalBase t a4)
+
+unit (t,v) = (RE 0 v :- RE t v :- NullS)
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
@@ -119,27 +130,22 @@ until u (RE t v:-xs)
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- {1@0s,2@2s,3@5s,4@7s,5@10s}
+-- >>> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
+-- {1@1s,2@2s,3@5s,4@7s,5@10s}
 --
 -- Incorrect usage (not covered by @doctest@):
 --
 -- > λ> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
 -- > {1@0s,2@2s,3@5s*** Exception: [MoC.RE] malformed signal
--- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- > *** Exception: [MoC.DE.RE] signal does not start from global 0
 readSignal :: (Num t, Ord t, Read t, Read a) => String -> SignalBase t a
 readSignal s = checkSignal $ read s
 
 -- | Checks if a signal is well-formed or not, according to the RE MoC
 -- interpretation in ForSyDe-Atom.
-checkSignal NullS = NullS
-checkSignal s@(x:-_)
-  | tag x == 0 = checkOrder s
-  | otherwise  = error "[MoC.RE] signal does not start from global 0"
-  where
-    checkOrder NullS      = NullS
-    checkOrder (x:-NullS) = (x:-NullS)
-    checkOrder (x:-y:-xs) | tag x < tag y = x :-checkOrder (y:-xs)
-                          | otherwise = error "[MoC.DE.RE] malformed signal"
+checkSignal NullS      = NullS
+checkSignal (x:-NullS) = (x:-NullS)
+checkSignal (x:-y:-xs) | tag x < tag y = x :-checkSignal (y:-xs)
+                       | otherwise = error "[MoC.DE.RE] malformed signal"
 
 -----------------------------------------------------------------------------
 

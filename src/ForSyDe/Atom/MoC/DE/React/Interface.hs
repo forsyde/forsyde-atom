@@ -6,11 +6,13 @@ module ForSyDe.Atom.MoC.DE.React.Interface where
 import           ForSyDe.Atom.MoC.Stream (Stream(..))
 import           ForSyDe.Atom.Utility.Tuple
 
-import qualified ForSyDe.Atom.ExB.Absent as AE
+import qualified ForSyDe.Atom.ExB               as AE
+import qualified ForSyDe.Atom.ExB.Absent        as AE
+import qualified ForSyDe.Atom.MoC.DE            as DE
 import qualified ForSyDe.Atom.MoC.DE.React.Core as RE
-import qualified ForSyDe.Atom.MoC.DE.React.Lib as RE
-import qualified ForSyDe.Atom.MoC.SY as SY
-import qualified ForSyDe.Atom.MoC.SY.Clocked as SYC
+import qualified ForSyDe.Atom.MoC.DE.React.Lib  as RE
+import qualified ForSyDe.Atom.MoC.SY            as SY
+import qualified ForSyDe.Atom.MoC.SY.Clocked    as SYC
 
 ------- DOCTEST SETUP -------
 
@@ -114,6 +116,17 @@ fromSYC3 ts s1 s2 s3    = (fromSYC1 ts s1, fromSYC1 ts s2, fromSYC1 ts s3)
 fromSYC4 ts s1 s2 s3 s4 = (fromSYC1 ts s1, fromSYC1 ts s2, fromSYC1 ts s3,
                            fromSYC1 ts s4)
 
+reToDE (RE.RE t a) = (DE.DE t a)
+toDE1 s1 = fmap reToDE s1
+toDE2 s1 s2 = (toDE1 s1, toDE1 s2)
+toDE3 s1 s2 s3 = (toDE1 s1, toDE1 s2, toDE1 s3)
+toDE4 s1 s2 s3 s4 = (toDE1 s1, toDE1 s2, toDE1 s3, toDE1 s4)
+
+deToRE (DE.DE t a) = (RE.RE t a)
+fromDE1 s1 = fmap deToRE s1
+fromDE2 s1 s2 = (fromDE1 s1, fromDE1 s2)
+fromDE3 s1 s2 s3 = (fromDE1 s1, fromDE1 s2, fromDE1 s3)
+fromDE4 s1 s2 s3 s4 = (fromDE1 s1, fromDE1 s2, fromDE1 s3, fromDE1 s4)
 
 ------- HYBRID PROCESSES -------
 
@@ -194,3 +207,30 @@ embedSY43 syproc de1 de2 de3 de4
 embedSY44 syproc de1 de2 de3 de4
   = let (ts, sy1, sy2, sy3, sy4) = toSYC4 de1 de2 de3 de4
     in  fromSYC4 ts ><<< syproc sy1 sy2 sy3 sy4
+
+
+----------------------------------------------------
+
+syncAndHold2 (i1,i2)
+  = embedSY22 (\s1 s2 ->
+                 (SYC.current i1 s1, SYC.current i2 s2))
+syncAndHold3 (i1,i2,i3)
+  = embedSY33 (\s1 s2 s3 ->
+                 (SYC.current i1 s1, SYC.current i2 s2,
+                   SYC.current i3 s3))
+syncAndHold4 (i1,i2,i3,i4)
+  = embedSY44 (\s1 s2 s3 s4 ->
+                 (SYC.current i1 s1, SYC.current i2 s2,
+                   SYC.current i3 s3, SYC.current i4 s4))
+
+syncAndFill2 (i1,i2)
+  = embedSY22 (\s1 s2 ->
+                 (SYC.fill i1 s1, SYC.fill i2 s2))
+syncAndFill3 (i1,i2,i3)
+  = embedSY33 (\s1 s2 s3 ->
+                 (SYC.fill i1 s1, SYC.fill i2 s2,
+                   SYC.fill i3 s3))
+syncAndFill4 (i1,i2,i3,i4)
+  = embedSY44 (\s1 s2 s3 s4 ->
+                 (SYC.fill i1 s1, SYC.fill i2 s2,
+                   SYC.fill i3 s3, SYC.fill i4 s4))

@@ -36,7 +36,7 @@ library
                    , ForSyDe.Atom.MoC.DE.React
                    , ForSyDe.Atom.MoC.DE.React.Core
                    , ForSyDe.Atom.MoC.DE.React.Lib
-                   -- , ForSyDe.Atom.MoC.DE.React.LF
+                   , ForSyDe.Atom.MoC.DE.React.LF
                    , ForSyDe.Atom.MoC.DE.React.Interface
                    , ForSyDe.Atom.MoC.CT
                    , ForSyDe.Atom.MoC.CT.Core

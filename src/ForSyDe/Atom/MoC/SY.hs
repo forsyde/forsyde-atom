@@ -125,14 +125,6 @@ module ForSyDe.Atom.MoC.SY (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
   
-  -- ** Predicates
-
-  -- | These processes manipulate the behavior of a signal based on predicates on
-  -- their presence or their status.
-
-  when, when', is, whenPresent, filter, filter', fill, hold,
-  reactPres1, reactPres2, reactPres3, reactPres4,
-  
   -- * Interfaces
 
   toDE, toDE2, toDE3, toDE4,
