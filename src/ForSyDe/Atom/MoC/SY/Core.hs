@@ -24,7 +24,7 @@ import ForSyDe.Atom.Utility.Tuple
 -- events"
 type Signal a   = Stream (SY a)
 
--- | The SY event. It identifies a synchronous signal.
+-- | The SY event. It defines a synchronous signal.
 newtype SY a  = SY { val :: a -- ^ value wrapped by the 'SY' event
                               -- constructor.
                    }
@@ -68,7 +68,7 @@ unit  = pure . pure
 -- | Wraps a (tuple of) value(s) into the equivalent unit signal(s). A
 -- unit signal is a signal with one event, i.e. a singleton.
 --
--- Helpers: @unit@, @unit2@, @unit3@, @unit4@.
+-- Provided helpers: @unit@, @unit2@, @unit3@, @unit4@.
 unit2 = ($$) (unit, unit)
 unit3 = ($$$) (unit, unit, unit)
 unit4 = ($$$$) (unit, unit, unit, unit)
@@ -78,7 +78,7 @@ signal   :: [a] -> Signal a
 signal l = stream (SY <$> l)
 
 -- | Reads a signal from a string. Like with the 'Prelude.read' function from
--- @Prelude@, you must specify the tipe of the signal.
+-- @Prelude@, you must specify the type of the signal.
 --
 -- >>> readSignal "{1,2,3,4,5}" :: Signal Int
 -- {1,2,3,4,5}

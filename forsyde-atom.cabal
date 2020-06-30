@@ -27,11 +27,17 @@ library
                    , ForSyDe.Atom.MoC.SY.Core
                    , ForSyDe.Atom.MoC.SY.Lib
                    , ForSyDe.Atom.MoC.SY.Interface
+                   , ForSyDe.Atom.MoC.SY.Clocked
                    , ForSyDe.Atom.MoC.DE
                    , ForSyDe.Atom.MoC.DE.Core
                    , ForSyDe.Atom.MoC.DE.Lib
                    , ForSyDe.Atom.MoC.DE.Interface
                    , ForSyDe.Atom.MoC.DE.Hybrid
+                   , ForSyDe.Atom.MoC.DE.React
+                   , ForSyDe.Atom.MoC.DE.React.Core
+                   , ForSyDe.Atom.MoC.DE.React.Lib
+                   -- , ForSyDe.Atom.MoC.DE.React.LF
+                   , ForSyDe.Atom.MoC.DE.React.Interface
                    , ForSyDe.Atom.MoC.CT
                    , ForSyDe.Atom.MoC.CT.Core
                    , ForSyDe.Atom.MoC.CT.Lib

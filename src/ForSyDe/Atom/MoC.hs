@@ -32,6 +32,8 @@
 -- * "ForSyDe.Atom.MoC.SY"
 -- * "ForSyDe.Atom.MoC.SDF"
 --
+-- __The documentation in this module covers the internals of the MoC layer. While reading through is useful to understand some of the reasoning behind the modeling framework, this API is less likely to be touched by the casual user than the ones exported by each MoC above. For user-friendly modeling APIs consult the respective sub-modules.__
+--
 -- MoCs are determined by a a signal's tag system. Based on how their tag systems are
 -- defined ForSyDe identifies MoCs as:
 --
@@ -86,12 +88,29 @@ module ForSyDe.Atom.MoC(
 
   -- * Patterns
 
-  -- | The atom patterns of the MoC layer are in fact
-  -- <ForSyDe-Atom.html#g:5 process constructors>. 
+  -- | The atom patterns of the MoC layer are the process constructors used in regular
+  -- designs. Notice that these constructors themselves are "hollow" and carry no
+  -- semantics unless the atoms are overloaded with a certain MoC, i.e. are applied on
+  -- signals of a certain MoC. Most MoC sub-modules will provide more user-friendly
+  -- versions of these patterns, thus these ones will seldomly be used as-such. We
+  -- export them mainly for documentation purpose, to show that all MoCs share the
+  -- same structure for their process constructors
   --
-  -- __IMPORTANT!!!__
-  -- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
+  -- __IMPORTANT!!!__ see the <ForSyDe-Atom.html#naming_conv naming convention> rules
   -- on how to interpret, use and develop your own constructors.
+  --
+  -- The documentation of each pattern is aided by a mathematical and a graphical
+  -- notation following some conventions for brevity:
+  --
+  -- * \(\mathcal{S}\) is used to denote a signal type (i.e. stream of events)
+  -- 
+  -- * the power notation is used to denote multiple signals, curried if input
+  --   \(s^m=s_1\ s_2\ ...\ s_m\); respectively tupled if output
+  --   \(s^n=(s_1,s_2,...,s_n)\). Currying between outputs and inputs is implicit.
+  --
+  -- * for improved readability we use the tupled mathematical notation for arguments.
+  --
+  -- * a single line represents a signal, a double line represents multiple signals.
   
   delay, (-&>-),
   
@@ -155,7 +174,7 @@ import ForSyDe.Atom.Utility.Tuple
 --                       ATOMS                       --
 -------------------------------------------------------
 
-infixl 5 -.-, -*-, -?-
+infixl 5 -.-, -*-
 infixl 3 -<-, -*, -&-
 
 -- | This is a type class defining interfaces for the MoC layer atoms. Each model of
@@ -247,19 +266,6 @@ class (Applicative e) => MoC e where
   -- 
   -- <<fig/eqs-moc-atom-star.png>>
   (-*-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
-
-  -- | The @observe@ atom synchronizes two signals and applies a function but does not
-  -- trigger any reaction at the output. __OBS__: this atom is /illegal/ in most of
-  -- the provided MoCs due to violating the "non-cleaning" rule imposed by the causal
-  -- evaluation of 'Stream'. However it may be used deterministically in certain
-  -- patterns under certain conditions in certain MoCs (e.g. see
-  -- "ForSyDe.Atom.MoC.DEReactor"), or to define MoCs where causality and determinism
-  -- is not a property of the model, but rather of the application (e.g. communicating
-  -- sequential processes).
-  --
-  -- <<fig/eqs-moc-atom-obs.png>>
-  (-?-) :: Stream (e (Fun e a b)) -> Stream (e a) -> Stream (e b)
-  (-?-) = error "This MoC does not allow the 'observe' atom"
   
   -- | Artificial /utility/ which drops the context and/or partitioning yielding a
   -- clean signal type.
@@ -714,11 +720,11 @@ wres p x = (p, x)
 -- constructors (e.g. rates in SDF).
 --
 -- This library exports wrappers of type @ctxt[1-8][1-4]@.
-ctxt22 :: (ctx, ctx)  -- ^ argument contexts (e.g. consumption rates in SDF)
-       -> (ctx, ctx)  -- ^ result contexts (e.g. production rates in SDF)
+ctxt22 :: (ctxa, ctxa)  -- ^ argument contexts (e.g. consumption rates in SDF)
+       -> (ctxb, ctxb)  -- ^ result contexts (e.g. production rates in SDF)
        -> (a1 -> a2 -> (b1, b2))
           -- ^ function on values/partitions of values
-       -> (ctx, a1 -> (ctx, a2 -> ((ctx, b1), (ctx, b2))))
+       -> (ctxa, a1 -> (ctxa, a2 -> ((ctxb, b1), (ctxb, b2))))
           -- ^ context-wrapped form of the previous function
 
 ctxt11 (c1)                      p f = warg c1 $ wres p . f

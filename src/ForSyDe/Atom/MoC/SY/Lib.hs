@@ -45,10 +45,9 @@ delay i = MoC.delay (unit i)
 
 ------- COMB -------
 
--- | @comb@ processes map combinatorial functions on signals and take
--- care of synchronization between input signals. It instantiates the
--- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22' defined in
--- "ForSyDe.Atom.MoC").
+-- | @comb@ processes map combinatorial functions on signals and take care of
+-- synchronization between input signals. It implements the @comb@ pattern (see
+-- 'ForSyDe.Atom.MoC.comb22').
 -- 
 -- Constructors: @comb[1-4][1-4]@.
 --
@@ -114,10 +113,9 @@ comb44 = MoC.comb44
 
 ------- RECONFIG -------
 
--- | @reconfig@ creates an synchronous adaptive process where the
--- first signal carries functions and the other carry the
--- arguments. It instantiates the @reconfig@ atom pattern (see
--- 'ForSyDe.Atom.MoC.reconfig22' defined in "ForSyDe.Atom.MoC").
+-- | @reconfig@ creates an synchronous adaptive process where the first signal carries
+-- functions and the other carry the arguments. It imlements the @reconfig@ pattern
+-- (see 'ForSyDe.Atom.MoC.reconfig22').
 --
 -- Constructors: @reconfig[1-4][1-4]@.
 --
@@ -184,9 +182,8 @@ reconfig44 = MoC.reconfig44
 
 ------- CONSTANT -------
 
--- | A signal generator which keeps a value constant. It
--- is actually an instantiation of the @stated0X@ constructor
--- (check 'ForSyDe.Atom.MoC.stated22').
+-- | A signal generator which keeps a value constant. It implements rgw @stated0X@
+-- pattern (see 'ForSyDe.Atom.MoC.stated22').
 --
 -- Constructors: @constant[1-4]@.
 --
@@ -211,9 +208,8 @@ constant4 i = MoC.stated04 (,,,) (unit4 i)
 
 ------- GENERATE -------
 
--- | A signal generator based on a function and a kernel value. It
--- is actually an instantiation of the @stated0X@ constructor
--- (check 'ForSyDe.Atom.MoC.stated22').
+-- | A signal generator based on a function and a kernel value. It implements the
+-- @stated0X@ pattern (check 'ForSyDe.Atom.MoC.stated22').
 --
 -- Constructors: @generate[1-4]@.
 --
@@ -244,9 +240,8 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 
 ------- STATED -------
 
--- | @stated@ is a state machine without an output decoder. It is an
--- instantiation of the @state@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
+-- | @stated@ is a state machine without an output decoder. It implements the @stated@
+-- pattern (see 'ForSyDe.Atom.MoC.stated22').
 --
 -- Constructors: @stated[1-4][1-4]@.
 --
@@ -315,9 +310,8 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 
 ------- STATE -------
                  
--- | @state@ is a state machine without an output decoder. It is an
--- instantiation of the @stated@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.state22' defined in "ForSyDe.Atom.MoC").
+-- | @state@ is a state machine without an output decoder. It implements the @stated@
+-- pattern (see 'ForSyDe.Atom.MoC.state22').
 --
 -- Constructors: @state[1-4][1-4]@.
 --
@@ -386,9 +380,8 @@ state44 ns i = MoC.state44 ns (unit4 i)
 
 ------- MOORE -------
 
--- | @moore@ processes model Moore state machines. It is an
--- instantiation of the @moore@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.moore22' defined in "ForSyDe.Atom.MoC").
+-- | @moore@ processes model Moore state machines. It implements the @moore@ patterns
+-- (see 'ForSyDe.Atom.MoC.moore22').
 --
 -- Constructors: @moore[1-4][1-4]@.
 --
@@ -455,9 +448,8 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 
 ------- MEALY -------
 
--- | @mealy@ processes model Mealy state machines. It is an
--- instantiation of the @mealy@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.mealy22' defined in "ForSyDe.Atom.MoC").
+-- | @mealy@ processes model Mealy state machines. It implements the @mealy@ pattern
+-- (see 'ForSyDe.Atom.MoC.mealy22').
 --
 -- Constructors: @mealy[1-4][1-4]@.
 --
@@ -524,16 +516,14 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 
 ------- WHEN, FILTER, FILL, HOLD -------
 
--- | This process predicates the existence of values in a signal based
--- on a signal of boolean values (conditions). It is similar to the
--- @when@ construct in the synchronous language Lustre
--- <ForSyDe-Atom.html#halbwachs91 [Halbwachs91]>, based on which clock
--- calculus can be performed.
+-- | This process determines the existence of events in the (left) signal based on the
+-- (right) signal of boolean values (conditions). It is similar to the @when@
+-- construct in the synchronous language Lustre <ForSyDe-Atom.html#halbwachs91
+-- [Halbwachs91]>.
 --
--- __OBS:__ this process assumes that all signals carry
--- absent-extended values, which is appropriate in describing
--- multi-clock systems. For a version which inputs signals of
--- non-extended values, check 'when''.
+-- __OBS:__ this process assumes that all signals are absent-extended, which is
+-- appropriate in describing multi-clock rate systems. For a version which inputs
+-- signals of non-extended values, check 'when''.
 --
 -- >>> let s1   = (signal . map Prst) [1,2,3,4,5]
 -- >>> let pred = (signal . map Prst) [False,False,False,True,True]
@@ -557,8 +547,7 @@ when' :: Signal Bool       -- ^ Signal of predicates
      -> Signal (AbstExt a) -- ^ Output signal
 when' = MoC.comb21 (B.filter')
 
--- | Simple wrapper for applying a predicate function on a signal of
--- absent-extended events.
+-- | Applies a predicate function on a signal of absent-extended events.
 --
 -- >>> let s1   = signal $ map Prst [1,2,3,4,5]
 -- >>> s1 `is` (>3)
@@ -566,8 +555,8 @@ when' = MoC.comb21 (B.filter')
 is :: Signal (AbstExt a) -> (a -> Bool) -> Signal (AbstExt Bool)
 is s p = comb11 (B.res11 p) s
 
--- | Same as 'when' but triggering the output events merely based on
--- the presence of the first input rather than a predicate function.
+-- | Same as 'when' but triggering the output events only based on the presence of the
+-- first input rather than a boolean.
 --
 -- >>> let s1   = signal $ map Prst [1,2,3,4,5]
 -- >>> let sp   = signal [Prst 1, Prst 1, Abst, Prst 1, Abst]
@@ -575,13 +564,11 @@ is s p = comb11 (B.res11 p) s
 -- {1,2,⟂,4,⟂}
 whenPresent s = when (s `is` (\_ -> True))
 
--- | Filters out values to 'Abst' if they do not fulfill a predicate
--- function.
+-- | Filters out values to 'Abst' if they do not fulfill a predicate function.
 --
--- __OBS:__ this process assumes that all signals carry
--- absent-extended values, which is appropriate in describing
--- multi-clock systems. For a version which inputs signals of
--- non-extended values, check 'filter''.
+-- __OBS:__ this process assumes that all signals carry absent-extended values, which
+-- is appropriate in describing multi-clock systems. For a version which inputs
+-- signals of non-extended values, check 'filter''.
 --
 -- >>> let s1   = (signal . map Prst) [1,2,3,4,5]
 -- >>> filter (>3) s1
@@ -616,7 +603,7 @@ filter' p s = MoC.comb21 B.filter' ps s
 fill :: a                  -- ^ Value to fill with
      -> Signal (AbstExt a) -- ^ Input
      -> Signal a           -- ^ Output
-fill x s = MoC.comb11 (B.degen x) s
+fill x = MoC.comb11 (B.degen x)
 
 -- | Similar to 'fill', but holds the last non-absent value if there
 -- was one. It implements a @state@ pattern (see
@@ -632,17 +619,18 @@ hold :: a
      -> Signal (AbstExt a) -- ^ Input
      -> Signal a -- ^ Output
 hold init = MoC.state11 fillF (unit init)
-  where fillF st inp = (B.degen st) inp
+  where fillF st = (B.degen st)
 
 
 ------- ABSENT EXTENDED WRAPPERS -------
 
--- | Creates a process wrapper which, from the outside it seems like a
--- combinatorial process which reacts to present events (i.e. simply
--- propagates absent events), but inside it allows, for example, the
--- degeneration of the absent extension in order to describe state
--- processes (e.g. state machines with 'ForSyDe.Atom.ExB.ignore22'
--- behavior).
+-- | Creates a process wrapper which propagates absent events but inside it allows for
+-- more complex conditional extended behaviors (see "ForSyDe.Atom.MoC.ExB").
+--
+-- This wrapper allows the definition of sequential processes, such as 'state22',
+-- 'stated22', 'moore22' and 'mealy22' to operate in abent-extended regime without
+-- throwing an @Abst \<*\> Prst@ error by, e.g. wrapping the next state function into a
+-- @ignore@ pattern (see 'ForSyDe.Atom.MoC.ExB.ignore22').
 --
 -- Constructors: @reactPres[1-4]@.
 --
@@ -667,26 +655,7 @@ reactPres2 p s1 s2       = whenPresent s1 $ comb11 B.extend (p s1 s2)
 reactPres3 p s1 s2 s3    = whenPresent s1 $ comb11 B.extend (p s1 s2 s3)
 reactPres4 p s1 s2 s3 s4 = whenPresent s1 $ comb11 B.extend (p s1 s2 s3 s4)
 
--- ----------------- DOCUMENTATION -----------------
 
--- -- | @buffer@ processes roughly implement a memory model which
--- -- stores all input present and known values. The atom pattern
--- -- instantiated is @state@ (see 'ForSyDe.Atom.MoC.state22' defined
--- -- in "ForSyDe.Atom.MoC"), while the behavior is @store@ (see
--- -- 'ForSyDe.Atom.Behavior.store2')
--- -- <<includes/figs/sy-buffer-graph.png>> -- buffer2 :: [a] ->
--- -- Signal a -> Signal a -> Signal [a]
-
-
-
--- buffer1 :: [a] -> Signal a -> Signal [a]
--- buffer3 :: [a] -> Signal a -> Signal a -> Signal a -> Signal [a]
--- buffer4 :: [a] -> Signal a -> Signal a -> Signal a -> Signal a -> Signal [a]
-
--- buffer1 i = MoC.state11 store1 (unit i)
--- buffer2 i = MoC.state21 store2 (unit i)
--- buffer3 i = MoC.state31 store3 (unit i)
--- buffer4 i = MoC.state41 store4 (unit i)
 
 
      

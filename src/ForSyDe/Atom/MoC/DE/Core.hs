@@ -17,7 +17,6 @@
 module ForSyDe.Atom.MoC.DE.Core where
 
 import ForSyDe.Atom.MoC
-import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility.Tuple (($$),($$$),($$$$))
 
@@ -146,5 +145,4 @@ checkSignal s@(x:-_)
 infixl 7 %>
 (DE t _) %> (DE _ x) = DE t x
 
--- end of testbench functions
 -----------------------------------------------------------------------------
