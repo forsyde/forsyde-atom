@@ -52,7 +52,9 @@ import qualified ForSyDe.Atom.ExB.Absent as AE (
 import qualified ForSyDe.Atom.MoC.SY.Core as SY (
   Signal, SY(..), signal )
 import qualified ForSyDe.Atom.MoC.DE.Core as DE (
-  Signal,DE(..), signal )
+  SignalBase, DE(..), signal )
+import qualified ForSyDe.Atom.MoC.DE.React.Core as RE (
+  SignalBase, RE(..), signal )
 import qualified ForSyDe.Atom.MoC.CT.Core as CT (
   Signal, CT(..), signal, evalTs, tag)
 import qualified ForSyDe.Atom.MoC.SDF.Core as SDF (
@@ -188,7 +190,7 @@ instance (Plottable a) => Plottable (V.Vector a) where
 instance {-# OVERLAPPABLE #-} (Show a, Real a) => Plottable a where
   toCoord = show . realToFrac
 
--- | 'ForSyDe.Atom.MoC.SDF.SDF' signals.
+-- | For plotting 'ForSyDe.Atom.MoC.SDF.SDF' signals.
 instance Plottable a => Plot (SDF.Signal a) where
   sample' = zip (map show [0..]) . fromStream . fmap vToSamp
     where vToSamp (SDF.SDF a) = toCoord a
@@ -218,8 +220,9 @@ instance Plottable a => Plot (SY.Signal a) where
                    , sparse   = False
                    }
 
--- | 'ForSyDe.Atom.MoC.DE.DE' signals.
-instance Plottable a => Plot (DE.Signal a) where
+-- | For plotting 'ForSyDe.Atom.MoC.DE.DE' signals.
+instance (Plottable a, Show t, Real t, Fractional t, Num t, Ord t, Eq t) =>
+  Plot (DE.SignalBase t a) where
   sample' = map v2s . fromStream
     where v2s (DE.DE t v) = (toCoord t, toCoord v)
   -- sample' sig = concat $ zipWith v2s ((head lst):lst) lst 
@@ -244,7 +247,35 @@ instance Plottable a => Plot (DE.Signal a) where
                    , sparse   = True
                    }
 
--- | 'ForSyDe.Atom.MoC.CT.CT' signals.
+-- | For plotting 'ForSyDe.Atom.MoC.RE.React.RE' signals.
+instance (Plottable a, Show t, Real t, Fractional t, Num t, Ord t, Eq t) =>
+  Plot (RE.SignalBase t a) where
+  sample' = map v2s . fromStream
+    where v2s (RE.RE t v) = (toCoord t, toCoord v)
+  -- sample' sig = concat $ zipWith v2s ((head lst):lst) lst 
+  --   where lst = fromStream sig
+  --         v2s (RE.RE pt pv) (RE.RE t v)
+  --           = [(toCoord t, toCoord pv), (toCoord t, toCoord v)]
+  ------------------------
+  takeUntil n = until (realToFrac n)
+    where until _ NullS = NullS
+          until u (RE.RE t v:-NullS)
+            | t < u     = RE.RE t v :- RE.RE u v :- NullS
+            | otherwise = RE.RE u v :- NullS
+          until u (RE.RE t v:-xs)
+            | t < u     = RE.RE t v :- until u xs
+            | otherwise = RE.RE u v :- NullS
+  ------------------------
+  getInfo _ = Info { typeid   = "sig-de"
+                   , command  = "RE"
+                   , measure  = "timestamp"
+                   , style    = "lines lw 2"
+                   , stacking = False
+                   , sparse   = True
+                   }
+
+
+-- | For plotting 'ForSyDe.Atom.MoC.CT.CT' signals.
 instance (Plottable a) => Plot (CT.Signal a) where
   sample stepsize = evalSamples 0
     where evalSamples t s@(x:-y:-xs)
@@ -273,7 +304,7 @@ instance (Plottable a) => Plot (CT.Signal a) where
                    , sparse   = False
                    }
 
--- | vectors of coordinates
+-- | For plotting vectors of coordinates
 instance Plottable a => Plot (V.Vector a) where
   sample' = zip (map show [1..]) . V.fromVector . fmap toCoord
   ------------------------

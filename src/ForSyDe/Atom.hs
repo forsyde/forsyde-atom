@@ -111,9 +111,6 @@ module ForSyDe.Atom (
 
   -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
 
-  -- | #bird97# <http://dl.acm.org/citation.cfm?id=248932 [Bird97]> Bird, R. S. & de Moor, O. (1997). Algebra of Programming. Prentice-Hall, Inc., Upper Saddle River, NJ, USA. 
-
-
   -- | #cassandras09# [Cassandras09] Cassandras, C. G., & Lafortune, S. (2009). Introduction to discrete event systems. Springer Science & Business Media.
   
   -- | #fuji00# [Fujimoto00] Fujimoto, R. M. (2000). Parallel and distributed simulation systems (Vol. 300). New York: Wiley.
@@ -124,21 +121,23 @@ module ForSyDe.Atom (
   
   -- | #kahn76# [Kahn76] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
 
-  -- | #lee98# [Lee98] Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229. 
+  -- | #lee98# <https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=736561&casa_token=GfbDXDN-wS4AAAAA:uE2y6ZVAGUv8vVwoe9BXTyzdDRFEAWq-c45nZfQurcqTRwU6a1k7rbWHGodSMQDNAOOQqSd7&tag=1 [Lee98]> Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229.
+
+  -- | #lohstroh19# <https://people.eecs.berkeley.edu/~marten/pdf/Lohstroh_etAl_CyPhy19.pdf [Lohstroh19]> Lohstroh, M., Romeo, Í. Í., Goens, A., Derler, P., Castrillon, J., Lee, E. A., & Sangiovanni-Vincentelli, A. (2019). Reactors: A deterministic model for composable reactive systems. In /Cyber Physical Systems. Model-Based Design/ (pp. 59-85). Springer, Cham.
 
   -- | #reekie95# <http://ptolemy.eecs.berkeley.edu/~johnr/papers/pdf/thesis.pdf [Reekie95]> Reekie, H. J. (1995). Realtime signal processing: Dataflow, visual, and functional programming.
   
-  -- | #sander04# <http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf [Sander04]> Sander, I., & Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [formal system design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.
+  -- | #sander04# <http://people.kth.se/~ingo/Papers/TCAD2004_SystemModeling.pdf [Sander04]> Sander, I., & Jantsch, A. (2004). System modeling and transformational design refinement in ForSyDe [Formal System Design]. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 23(1)/, 17-32.
     
   -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [Skillicorn05]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
 
-  -- | #ungureanu17# <http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]> Ungureanu, G., & Sander, I., /A layered formal framework for modeling of cyber-physical systems/, in 2017 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2017, pp. 1715–1720.
+  -- | #ungureanu17# <http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]> Ungureanu, G., & Sander, I., A layered formal framework for modeling of cyber-physical systems, in /2017 Design, Automation & Test in Europe Conference & Exhibition (DATE)/, 2017, pp. 1715–1720.
   
   -- | #ungureanu18# <https://ieeexplore.ieee.org/document/8342019/ [Ungureanu18]> Ungureanu, G., de Medeiros, J. E. G. & Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2018, pp. 277-280
 
-  -- | #ungureanu20a# [Ungureanu20a] Ungureanu, G., et. al. , /ForSyDe-Atom: Taming complexity in cyber-physical system design with layers/, under review.
+  -- | #ungureanu20a# [Ungureanu20a] Ungureanu, G., et. al. , ForSyDe-Atom: Taming complexity in cyber-physical system design with layers, /under review/.
 
-  -- | #ungureanu20b# [Ungureanu20b] Ungureanu, G., /ForSyDe-Atom: User manual/, version 2, 2020
+  -- | #ungureanu20b# [Ungureanu20b] Ungureanu, G., ForSyDe-Atom: User manual, version 2, 2020
 
   
 ) where

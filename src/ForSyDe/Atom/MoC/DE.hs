@@ -69,15 +69,16 @@ module ForSyDe.Atom.MoC.DE (
   -- <<fig/moc-de-example.png>>
   --
   -- A variant of the DE MoC where events are instantaneous and non-triggering
-  -- behavior is possible is implemented in "ForSyDe.Atom.MoC.DE.React". Below are
-  -- stated a few particularities of this particular DE MoC implementation:
+  -- behavior is implemented in "ForSyDe.Atom.MoC.DE.React". Below are stated a few
+  -- particularities of this DE MoC implementation:
   --
   -- 1. in the terms of <ForSyDe-Atom.html#lee98 [Lee98]>, our DE MoC is a one-sided
   --    system, i.e. time starts from an absolute \(0\). While negative time cannot be
   --    represented, signals can be "phase-aligned" with the help of the
   --    'ForSyDe.Atom.MoC.-&-' atom. All signals need to start from timestamp \(0\),
   --    and events need to be positioned with their tags in strict ascending
-  --    order. The 'checkSignal' utility enforces these rules.
+  --    order. The 'checkSignal' utility enforces these rules. This restriction is
+  --    lifted in "ForSyDe.Atom.MoC.DE.React".
   --
   -- 1. tags are explicit and a 'DE' event will construct a type around both a tag and
   --    a value. Tags represent the start time of the event, the end time being
@@ -85,19 +86,23 @@ module ForSyDe.Atom.MoC.DE (
   --    the time domain is non-disjoint and continuous. This implies that, at any
   --    instant in time a 'DE' system describes /one specific state/.
   --
-  -- 1. according to the previous point, events are assumed to persist from their time
-  --    of arrival until the next event arrives or, if there is no incoming event,
-  --    until infinity. Hence, signals can be interpreted as either persistent
-  --    channels (e.g. latched wires), or non-blocking buffers of size 1.
-  --
-  -- 1. as a consequence a pure 'DE' feedback loop will generate an infinite number of
-  --    events (strictly preceding each other), since it updates the value after a
-  --    certain delay, and any input is assumed to go to infinity.
+  -- 1. events are assumed to persist from their time of arrival until the next event
+  --    arrives or, if there is no incoming event, until infinity. Hence, signals can
+  --    be interpreted as either persistent channels (e.g. latched wires), or
+  --    non-blocking buffers of size 1.
   --
   -- 1. a safe 'delay' consists in a prepend 'ForSyDe.Atom.MoC.-<-' (i.e. generating
   --    the new value) and a phase shift 'ForSyDe.Atom.MoC.-&-' (i.e. advancing time
   --    with a positive integer). This is done in order to both preserve causality and
   --    avoid deadlock.
+  --
+  -- 1. as a consequence a pure 'DE' feedback loop will generate an infinite number of
+  --    events (strictly preceding each other), since it updates the value after a
+  --    certain delay, and any input is assumed to go to infinity. Hence /all the/
+  --    /stateful processes that involve a feedback loop, e.g. 'state22', 'moore22',/
+  --    /'mealy22' are, by design choice, exposing this type of oscillating/
+  --    /behavior/. For sateful processes that react "instantaneously", one should
+  --    consider defining a hybrid SY/DE process, see 'embedSY22'.
   --
   -- 1. due to the reactive dataflow natures of the host 'ForSyDe.Atom.MoC.Stream's,
   --    DE processes /should not/ to clean up events. Doing so might lead to deadlock
@@ -138,8 +143,7 @@ module ForSyDe.Atom.MoC.DE (
   
   -- * @DE@ process constuctors
 
-  -- | These SY process constructors are basically specific
-  -- instantiations of the atom patterns defined in
+    -- | These are specific implementations of the atom patterns defined in
   -- "ForSyDe.Atom.MoC".
   
   -- ** Simple
@@ -185,20 +189,22 @@ module ForSyDe.Atom.MoC.DE (
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
 
-  -- ** Interface processes
+  -- ** Hybrid
 
-  toSY1, toSY2, toSY3, toSY4,
-  toCT1, toCT2, toCT3, toCT4,
-
-  zipx, unzipx, unzipx',
-  
-  -- ** Hybrid processes
+  -- | Processes that can wrap other MoCs inside a DE execution model.
 
   embedSY11, embedSY12, embedSY13, embedSY14,
   embedSY21, embedSY22, embedSY23, embedSY24,
   embedSY31, embedSY32, embedSY33, embedSY34,
   embedSY41, embedSY42, embedSY43, embedSY44,
-      
+
+  -- ** Interfaces
+
+  toSY1, toSY2, toSY3, toSY4,
+  toCT1, toCT2, toCT3, toCT4,
+
+  zipx, unzipx, unzipx',
+        
  ) where
 
 import ForSyDe.Atom.MoC.DE.Core

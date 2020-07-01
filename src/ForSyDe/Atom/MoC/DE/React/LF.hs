@@ -2,7 +2,6 @@
 module ForSyDe.Atom.MoC.DE.React.LF where
 
 import           ForSyDe.Atom.MoC.DE.React.Core
-import           ForSyDe.Atom.MoC.DE.React.Interface
 import           ForSyDe.Atom.MoC.DE.React.Lib
 import qualified ForSyDe.Atom.MoC.SY.Clocked as SYC
 import           ForSyDe.Atom.MoC.TimeStamp

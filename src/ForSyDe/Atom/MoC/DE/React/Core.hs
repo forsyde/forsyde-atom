@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances, PostfixOperators #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances, PostfixOperators, GADTs, StandaloneDeriving #-}
 {-# OPTIONS_HADDOCK hide #-}
 module ForSyDe.Atom.MoC.DE.React.Core where
 
@@ -7,15 +7,41 @@ import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility.Tuple
 import Prelude hiding (until)
 
+-- | Type synonym for a base DE signal as a stream of 'DE' events, where the type of
+-- tags has not been determined yet. In designs, it is advised to define a type alias
+-- for signals, using an appropriate numerical type for tags, e.g.
+--
+-- > import ForSyDe.Atom.MoC.DE.React hiding (Signal) -- hide provided alias, to use your own
+-- >
+-- > type Signal a = SignalBase Int a
 type SignalBase t a = Stream (RE t a)
+
+-- | Convenience alias for a DE signal, where tags are represented using our exported
+-- 'TimeStamp' type.
 type Signal a = SignalBase TimeStamp a
 
--- | The DE event. It identifies a discrete event signal.
-data RE t a  = RE { tag :: t,  -- ^ timestamp
-                    val :: a   -- ^ the value
-                  } deriving (Eq)
+-- | The reactor-like DE event, defined exactly like its 'ForSyDe.Atom.MoC.DE.DE'
+-- predecessor, and identifying a discrete event signal. The type of the tag system
+-- needs to satisfy all of the three properties, as suggested by the type constraints
+-- imposed on it:
+--
+-- * it needs to be a numerical type and every representable number needs to have an
+--   additive inverse.
+--
+-- * it needs to be unambiguously comparable (defines a total order).
+--
+-- * it needs to unambiguously define an equality operation.
+--
+-- Due to these properties not all numerical types can represent DE tags. A typical
+-- example of inappropriate representation is 'Float'.
+data RE t a  where
+  RE :: (Num t, Ord t, Eq t)
+     => { tag :: t,  -- ^ timestamp
+          val :: a   -- ^ the value
+        } -> RE t a
+deriving instance (Num t, Ord t, Eq t, Eq t, Eq a) => Eq (RE t a)
 
-instance Num t => MoC (RE t) where
+instance (Num t, Ord t, Eq t) => MoC (RE t) where
   type Fun (RE t) a b = (Bool, [a] -> b)
   type Ret (RE t) b   = ((), [b]) 
   ---------------------
@@ -30,9 +56,9 @@ instance Num t => MoC (RE t) where
   (-*) NullS = NullS
   (-*) (RE t (_,x):-xs) = stream (map (RE t) x) +-+ (xs -*)
   ---------------------
-  (RE _ v :- _) -<- xs = pure v :- xs
+  (RE t v :- _) -<- xs = RE t v :- xs
   ---------------------
-  (_ :- RE d _ :- _) -&- xs = (\(RE t v) -> RE (t + d) v) <$> xs
+  (RE d1 _ :- RE d2 _ :- _) -&- xs = (\(RE t v) -> RE (t + d2 - d1) v) <$> xs
   (_ :- NullS) -&- _  = error "[MoC.DE.RE] signal delayed to infinity"
   ---------------------
   
@@ -41,17 +67,17 @@ instance (Show t, Show a) => Show (RE t a) where
   showsPrec _ (RE t x) = (++) ( show x ++ "@" ++ show t )
 
 -- | Reads the string of type @v\@t@ as an event @RE t v@.
-instance (Read t, Read a) => Read (RE t a) where
+instance (Read a,Read t, Num t, Ord t, Eq t, Eq t) => Read (RE t a) where
   readsPrec _ x = [ (RE tg val, r2)
                   | (val,r1) <- reads $ takeWhile (/='@') x
                   , (tg, r2) <- reads $ tail $ dropWhile (/='@') x ]
 
 -- | Allows for mapping of functions on a RE event.
-instance Num t => Functor (RE t) where
+instance (Num t, Ord t, Eq t) => Functor (RE t) where
   fmap f (RE t a) = RE t (f a)
 
 -- | Allows for lifting functions on a pair of RE events.
-instance Num t => Applicative (RE t) where
+instance (Num t, Ord t, Eq t) => Applicative (RE t) where
   pure = RE 0
   (RE tf f) <*> (RE _ x) = RE tf (f x)
 
@@ -82,9 +108,9 @@ falsify []     = []
 
 
 unit  :: (Num t, Ord t) => (t, a) -> SignalBase t a 
--- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
--- unit signal(s). A unit signal is a signal with one event with the
--- period @tag@ carrying @value@.
+-- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent unit signal(s). A
+-- unit signal is a signal with one event with the period @tag@ carrying @value@,
+-- starting at tag 0.
 --
 -- Helpers: @unit@ and @unit[2-4]@.
 unit2 :: (Num t, Ord t)
@@ -102,19 +128,18 @@ unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
 
--- | Creates an infinite signal.
+-- | Creates an infinite signal starting from time 0.
 infinite :: (Num t, Ord t) => a -> SignalBase t a
 infinite v = RE 0 v :- NullS
 
--- | Transforms a list of tuples @(tag, value)@ into a RE
--- signal. Checks if it is well-formed.
+-- | Transforms a list of tuples @(tag, value)@ into a RE signal. Checks if it is
+-- well-formed.
 signal :: (Num t, Ord t) => [(t, a)] -> SignalBase t a
 signal = checkSignal . stream . fmap (\(t, v) -> RE t v)
 
--- | Takes the first part of the signal util a given timestamp. The
--- last event of the resulting signal is at the given timestamp and
--- carries the previous value. This utility is useful when plotting
--- a signal, to specify the interval of plotting.
+-- | Takes the first part of the signal util a given timestamp. The last event of the
+-- resulting signal is at the given timestamp and carries the previous value. This
+-- utility is useful when plotting a signal, to specify the interval of plotting.
 until :: (Num t, Ord t) => t -> SignalBase t a -> SignalBase t a
 until _ NullS = NullS
 until u (RE t v:-NullS)
@@ -124,9 +149,8 @@ until u (RE t v:-xs)
   | t < u     = RE t v :- until u xs
   | otherwise = RE u v :- NullS
 
--- | Reads a signal from a string and checks if it is well-formed.
--- Like with the @read@ function from @Prelude@, you must specify the
--- type of the signal.
+-- | Reads a signal from a string and checks if it is well-formed.  Like with the
+-- @read@ function from @Prelude@, you must specify the type of the signal.
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- {1@0s,2@2s,3@5s,4@7s,5@10s}

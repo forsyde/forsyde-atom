@@ -84,9 +84,8 @@ module ForSyDe.Atom.MoC.SY (
   -- * @SY@ process constuctors
 
   -- | These are specific implementations of the atom patterns defined in
-  -- "ForSyDe.Atom.MoC". Some are also wrapping functions in an extended behavioural
-  -- model to describe synchronous processes with <#g:5 predicate behavior>.
-
+  -- "ForSyDe.Atom.MoC".
+  
   -- ** Simple
 
   delay,

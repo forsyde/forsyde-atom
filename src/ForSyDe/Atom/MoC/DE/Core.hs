@@ -36,16 +36,28 @@ type SignalBase t a = Stream (DE t a)
 -- 'TimeStamp' type.
 type Signal a = SignalBase TimeStamp a
 
--- | The DE event. It identifies a discrete event signal.
+-- | The DE event. It identifies a discrete event signal. The type of the tag system
+-- needs to satisfy all of the three properties, as suggested by the type constraints
+-- imposed on it:
+--
+-- * it needs to be a numerical type, to express value 0 (global start) and every
+--   representable number needs to have an additive inverse.
+--
+-- * it needs to be unambiguously comparable (defines a total order).
+--
+-- * it needs to unambiguously define an equality operation.
+--
+-- Due to these properties not all numerical types can represent DE tags. A typical
+-- example of inappropriate representation is 'Float'.
 data DE t a  where
-  DE :: (Num t, Ord t, Eq t) =>
-        { tag :: t,  -- ^ timestamp
+  DE :: (Num t, Ord t, Eq t)
+     => { tag :: t,  -- ^ timestamp
           val :: a   -- ^ the value
         } -> DE t a
-deriving instance (Num t, Ord t, Eq t, Eq a) => Eq (DE t a)
+deriving instance (Num t, Ord t, Eq t, Eq t, Eq a) => Eq (DE t a)
 
 -- | Implenents the execution semantics for the DE MoC atoms.
-instance (Num t, Ord t) => MoC (DE t) where
+instance (Num t, Ord t, Eq t) => MoC (DE t) where
   type Fun (DE t) a b = a -> b
   type Ret (DE t) b   = b 
   ---------------------
@@ -75,35 +87,35 @@ instance (Show a, Show t) => Show (DE t a) where
   showsPrec _ (DE t x) = (++) ( show x ++ "@" ++ show t )
 
 -- | Reads the string of type @v\@t@ as an event @DE t v@.
-instance (Read a,Read t, Num t, Ord t, Eq t) => Read (DE t a) where
+instance (Read a,Read t, Num t, Ord t, Eq t, Eq t) => Read (DE t a) where
   readsPrec _ x = [ (DE tg val, r2)
                   | (val,r1) <- reads $ takeWhile (/='@') x
                   , (tg, r2) <- reads $ tail $ dropWhile (/='@') x ]
 
 -- | Allows for mapping of functions on a DE event.
-instance (Num t, Ord t) => Functor (DE t) where
+instance (Num t, Ord t, Eq t) => Functor (DE t) where
   fmap f (DE t a) = DE t (f a)
 
 -- | Allows for lifting functions on a pair of DE events.
-instance (Num t, Ord t) => Applicative (DE t) where
+instance (Num t, Ord t, Eq t) => Applicative (DE t) where
   pure = DE 0
   (DE tf f) <*> (DE _ x) = DE tf (f x)
 
 -----------------------------------------------------------------------------
 
-unit  :: (Num t, Ord t) => (t, a) -> SignalBase t a 
+unit  :: (Num t, Ord t, Eq t) => (t, a) -> SignalBase t a 
 -- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
 -- unit signal(s). A unit signal is a signal with one event with the
 -- period @tag@ carrying @value@.
 --
 -- Helpers: @unit|unit[2-4]@.
-unit2 :: (Num t, Ord t)
+unit2 :: (Num t, Ord t, Eq t)
       => ((t,a1),(t, a2))
       -> (SignalBase t a1, SignalBase t a2)
-unit3 :: (Num t, Ord t)
+unit3 :: (Num t, Ord t, Eq t)
       => ((t,a1),(t, a2),(t, a3))
       -> (SignalBase t a1, SignalBase t a2, SignalBase t a3)
-unit4 :: (Num t, Ord t)
+unit4 :: (Num t, Ord t, Eq t)
       => ((t,a1),(t, a2),(t, a3),(t, a4))
       -> (SignalBase t a1, SignalBase t a2, SignalBase t a3, SignalBase t a4)
          
@@ -113,19 +125,19 @@ unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
 
 -- | Creates an infinite signal.
-infinite :: (Num t, Ord t) => a -> SignalBase t a
+infinite :: (Num t, Ord t, Eq t) => a -> SignalBase t a
 infinite v = DE 0 v :- NullS
 
 -- | Transforms a list of tuples @(tag, value)@ into a DE
 -- signal. Checks if it is well-formed.
-signal :: (Num t, Ord t) => [(t, a)] -> SignalBase t a
+signal :: (Num t, Ord t, Eq t) => [(t, a)] -> SignalBase t a
 signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 
 -- | Takes the first part of the signal util a given timestamp. The
 -- last event of the resulting signal is at the given timestamp and
 -- carries the previous value. This utility is useful when plotting
 -- a signal, to specify the interval of plotting.
-until :: (Num t, Ord t) => t -> SignalBase t a -> SignalBase t a
+until :: (Num t, Ord t, Eq t) => t -> SignalBase t a -> SignalBase t a
 until _ NullS = NullS
 until u (DE t v:-NullS)
   | t < u     = DE t v :- DE u v :- NullS
@@ -138,16 +150,16 @@ until u (DE t v:-xs)
 -- Like with the @read@ function from @Prelude@, you must specify the
 -- type of the signal.
 --
--- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: (Num t, Ord t) => Signal Int
+-- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: (Num t, Ord t, Eq t) => Signal Int
 -- {1@0s,2@2s,3@5s,4@7s,5@10s}
 --
 -- Incorrect usage (not covered by @doctest@):
 --
--- > λ> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: (Num t, Ord t) => Signal Int
+-- > λ> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: (Num t, Ord t, Eq t) => Signal Int
 -- > {1@0s,2@2s,3@5s*** Exception: [MoC.DE] malformed signal
--- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: (Num t, Ord t) => Signal Int
+-- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: (Num t, Ord t, Eq t) => Signal Int
 -- > *** Exception: [MoC.DE] signal does not start from global 0
-readSignal :: (Num t, Ord t, Read t, Read a) => String -> SignalBase t a
+readSignal :: (Num t, Ord t, Eq t, Read t, Read a) => String -> SignalBase t a
 readSignal s = checkSignal $ read s
 
 -- | Checks if a signal is well-formed or not, according to the DE MoC
