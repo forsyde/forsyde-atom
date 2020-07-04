@@ -7,6 +7,9 @@ import ForSyDe.Atom.MoC.TimeStamp
 import ForSyDe.Atom.Utility.Tuple
 import Prelude hiding (until)
 
+import Control.Concurrent
+import Data.Time.Clock
+
 -- | Type synonym for a base DE signal as a stream of 'DE' events, where the type of
 -- tags has not been determined yet. In designs, it is advised to define a type alias
 -- for signals, using an appropriate numerical type for tags, e.g.
@@ -47,7 +50,7 @@ instance (Num t, Ord t, Eq t) => MoC (RE t) where
   ---------------------
   (-.-) = undefined
   ---------------------
-  _       -*- NullS   = NullS
+  (RE t (_,f):-fs) -*- NullS   = RE t (f [] ) :- fs -*- NullS
   NullS   -*- _       = NullS
   (RE t (trigger,f):-fs) -*- px@(RE _ x:-xs) 
     | trigger   = RE t (f [x]) :- fs -*- xs
@@ -98,6 +101,8 @@ pg@(RE tg g :- gs) -?- px@(RE tx x :- xs)
   | tg >  tx = RE tx (True:falsify g) :- pg -?- xs
 pg@(RE tg g :- gs) -?- NullS = RE tg (False:g) :- gs -?- NullS
 NullS -?- px@(RE tx x :- xs) = RE tx (True:repeat False) :- NullS -?- xs
+NullS -?- NullS = NullS
+
 
 falsify (_:xs) = False : falsify xs
 falsify []     = []
@@ -128,9 +133,9 @@ unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
 
--- | Creates an infinite signal starting from time 0.
-infinite :: (Num t, Ord t) => a -> SignalBase t a
-infinite v = RE 0 v :- NullS
+-- | Creates a signal with an instant event at time 0.
+instant :: (Num t, Ord t) => a -> SignalBase t a
+instant v = RE 0 v :- NullS
 
 -- | Transforms a list of tuples @(tag, value)@ into a RE signal. Checks if it is
 -- well-formed.
@@ -181,44 +186,24 @@ fromList5 (a1:a2:a3:a4:a5:_)          = (a5,a4,a3,a2,a1)
 fromList6 (a1:a2:a3:a4:a5:a6:_)       = (a6,a5,a4,a3,a2,a1)
 fromList7 (a1:a2:a3:a4:a5:a6:a7:_)    = (a7,a6,a5,a4,a3,a2,a1)
 fromList8 (a1:a2:a3:a4:a5:a6:a7:a8:_) = (a8,a7,a6,a5,a4,a3,a2,a1)
-
-li101 f [s1]                    = (:[]) $ f s1
-li201 f [s1] [s2]               = (:[]) $ f s1 s2
-li301 f [s1] [s2] [s3]          = (:[]) $ f s1 s2 s3
-li111 f [s1] a1                 = (:[]) $ f s1 a1
-li211 f [s1] [s2] a1            = (:[]) $ f s1 s2 a1
-li311 f [s1] [s2] [s3] a1       = (:[]) $ f s1 s2 s3 a1
-li121 f [s1] a1 a2              = (:[]) $ f s1 a1 a2
-li221 f [s1] [s2] a1 a2         = (:[]) $ f s1 s2 a1 a2
-li321 f [s1] [s2] [s3] a1 a2    = (:[]) $ f s1 s2 s3 a1 a2
-li131 f [s1] a1 a2 a3           = (:[]) $ f s1 a1 a2 a3
-li231 f [s1] [s2] a1 a2 a3      = (:[]) $ f s1 s2 a1 a2 a3
-li331 f [s1] [s2] [s3] a1 a2 a3 = (:[]) $ f s1 s2 s3 a1 a2 a3
-li102 f [s1]                    = ((:[]),(:[])) $$ f s1
-li202 f [s1] [s2]               = ((:[]),(:[])) $$ f s1 s2
-li302 f [s1] [s2] [s3]          = ((:[]),(:[])) $$ f s1 s2 s3
-li112 f [s1] a1                 = ((:[]),(:[])) $$ f s1 a1
-li212 f [s1] [s2] a1            = ((:[]),(:[])) $$ f s1 s2 a1
-li312 f [s1] [s2] [s3] a1       = ((:[]),(:[])) $$ f s1 s2 s3 a1
-li122 f [s1] a1 a2              = ((:[]),(:[])) $$ f s1 a1 a2
-li222 f [s1] [s2] a1 a2         = ((:[]),(:[])) $$ f s1 s2 a1 a2
-li322 f [s1] [s2] [s3] a1 a2    = ((:[]),(:[])) $$ f s1 s2 s3 a1 a2
-li132 f [s1] a1 a2 a3           = ((:[]),(:[])) $$ f s1 a1 a2 a3
-li232 f [s1] [s2] a1 a2 a3      = ((:[]),(:[])) $$ f s1 s2 a1 a2 a3
-li332 f [s1] [s2] [s3] a1 a2 a3 = ((:[]),(:[])) $$ f s1 s2 s3 a1 a2 a3
-li103 f [s1]                    = ((:[]),(:[]),(:[])) $$$ f s1
-li203 f [s1] [s2]               = ((:[]),(:[]),(:[])) $$$ f s1 s2
-li303 f [s1] [s2] [s3]          = ((:[]),(:[]),(:[])) $$$ f s1 s2 s3
-li113 f [s1] a1                 = ((:[]),(:[]),(:[])) $$$ f s1 a1
-li213 f [s1] [s2] a1            = ((:[]),(:[]),(:[])) $$$ f s1 s2 a1
-li313 f [s1] [s2] [s3] a1       = ((:[]),(:[]),(:[])) $$$ f s1 s2 s3 a1
-li123 f [s1] a1 a2              = ((:[]),(:[]),(:[])) $$$ f s1 a1 a2
-li223 f [s1] [s2] a1 a2         = ((:[]),(:[]),(:[])) $$$ f s1 s2 a1 a2
-li323 f [s1] [s2] [s3] a1 a2    = ((:[]),(:[]),(:[])) $$$ f s1 s2 s3 a1 a2
-li133 f [s1] a1 a2 a3           = ((:[]),(:[]),(:[])) $$$ f s1 a1 a2 a3
-li233 f [s1] [s2] a1 a2 a3      = ((:[]),(:[]),(:[])) $$$ f s1 s2 a1 a2 a3
-li333 f [s1] [s2] [s3] a1 a2 a3 = ((:[]),(:[]),(:[])) $$$ f s1 s2 s3 a1 a2 a3
 li1 f [x] = f x
 
 -----------------------------------------------------------------------------
 
+
+-- | Simulates a signal, calling delays according to the timestamps.
+simulate :: (Num t, Ord t, Eq t, Show t, Real t, Show a)
+         => t -> SignalBase t a -> IO ()
+simulate t = execute . until t
+  where
+    execute NullS = return ()
+    execute (x:-NullS) = do
+      putStrLn $ show (tag x) ++ "\t" ++ show (val x)
+      threadDelay 1000000
+    execute (x:-y:-xs) = do
+      putStrLn $ show (tag x) ++ "\t" ++ show (val x)
+      let tsx = diffTimeToPicoseconds $ realToFrac (tag x)
+          tsy = diffTimeToPicoseconds $ realToFrac (tag y)
+          dly = fromIntegral $ (tsy - tsx) `div` 1000000
+      threadDelay dly
+      execute (y:-xs)

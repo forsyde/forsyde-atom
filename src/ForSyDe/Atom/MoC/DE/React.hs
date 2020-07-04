@@ -1,3 +1,4 @@
+{-# LANGUAGE PostfixOperators #-}
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
@@ -143,43 +144,36 @@ module ForSyDe.Atom.MoC.DE.React (
   
   -- * Aliases & utilities
 
-  -- | These are type synonyms and utilities provided for user
-  -- convenience. They mainly concern the construction and usage of
-  -- signals.
+  -- | These are type synonyms and utilities provided for user convenience. They
+  -- mainly concern the construction and usage of signals.
 
-  Signal, SignalBase, unit, unit2, unit3, unit4, infinite, until,
+  Signal, SignalBase, unit, unit2, unit3, unit4, instant, until,
   signal, checkSignal, readSignal,
   
-   -- * @DE@ process constuctors
+   -- * Process Constuctors
 
-  -- | These SY process constructors are basically specific
-  -- instantiations of the atom patterns defined in
-  -- "ForSyDe.Atom.MoC".
+  -- | These process constructors are re-interpretations of the atom patterns defined
+  -- in "ForSyDe.Atom.MoC", using the /reactor/ @comb@ (see 'comb22') presented
+  -- <#detector# above>.
   
   -- ** Simple
 
-  -- | These are mainly direct instantiations of patterns defined in
-  -- "ForSyDe.Atom.MoC", using DE-specific utilities.
-  
-  delay, unsafeDelay, delay',
+  delay, delay', unsafeDelay, 
   
   comb11, comb12, comb13, comb14,
   comb21, comb22, comb23, comb24,
   comb31, comb32, comb33, comb34,
   comb41, comb42, comb43, comb44,
   
-  constant1, constant2, constant3, constant4,
-
   generate1, generate2, generate3,
   
   state11, state12, state13,
-  state21, state22, 
-  state31, 
+  state21, state22, state23,
+  state31, state32, state33,
 
   stated11, stated12, stated13,
-  stated21, stated22, 
-  stated31, 
-
+  stated21, stated22, stated23,
+  stated31, stated32, stated33,
 
   moore11, moore12, moore13,
   moore21, moore22, moore23,
@@ -189,18 +183,174 @@ module ForSyDe.Atom.MoC.DE.React (
   mealy21, mealy22, mealy23,
   mealy31, mealy32, mealy33,
 
-   syncAndHold2, syncAndHold3, syncAndHold4,
-   syncAndFill2, syncAndFill3, syncAndFill4,
+  syncAndHold2, syncAndHold3, syncAndHold4,
+  syncAndFill2, syncAndFill3, syncAndFill4,
+  syncAndObs11, syncAndObs12, syncAndObs13,
+  syncAndObs21, syncAndObs22, syncAndObs31,
 
-   -- ** Interfaces
+  -- ** Interfaces
 
-   -- ** Lingua Franca constructs
+  toDE1, toDE2, toDE3, toDE4,
+  fromDE1, fromDE2, fromDE3, fromDE4,
 
-   timer0, timer, timer',
+  toSYC1, toSYC2, toSYC3, toSYC4,
+  fromSYC1, fromSYC2, fromSYC3, fromSYC4,
 
-   state1, state2, state3,
+  embedSY11, embedSY12, embedSY13, embedSY14,
+  embedSY21, embedSY22, embedSY23, embedSY24,
+  embedSY31, embedSY32, embedSY33, embedSY34,
+  embedSY41, embedSY42, embedSY43, embedSY44,
+  
+  -- * Lingua Franca constructs
 
-   actionD,
+  -- | This library also exports functions and helpers to re-create reactor networks
+  -- from <https://github.com/icyphy/lingua-franca Lingua Franca> (LF) language
+  -- <ForSyDe-Atom.html#lohstroh19 [Lohstroh19]>, as ForSyDe process
+  -- networks. Basically each expression in the LF language is given an equivalent
+  -- ForSyDe 'RE' construct. Due to fundamental differences between the two languages
+  -- (LF being a parsed language and ForSyDe an EDSL hosted on the strictly-typed pure
+  -- functional programming language Haskell) the syntax and user experience in
+  -- general is quite different between the two languages. The scope of this library
+  -- is merely to provide an (executable) behavioral model of LF reactors for study
+  -- purposes rather than imitate/replace LF. In particular each construct in the LF
+  -- language is associated with a ForSyDe process constructor, and thus @reactor@
+  -- definitions in LF are built as specific composite processes in ForSyDe.
+  --
+  -- According to  the <https://github.com/icyphy/lingua-franca/wiki/Language-Specification Language Reference wiki>
+  -- this is how a @reactor@ is defined in LF:
+  --
+  -- > reactor name (parameters) {
+  -- >   state declarations
+  -- >   input declarations
+  -- >   output declarations
+  -- >   timer declarations
+  -- >   action declarations
+  -- >   reaction declarations
+  -- >    ...
+  -- > }
+  --
+  -- Here is how a reactor would be defined as a process network/composite process
+  -- using this library, along the lines of:
+  --
+  -- > reactorName :: ParamTypes -> InputSignalTypes ... -> OutputSignalTypes ...
+  -- > reactorName param inputS ... = (outputS, ...)
+  -- >   where
+  -- >     stateS      = stateP nextStateF initV {inputS|timerS|actionS} ...
+  -- >     timerS      = clockP
+  -- >     actionS     = actionP {reactionS|other_actionS} ... 
+  -- >     reactionS   = reactionP reactF reactInS
+  -- >       where syncS = statesXinputsY initV stateS ... {inputS|timerS|actionS} ...
+  --
+  -- The pseudo-code above suggests the syntax and what kind of constructs a designer
+  -- would use, to make a rough association between the ForSyDe-Reactors style and the
+  -- LF-Reactors style. As with every functional program, the ForSyDe-Reactors
+  -- processes are defined in an "equational" style. The elements in the pseudo-code
+  -- denote:
+  --
+  -- * words between @{...|...}@ represents what different choices of
+  -- input/output arguments;
+  --
+  -- * words with the @S@ suffix suggest that these identifiers are signals; words
+  -- with @P@ suffix suggest that these identifiers are processes or process
+  -- constructors; words with @F@ suffix suggest that these are functions, and @V@
+  -- values respectively;
+  --
+  -- * @stateP@ are state modifiers, and should be stateful process constructors, see
+  -- 'state22', 'stated22' 'moore22', 'mealy22';
+  --
+  -- * @clockP@ is a clock generator process, see 'timer0', 'timer', 'timer'';
+  --
+  -- * @actionP@ might be an action "delayer" if the action is to be delayed, or
+  -- simply a name binding if it is not to be delayed;
+  --
+  -- * @reactionP@ is a combinational process constructor (see the 'reaction22'
+  -- aliases), which operates on a set of /synchronized/ signals, using the
+  -- @statesXinputsY@ utility (see 'states2inputs2'). This utility manipulates the
+  -- different signals inside a reactor as to denote which originate from internal
+  -- state processes (i.e. values are persistent until the next state modifier action
+  -- occurs) and other/input actions (i.e. events are instant, and values are lost
+  -- after the event is consumed).
+  --
+  -- Here is a simple example of how a LF reactor can be translated using this 
+  -- library. Consider this LF code:
+  --
+  -- > reactor reactor1 (period:time) {
+  -- >   input x:int;
+  -- >   output y:int;
+  -- >   timer t(period);
+  -- >   state count:int(0);
+  -- >   action a:int;
+  -- >   reaction(t) -> a {=
+  -- >     (self->count)++;
+  -- >     schedule(a, MSEC(200), self->count)
+  -- >   =}
+  -- >   reaction(a,x) -> y {=
+  -- >     set(y, a + x)
+  -- >   =}
+  -- > }
+  --
+  -- The ForSyDe equivalent model for @reactor1@ would be:
+  --
+  -- > reactor1 :: TimeStamp -> Signal Int -> Signal Int
+  -- > reactor1 period x = y
+  -- >   where
+  -- >     t       = timer period
+  -- >     count   = state11 (\s _ -> s + 1) 0 t
+  -- >     a       = actionD (milisec 200) count
+  -- >     y       = reaction21 (\i1 i2 -> [sum i1 + sum i2])
+  -- >               $ states1inputs1 0 a x
+  --
+  -- Executing the above reactor with a test input signal in the @ghci@ interpreter
+  -- gives you the output:
+  --
+  -- >>> let s2 = read "{1@0,2@3,3@6,4@10,5@13}" :: Signal Int
+  -- >>> simulate 11.2 $ reactor1 1 s2
+  -- 0s	1
+  -- 0.2s	1
+  -- 1.2s	2
+  -- 2.2s	3
+  -- 3s	5
+  -- 3.2s	4
+  -- 4.2s	5
+  -- 5.2s	6
+  -- 6s	9
+  -- 6.2s	7
+  -- 7.2s	8
+  -- 8.2s	9
+  -- 9.2s	10
+  -- 10s	14
+  -- 10.2s	11
+  -- 11.2s	12
+
+  
+  -- ** Clock Generators
+  --
+  -- These processes generate signals with periodic events with no data.
+
+  timer0, timer, timer',
+
+  -- ** Delayed Actions
+
+  -- | Non-delayed actions are not provided, because, as seen in the example above,
+  -- they are simply (name bindings to) signals. Consequently delayed/scheduled
+  -- actions are delayed signals in ForSyDe.
+
+  actionD,
+
+  -- ** Reactions
+
+  -- | Reactions are ForSyDe combinational process constructors, having both
+  -- triggering and non-triggering (observing) inputs. Due to the current
+  -- implementation of the host 'RE' MoC, the inputs of a reaction need to come from a
+  -- @statesXinputsY@ utility, which tells which signals are persistent
+  -- (i.e. originating from stateful processes/reactions) or instantaneous (originatig
+  -- from non-stateful reactions or inputs).
+  --
+  -- __Note:__ The equivalent of the @is_present@ construct in LF can be expressed
+  -- using pattern-matching on process function arguments (see 'comb22').
+
+  states1inputs1, states2inputs1, states3inputs1,
+  states1inputs2, states2inputs2, states1inputs3,
 
   reaction11, reaction12, reaction13, reaction14,
   reaction21, reaction22, reaction23, reaction24,

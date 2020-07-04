@@ -26,7 +26,7 @@ import ForSyDe.Atom.MoC (
   ctxt14, ctxt24, ctxt34, ctxt44, ctxt54, ctxt64, ctxt74, ctxt84,
   ) 
 import qualified ForSyDe.Atom.MoC               as MoC
-import qualified ForSyDe.Atom.MoC.DE            as DE
+import qualified ForSyDe.Atom.MoC.DE            as DE 
 import           ForSyDe.Atom.MoC.DE.React.Core as RE
 import qualified ForSyDe.Atom.MoC.SY            as SY
 import qualified ForSyDe.Atom.MoC.SY.Clocked    as SYC
@@ -36,8 +36,7 @@ import           ForSyDe.Atom.Utility.Tuple
 ------- DOCTEST SETUP -------
 
 -- $setup
--- >>> import ForSyDe.Atom.MoC.SY.Lib as SY
--- >>> import ForSyDe.Atom.MoC.DE.Core (readSignal, signal)
+-- >>> import ForSyDe.Atom.ExB.Absent (AbstExt(..))
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
 -- >>> import ForSyDe.Atom.Utility.Plot
 
@@ -77,15 +76,15 @@ delay' ::(Num t, Ord t)
 delay' = MoC.delay
 
 
--- | The @delay@ process "delays" a signal with one
--- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern defined in
--- "ForSyDe.Atom.MoC".
+-- | This process "delays" only the tags of a signal. The "usafe" prefix is a warning
+-- that it does not express prefix behavior ('ForSyDe.Atom.MoC.->-'), which means that
+-- in a feedback loop it will cause deadlock.
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: SignalBase t Int
--- >>> delay 3 0 s
--- {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
+-- >>> let s = readSignal "{1@(-1), 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> unsafeDelay 3 s
+-- {1@2s,2@5s,3@9s,4@11s,5@12s}
 -- 
--- <<fig/moc-re-pattern-delay.png>>
+-- <<fig/moc-re-pattern-udelay.png>>
 unsafeDelay :: (Num t, Ord t)
             => t          -- ^ time delay
             -> SignalBase t a   -- ^ input signal
@@ -94,19 +93,18 @@ unsafeDelay t MoC.NullS = error "[MoC.DE.RE] cannot delay a non-existing signal"
 unsafeDelay t s@(RE _ x MoC.:- _) = unit (t,x) -&- s
 --------COMB --------
 
--- | @comb@ processes map combinatorial functions on signals and take
--- care of synchronization between input signals. It instantiates the
--- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22' defined in
--- "ForSyDe.Atom.MoC").
+-- | @comb@ processes map a trigger-aware combinational function on signals and take
+-- care of synchronization between input signals. 
 -- 
 -- Constructors: @comb[1-4][1-4]@.
 --
--- >>> let s1 = infinite 1
--- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: SignalBase t Int
--- >>> comb11 (+1) s2
+-- >>> let s1 = instant 1
+-- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> comb11 (map (+1)) s2
 -- {2@0s,3@2s,4@6s,5@8s,6@9s}
--- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
--- ({2@0s,3@2s,4@6s,5@8s,6@9s},{0@0s,-1@2s,-2@6s,-3@8s,-4@9s})
+-- >>> let {f [a] [b] = ([a+b],[a-b]); f [a] []  = ([a],[a]); f [] [b]  = ([],[b]); f [] []  = ([],[])}
+-- >>> comb22 f s1 s2
+-- ({2@0s},{0@0s,2@2s,3@6s,4@8s,5@9s})
 --
 -- <<fig/moc-re-pattern-comb.png>>
 comb22 :: (Num t, Ord t)
@@ -209,52 +207,21 @@ comb44 f s1 s2 s3 s4 =
   (detect s1 -?- s2 -?- s3 -?- s4 -? (\t -> ctxt44 (fromList4 t) ((),(),(),()) f)
     -*- s1 -*- s2 -*- s3 -*- s4 -*<<<)
 
-------- CONSTANT -------
-
--- | A signal generator which keeps a value constant. As compared with
--- the 'ForSyDe.Atom.MoC.SY.SY', it just constructs an infinite signal
--- with constant value (i.e. a signal with one event starting from
--- time 0).
---
--- Constructors: @constant[1-4]@.
---
--- >>> constant1 2
--- {2@0s}
---
--- <<fig/moc-re-pattern-constant.png>>
-constant2 :: (Num t, Ord t)
-    => (b1, b2)         -- ^ values to be repeated
-          -> (SignalBase t b1, SignalBase t b2) -- ^ generated signals
-constant1 :: (Num t, Ord t)
-    => b1 -> SignalBase t b1                                
-constant3 :: (Num t, Ord t)
-    => (b1, b2, b3)
-          -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)
-constant4 :: (Num t, Ord t)
-    => (b1, b2, b3, b4)
-          -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
-
-constant1 = infinite
-constant2 = ($$) (infinite,infinite)
-constant3 = ($$$) (infinite,infinite,infinite)
-constant4 = ($$$$) (infinite,infinite,infinite,infinite)
-
 ------- GENERATE -------
 
 generate1 :: (Num t, Ord t)
           =>  ([b1] -> [b1]) -> (t, b1)
           -> SignalBase t b1                                
--- | A signal generator based on a function and a kernel value. It is
--- actually an instantiation of the @stated0X@ constructor (check
--- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
+-- | A signal generator based on a function and a kernel value. 
 --
--- Constructors: @generate[1-4]@.
+-- Constructors: @generate[1-3]@.
 --
--- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) ((3,1),(1,2))
+-- >>> let ns a b = (map (+1) a,map (+2) b)
+-- >>> let (s1,s2) = generate2 ns ((3,1),(1,2))
 -- >>> takeS 5 s1
--- {1@0s,2@3s,2@4s,2@5s,3@6s}
+-- {1@0,2@3,3@6,4@9,5@12}
 -- >>> takeS 7 s2
--- {2@0s,4@1s,6@2s,8@3s,10@4s,12@5s,14@6s}
+-- {2@0,4@1,6@2,8@3,10@4,12@5,14@6}
 --
 -- <<fig/moc-re-pattern-generate.png>>
 generate2 :: (Num t, Ord t)
@@ -311,15 +278,16 @@ stated21 :: (Num t, Ord t)
          -> b1
          -> SignalBase t a1 -> SignalBase t a2
          -> SignalBase t b1 
--- | @state@ is a state machine without an output decoder. It is an
--- instantiation of the @state@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
+-- | @state@ is a state machine without an output decoder, which exports the current
+-- state. It reacts "instantaneously" with every triggering event, and has no
+-- oscillation behavior. Internally it embeds a clocked SY process (see
+-- 'ForSyDe.Atom.MoC.SY.Clocked.stated22').
 --
--- Constructors: @stated[1-4][1-4]@.
+-- Constructors: @stated[1-3][1-3]@.
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
--- >>> takeS 7 $ stated11 (+) (6,1) s
--- {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
+-- >>> let s = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> stated11 (\s [a] -> s + a) 1 s
+-- {1@1s,2@2s,4@6s,7@8s,11@9s}
 --
 -- <<fig/moc-re-pattern-state.png>>
 stated22 :: (Num t, Ord t)
@@ -386,15 +354,16 @@ state21 :: (Num t, Ord t)
          -> b1
          -> SignalBase t a1 -> SignalBase t a2
          -> SignalBase t b1 
--- | @state@ is a state machine without an output decoder. It is an
--- instantiation of the @state@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.state22' defined in "ForSyDe.Atom.MoC").
+-- | @state@ is a state machine without an output decoder, which exports the next
+-- state. It reacts "instantaneously" with every triggering event, and has no
+-- oscillation behavior. Internally it embeds a clocked SY process (see
+-- 'ForSyDe.Atom.MoC.SY.Clocked.state22').
 --
--- Constructors: @state[1-4][1-4]@.
+-- Constructors: @state[1-3][1-3]@.
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
--- >>> takeS 7 $ state11 (+) (6,1) s
--- {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
+-- >>> let s = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> state11 (\s [a] -> s + a) 1 s
+-- {2@1s,4@2s,7@6s,11@8s,16@9s}
 --
 -- <<fig/moc-re-pattern-state.png>>
 state22 :: (Num t, Ord t)
@@ -440,15 +409,18 @@ state33 ns i s1 s2 s3 = embedSY33 (SYC.state33 ns i) ><< b4s3 s1 s2 s3
 
 ------- MOORE -------
 
--- | @moore@ processes model Moore state machines. It is an
--- instantiation of the @moore@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.moore22' defined in "ForSyDe.Atom.MoC").
+-- | @moore@ processes model Moore state machines. It reacts "instantaneously" with
+-- every triggering event, and has no oscillation behavior. Internally it embeds a
+-- clocked SY process (see 'ForSyDe.Atom.MoC.SY.Clocked.moore22').
 --
--- Constructors: @moore[1-4][1-4]@
+-- Constructors: @moore[1-3][1-3]@
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
--- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
--- {2@0s,3@6s,4@8s,6@12s,8@14s,9@15s,11@18s}
+-- >>> let { ns s [a] [b] = s+a+b; ns s [] [b] = s; ns _ _ _ = 0 }
+-- >>> let od s = [s + 1]
+-- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> let s2 = readSignal "{1@2, 1@3, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> moore21 ns od 1 s1 s2
+-- {2@1s,1@2s,4@3s,4@6s,10@8s,18@9s}
 --
 -- <<fig/moc-re-pattern-moore.png>>          
 moore22 :: (Num t, Ord t)
@@ -520,15 +492,18 @@ moore33 ns od i s1 s2 s3 = comb13 (li1 od) $ stated31 ns i s1 s2 s3
 
 ------- MEALY -------
 
--- | @mealy@ processes model Mealy state machines. It is an
--- instantiation of the @mealy@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.mealy22' defined in "ForSyDe.Atom.MoC").
+-- | @mealy@ processes model Mealy state machines. It reacts "instantaneously" with
+-- every triggering event, and has no oscillation behavior. Internally it embeds a
+-- clocked SY process (see 'ForSyDe.Atom.MoC.SY.Clocked.mealy22').
 --
 -- Constructors: @mealy[1-4][1-4]@
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: SignalBase t Int  
--- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
--- {0@0s,-1@2s,-1@6s,-1@8s,-2@9s,0@12s,2@14s}
+-- >>> let { ns s [a] [b] = s+a+b; ns s [] [b] = s; ns _ _ _ = 0 }
+-- >>> let { od s [a] [b] = [s+a-b]; od s _ _ = [s] }
+-- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> let s2 = readSignal "{1@2, 1@3, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> mealy21 ns od 1 s1 s2
+-- {1@1s,1@2s,3@3s,3@6s,9@8s,17@9s}
 --
 -- <<fig/moc-re-pattern-mealy.png>>
 mealy22 :: (Num t, Ord t)
@@ -599,21 +574,141 @@ mealy23 ns od i s1 s2    = comb33 (li1 od) (stated21 ns i s1 s2) s1 s2
 mealy33 ns od i s1 s2 s3 = comb43 (li1 od) (stated31 ns i s1 s2 s3) s1 s2 s3
 
 
-------------------------------
+----------------------------------------------------
 
--- | Synchronizes a (set of) 'ForSyDe.Atom.MoC.RE.RE' signal(s) an
--- strips off their explicit tags, outputting the equivalent
--- 'ForSyDe.Atom.MoC.SY.SY' signal(s), tupled with an SY signal
--- carrying the timestamps for the synchronization points.
+-- | Synchronizes /n/ signals and for each absent event at a synchronization point, it
+-- holds the previous non-absent one.
+--
+-- Constructors: @syncAndHold[2-4]@
+--
+-- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let (o1,o2) = syncAndHold2 (0,0) s1 s2
+-- >>> o1
+-- {1@1s,2@2s,2@4s,2@5s,3@6s,4@8s,5@9s}
+-- >>> o2
+-- {0@1s,3@2s,4@4s,5@5s,5@6s,6@8s,7@9s}
+--
+-- <<fig/moc-re-pattern-syncandhold.png>>
+syncAndHold2 :: (Num t, Ord t)
+             => (b1, b2) -- ^ initial value(s), if no previous present event exists.
+             -> SignalBase t b1 -> SignalBase t b2
+             -> (SignalBase t b1, SignalBase t b2) 
+syncAndHold2 (i1,i2)
+  = embedSY22 (\s1 s2 ->
+                 (SYC.current i1 s1, SYC.current i2 s2))
+syncAndHold3 (i1,i2,i3)
+  = embedSY33 (\s1 s2 s3 ->
+                 (SYC.current i1 s1, SYC.current i2 s2,
+                   SYC.current i3 s3))
+syncAndHold4 (i1,i2,i3,i4)
+  = embedSY44 (\s1 s2 s3 s4 ->
+                 (SYC.current i1 s1, SYC.current i2 s2,
+                   SYC.current i3 s3, SYC.current i4 s4))
+    
+-- | Synchronizes /n/ signals and for each absent event at a synchronization point, it
+-- replaces it with an arbitrary user-defined value.
+--
+-- Constructors: @syncAndFill[2-4]@
+--
+-- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let (o1,o2) = syncAndFill2 (0,0) s1 s2
+-- >>> o1
+-- {1@1s,2@2s,0@4s,0@5s,3@6s,4@8s,5@9s}
+-- >>> o2
+-- {0@1s,3@2s,4@4s,5@5s,0@6s,6@8s,7@9s}
+--
+-- <<fig/moc-re-pattern-syncandfill.png>>
+syncAndFill2 :: (Num t, Ord t)
+             => (b1, b2) -- ^ initial value(s), if no previous present event exists.
+             -> SignalBase t b1 -> SignalBase t b2
+             -> (SignalBase t b1, SignalBase t b2) 
+syncAndFill2 (i1,i2)
+  = embedSY22 (\s1 s2 ->
+                 (SYC.fill i1 s1, SYC.fill i2 s2))
+syncAndFill3 (i1,i2,i3)
+  = embedSY33 (\s1 s2 s3 ->
+                 (SYC.fill i1 s1, SYC.fill i2 s2,
+                   SYC.fill i3 s3))
+syncAndFill4 (i1,i2,i3,i4)
+  = embedSY44 (\s1 s2 s3 s4 ->
+                 (SYC.fill i1 s1, SYC.fill i2 s2,
+                   SYC.fill i3 s3, SYC.fill i4 s4))
+
+-- | @syncAndObs@\(mn\) synchronizes \(m + n\) signals where the first \(m\) are
+-- /triggering/ signals and the last \(n\) /non-triggering/ (observed) signals.
+--
+-- Constructors: @syncAndObs11@, @syncAndObs21@, @syncAndObs31@, @syncAndObs12@, @syncAndObs22@, @syncAndObs13@.
+--
+-- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let (o1,o2) = syncAndObs11 0 s1 s2
+-- >>> o1
+-- {1@1s,2@2s,3@6s,4@8s,5@9s}
+-- >>> o2
+-- {0@1s,3@2s,4@4s,5@5s,5@6s,6@8s,7@9s}
+--
+-- <<fig/moc-re-pattern-syncandobs.png>>
+syncAndObs11 :: (Num t, Ord t)
+             => b2 -- ^ initial value(s), if no previous present event exists.
+             -> SignalBase t b1 -> SignalBase t b2
+             -> (SignalBase t b1, SignalBase t b2) 
+syncAndObs21 :: (Num t, Ord t) => b3 
+             -> SignalBase t b1 -> SignalBase t b2 -> SignalBase t b3
+             -> (SignalBase t b1, SignalBase t b2, SignalBase t b3) 
+syncAndObs31 :: (Num t, Ord t) => b4 
+             -> SignalBase t b1 -> SignalBase t b2 -> SignalBase t b3 -> SignalBase t b4
+             -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4) 
+syncAndObs12 :: (Num t, Ord t) => (b2,b3) 
+             -> SignalBase t b1 -> SignalBase t b2 -> SignalBase t b3
+             -> (SignalBase t b1, SignalBase t b2, SignalBase t b3) 
+syncAndObs22 :: (Num t, Ord t) => (b3,b4)
+             -> SignalBase t b1 -> SignalBase t b2 -> SignalBase t b3 -> SignalBase t b4
+             -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4) 
+syncAndObs13 :: (Num t, Ord t) => (b2,b3,b4)
+             -> SignalBase t b1 -> SignalBase t b2 -> SignalBase t b3 -> SignalBase t b4
+             -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4) 
+
+syncAndObs11 i1
+  = embedSY22 (\t1 o1 ->
+                 (t1, SYC.current i1 o1))
+syncAndObs21 i1
+  = embedSY33 (\t1 t2 o1 ->
+                 (t1, t2, SYC.current i1 o1))
+syncAndObs31 i1
+  = embedSY44 (\t1 t2 t3 o1 ->
+                 (t1, t2, t3, SYC.current i1 o1))
+syncAndObs12 (i1,i2)
+  = embedSY33 (\t1 o1 o2 ->
+                 (t1, SYC.current i1 o1, SYC.current i2 o2))
+syncAndObs22 (i1,i2)
+  = embedSY44 (\t1 t2 o1 o2 ->
+                 (t1, t2, SYC.current i1 o1, SYC.current i2 o2))
+syncAndObs13 (i1,i2,i3)
+  = embedSY44 (\t1 o1 o2 o3 ->
+                 (t1, SYC.current i1 o1, SYC.current i2 o2, SYC.current i3 o3))
+
+------------ INTERFACES ------------------
+
+-- | Semantics-preserving translation to "ForSyDe.Atom.MoC.SY.Clocked" signals. At any
+-- synchronization instant, triggering events are wrapped into a
+-- 'ForSyDe.Atom.ExB.Absent.Prst' behavior, whereas absent ones are represented as
+-- 'ForSyDe.Atom.ExB.Absent.Abst'. The output signals are tupled with a (pure)
+-- 'ForSyDe.Atom.MoC.SY.SY' signal carrying the timestamps of the synchronization
+-- points.
+--
+-- __OBS:__ check the documentation of "ForSyDe.Atom.MoC.SY.Clocked" for legal
+-- multi-clock rate interactions.
 --
 -- Constructors: @toSY[1-4]@
 --
--- >>> let s1 = DE.infinite 1
--- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.SignalBase t Int
--- >>> toSY2 s1 s2
--- ({0s,2s,6s,8s,9s},{1,1,1,1,1},{1,2,3,4,5})
+-- >>> let s1 = RE.instant 1
+-- >>> let s2 = RE.readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> toSYC2 s1 s2
+-- ({0s,1s,2s,6s,8s,9s},{1,⟂,⟂,⟂,⟂,⟂},{⟂,1,2,3,4,5})
 --
--- <<fig/moc-de-tosy.png>>
+-- <<fig/moc-re-pattern-tosyc.png>>
 toSYC2 :: (Num t, Ord t)
        => RE.SignalBase t a             -- ^ first input DE signal
        -> RE.SignalBase t b             -- ^ second input DE signal
@@ -654,23 +749,26 @@ toSYC4 s1 s2 s3 s4
         lToA []  = [AE.Abst]
         lToA [x] = [AE.Prst x]
 
--- | Wraps explicit timestamps to a (set of) 'ForSyDe.Atom.MoC.SY.SY'
--- signal(s), rendering the equivalent synchronized
--- 'ForSyDe.Atom.MoC.DE.DE' signal(s).
+-- | Semantics-preserving translation from "ForSyDe.Atom.MoC.SY.Clocked" signals.
+-- 'ForSyDe.Atom.ExB.Absent.Prst' events are propagated, whereas
+-- 'ForSyDe.Atom.ExB.Absent.Abst' ones are cleaned from the output. The first signal
+-- needs to be a (pure) 'ForSyDe.Atom.MoC.SY.SY' signal describing the timestamps of
+-- the synchronization points.
 --
--- __OBS:__ cleaning behavior!
+-- __OBS:__ This process has cleaning behavior. It needs to be avoided from the
+-- datapath of any feedback loop!
 --
 -- Constructors: @fromSY@, @fromSY2@, @fromSY3@, @fromSY4@.
 --
--- >>> let s1 = SY.signal [0,3,4,6,9]
--- >>> let s2 = SY.signal [1,2,3,4,5]
--- >>> fromSY s1 s2
--- {1@0s,2@3s,3@4s,4@6s,5@9s}
+-- >>> let s1 = SY.signal [0,3,4,6,9] :: SY.Signal DE.TimeStamp
+-- >>> let s2 = SY.signal [Prst 1,Prst 2,Abst,Prst 4,Prst 5]
+-- >>> fromSYC1 s1 s2
+-- {1@0s,2@3s,4@6s,5@9s}
 --
--- <<fig/moc-sy-tode.png>>
+-- <<fig/moc-re-pattern-fromsyc.png>>
 fromSYC2 :: (Num t, Ord t)
          => SY.Signal t
-         -- ^ SY signal carrying 'ForSyDe.Atom.MoC.DE.DE' timestamps
+         -- ^ SY signal carrying 'ForSyDe.Atom.MoC.RE.RE' timestamps
          -> SYC.Signal a                -- ^ first input SYC signal
          -> SYC.Signal b                -- ^ second input SYC signal
          -> (RE.SignalBase t a, RE.SignalBase t b)
@@ -697,35 +795,68 @@ fromSYC4 ts s1 s2 s3 s4 = (fromSYC1 ts s1, fromSYC1 ts s2, fromSYC1 ts s3,
 
 reToDE (RE.RE t a) = (DE.DE t a)
 toDE1 s1 = fmap reToDE s1
+-- | Syntax-preserving transformation to the original conservative
+-- "ForSyDe.Atom.MoC.DE" MoC. It is __not__ semantics-preserving because "instant"
+-- events are re-interpreted as "persistent".
+--
+-- __OBS:__ all input signals need to start from global time 0.
+--
+-- >>> let s1 = RE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> let s2 = RE.readSignal "{1@0, 2@3, 3@4, 4@8, 5@10}" :: RE.Signal Int
+-- >>> toDE2 s1 s2
+-- ({1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@3s,3@4s,4@8s,5@10s})
+--
+-- <<fig/moc-re-pattern-tode.png>>
 toDE2 s1 s2 = (toDE1 s1, toDE1 s2)
 toDE3 s1 s2 s3 = (toDE1 s1, toDE1 s2, toDE1 s3)
 toDE4 s1 s2 s3 s4 = (toDE1 s1, toDE1 s2, toDE1 s3, toDE1 s4)
 
 deToRE (DE.DE t a) = (RE.RE t a)
 fromDE1 s1 = fmap deToRE s1
+-- | Syntax-preserving transformation from the original conservative
+-- "ForSyDe.Atom.MoC.DE" MoC. It is __not__ semantics-preserving because "persistent"
+-- events are re-interpreted as "instant".
+--
+-- __OBS:__ all input signals will start at global time 0.
+--
+-- >>> let s1 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
+-- >>> let s2 = DE.readSignal "{1@0, 2@3, 3@4, 4@8, 5@10}" :: DE.Signal Int
+-- >>> fromDE2 s1 s2
+-- ({1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@3s,3@4s,4@8s,5@10s})
+--
+-- <<fig/moc-re-pattern-fromde.png>>
 fromDE2 s1 s2 = (fromDE1 s1, fromDE1 s2)
 fromDE3 s1 s2 s3 = (fromDE1 s1, fromDE1 s2, fromDE1 s3)
 fromDE4 s1 s2 s3 s4 = (fromDE1 s1, fromDE1 s2, fromDE1 s3, fromDE1 s4)
 
 ------- HYBRID PROCESSES -------
 
--- | Embeds a 'ForSyDe.Atom.MoC.SY.SY' process inside a
--- 'ForSyDe.Atom.MoC.DE.DE' environment. Internally, it synchronizes
--- the input signals, translates them to SY, feeds them to a SY
--- process and translates the result back to DE using the same input
--- tags. Seen from outside, this process behaves like a DE process
--- with "instantaneous response", even for feedback loops.
+-- | Embeds a "ForSyDe.Atom.MoC.SY.Clocked" process inside a 'ForSyDe.Atom.MoC.RE.RE'
+-- environment. Internally, it synchronizes the input signals, translates them to
+-- clocked SY (see 'toSYC2'), feeds them to a SY process and translates the result
+-- back to 'ForSyDe.Atom.MoC.RE.RE' (see 'fromSYC2') using the same input tags. Seen
+-- from outside, this process behaves like a RE process with "instantaneous response".
 --
 -- Constructors: @embedSY[1-4][1-4]@.
 --
 -- For the following example, see the difference between its output
--- and the one of 'ForSyDe.Atom.MoC.DE.stated22'
+-- and the one of 'ForSyDe.Atom.MoC.DE.React.stated22'
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
--- >>> embedSY11 (SY.stated11 (+) 1) s
--- {1@0s,2@2s,4@6s,7@8s,11@9s}
+-- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> embedSY21 (SYC.stated21 (\s a b -> a + b - s) 1) s1 s2
+-- {1@0s,1@2s,3@6s,3@8s,5@9s}
 --
--- <<fig/moc-de-pattern-embedsy.png>>
+-- <<fig/moc-re-pattern-embedsy.png>>
+--
+-- __OBS:__ according to the "ForSyDe.Atom.MoC.SY.Clocked" MoC all inputs signals need
+-- to be sichronized (i.e. have the same clock rate), otherwise their interaction is
+-- illegal.
+--
+-- >> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >> let s2 = readSignal "{1@0, 2@2, 3@7, 4@8, 5@9}" :: RE.Signal Int
+-- >> embedSY21 (SYC.stated21 (\s a b -> a + b - s) 1) s1 s2
+-- > {1@0s,1@2s,3@6s,*** Exception: [ExB.Absent] Illegal occurrence of an absent and present event
 embedSY22 :: (Num t, Ord t)
           => (SYC.Signal a1 -> SYC.Signal a2
               -> (SYC.Signal b1, SYC.Signal b2))
@@ -788,28 +919,3 @@ embedSY44 syproc de1 de2 de3 de4
     in  fromSYC4 ts ><<< syproc sy1 sy2 sy3 sy4
 
 
-----------------------------------------------------
-
-syncAndHold2 (i1,i2)
-  = embedSY22 (\s1 s2 ->
-                 (SYC.current i1 s1, SYC.current i2 s2))
-syncAndHold3 (i1,i2,i3)
-  = embedSY33 (\s1 s2 s3 ->
-                 (SYC.current i1 s1, SYC.current i2 s2,
-                   SYC.current i3 s3))
-syncAndHold4 (i1,i2,i3,i4)
-  = embedSY44 (\s1 s2 s3 s4 ->
-                 (SYC.current i1 s1, SYC.current i2 s2,
-                   SYC.current i3 s3, SYC.current i4 s4))
-
-syncAndFill2 (i1,i2)
-  = embedSY22 (\s1 s2 ->
-                 (SYC.fill i1 s1, SYC.fill i2 s2))
-syncAndFill3 (i1,i2,i3)
-  = embedSY33 (\s1 s2 s3 ->
-                 (SYC.fill i1 s1, SYC.fill i2 s2,
-                   SYC.fill i3 s3))
-syncAndFill4 (i1,i2,i3,i4)
-  = embedSY44 (\s1 s2 s3 s4 ->
-                 (SYC.fill i1 s1, SYC.fill i2 s2,
-                   SYC.fill i3 s3, SYC.fill i4 s4))

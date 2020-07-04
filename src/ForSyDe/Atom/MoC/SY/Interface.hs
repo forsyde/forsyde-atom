@@ -31,17 +31,17 @@ import           ForSyDe.Atom.Utility.Tuple
 --
 -- Constructors: @toDE@, @toDE2@, @toDE3@, @toDE4@.
 --
--- >>> let s1 = SY.signal [0,3,4,6,9]
+-- >>> let s1 = SY.signal [0,3,4,6,9] :: SY.Signal TimeStamp
 -- >>> let s2 = SY.signal [1,2,3,4,5]
 -- >>> toDE s1 s2
 -- {1@0s,2@3s,3@4s,4@6s,5@9s}
 --
 -- <<fig/moc-sy-tode.png>>
-toDE2 ::  SY.Signal TimeStamp
+toDE2 :: (Num t, Ord t, Eq t) => SY.Signal t
       -- ^ SY signal carrying 'ForSyDe.Atom.MoC.DE.DE' timestamps
       -> SY.Signal a                -- ^ first input SY signal
       -> SY.Signal b                -- ^ second input SY signal
-      -> (DE.Signal a, DE.Signal b)
+      -> (DE.SignalBase t a, DE.SignalBase t b)
       -- ^ two output 'ForSyDe.Atom.MoC.DE.DE' signals
 
 eventToDE (SY.SY t) (SY.SY a) = DE.DE t a

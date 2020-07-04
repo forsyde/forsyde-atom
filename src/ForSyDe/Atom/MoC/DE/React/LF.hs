@@ -12,7 +12,7 @@ import           ForSyDe.Atom.Utility.Tuple ((><), (><<), (><<<))
 -- | The equivalent of a timer set to period @0@ in LF. It triggers once at the
 -- beginning of the execution and then it never triggers again.
 timer0 :: Signal ()
-timer0 = infinite ()
+timer0 = instant ()
 
 -- | A timer signal generator
 timer :: TimeStamp -- ^ period
@@ -25,46 +25,6 @@ timer' :: TimeStamp -- ^ phase
        -> Signal () -- ^ timer signal
 timer' phase period = delay phase () $ timer period
 
--- STATES
-
--- | State process that can be affected by /one/ reactor.
---
--- >>> let s = signal [(0,(+1)), (3,(*2)), (7,(/2)), (10,id)]
--- >>> :t s
--- s :: Fractional a => Signal (a -> a)
--- >>> state1 0 s
--- {0.0@0s,1.0@3s,2.0@7s,1.0@10s}
-state1 :: a               -- ^ initial state
-       -> Signal (a -> a) -- ^ signal with events carrying state-modifying functions
-       -> Signal a        -- ^ signal showing the /current state/
-state1 i = embedSY11 (SYC.stated11 (\s f -> f s) i)
-
--- | Same as 'state1' but affected by two concurrent sources.
---
--- >>> let s1 = signal [(0,(+1)), (3,(*2)), (7,(/2)), (10,id)]
--- >>> let s2 = signal [(0,(+1)), (5,(*2)), (7,(/2))]
--- >>> state2 0 s1 s2
--- {0.0@0s,2.0@3s,4.0@5s,8.0@7s,2.0@10s}
-state2 :: a               -- ^ initial state
-       -> Signal (a -> a) -- ^ first modifier signal
-       -> Signal (a -> a) -- ^ second modifier signal
-       -> Signal a        -- ^ signal showing the /current state/
-state2 i fs1 fs2
-  = embedSY21 (SYC.stated21 (\s f1 f2 -> f1 $ f2 s) i)
-    >< syncAndFill2 (id,id) fs1 fs2
-
-state3 :: a -> Signal (a -> a) -> Signal (a -> a) -> Signal (a -> a)
-       -> Signal a
-state3 i fs1 fs2 fs3
-  = embedSY31 (SYC.stated31 (\s f1 f2 f3 -> f1 $ f2 $ f3 s) i)
-    ><< syncAndFill3 (id,id,id) fs1 fs2 fs3
-
--- state4 :: a -> Signal (a -> a) -> Signal (a -> a) -> Signal (a -> a)
---        -> Signal (a -> a) -> Signal a
--- state4 i fs1 fs2 fs3 fs4
---   = embedSY21 (SYC.stated41 (\s f1 f2 f3 f4 -> f1 $ f2 $ f3 $ f4 s) i)
---     ><<< syncAndFill4 (id,id,id,id) fs1 fs2 fs3 fs4
-
 -- ACTIONS
 
 -- | A delayed action is simply a delayed signal. In ForSyDe the initial value is
@@ -73,21 +33,59 @@ state3 i fs1 fs2 fs3
 actionD :: TimeStamp -> Signal a -> Signal a 
 actionD = unsafeDelay
 
+-- SYNC UTILITIES
+
+states0inputs2 = (,)
+states0inputs3 = (,,)
+states0inputs4 = (,,,)
+states1inputs1 i s1 i1       = syncAndObs11 i i1 s1
+states2inputs1 i s1 s2 i1    = syncAndObs12 i i1 s1 s2
+states3inputs1 i s1 s2 s3 i1 = syncAndObs13 i i1 s1 s2 s3
+states1inputs2 i s1 i1 i2    = syncAndObs21 i i1 i2 s1
+-- | Alias for 'syncAndObs22'. Denotes which actions come from states (with persistent
+-- values) and which come from other actions or inputs (instantaneous).
+--
+-- >>> let sts = read "{1@0,2@3,3@6,4@10,5@13}" :: Signal Int
+-- >>> let ins = read "{1@3,2@4,3@5,4@6,5@13}"  :: Signal Int
+-- >>> states1inputs1 0 sts ins
+-- ({1@3s,2@4s,3@5s,4@6s,5@13s},{1@0s,2@3s,2@4s,2@5s,3@6s,4@10s,5@13s})
+states2inputs2 i s1 s2 i1 i2 = syncAndObs22 i i1 i2 s1 s2
+states1inputs3 i s1 i1 i2 i3 = syncAndObs31 i i1 i2 i3 s1
+
 -- REACTIONS
 
-reaction11 = comb11
-reaction12 = comb12
-reaction13 = comb13
-reaction14 = comb14
-reaction21 = comb21
-reaction22 = comb22
-reaction23 = comb23
-reaction24 = comb24
-reaction31 = comb31
-reaction32 = comb32
-reaction33 = comb33
-reaction34 = comb34
-reaction41 = comb41
-reaction42 = comb42
-reaction43 = comb43
-reaction44 = comb44
+reaction11 = comb11 
+reaction12 = comb12  
+reaction13 = comb13 
+reaction14 = comb14 
+reaction21 f = (><) (comb21 f)
+-- | Alias for 'comb22', tupled version, that can be chained directly from a
+-- @statesXinputsY@ "utility", see 'states2inputs2'.
+--
+-- >>> let sts = read "{1@0,2@3,3@6,4@10,5@13}" :: Signal Int
+-- >>> let ins = read "{1@3,2@4,3@5,4@6,5@13}"  :: Signal Int
+-- >>> reaction21 (\a b -> [sum a + sum b]) $ states1inputs1 0 sts ins
+-- {1@0s,3@3s,4@4s,5@5s,7@6s,4@10s,10@13s}
+reaction22 f = (><) (comb22 f)
+reaction23 f = (><) (comb23 f)
+reaction24 f = (><) (comb24 f)
+reaction31 f = (><<) (comb31 f)
+reaction32 f = (><<) (comb32 f)
+reaction33 f = (><<) (comb33 f)
+reaction34 f = (><<) (comb34 f)
+reaction41 f = (><<<) (comb41 f)
+reaction42 f = (><<<) (comb42 f)
+reaction43 f = (><<<) (comb43 f)
+reaction44 f = (><<<) (comb44 f)
+
+
+--------------- IESI -----------------
+
+reactor1 :: TimeStamp -> Signal Int -> Signal Int
+reactor1 period x = y
+  where
+    t     = timer period
+    count = state11 (\s _ -> s + 1) 0 t
+    a     = actionD (milisec 200) count
+    y     = reaction21 (\i1 i2 -> [sum i1 + sum i2])
+            $ states1inputs1 0 a x

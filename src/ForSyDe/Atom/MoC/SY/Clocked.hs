@@ -485,8 +485,8 @@ moore33 ns od i s1 s2 = react3 s1 . SY.moore33 (B.ignore31 ns) od i s1 s2
 -- Constructors: @mealy[1-3][1-3]@.
 --
 -- >>> let s1 = signal [Prst 1,Prst 2,Abst,Abst,Prst 3]  
--- >>> mealy11 (+) (+1) 1 s1
--- {0,0,⟂,⟂,1}
+-- >>> mealy11 (+) (+) 1 s1
+-- {2,4,⟂,⟂,7}
 mealy22 :: (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> a1 -> a2 -> (b1, b2))

@@ -106,7 +106,7 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- the length of the output vector.
 --
 -- >>> let v1 = V.vector [1,2,3,4]
--- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)]
+-- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)] :: DE.Signal (V.Vector Int)
 -- >>> s1
 -- {<1,2,3,4>@0s,<1,2,3,4>@2s,<1,2,3,4>@6s,<1,2,3,4>@8s,<1,2,3,4>@9s}
 -- >>> unzipx 4 s1
@@ -119,7 +119,7 @@ unzipx n = V.reverse . V.unzipx id n
 -- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
 --
 -- >>> let v1 = V.vector [1,2,3,4]
--- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)]
+-- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)] :: DE.Signal (V.Vector Int)
 -- >>> s1
 -- {<1,2,3,4>@0s,<1,2,3,4>@2s,<1,2,3,4>@6s,<1,2,3,4>@8s,<1,2,3,4>@9s}
 -- >>> unzipx' s1
