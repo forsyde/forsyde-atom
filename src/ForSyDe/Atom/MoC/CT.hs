@@ -126,7 +126,7 @@ module ForSyDe.Atom.MoC.CT (
   --    <ForSyDe-Atom-MoC.html#context execution context> and we can ignore the
   --    formatting of functions in "ForSyDe.Atom.MoC", thus
   --    \[ \Gamma\vdash\alpha\rightarrow\beta = \alpha\rightarrow\beta \]
-
+ 
   TimeStamp, Time, CT(..),
 
   -- * Aliases & utilities

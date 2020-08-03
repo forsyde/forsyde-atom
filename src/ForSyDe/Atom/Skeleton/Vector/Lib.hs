@@ -684,8 +684,8 @@ takeWhile f v    = concat . S.reduce sel . S.farm11 (unit . unit) $ v
 --
 -- <<fig/skel-vector-comm-inits.png>>
 -- <<fig/skel-vector-comm-inits-net.png>>
-stride :: Integer -- ^ first index
-       -> Integer -- ^ stride length
+stride :: Int -- ^ first index
+       -> Int -- ^ stride length
        -> Vector a -> Vector a
 stride _ _ Null = Null
 stride f s v = reducei1 sel Null indexes . S.farm11 unit $ v
@@ -774,7 +774,7 @@ evens     = filterIdx even
 --
 -- <<fig/skel-vector-comm-gather.png>>
 -- <<fig/skel-vector-comm-gather-net.png>>
-gather1 :: Vector Integer -- ^ vector of indexes
+gather1 :: Vector Int -- ^ vector of indexes
        -> Vector a       -- ^ input vector
        -> Vector (Maybe a)
 gather1 ix v     =  S.farm11                       (v <@) ix
@@ -790,7 +790,7 @@ gather5 ix vvvvv = ((=.=).(=.=).(=.=).(=.=).(=.=)) (vvvvv <@) ix
 --
 -- > (<@>), (<<@>>), (<<<@>>>), (<<<<@>>>>), (<<<<<@>>>>>),
 (<@>) :: Vector a        -- ^ input vector
-       -> Vector Integer  -- ^ vector of indexes
+       -> Vector Int  -- ^ vector of indexes
        -> Vector (Maybe a)
 v     <@>     ix = gather1 ix v
 v    <<@>>    ix = gather2 ix v    

@@ -154,6 +154,7 @@ fromVector (x:>xs) = x : fromVector xs
 -- > <1,2,3,4,...>
 --
 -- Used mainly for operation on indexes.
+indexes :: Vector Int
 indexes = vector [1..]
 
 -- | Returns @True@ if the argument is a null vector.

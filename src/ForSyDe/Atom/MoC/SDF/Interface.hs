@@ -125,8 +125,7 @@ unzipx rates = V.unzipx eventify (V.length rates)
   where
     eventify  = V.farm21 vec2res rates . V.gather2 parts
     vec2res r = MoC.wres r . V.fromVector . fmap getJust
-    parts     = V.farm21 V.take ratesi $ V.tail
-                $ V.recuri1 V.drop ratesi V.indexes
-    ratesi    = toInteger <$> rates
+    parts     = V.farm21 V.take rates $ V.tail
+                $ V.recuri1 V.drop rates V.indexes
     getJust (Just a) = a
     getJust Nothing  = error "[MoC.SDF.unzipx] vectors carried by signal are not large enough"

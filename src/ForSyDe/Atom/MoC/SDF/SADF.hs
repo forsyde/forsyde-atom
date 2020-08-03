@@ -52,10 +52,33 @@
 -- * the <ForSyDe-Atom.html#naming_conv naming convention> rules on how to interpret
 --   the function names based on their number of inputs and outputs.
 ----------------------------------------------------------------------
+
 module ForSyDe.Atom.MoC.SDF.SADF (
+  -- $setup
+  -- >>> import ForSyDe.Atom.MoC.SDF.SADFDemo (riscSADF)
+
   -- * Demonstrative example
 
-  -- |
+  -- | Below is an example to demonstrate the usage of the SADF MoC: a high-level
+  -- model of a RISC processor. In this model the instruction decoder is described as
+  -- a SADF /detector/ @decDetector@ which dynamically adapts the shape of the proces
+  -- network and its functionality depending on the type of instruction fetched
+  -- (e.g. branch, operation, terminal output, etc.). The instruction fetch and
+  -- execution unit are implemented as a kernel each @ifKernel@ and @exeKernel@
+  -- respectively, whose execution parameters are controlled by the decoder. The code
+  -- below is a simplification of the example presented in
+  -- <ForSyDe-Atom.html#bonna19 [Bonna19]>, with less instructions and no programmable
+  -- memory, only registers.
+  --
+  -- <<fig/moc-ddf-sadf-risc.png>>
+  --
+  -- Each of the kernels has a self-loop (not shown in the picture) modeling their
+  -- state: @ifKernel@ has one for modeling its program counter; @exeKernel@ has one
+  -- for modeling the register set. Notice that the feedback loop between @ifKernel@
+  -- and @exeKernel@ (and the ones derived) has no initial token, yet as seen in the
+  -- simulations, it does not deadlock. This is because all scenario graphs infered by
+  -- the detector are causal. More exactly, the two channels involved in this loop are
+  -- mutually exclusive.
   --
   -- @
   -- import ForSyDe.Atom
@@ -81,9 +104,9 @@ module ForSyDe.Atom.MoC.SDF.SADF (
   -- ifScenario n
   --   | n > 9 || n < 0  = error "ifScenario: Non existent scenario"
   --   | n >= 6 && n < 9 = -- branch
-  --     ((1,1), (1,1,1), \[a] [pc] -> ([op program (pc+a)], [arg program (pc+a)], [pc+a+1])) 
+  --     ((1,1), (1,1,1), \\[a] [pc] -> ([op program (pc+a)], [arg program (pc+a)], [pc+a+1])) 
   --   | otherwise       = -- no branch
-  --     ((0,1), (1,1,1), \_   [pc] -> ([op program pc],     [arg program pc],     [pc+1]))
+  --     ((0,1), (1,1,1), \\_   [pc] -> ([op program pc],     [arg program pc],     [pc+1]))
   --   where arg mem i = snd $ mem <\@! i
   --         op  mem i = fst $ mem <\@! i
   --
@@ -100,16 +123,16 @@ module ForSyDe.Atom.MoC.SDF.SADF (
   --                    , [[Arg]] -> [Vector Reg] -> ([Arg], [Arg], [Vector Reg]))
   --
   -- exeScenario :: StateDEC -> ScenarioEXE
-  -- exeScenario 0 = ((1,0), (0,0,0), \_ _ -> ([], [], []))                                                  -- nop
-  -- exeScenario 1 = ((1,1), (0,0,1), \[[rd, rs]] [r] -> ([], [], [replace rd (r <\@! rs) r]))                -- mov
-  -- exeScenario 2 = ((1,1), (0,0,1), \[[rd, i]]  [r] -> ([], [], [replace rd i r]))                         -- movi
-  -- exeScenario 3 = ((1,1), (0,0,1), \[[rd, rs]] [r] -> ([], [], [replace rd ((r <\@! rd) + (r <\@! rs)) r])) -- add
-  -- exeScenario 4 = ((1,1), (0,0,1), \[[rd, rs]] [r] -> ([], [], [replace rd ((r <\@! rd) - (r <\@! rs)) r])) -- sub
-  -- exeScenario 5 = ((1,1), (0,0,1), \[[rd, rs]] [r] -> ([], [], [replace rd ((r <\@! rd) * (r <\@! rs)) r])) -- mul
-  -- exeScenario 6 = ((1,1), (1,0,1), \[[rs, v]]  [r] -> ([if r <\@! rs == 0 then v else 0], [], [r]))        -- bez
-  -- exeScenario 7 = ((1,1), (1,0,1), \[[rs, v]]  [r] -> ([if r <\@! rs \> 0  then v else 0], [], [r]))        -- bgz
-  -- exeScenario 8 = ((1,0), (1,0,0), \[[v]]       _  -> ([v], [], []))                                      -- jmp
-  -- exeScenario 9 = ((1,1), (0,1,1), \[[rs]]     [r] -> ([], [r <\@! rs], [r]))                           -- printf
+  -- exeScenario 0 = ((1,0), (0,0,0), \\_ _ -> ([], [], []))                                                  -- nop
+  -- exeScenario 1 = ((1,1), (0,0,1), \\[[rd, rs]] [r] -> ([], [], [replace rd (r <\@! rs) r]))                -- mov
+  -- exeScenario 2 = ((1,1), (0,0,1), \\[[rd, i]]  [r] -> ([], [], [replace rd i r]))                         -- movi
+  -- exeScenario 3 = ((1,1), (0,0,1), \\[[rd, rs]] [r] -> ([], [], [replace rd ((r <\@! rd) + (r <\@! rs)) r])) -- add
+  -- exeScenario 4 = ((1,1), (0,0,1), \\[[rd, rs]] [r] -> ([], [], [replace rd ((r <\@! rd) - (r <\@! rs)) r])) -- sub
+  -- exeScenario 5 = ((1,1), (0,0,1), \\[[rd, rs]] [r] -> ([], [], [replace rd ((r <\@! rd) * (r <\@! rs)) r])) -- mul
+  -- exeScenario 6 = ((1,1), (1,0,1), \\[[rs, v]]  [r] -> ([if r <\@! rs == 0 then v else 0], [], [r]))        -- bez
+  -- exeScenario 7 = ((1,1), (1,0,1), \\[[rs, v]]  [r] -> ([if r <\@! rs \> 0  then v else 0], [], [r]))        -- bgz
+  -- exeScenario 8 = ((1,0), (1,0,0), \\[[v]]       _  -> ([v], [], []))                                      -- jmp
+  -- exeScenario 9 = ((1,1), (0,1,1), \\[[rs]]     [r] -> ([], [r <\@! rs], [r]))                           -- printf
   -- exeScenario _  = error "exeScenario: Non existent scenario"
   --
   -- exeKernel :: Signal ScenarioEXE -> Signal [Arg] -> (Signal Arg, Signal Arg)
@@ -126,21 +149,21 @@ module ForSyDe.Atom.MoC.SDF.SADF (
   -- decScenario :: StateDEC -> ScenarioDEC
   -- decScenario n = ((1,[ifScenario n]), (1,[exeScenario n]))
   --
-  -- decSwitchState :: StateDEC -> [Op] -> StateDEC
-  -- decSwitchState _ ["nop"]    = 0
-  -- decSwitchState _ ["mov"]    = 1
-  -- decSwitchState _ ["movi"]   = 2
-  -- decSwitchState _ ["add"]    = 3
-  -- decSwitchState _ ["sub"]    = 4
-  -- decSwitchState _ ["mul"]    = 5
-  -- decSwitchState _ ["bez"]    = 6
-  -- decSwitchState _ ["bgz"]    = 7
-  -- decSwitchState _ ["jmp"]    = 8
-  -- decSwitchState _ ["printf"] = 9
-  -- decSwitchState _ _ = error "decSwitchState: Input not recognized"
+  -- decState :: StateDEC -> [Op] -> StateDEC
+  -- decState _ ["nop"]    = 0
+  -- decState _ ["mov"]    = 1
+  -- decState _ ["movi"]   = 2
+  -- decState _ ["add"]    = 3
+  -- decState _ ["sub"]    = 4
+  -- decState _ ["mul"]    = 5
+  -- decState _ ["bez"]    = 6
+  -- decState _ ["bgz"]    = 7
+  -- decState _ ["jmp"]    = 8
+  -- decState _ ["printf"] = 9
+  -- decState _ _ = error "decState: Input not recognized"
   --
   -- decDetector :: Signal Op -> (Signal ScenarioIF, Signal ScenarioEXE)
-  -- decDetector = <#v:detector22 detector12> 1 decSwitchState decScenario 0
+  -- decDetector = <#v:detector22 detector12> 1 decState decScenario 0
   --
   -- ---------------------------------------------------------
   -- -- RISC Model: Process Network
@@ -166,6 +189,9 @@ module ForSyDe.Atom.MoC.SDF.SADF (
   --   , ("jmp", [-7])
   --   ]
   -- @
+  --
+  -- If you copy-paste the code above in a new @hs@ file and load it in the
+  -- interpreter, yout can test the demo program with
   --
   -- >>> takeS 10 riscSADF
   -- {100,80,60,40,20,0,100,80,60,40}

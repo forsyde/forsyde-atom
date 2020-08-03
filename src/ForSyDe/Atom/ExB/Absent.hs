@@ -46,7 +46,14 @@
 -- > *** Exception: [ExB.Absent] Illegal occurrence of an absent and present event
 ----------------------------------------------------------------------
 
-module ForSyDe.Atom.ExB.Absent where
+module ForSyDe.Atom.ExB.Absent (
+  AbstExt(..),
+
+  -- | Module "ForSyDe.Atom.ExB" is re-exported for convenience, to
+  -- access the atom patterns more easily.
+
+  module ForSyDe.Atom.ExB
+  ) where
 
 import ForSyDe.Atom.ExB
 import Prelude hiding (filter)

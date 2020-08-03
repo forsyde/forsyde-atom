@@ -112,6 +112,8 @@ module ForSyDe.Atom (
   -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
 
   -- | #bonna19# <https://dl.acm.org/doi/10.1145/3342997?cid=99659130620 [Bonna19]> Bonna, R., Loubach, D. S., Ungureanu, G., & Sander, I. (2019). Modeling and simulation of dynamic applications using scenario-aware dataflow. ACM Transactions on Design Automation of Electronic Systems (TODAES), 24(5), 1-29.
+
+  -- | #buck93# [Buck93] Buck, J. T., & Lee, E. A. (1993). Scheduling dynamic dataflow graphs with bounded memory using the token flow model. In /1993 IEEE international conference on acoustics, speech, and signal processing/ (Vol. 1, pp. 429-432). IEEE.
   
   -- | #cassandras09# [Cassandras09] Cassandras, C. G., & Lafortune, S. (2009). Introduction to discrete event systems. Springer Science & Business Media.
   
