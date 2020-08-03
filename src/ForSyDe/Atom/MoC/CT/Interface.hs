@@ -38,7 +38,22 @@ import ForSyDe.Atom.Utility.Tuple (($$),($$$),($$$$))
 -- Constructors: @toDE[1-4]@.
 --
 -- <<fig/moc-ct-tode.png>>
-toDE1 :: CT.Signal a -> DE.Signal (Time -> a)
+toDE1 :: (Num ts, Ord ts, Eq ts, Num tm, Ord tm) 
+      => CT.SignalBase ts tm a
+      -> DE.SignalBase ts (tm -> a)
+toDE2 :: (Num ts, Ord ts, Eq ts, Num tm, Ord tm) 
+      => (CT.SignalBase ts tm a, CT.SignalBase ts tm b)
+      -> (DE.SignalBase ts (tm -> a), DE.SignalBase ts (tm -> b))
+toDE3 :: (Num ts, Ord ts, Eq ts, Num tm, Ord tm) 
+      => (CT.SignalBase ts tm a, CT.SignalBase ts tm b, CT.SignalBase ts tm c)
+      -> (DE.SignalBase ts (tm -> a), DE.SignalBase ts (tm -> b),
+          DE.SignalBase ts (tm -> c))
+toDE4 :: (Num ts, Ord ts, Eq ts, Num tm, Ord tm) 
+      => (CT.SignalBase ts tm a, CT.SignalBase ts tm b,
+          CT.SignalBase ts tm c, CT.SignalBase ts tm d)
+      -> (DE.SignalBase ts (tm -> a), DE.SignalBase ts (tm -> b),
+          DE.SignalBase ts (tm -> c), DE.SignalBase ts (tm -> d))
+
 toDE1 = fmap (\(CT ts p f) -> DE ts (\t -> f (t + p)))
 toDE2 = ($$) (toDE1, toDE1)
 toDE3 = ($$$) (toDE1, toDE1, toDE1)
@@ -57,27 +72,32 @@ toDE4 = ($$$$) (toDE1, toDE1, toDE1, toDE1)
 -- {0.0@0s,1.0@1.570796326794s,1.793238520564752e-12@3.141592653588s,-1.0@4.712388980382s,0.0@6.283185307176s,1.0@7.85398163397s}
 --
 -- <<fig/moc-ct-sampde.png>>
-sampDE2 :: DE.Signal t -- ^ 'ForSyDe.Atom.MoC.DE.DE' timestamp carrier 
-        -> CT.Signal a -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
-        -> CT.Signal b -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
-        -> (DE.Signal a, DE.Signal b) -- ^ 'ForSyDe.Atom.MoC.DE.DE' outputs
-sampDE1 :: DE.Signal t
-        -> CT.Signal a
-        -> DE.Signal a
-sampDE3 :: DE.Signal t
-        -> CT.Signal a -> CT.Signal b -> CT.Signal c
-        -> (DE.Signal a, DE.Signal b, DE.Signal c)
-sampDE4 :: DE.Signal t
-        -> CT.Signal a -> CT.Signal b -> CT.Signal c -> CT.Signal d
-        -> (DE.Signal a, DE.Signal b, DE.Signal c, DE.Signal d)
+sampDE2 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+        => DE.SignalBase ts t -- ^ 'ForSyDe.Atom.MoC.DE.DE' timestamp carrier 
+        -> CT.SignalBase ts tm a -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
+        -> CT.SignalBase ts tm b -- ^ 'ForSyDe.Atom.MoC.CT.CT' input
+        -> (DE.SignalBase ts a, DE.SignalBase ts b) -- ^ 'ForSyDe.Atom.MoC.DE.DE' outputs
+sampDE1 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+        => DE.SignalBase ts t
+        -> CT.SignalBase ts tm a
+        -> DE.SignalBase ts a
+sampDE3 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+        => DE.SignalBase ts t
+        -> CT.SignalBase ts tm a -> CT.SignalBase ts tm b -> CT.SignalBase ts tm c
+        -> (DE.SignalBase ts a, DE.SignalBase ts b, DE.SignalBase ts c)
+sampDE4 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+        => DE.SignalBase ts t
+        -> CT.SignalBase ts tm a -> CT.SignalBase ts tm b -> CT.SignalBase ts tm c
+        -> CT.SignalBase ts tm d
+        -> (DE.SignalBase ts a, DE.SignalBase ts b, DE.SignalBase ts c,
+            DE.SignalBase ts d)
 
 sampDE1 carrier = fmap evalEvent . sync carrier
   where evalEvent e@(CT ts _ _) = DE.DE ts (CT.evalTs ts e)
-        sync c s = (\_ x -> x) -.- (toCT1 $ (\_->(\_->())) -.- c) -*- s
+        sync c s = (\_ x -> x) -.- toCT1 ((const . const) () -.- c) -*- s
 sampDE2 c s1 s2       = (sampDE1 c s1, sampDE1 c s2)
 sampDE3 c s1 s2 s3    = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3) 
 sampDE4 c s1 s2 s3 s4 = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3, sampDE1 c s4)
-
 
 -- Towards skeleton layer
 
@@ -93,7 +113,8 @@ sampDE4 c s1 s2 s3 s4 = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3, sampDE1 c s4)
 --
 -- See 'ForSyDe.Atom.MoC.DE.zipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
-zipx ::V.Vector (CT.Signal a) -> CT.Signal (V.Vector a)
+zipx :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+     => V.Vector (CT.SignalBase ts tm a) -> CT.SignalBase ts tm (V.Vector a)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
 -- | Unzips the vectors carried by a signal into a vector of
@@ -108,7 +129,9 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 --
 -- See 'ForSyDe.Atom.MoC.DE.unzipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
-unzipx :: Integer -> CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
+unzipx :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+       => Integer -> CT.SignalBase ts tm (V.Vector a)
+       -> V.Vector (CT.SignalBase ts tm a)
 unzipx = V.unzipx id
 
 -- | Same as 'unzipx', but \"sniffs\" the first event to determine the
@@ -118,5 +141,6 @@ unzipx = V.unzipx id
 -- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 -- >>> unzipx' s1
 -- <{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}>
-unzipx' :: CT.Signal (V.Vector a) -> V.Vector (CT.Signal a)
+unzipx' :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+        => CT.SignalBase ts tm (V.Vector a) -> V.Vector (CT.SignalBase ts tm a)
 unzipx' s@(a:-_) = unzipx (V.length $ CT.evalEv a) s

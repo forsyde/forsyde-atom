@@ -48,8 +48,6 @@ instance MoC SDF where
                           then SDF (f x') :- comb c f xs'
                           else NullS
   ---------------------
-  _  -*- NullS = NullS
-  NullS -*- _  = NullS
   cfs -*- s = (comb2 cfs . map val . fromStream) s
     where comb2 NullS           _ = NullS
           comb2 (SDF (c,f):-fs) l = let x'  = take c l

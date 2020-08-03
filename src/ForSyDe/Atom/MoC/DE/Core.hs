@@ -49,7 +49,7 @@ type Signal a = SignalBase TimeStamp a
 --
 -- Due to these properties not all numerical types can represent DE tags. A typical
 -- example of inappropriate representation is 'Float'.
-data DE t a  where
+data DE t a where
   DE :: (Num t, Ord t, Eq t)
      => { tag :: t,  -- ^ timestamp
           val :: a   -- ^ the value

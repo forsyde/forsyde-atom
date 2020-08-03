@@ -111,6 +111,8 @@ module ForSyDe.Atom (
 
   -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
 
+  -- | #bonna19# <https://dl.acm.org/doi/10.1145/3342997?cid=99659130620 [Bonna19]> Bonna, R., Loubach, D. S., Ungureanu, G., & Sander, I. (2019). Modeling and simulation of dynamic applications using scenario-aware dataflow. ACM Transactions on Design Automation of Electronic Systems (TODAES), 24(5), 1-29.
+  
   -- | #cassandras09# [Cassandras09] Cassandras, C. G., & Lafortune, S. (2009). Introduction to discrete event systems. Springer Science & Business Media.
   
   -- | #fuji00# [Fujimoto00] Fujimoto, R. M. (2000). Parallel and distributed simulation systems (Vol. 300). New York: Wiley.
@@ -121,6 +123,8 @@ module ForSyDe.Atom (
   
   -- | #kahn76# [Kahn76] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
 
+  -- | #lee87# [Lee87] Lee, E. A., & Messerschmitt, D. G. (1987). Synchronous data flow. /Proceedings of the IEEE/, 75(9), 1235-1245.
+  
   -- | #lee98# <https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=736561&casa_token=GfbDXDN-wS4AAAAA:uE2y6ZVAGUv8vVwoe9BXTyzdDRFEAWq-c45nZfQurcqTRwU6a1k7rbWHGodSMQDNAOOQqSd7&tag=1 [Lee98]> Lee, E. A., & Sangiovanni-Vincentelli, A. (1998). A framework for comparing models of computation. /IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 17(12)/, 1217-1229.
 
   -- | #lohstroh19# <https://people.eecs.berkeley.edu/~marten/pdf/Lohstroh_etAl_CyPhy19.pdf [Lohstroh19]> Lohstroh, M., Romeo, Í. Í., Goens, A., Derler, P., Castrillon, J., Lee, E. A., & Sangiovanni-Vincentelli, A. (2019). Reactors: A deterministic model for composable reactive systems. In /Cyber Physical Systems. Model-Based Design/ (pp. 59-85). Springer, Cham.
@@ -131,6 +135,8 @@ module ForSyDe.Atom (
     
   -- | #skillicorn05# <https://books.google.se/books?hl=ro&lr=&id=rQwsL5xsZigC&oi=fnd&pg=PP1&dq=skillicorn+foundation+parallel+programming&ots=UJMBr0uO2Q&sig=ncyXxE0gFNkUZwVOYyFb_ezWlGY&redir_esc=y#v=onepage&q=skillicorn%20foundation%20parallel%20programming&f=false [Skillicorn05]> Skillicorn, D. B. (2005). Foundations of parallel programming (No. 6). Cambridge University Press.
 
+  -- | #stuijk11# [Stuijk11] Stuijk, S., Geilen, M., Theelen, B., & Basten, T. (2011, July). Scenario-aware dataflow: Modeling, analysis and implementation of dynamic applications. /In 2011 International Conference on Embedded Computer Systems: Architectures, Modeling and Simulation/ (pp. 404-411). IEEE.
+  
   -- | #ungureanu17# <http://ieeexplore.ieee.org/document/7927270/ [Ungureanu17]> Ungureanu, G., & Sander, I., A layered formal framework for modeling of cyber-physical systems, in /2017 Design, Automation & Test in Europe Conference & Exhibition (DATE)/, 2017, pp. 1715–1720.
   
   -- | #ungureanu18# <https://ieeexplore.ieee.org/document/8342019/ [Ungureanu18]> Ungureanu, G., de Medeiros, J. E. G. & Sander, I., /Bridging discrete and continuous time models with Atoms/, in 2018 Design, Automation & Test in Europe Conference & Exhibition (DATE), 2018, pp. 277-280

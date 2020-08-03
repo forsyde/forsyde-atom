@@ -42,7 +42,7 @@ states1inputs1 i s1 i1       = syncAndObs11 i i1 s1
 states2inputs1 i s1 s2 i1    = syncAndObs12 i i1 s1 s2
 states3inputs1 i s1 s2 s3 i1 = syncAndObs13 i i1 s1 s2 s3
 states1inputs2 i s1 i1 i2    = syncAndObs21 i i1 i2 s1
--- | Alias for 'syncAndObs22'. Denotes which actions come from states (with persistent
+-- | Alias for 'syncAndObs11'. Denotes which actions come from states (with persistent
 -- values) and which come from other actions or inputs (instantaneous).
 --
 -- >>> let sts = read "{1@0,2@3,3@6,4@10,5@13}" :: Signal Int
@@ -79,7 +79,7 @@ reaction43 f = (><<<) (comb43 f)
 reaction44 f = (><<<) (comb44 f)
 
 
---------------- IESI -----------------
+--------------- TEST -----------------
 
 reactor1 :: TimeStamp -> Signal Int -> Signal Int
 reactor1 period x = y

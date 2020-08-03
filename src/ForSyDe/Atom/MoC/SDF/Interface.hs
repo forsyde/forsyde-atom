@@ -3,7 +3,7 @@
 
 module ForSyDe.Atom.MoC.SDF.Interface where
 
-import qualified ForSyDe.Atom.MoC as MoC
+import           ForSyDe.Atom.MoC as MoC
 import qualified ForSyDe.Atom.MoC.SDF.Core as SDF
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
 import qualified ForSyDe.Atom.Skeleton.Vector as V
@@ -13,32 +13,62 @@ import qualified ForSyDe.Atom.Skeleton.Vector as V
 eventToSY :: SDF.SDF a -> SY.SY a
 eventToSY (SDF.SDF a) = SY.SY a
 
--- | Transforms a (set of) 'ForSyDe.Atom.MoC.SDF.SDF' signal(s) into
--- the equivalent 'ForSyDe.Atom.MoC.SY.SY' signal(s). The only change
--- is the event consructor. The partial order of DE is interpreted as
--- SY's total order, based on the positioning of events in the signals
--- (e.g. FIFO buffers) at that moment.
+toSY1 :: SDF.Prod -> SDF.Signal a -> SY.Signal (V.Vector a)
+-- | Transforms a (set of) 'ForSyDe.Atom.MoC.SDF.SDF' signal(s) into the equivalent
+-- 'ForSyDe.Atom.MoC.SY.SY' signal(s). The partial ordering is transformed to total
+-- ordering with respect to the firings of the interface process(es), and events
+-- consumed during one firing are grouped into vectors.
 --
 -- Constructors: @toSY[1-4]@.
+--
+-- >>> let s = SDF.signal [1,2,3,4,5,6,7,8,9]
+-- >>> toSY1 2 s
+-- {<1,2>,<3,4>,<5,6>,<7,8>}
+--
+-- <<fig/moc-sdf-tosy.png>>
+toSY2 :: (SDF.Cons, SDF.Cons) -- ^ consumption rate of interface process
+      -> SDF.Signal a         -- ^ 'SDF.SDF' signal
+      -> SDF.Signal b         -- ^ 'SDF.SDF' signal
+      -> (SY.Signal (V.Vector a), SY.Signal (V.Vector b))
+      -- ^ 'SY.SY' signals
+toSY3 :: (SDF.Cons, SDF.Cons, SDF.Cons)
+      -> SDF.Signal a -> SDF.Signal b -> SDF.Signal c
+      -> (SY.Signal (V.Vector a), SY.Signal (V.Vector b), SY.Signal (V.Vector c))
+toSY4 :: (SDF.Cons, SDF.Cons, SDF.Cons, SDF.Cons)
+      -> SDF.Signal a -> SDF.Signal b -> SDF.Signal c -> SDF.Signal d
+      -> (SY.Signal (V.Vector a), SY.Signal (V.Vector b),
+          SY.Signal (V.Vector c), SY.Signal (V.Vector d))
+
+toSY1 c s1 = eventToSY <$> (c, V.vector) -.- s1
+toSY2 (c1,c2) s1 s2             = (toSY1 c1 s1, toSY1 c2 s2)
+toSY3 (c1,c2,c3) s1 s2 s3       = (toSY1 c1 s1, toSY1 c2 s2, toSY1 c3 s3)
+toSY4 (c1,c2,c3,c4) s1 s2 s3 s4 = (toSY1 c1 s1, toSY1 c2 s2, toSY1 c3 s3, toSY1 c4 s4)
+
+toSY1' :: SDF.Signal a -> SY.Signal a
+-- | Alternative implementation to 'toSY2', where the consumption rate of the
+-- interface process is @1@, meaning that each SDF event has a corresponding SY event.
+--
+-- Constructors: @toSY[1-4]'@.
 --
 -- >>> let s = SDF.signal [1,2,3,4,5]
 -- >>> toSY1 s
 -- {1,2,3,4,5}
 --
--- <<fig/moc-sdf-tosy.png>>
-toSY2 :: SDF.Signal a -> SDF.Signal b
-      -> (SY.Signal a, SY.Signal b)
-toSY1 :: SDF.Signal a
-      -> SY.Signal a
-toSY3 :: SDF.Signal a -> SDF.Signal b -> SDF.Signal c
-      -> (SY.Signal a, SY.Signal b, SY.Signal c)
-toSY4 :: SDF.Signal a -> SDF.Signal b -> SDF.Signal c -> SDF.Signal d
-      -> (SY.Signal a, SY.Signal b, SY.Signal c, SY.Signal d)
+-- <<fig/moc-sdf-tosyp.png>>
+toSY2' :: SDF.Signal a -- ^ 'SDF.SDF' signal
+       -> SDF.Signal b -- ^ 'SDF.SDF' signal
+       -> (SY.Signal a, SY.Signal b)
+       -- ^ 'SY.SY' signals
+toSY3' :: SDF.Signal a -> SDF.Signal b -> SDF.Signal c
+       -> (SY.Signal a, SY.Signal b, SY.Signal c)
+toSY4' :: SDF.Signal a -> SDF.Signal b -> SDF.Signal c -> SDF.Signal d
+       -> (SY.Signal a, SY.Signal b, SY.Signal c, SY.Signal d)
 
-toSY1 = fmap eventToSY
-toSY2 s1 s2       = (toSY1 s1, toSY1 s2)
-toSY3 s1 s2 s3    = (toSY1 s1, toSY1 s2, toSY1 s3)
-toSY4 s1 s2 s3 s4 = (toSY1 s1, toSY1 s2, toSY1 s3, toSY1 s4)
+toSY1' = fmap eventToSY
+toSY2' s1 s2       = (toSY1' s1, toSY1' s2)
+toSY3' s1 s2 s3    = (toSY1' s1, toSY1' s2, toSY1' s3)
+toSY4' s1 s2 s3 s4 = (toSY1' s1, toSY1' s2, toSY1' s3, toSY1' s4)
+
 
 ------- SKELETON INTERFACES -------
 

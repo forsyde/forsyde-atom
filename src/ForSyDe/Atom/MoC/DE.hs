@@ -29,6 +29,8 @@
 -- * "ForSyDe.Atom.MoC" documents details about the internals of the MoC layer, the
 --   atoms and the basic structure of all process constructors as MoC patterns.
 --
+-- * "ForSyDe.Atom.Utility.Plot" contains useful utilities for plotting DE signals.
+--
 -- * "ForSyDe.Atom.MoC.DE.React" contains a (possibly non-conservative) DE language
 --   where events are treated as non-persistent.
 --
