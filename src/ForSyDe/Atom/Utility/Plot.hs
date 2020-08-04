@@ -65,7 +65,7 @@ import qualified ForSyDe.Atom.MoC.Time as T (
   Time )
 import ForSyDe.Atom.MoC.Stream (
   Stream(..), fromStream, takeS)
-import qualified ForSyDe.Atom.Skeleton.Vector as V (
+import qualified ForSyDe.Atom.Skel.Vector as V (
   Vector(..), fromVector, take, vector)
 
 -------------------------- TYPES --------------------------

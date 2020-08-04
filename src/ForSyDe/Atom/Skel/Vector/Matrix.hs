@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.Matrix
+-- Module      :  ForSyDe.Atom.Skel.Vector.Matrix
 -- Copyright   :  (c) George Ungureanu, KTH/EECS/ESY 2019-2020
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,12 +12,12 @@
 -- work with matrices constructed as 2D vectors. Since names might overlap, this
 -- library is recommended to be imported qualified.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.Matrix where
+module ForSyDe.Atom.Skel.Vector.Matrix where
 
 import Prelude hiding (take, drop)
 import qualified Data.List as L
-import ForSyDe.Atom.Skeleton.Vector (Vector(..), vector, fromVector, (<++>))
-import qualified ForSyDe.Atom.Skeleton.Vector as V
+import ForSyDe.Atom.Skel.Vector (Vector(..), vector, fromVector, (<++>))
+import qualified ForSyDe.Atom.Skel.Vector as V
 
 -- | 'Matrix' is a type synonym for vector of vectors. This means that /any/ function
 -- on 'Vector' works also on 'Matrix'.

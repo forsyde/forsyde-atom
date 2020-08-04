@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.Cube
+-- Module      :  ForSyDe.Atom.Skel.Vector.Cube
 -- Copyright   :  (c) George Ungureanu, KTH/EECS/ESY 2019-2020
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,14 +12,14 @@
 -- with data cubes constructed as 3D vectors. Since names might overlap, this library
 -- is recommended to be imported qualified.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.Cube where
+module ForSyDe.Atom.Skel.Vector.Cube where
 
-import ForSyDe.Atom.Skeleton.Vector (Vector(..), vector, fromVector, (<++>))
-import ForSyDe.Atom.Skeleton.Vector.Matrix (Matrix, matrix, fromMatrix)
+import ForSyDe.Atom.Skel.Vector (Vector(..), vector, fromVector, (<++>))
+import ForSyDe.Atom.Skel.Vector.Matrix (Matrix, matrix, fromMatrix)
 
 import qualified Data.List as L
-import qualified ForSyDe.Atom.Skeleton.Vector as V
-import qualified ForSyDe.Atom.Skeleton.Vector.Matrix as M
+import qualified ForSyDe.Atom.Skel.Vector as V
+import qualified ForSyDe.Atom.Skel.Vector.Matrix as M
 
 -- | 'Cube' is a type synonym for vector of vectors. This means that /any/ function on
 -- 'Vector' works also on 'Cube'.

@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton
+-- Module      :  ForSyDe.Atom.Skel
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -35,19 +35,19 @@
 -- unlikely that the user will need this API, but rather load any of its sub-modules
 -- directly:
 --
--- * "ForSyDe.Atom.Skeleton.Vector" is a shallow interpretation of the /vector/
+-- * "ForSyDe.Atom.Skel.Vector" is a shallow interpretation of the /vector/
 --   category, susceptible to algorithmic skeletons. It defines a large library of
 --   patterns commonly used in designs.
 --
--- * "ForSyDe.Atom.Skeleton.FastVector" is an un-official alternative to
---   "ForSyDe.Atom.Skeleton.Vector" meant for simulations of large data which is
+-- * "ForSyDe.Atom.Skel.FastVector" is an un-official alternative to
+--   "ForSyDe.Atom.Skel.Vector" meant for simulations of large data which is
 --   likely to become too cumbersome. It /does not/ use atoms, but rather it wraps
 --   native Haskell types into @newtype@ wrappers and uses "Prelude" functions
---   internally. The API tries to copy that of "ForSyDe.Atom.Skeleton.Vector" so that
+--   internally. The API tries to copy that of "ForSyDe.Atom.Skel.Vector" so that
 --   switching betwen libraries can be made seamlessly just by changing the import.
 -------------------------------------------------------------------------------
 
-module ForSyDe.Atom.Skeleton (
+module ForSyDe.Atom.Skel (
 
   -- * Atoms
   

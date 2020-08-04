@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.Core
+-- Module      :  ForSyDe.Atom.Skel.Vector.Core
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,11 +12,11 @@
 --
 -- The library for the 'Vector' type. Contains the main skeletons.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.Lib where
+module ForSyDe.Atom.Skel.Vector.Lib where
 
 import Data.Maybe
-import ForSyDe.Atom.Skeleton as S
-import ForSyDe.Atom.Skeleton.Vector.Core
+import ForSyDe.Atom.Skel as S
+import ForSyDe.Atom.Skel.Vector.Core
 import ForSyDe.Atom.Utility.Tuple
 
 import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate, generate)
@@ -26,7 +26,7 @@ import Prelude hiding (null, last, init, tail, map, reverse, length, concat, tak
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.SY.Core as SY
 -- >>> import ForSyDe.Atom.MoC.SY.Lib
--- >>> import ForSyDe.Atom.Skeleton hiding (farm21)
+-- >>> import ForSyDe.Atom.Skel hiding (farm21)
 
 -------------------------
 -- Functional networks --
@@ -35,7 +35,7 @@ import Prelude hiding (null, last, init, tail, map, reverse, length, concat, tak
 ------- FARM -------
 
 -- | @farm@ is simply the 'Vector' instance of the skeletom @farm@
--- pattern (see 'ForSyDe.Atom.Skeleton.farm22'). If the function taken
+-- pattern (see 'ForSyDe.Atom.Skel.farm22'). If the function taken
 -- as argument is a process, then it creates a farm network of data
 -- parallel processes.
 --
@@ -129,7 +129,7 @@ farm44 = S.farm44
 -- an associative function. If the function is not associative, it can be treated like a pipeline.
 --
 -- 'Vector' instantiates the skeletons for both
--- 'ForSyDe.Atom.Skeleton.reduce' and 'ForSyDe.Atom.Skeleton.reducei'.
+-- 'ForSyDe.Atom.Skel.reduce' and 'ForSyDe.Atom.Skel.reducei'.
 --
 -- >>> let v1 = vector [1,2,3,4,5]
 -- >>> S.reduce (+) v1
@@ -251,7 +251,7 @@ suffixi p i = S.farm11 (S.reducei p i) . inits
 
 -- | @pipe@ creates a pipeline of functions from a vector. 'pipe'
 --  simply instantiates the '=<<=' atom whereas @pipeX@ instantiate
---  their omologi from the "ForSyDe.Atom.Skeleton" module (see
+--  their omologi from the "ForSyDe.Atom.Skel" module (see
 --  'ForSyDe.Atom.Skeletom.pipe2').
 --
 -- __OBS:__ the pipelining is done in the order dictated by the
@@ -523,14 +523,14 @@ init'  xs   = init xs
 tail'  Null = Null
 tail'  xs   = tail xs
 
--- | Instance of 'ForSyDe.Atom.Skeleton.first'
+-- | Instance of 'ForSyDe.Atom.Skel.first'
 --
 -- >>> S.first $ vector [1,2,3,4,5]
 -- 1
 first :: Vector a -> a
 first = S.first
 
--- | Instance of 'ForSyDe.Atom.Skeleton.last'
+-- | Instance of 'ForSyDe.Atom.Skel.last'
 --
 -- >>> S.last $ vector [1,2,3,4,5]
 -- 5
@@ -758,7 +758,7 @@ rotate :: Int -> Vector a -> Vector a
 rotate i | i < 0 = doPipe rotl (-i)
          | i > 0 = doPipe rotr i
          | otherwise = id
-  where doPipe f i = ForSyDe.Atom.Skeleton.Vector.Lib.pipe (fanoutn i f)
+  where doPipe f i = ForSyDe.Atom.Skel.Vector.Lib.pipe (fanoutn i f)
 
 -- | the same as 'get' but with flipped arguments.
 v <@  ix = get ix v

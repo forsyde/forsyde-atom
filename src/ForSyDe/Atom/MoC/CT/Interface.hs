@@ -9,7 +9,7 @@ import ForSyDe.Atom.MoC.DE.Core as DE
 import ForSyDe.Atom.MoC.DE.Interface (toCT1)
 import ForSyDe.Atom.MoC.Stream (Stream(..))
 import ForSyDe.Atom.MoC.Time (Time(..))
-import qualified ForSyDe.Atom.Skeleton.Vector as V (
+import qualified ForSyDe.Atom.Skel.Vector as V (
   Vector, zipx, unzipx, fanout, unit, length, vector)
 import ForSyDe.Atom.Utility.Tuple (($$),($$$),($$$$))
 
@@ -103,7 +103,7 @@ sampDE4 c s1 s2 s3 s4 = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3, sampDE1 c s4)
 
 -- | Synchronizes all the signals contained by a vector and zips them
 -- into one signal of vectors. It instantiates the
--- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+-- 'ForSyDe.Atom.Skel.Vector.zipx' skeleton.
 --
 -- >>> let s1 = CT.signal [(0,const 1), (2,const 2), (6,const 3)]
 -- >>> let s2 = CT.signal [(0,const 1), (2,const 2), (4,const 3)]
@@ -118,7 +118,7 @@ zipx :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
 -- | Unzips the vectors carried by a signal into a vector of
--- signals. It instantiates the 'ForSyCt.Atom.Skeleton.Vector.unzipx'
+-- signals. It instantiates the 'ForSyCt.Atom.Skel.Vector.unzipx'
 -- skeleton. To avoid infinite recurrence, the user needs to provict
 -- the length of the output vector.
 --

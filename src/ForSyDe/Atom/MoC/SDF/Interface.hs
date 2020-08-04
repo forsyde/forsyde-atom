@@ -6,7 +6,7 @@ module ForSyDe.Atom.MoC.SDF.Interface where
 import           ForSyDe.Atom.MoC as MoC
 import qualified ForSyDe.Atom.MoC.SDF.Core as SDF
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
-import qualified ForSyDe.Atom.Skeleton.Vector as V
+import qualified ForSyDe.Atom.Skel.Vector as V
 
 ------- MoC INTERFACES -------
 
@@ -74,7 +74,7 @@ toSY4' s1 s2 s3 s4 = (toSY1' s1, toSY1' s2, toSY1' s3, toSY1' s4)
 
 -- | Consumes tokens from a vector of signals and merges them into a
 -- signal of vectors, with a production rate of 1. It instantiates the
--- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+-- 'ForSyDe.Atom.Skel.Vector.zipx' skeleton.
 --
 -- >>> let s1 = SDF.signal [1,2,3,4,5]
 -- >>> let s2 = SDF.signal [11,12,13,14,15]
@@ -97,13 +97,13 @@ zipx rates = V.zipx (V.farm11 transpose rates)
 -- (V.fanout (\cat a b -> V.unit a `cat` b))
 -- | Consumes the vectors carried by a signal with a rate of 1, and
 -- unzips them into a vector of signals based on the user provided
--- rates. It instantiates the 'ForSyDe.Atom.Skeleton.Vector.unzipx'
+-- rates. It instantiates the 'ForSyDe.Atom.Skel.Vector.unzipx'
 -- skeleton.
 --
--- __OBS:__ due to the 'ForSyDe.Atom.Skeleton.Vector.recur' pattern
--- contained by 'ForSyDe.Atom.Skeleton.Vector.unzipx', the vector of
+-- __OBS:__ due to the 'ForSyDe.Atom.Skel.Vector.recur' pattern
+-- contained by 'ForSyDe.Atom.Skel.Vector.unzipx', the vector of
 -- production rates needs to be provided in reverse order (see
--- "ForSyDe.Atom.Skeleton.Vector").
+-- "ForSyDe.Atom.Skel.Vector").
 --
 -- >>> let s1 = SDF.signal [1,2,3,4,5]
 -- >>> let s2 = SDF.signal [11,12,13,14,15]

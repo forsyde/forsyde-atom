@@ -48,19 +48,22 @@ library
                    , ForSyDe.Atom.MoC.SDF.SADFDemo
                    , ForSyDe.Atom.MoC.SDF.CSDF
                    , ForSyDe.Atom.MoC.SDF.BDF
-                   , ForSyDe.Atom.Skeleton
-                   , ForSyDe.Atom.Skeleton.Vector
-                   , ForSyDe.Atom.Skeleton.Vector.Core
-                   , ForSyDe.Atom.Skeleton.Vector.Lib
-                   , ForSyDe.Atom.Skeleton.Vector.Interface
-                   , ForSyDe.Atom.Skeleton.Vector.Matrix
-                   , ForSyDe.Atom.Skeleton.Vector.Cube
-                   , ForSyDe.Atom.Skeleton.Vector.DSP
-                   , ForSyDe.Atom.Skeleton.FastVector
-                   , ForSyDe.Atom.Skeleton.FastVector.Lib
-                   , ForSyDe.Atom.Skeleton.FastVector.Matrix
-                   , ForSyDe.Atom.Skeleton.FastVector.Cube
-                   , ForSyDe.Atom.Skeleton.FastVector.DSP
+                   , ForSyDe.Atom.Skel
+                   , ForSyDe.Atom.Skel.Vector
+                   , ForSyDe.Atom.Skel.Vector.Core
+                   , ForSyDe.Atom.Skel.Vector.Lib
+                   , ForSyDe.Atom.Skel.Vector.Interface
+                   , ForSyDe.Atom.Skel.Vector.Matrix
+                   , ForSyDe.Atom.Skel.Vector.Cube
+                   , ForSyDe.Atom.Skel.Vector.DSP
+                   , ForSyDe.Atom.Skel.FastVector
+                   , ForSyDe.Atom.Skel.FastVector.Lib
+                   , ForSyDe.Atom.Skel.FastVector.Matrix
+                   , ForSyDe.Atom.Skel.FastVector.Cube
+                   , ForSyDe.Atom.Skel.FastVector.DSP
+                   , ForSyDe.Atom.Prob
+                   , ForSyDe.Atom.Prob.Uniform
+                   , ForSyDe.Atom.Prob.Normal
                    , ForSyDe.Atom.Utility.Tuple
                    , ForSyDe.Atom.Utility.Plot
 
@@ -75,6 +78,8 @@ library
                    , numbers >= 3000.2.0.2
                    , time
                    , split
+                   , random
+                   , normaldistribution
                    , directory >= 1.2.2
                    , process >= 1.2.3
 

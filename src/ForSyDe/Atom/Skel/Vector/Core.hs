@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.Core
+-- Module      :  ForSyDe.Atom.Skel.Vector.Core
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,9 +11,9 @@
 --
 -- The core implementation of the 'Vector' type
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.Core where
+module ForSyDe.Atom.Skel.Vector.Core where
 
-import ForSyDe.Atom.Skeleton
+import ForSyDe.Atom.Skel
 
 import Prelude hiding (null)
 
@@ -43,7 +43,7 @@ infixr 5 <++>
 -- as a /right fold/, as it is the most efficient lazy implementation of lists. As a
 -- consequence reduction is performed __/from right to left/__. This is noticed
 -- especially in the case of pipeline-based skeletons (see definition of
--- 'ForSyDe.Atom.Skeleton.pipe' as a reduction with the right-associative composition
+-- 'ForSyDe.Atom.Skel.pipe' as a reduction with the right-associative composition
 -- operator '.') is performed from right to left. Thus for 'reduce'-based skeletons
 -- (e.g. 'prefix', 'suffix', 'recur', 'cascade', 'mesh') the result vectors shall be
 -- read from end to beginning.

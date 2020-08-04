@@ -1,15 +1,15 @@
 {-# OPTIONS_HADDOCK prune #-}
-module ForSyDe.Atom.Skeleton.FastVector.DSP where
+module ForSyDe.Atom.Skel.FastVector.DSP where
 
 import Data.Complex
 import qualified Data.Number.FixedFunctions as F
 import ForSyDe.Atom.MoC as MoC
-import ForSyDe.Atom.Skeleton.FastVector.Lib as V hiding (duals, unduals)
-import ForSyDe.Atom.Skeleton.FastVector.Matrix as M
+import ForSyDe.Atom.Skel.FastVector.Lib as V hiding (duals, unduals)
+import ForSyDe.Atom.Skel.FastVector.Matrix as M
 import ForSyDe.Atom ((><))
 
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.taylor'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.taylor'.
 taylor :: (Eq a, Floating a)
        => Int      -- ^ number of points in the output window.
        -> Int      -- ^ Number of nearly constant level sidelobes adjacent to the mainlobe
@@ -37,20 +37,20 @@ taylor n nbar level = V.farm11 (*scale) w
     -- normalize (Note that this is not described in the original text [1])
     scale = 1 / wcalc (bN - 1) / 2
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.taylor''.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.taylor''.
 taylor' n = taylor 4 (-30)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.dotvm'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.dotvm'.
 dotvm :: Num a => Vector a -> Vector (Vector a) -> Vector a
 dotvm = dotvm' (+) (*)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.dotvv'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.dotvv'.
 dotvv :: Num a => Vector a -> Vector a -> a 
 dotvv a b
   | V.length a == V.length b = V.reduce (+) (V.farm21 (*) a b)
   | otherwise                = error "Vector sizes must match"
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.dotvv''.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.dotvv''.
 dotvv' :: Num a
      => ((a -> a -> a) -> f a -> f a -> f a)
      -- ^ higher-order function that can wrap the (*) operation.
@@ -59,7 +59,7 @@ dotvv' wrap a b
   | V.length a == V.length b = V.reduce (wrap (+)) $ V.farm21 (wrap (*)) a b
   | otherwise                = error "Vector sizes must match"
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.dotmv''.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.dotmv''.
 dotmv' :: (a -> a -> a) -- ^ kernel function for a row/column reduction, e.g. @(+)@ for dot product
        -> (b -> a -> a) -- ^ binary operation for pair-wise elements, e.g. @(*)@ for dot product
        -> Vector (Vector b) -- ^ /size/ = @(xa,ya)@
@@ -67,7 +67,7 @@ dotmv' :: (a -> a -> a) -- ^ kernel function for a row/column reduction, e.g. @(
        -> Vector a      -- ^ /length/ = @xa@
 dotmv' f g mA y = V.farm11 (\x -> V.reduce f $ V.farm21 g x y) mA
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.dotvm''.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.dotvm''.
 dotvm' :: (b -> b -> b)     -- ^ kernel function for a row/column reduction, e.g. @(+)@ for dot product
        -> (a -> b -> b)     -- ^ binary operation for pair-wise elements, e.g. @(*)@ for dot product
        -> Vector a          -- ^ /length/ = @xa@
@@ -75,7 +75,7 @@ dotvm' :: (b -> b -> b)     -- ^ kernel function for a row/column reduction, e.g
        -> Vector b          -- ^ /length/ = @ya@
 dotvm' f g vs = V.reduce (V.farm21 f) . V.farm21 (\x -> V.farm11 (g x)) vs
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.hanning'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.hanning'.
 hanning :: (Floating n) 
         => Int -- ^ The length of the window
         -> Vector n
@@ -85,7 +85,7 @@ hanning size = V.farm11 func $ V.vector [0..size-1]
                    n = fromIntegral size
                in 0.5 * (1 - cos((2 * pi * i) / (n - 1)))
   
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.hamming'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.hamming'.
 hamming :: (Floating n) 
         => Int -- ^ The length of the window
         -> Vector n
@@ -95,7 +95,7 @@ hamming size = V.farm11 func $ V.vector [0..size-1]
                    n = fromIntegral size
                in 0.54 - 0.46 * cos((2 * pi * i) / (n - 1))
    
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.blackman'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.blackman'.
 blackman :: (Floating n) 
         => Int -- ^ The length of the window
         -> Vector n
@@ -105,7 +105,7 @@ blackman size = V.farm11 func $ V.vector [0..size-1]
                    n = fromIntegral size
                in 0.42 - 0.5 * cos((2 * pi * i) / (n - 1)) + 0.08 * cos((4 * pi * i) / (n - 1))
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.fir'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.fir'.
 fir :: Num a
     => Vector a  -- ^ vector of coefficients
     -> Vector a  -- ^ input vector of numbers; /size/ = @n@
@@ -114,7 +114,7 @@ fir coefs = V.reverse . V.farm11 applyFilter . tails . V.reverse
   where
     applyFilter = V.reduce (+) . V.farm21 (*) coefs 
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.fir''.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.fir''.
 fir' :: (a -> a -> a)  -- ^ process/operation replacing '+'
      -> (c -> a -> a)  -- ^ process/operation replacing '*'
      -> (a -> a)       -- ^ delay process
@@ -126,13 +126,13 @@ fir' plus times delay coefs =
   V.reduce plus . V.farm21 times coefs . V.recuri (V.fanoutn n delay)
   where n = V.length coefs - 1
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.twiddles'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.twiddles'.
 twiddles :: Floating a => Int -> V.Vector (Complex a)
 twiddles bN = (bitrev . V.take (bN `div` 2)) (V.farm11 bW $ vector [0..])
   where bW x = (cis . negate) (-2 * pi * fromIntegral x / fromIntegral bN)
 
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.fft'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.fft'.
 fft :: RealFloat a
      => Int -> V.Vector (Complex a) -> V.Vector (Complex a)
 fft k vs | n == 2^k = V.reverse $ bitrev $ (stage `V.pipe1` V.iterate k (*2) 2) vs
@@ -144,7 +144,7 @@ fft k vs | n == 2^k = V.reverse $ bitrev $ (stage `V.pipe1` V.iterate k (*2) 2) 
     -------------------------------------------------
     butterfly w x0 x1 = let t = w * x1 in (x0 + t, x0 - t) -- kernel function
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.fft''.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.fft''.
 fft' :: Floating a
      => (Complex a -> a -> a -> (a, a)) 
      -> Int -> V.Vector a -> V.Vector a
@@ -154,17 +154,17 @@ fft' butterfly k vs | n == 2^k = bitrev $ (stage `V.pipe1` (V.iterate k (*2) 2))
     segment t = (><) unduals . (><) (V.farm22 (butterfly t)) . duals
     n         = V.length vs        -- length of input
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.duals'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.duals'.
 duals    :: Vector a -> (Vector a, Vector a)
 duals v  = (V.take k v, V.drop k v)
   where
     k = V.length v `div` 2
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.unduals'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.unduals'.
 unduals  :: Vector a -> Vector a -> Vector a
 unduals x y =  x <++> y
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.bitrev'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.bitrev'.
 bitrev = V.unsafeLift bitrevF
   where
     bitrevF [x] = [x]

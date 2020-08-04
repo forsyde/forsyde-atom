@@ -84,7 +84,7 @@ module ForSyDe.Atom (
   -- * "ForSyDe.Atom.MoC", a DSL for capturing the semantics of computation and
   --   concurrency according to a model of computation.
   --
-  -- * "ForSyDe.Atom.Skeleton" a DSL for describing structured parallelism.
+  -- * "ForSyDe.Atom.Skel" a DSL for describing structured parallelism.
   --
   -- * "ForSyDe.Atom.Probability", a DSL for describing numerical values as probability
   -- * distributions, e.g. Gaussian.
@@ -153,6 +153,6 @@ import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.Time
 import ForSyDe.Atom.MoC.TimeStamp
-import ForSyDe.Atom.Skeleton
+import ForSyDe.Atom.Skel
 import ForSyDe.Atom.Utility.Tuple
 import ForSyDe.Atom.Utility.Plot

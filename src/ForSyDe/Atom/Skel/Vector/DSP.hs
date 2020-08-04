@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.DSP
+-- Module      :  ForSyDe.Atom.Skel.Vector.DSP
 -- Copyright   :  (c) George Ungureanu, KTH/EECS/ESY 2019-2020
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,13 +11,13 @@
 -- This module exports a set of 'Vector' patterns commonly used in signal processing
 -- designs.
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.DSP where
+module ForSyDe.Atom.Skel.Vector.DSP where
 
 import Data.Complex
 import qualified Data.Number.FixedFunctions as F
 import ForSyDe.Atom.MoC as MoC
-import ForSyDe.Atom.Skeleton.Vector as V hiding (duals, unduals)
-import ForSyDe.Atom.Skeleton.Vector.Matrix as M
+import ForSyDe.Atom.Skel.Vector as V hiding (duals, unduals)
+import ForSyDe.Atom.Skel.Vector.Matrix as M
 import ForSyDe.Atom ((><))
 
 -- | Return the Taylor window. The Taylor window allows for a selectable sidelobe

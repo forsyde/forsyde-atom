@@ -4,7 +4,7 @@ module ForSyDe.Atom.MoC.SDF.SADFDemo where
 import ForSyDe.Atom
 import ForSyDe.Atom.MoC (takeS)
 import ForSyDe.Atom.MoC.SDF.SADF
-import ForSyDe.Atom.Skeleton.Vector as V
+import ForSyDe.Atom.Skel.Vector as V
 
 type StateDEC = Int      -- state decoder
 type Instr = (Op, [Arg]) -- instruction type (operation, args)

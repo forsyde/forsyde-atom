@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK hide #-}
-module ForSyDe.Atom.Skeleton.FastVector.Lib where
+module ForSyDe.Atom.Skel.FastVector.Lib where
 
 import ForSyDe.Atom 
 import Data.Maybe
@@ -47,55 +47,55 @@ infixr 5 <++>
 unsafeApply f (Vector a) = f a
 unsafeLift  f (Vector a) = Vector (f a)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.reduce'.
+-- | See 'ForSyDe.Atom.Skel.Vector.reduce'.
 reduce f = unsafeApply (L.foldr1 f)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.length'.
+-- | See 'ForSyDe.Atom.Skel.Vector.length'.
 length = unsafeApply (L.length)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.drop'.
+-- | See 'ForSyDe.Atom.Skel.Vector.drop'.
 drop n = unsafeLift (L.drop n)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.take'.
+-- | See 'ForSyDe.Atom.Skel.Vector.take'.
 take n = unsafeLift (L.take n)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.first'.
+-- | See 'ForSyDe.Atom.Skel.Vector.first'.
 first = unsafeApply L.head
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.group'.
+-- | See 'ForSyDe.Atom.Skel.Vector.group'.
 group :: Int -> Vector a -> Vector (Vector a)
 group n (Vector a) = vector $ map vector $ chunksOf n a
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.fanout'.
+-- | See 'ForSyDe.Atom.Skel.Vector.fanout'.
 fanout    = vector . L.repeat
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.fanoutn'.
+-- | See 'ForSyDe.Atom.Skel.Vector.fanoutn'.
 fanoutn n = vector . L.replicate n
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.stencil'.
+-- | See 'ForSyDe.Atom.Skel.Vector.stencil'.
 stencil n v = farm11 (take n) $ dropFromEnd n $ tails v
   where dropFromEnd n = take (length v - n + 1)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.tails'.
+-- | See 'ForSyDe.Atom.Skel.Vector.tails'.
 tails = unsafeLift (L.init . map vector . L.tails)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.concat'.
+-- | See 'ForSyDe.Atom.Skel.Vector.concat'.
 concat = unsafeLift (L.concat . map fromVector)
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.iterate'.
+-- | See 'ForSyDe.Atom.Skel.Vector.iterate'.
 iterate n f i = vector $ L.take n $ L.iterate f i 
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.pipe'.
+-- | See 'ForSyDe.Atom.Skel.Vector.pipe'.
 pipe (Vector []) i = i
 pipe v i = unsafeApply (L.foldr1 (.)) v i
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.pipe1'.
+-- | See 'ForSyDe.Atom.Skel.Vector.pipe1'.
 pipe1 f v i = unsafeApply (L.foldr f i) v
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.reverse'.
+-- | See 'ForSyDe.Atom.Skel.Vector.reverse'.
 reverse = unsafeLift L.reverse
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.recuri'.
+-- | See 'ForSyDe.Atom.Skel.Vector.recuri'.
 recuri ps s = farm11 (`pipe` s) (unsafeLift (L.map vector . L.tails) ps)
 
 
@@ -158,7 +158,7 @@ recuri ps s = farm11 (`pipe` s) (unsafeLift (L.map vector . L.tails) ps)
 --           | i `mod` n == 0 = x <++> y
 --           | otherwise      = (S.first x <++> first' y) :> tail' y
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.get'.
+-- | See 'ForSyDe.Atom.Skel.Vector.get'.
 get :: Int -> Vector a -> Maybe a 
 get _ (Vector []) = Nothing
 get n v | n >= length v = Nothing
@@ -201,8 +201,8 @@ oddsF  [] = []
 oddsF  [_] = []
 oddsF  (_:y:xs) = y:oddsF xs
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.evens'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.evens'.
 evens = unsafeLift evensF
 
--- | See 'ForSyDe.Atom.Skeleton.Vector.DSP.odds'.
+-- | See 'ForSyDe.Atom.Skel.Vector.DSP.odds'.
 odds = unsafeLift oddsF

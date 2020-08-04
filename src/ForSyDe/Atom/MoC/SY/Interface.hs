@@ -20,7 +20,7 @@ import qualified ForSyDe.Atom.MoC.SY.Core as SY
 import           ForSyDe.Atom.MoC ((-.-),(-*))
 import           ForSyDe.Atom.MoC.Stream (Stream(..))
 import           ForSyDe.Atom.MoC.TimeStamp
-import qualified ForSyDe.Atom.Skeleton.Vector as V (
+import qualified ForSyDe.Atom.Skel.Vector as V (
   Vector, vector, zipx, unzipx, fanout, unit, length, reverse, fromVector)
 import           ForSyDe.Atom.Utility.Tuple
 
@@ -115,7 +115,7 @@ toSDF4' (p1,p2,p3,p4) s1 s2 s3 s4 = (toSDF1' p1 s1, toSDF1' p2 s2, toSDF1' p3 s3
 
 -- | Synchronizes all the signals contained by a vector and zips them
 -- into one signal of vectors. It instantiates the
--- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+-- 'ForSyDe.Atom.Skel.Vector.zipx' skeleton.
 --
 -- >>> let s1 = SY.signal [1,2,3,4,5]
 -- >>> let s2 = SY.signal [11,12,13,14,15]
@@ -130,7 +130,7 @@ zipx ::V.Vector (SY.Signal a) -> SY.Signal (V.Vector a)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
 -- | Unzips the vectors carried by a signal into a vector of
--- signals. It instantiates the 'ForSyDe.Atom.Skeleton.Vector.unzipx'
+-- signals. It instantiates the 'ForSyDe.Atom.Skel.Vector.unzipx'
 -- skeleton. To avoid infinite recurrence, the user needs to provide
 -- the length of the output vector.
 --

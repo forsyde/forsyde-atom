@@ -5,7 +5,7 @@ module ForSyDe.Atom.MoC.DE.Interface where
 
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 import           ForSyDe.Atom.MoC.Stream (Stream(..))
-import qualified ForSyDe.Atom.Skeleton.Vector as V (
+import qualified ForSyDe.Atom.Skel.Vector as V (
   Vector, zipx, unzipx, fanout, length, reverse)
 import           ForSyDe.Atom.Utility.Tuple
 
@@ -89,7 +89,7 @@ toCT4 s1 s2 s3 s4 = (toCT1, toCT1, toCT1, toCT1) $$$$ (s1,s2,s3,s4)
 
 -- | Synchronizes all the signals contained by a vector and zips them
 -- into one signal of vectors. It instantiates the
--- 'ForSyDe.Atom.Skeleton.Vector.zipx' skeleton.
+-- 'ForSyDe.Atom.Skel.Vector.zipx' skeleton.
 --
 -- >>> let s1 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.SignalBase t Int
 -- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@4, 4@8, 5@9}" :: DE.SignalBase t Int
@@ -105,7 +105,7 @@ zipx ::(Num t, Ord t, Eq t)
 zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 
 -- | Unzips the vectors carried by a signal into a vector of
--- signals. It instantiates the 'ForSyDe.Atom.Skeleton.Vector.unzipx'
+-- signals. It instantiates the 'ForSyDe.Atom.Skel.Vector.unzipx'
 -- skeleton. To avoid infinite recurrence, the user needs to provide
 -- the length of the output vector.
 --

@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK prune #-}
 ----------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector
+-- Module      :  ForSyDe.Atom.Skel.Vector
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -20,22 +20,22 @@
 --
 -- * "ForSyDe.Atom" contains general guidelines for using the API
 --
--- * "ForSyDe.Atom.Skeleton" documents details about the internals of the Skeleton
+-- * "ForSyDe.Atom.Skel" documents details about the internals of the Skeleton
 --   layer, the atoms and some basic generic patterns.
 --
--- * "ForSyDe.Atom.Skeleton.Vector.Matrix" contains a collection of patterns for
+-- * "ForSyDe.Atom.Skel.Vector.Matrix" contains a collection of patterns for
 --   working with 2-dimensional 'Vector's.
 --
--- * "ForSyDe.Atom.Skeleton.Vector.Cube" contains a collection of patterns for working
+-- * "ForSyDe.Atom.Skel.Vector.Cube" contains a collection of patterns for working
 --   with 3-dimensional 'Vector's.
 --
--- * "ForSyDe.Atom.Skeleton.Vector.DSP" contains a collection of patterns commonly
+-- * "ForSyDe.Atom.Skel.Vector.DSP" contains a collection of patterns commonly
 --   used in signal processing designs.
 --
 -- * the <ForSyDe-Atom.html#naming_conv naming convention> rules on how to interpret
 --   the function names based on their number of inputs and outputs.
 ----------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector (
+module ForSyDe.Atom.Skel.Vector (
 
   -- * Vector data type
 
@@ -129,9 +129,9 @@ module ForSyDe.Atom.Skeleton.Vector (
   zipx, unzipx
   ) where
 
-import ForSyDe.Atom.Skeleton.Vector.Core
-import ForSyDe.Atom.Skeleton.Vector.Lib
-import ForSyDe.Atom.Skeleton.Vector.Interface
+import ForSyDe.Atom.Skel.Vector.Core
+import ForSyDe.Atom.Skel.Vector.Lib
+import ForSyDe.Atom.Skel.Vector.Interface
 
 import Prelude hiding (null, last, init, tail, map, reverse, length, concat, take, drop, filter, takeWhile, iterate)
 
