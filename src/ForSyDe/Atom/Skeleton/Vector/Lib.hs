@@ -745,11 +745,25 @@ rotl   vs   = tail vs <: S.first vs
 rotr   Null = Null
 rotr   vs   = S.last vs :> init vs
 
+-- | rotates a vector to the left or to the right depending on the index:
+--
+-- * @(> 0)@ : rotates the vector right with the corresponding number
+-- of positions.
+-- 
+-- * @(= 0)@ : does not modify the vector.
+-- 
+-- * @(< 0)@ : rotates the vector left with the corresponding number
+-- of positions.
+rotate :: Int -> Vector a -> Vector a
+rotate i | i < 0 = doPipe rotl (-i)
+         | i > 0 = doPipe rotr i
+         | otherwise = id
+  where doPipe f i = ForSyDe.Atom.Skeleton.Vector.Lib.pipe (fanoutn i f)
 
 -- | the same as 'get' but with flipped arguments.
 v <@  ix = get ix v
 
--- | unsafe version of '<@>'. Throws an exception if /n > l/.
+-- | unsafe version of '<@'. Throws an exception if /n > l/.
 v <@! ix | isNothing e = error "get!: index out of bounds"
          | otherwise   = fromJust e
   where e = get ix v
@@ -812,26 +826,6 @@ scatter Null hv _    = hv
 scatter _    hv Null = hv
 scatter ix   hv v    = reducei1 sel hv ix . S.farm11 unit $ v
   where sel i r h = replace i (S.first r) h
-
--- | performs a bit-reverse permutation.
---
--- <<fig/skel-vector-comm-bitrev.png>>
--- <<fig/skel-vector-comm-bitrev-net.png>>
---
--- >>> bitrev $ vector ["000","001","010","011","100","101","110","111"]
--- <"111","011","101","001","110","010","100","000">
-bitrev (x:>Null) = unit x
-bitrev xs        = bitrev (evens xs) <++> bitrev (odds xs)
-
--- | splits a vector in two equal parts.
---
--- >>> duals $ vector [1,2,3,4,5,6,7]
--- (<1,2,3>,<4,5,6>)
-duals   v = let k = length v `div` 2
-            in  S.farm22 (,) (take k v) (drop k v)
-
--- | concatenates a previously split vector. See also 'duals'
-unduals = (<++>)
 
 
 

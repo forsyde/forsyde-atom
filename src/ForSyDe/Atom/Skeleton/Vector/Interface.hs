@@ -34,7 +34,7 @@ mapS = fmap . fmap
 -- /translates/ a partition of events (see "ForSyDe.Atom.MoC") into
 -- sub-vectors.
 --
--- There exist helper intances of the 'zipx' skeleton interface for
+-- There exist helper instances of the 'zipx' skeleton interface for
 -- all supported MoCs.
 --
 -- <<fig/eqs-skel-vector-zipx.png>>
@@ -63,7 +63,7 @@ zipx part =  V.reduce1 sync part . farm11 (mapS unit)
 -- scope of skeletons and may lead to unsafe behavior. The length of
 -- the output vector is needed in order to avoid infinite recurrence.
 --
--- There exist helper intances of the 'unzipx' skeleton interface for
+-- There exist helper instances of the 'unzipx' skeleton interface for
 -- all supported MoCs.
 --
 -- <<fig/eqs-skel-vector-unzipx.png>>

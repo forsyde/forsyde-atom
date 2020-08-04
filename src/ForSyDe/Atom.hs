@@ -109,8 +109,6 @@ module ForSyDe.Atom (
 
   -- | Here are gathered pointers to documents referenced throughout the API documentation.
 
-  -- | #bird87# <https://www.cs.ox.ac.uk/files/3378/PRG56.pdf [Bird87]> Bird, R. S. (1987). An introduction to the theory of lists. In /Logic of programming and calculi of discrete design/ (pp. 5-42). Springer Berlin Heidelberg.
-
   -- | #bonna19# <https://dl.acm.org/doi/10.1145/3342997?cid=99659130620 [Bonna19]> Bonna, R., Loubach, D. S., Ungureanu, G., & Sander, I. (2019). Modeling and simulation of dynamic applications using scenario-aware dataflow. ACM Transactions on Design Automation of Electronic Systems (TODAES), 24(5), 1-29.
 
   -- | #buck93# [Buck93] Buck, J. T., & Lee, E. A. (1993). Scheduling dynamic dataflow graphs with bounded memory using the token flow model. In /1993 IEEE international conference on acoustics, speech, and signal processing/ (Vol. 1, pp. 429-432). IEEE.
@@ -121,7 +119,7 @@ module ForSyDe.Atom (
   
   -- | #halbwachs91# <http://ieeexplore.ieee.org/document/97300/ [Halbwachs91]> Halbwachs, N., Caspi, P., Raymond, P., & Pilaud, D. (1991). The synchronous data flow programming language LUSTRE. /Proceedings of the IEEE, 79(9)/, 1305-1320.
 
-  -- | #gorlatch03# <http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [Gorlatch03]> Fischer, J., Gorlatch, S., & Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.
+  -- | #gorlatch03 e# <http://link.springer.com/chapter/10.1007/978-1-4471-0097-3_1#page-1 [Gorlatch03]> Fischer, J., Gorlatch, S., & Bischof, H. (2003). Foundations of data-parallel skeletons. In /Patterns and skeletons for parallel and distributed computing/ (pp. 1-27). Springer London.
   
   -- | #kahn76# [Kahn76] Kahn, G., & MacQueen, D. (1976). Coroutines and networks of parallel processes.
 

@@ -57,6 +57,7 @@ library
                    , ForSyDe.Atom.Skeleton.Vector.Cube
                    , ForSyDe.Atom.Skeleton.Vector.DSP
                    , ForSyDe.Atom.Skeleton.FastVector
+                   , ForSyDe.Atom.Skeleton.FastVector.Lib
                    , ForSyDe.Atom.Skeleton.FastVector.Matrix
                    , ForSyDe.Atom.Skeleton.FastVector.Cube
                    , ForSyDe.Atom.Skeleton.FastVector.DSP

@@ -16,7 +16,7 @@
 -- permitted by the host language, and with the adaptations required by the atom
 -- approach.
 --
--- The MoC layer is defining almost the same DSL as the classic
+-- The MoC layer is defining a similar DSL as the classic
 -- <https://forsyde.github.io/forsyde-shallow/ ForSyDe> modeling framework, in the
 -- sense that systems are described in terms of /networks/ of /processes/ operating on
 -- /signals/, and processes are only allowed to be instantiated using a finite set of
