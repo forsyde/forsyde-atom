@@ -87,7 +87,7 @@ bSwitch p sb = kernel12 cSw
 -- >>> let s2 = signal [11..20]
 -- >>> let sb = signal [True,False,True,True,False]
 -- >>> bSelect (3,2) sb s1 s2
--- {11,12,1,2,3,13,14,15,16,4,5,6,17,18}
+-- {11,12,1,2,3,13,14,15,16,4,5,6}
 --
 -- <<fig/moc-ddf-bdf-select.png>>
 bSelect :: (Cons,Cons) -> Signal Bool -> Signal a -> Signal a -> Signal a

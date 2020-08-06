@@ -25,12 +25,12 @@ import           ForSyDe.Atom.Utility.Tuple
 
 -- $setup
 -- >>> import ForSyDe.Atom.MoC.Stream (takeS)
--- >>> import ForSyDe.Atom.MoC.tm as tm
--- >>> import ForSyDe.Atom.MoC.ts as ts
--- >>> let pi'  = ts.pi
--- >>> let exp' = tm.exp
--- >>> let sin' = tm.sin
--- >>> let cos' = tm.cos
+-- >>> import ForSyDe.Atom.MoC.Time as Time
+-- >>> import ForSyDe.Atom.MoC.TimeStamp as TimeStamp
+-- >>> let pi'  = TimeStamp.pi
+-- >>> let exp' = Time.exp
+-- >>> let sin' = Time.sin
+-- >>> let cos' = Time.cos
 -- >>> let cfg  = defaultCfg {xmax=10, rate=0.1}
 
 ------- DELAY -------
@@ -39,7 +39,7 @@ import           ForSyDe.Atom.Utility.Tuple
 -- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern. In the CT
 -- MoC, this process can be interpreted as an ideal "delay line".
 --
--- >>> let s  = infinite (sin')
+-- >>> let s  = infinite (sin') :: Signal Time
 -- >>> let s' = delay 2 (\_ -> 0) s
 -- >>> dumpDat $ prepare cfg {labels=["delay"]} $ s'
 -- Dumped delay in ./fig
@@ -58,7 +58,7 @@ delay t v = MoC.delay (unit (t, v))
 -- 'ForSyDe.Atom.MoC.delay' pattern. It "borrows" the first event from
 -- one signal and appends it at the head of another signal.
 --
--- >>> let s  = infinite (sin')
+-- >>> let s  = infinite (sin') :: Signal Time
 -- >>> let s' = signal [(0, \_ -> 0), (2, \_ -> 1)]
 -- >>> dumpDat $ prepare cfg {labels=["delayp"]} $ delay' s' s
 -- Dumped delayp in ./fig
@@ -80,8 +80,8 @@ delay' = MoC.delay
 -- 
 -- Constructors: @comb[1-4][1-4]@.
 --
--- >>> let s1 = infinite (sin')
--- >>> let s2 = signal [(0,\_->0),(pi',\_->1),(2*pi',\_->0),(3*pi',\_->1)]
+-- >>> let s1 = infinite (sin') :: Signal Time
+-- >>> let s2 = signal [(0,\_->0),(pi',\_->1),(2*pi',\_->0),(3*pi',\_->1)] :: Signal Time
 -- >>> let o1 = comb11 (+1) s2
 -- >>> let (o2_1, o2_2) = comb22 (\a b-> (a+b,a*b)) s1 s2
 -- >>> dumpDat $ prepare cfg {labels=["comb11"]} o1  
@@ -169,7 +169,7 @@ comb44 = MoC.comb44
 --
 -- Constructors: @reconfig[1-4][1-4]@.
 --
--- >>> let s1 = infinite (sin')
+-- >>> let s1 = infinite (sin') :: Signal Time
 -- >>> let sf = signal [(0,\_->(*0)),(pi',\_->(+1)),(2*pi',\_->(*0)),(3*pi',\_->(+1))]
 -- >>> dumpDat $ prepare cfg {labels=["reconfig"]} $ reconfig11 sf s1
 -- Dumped reconfig in ./fig
@@ -270,7 +270,8 @@ reconfig44 = MoC.reconfig44
 --
 -- Constructors: @constant[1-4]@.
 --
--- >>> dumpDat $ prepare cfg {labels=["constant"]} $ constant1 2
+-- >>> let ctsig = constant1 2 :: Signal Int
+-- >>> dumpDat $ prepare cfg {labels=["constant"]} ctsig
 -- Dumped constant in ./fig
 -- ["./fig/constant.dat"]
 --
@@ -299,7 +300,7 @@ constant4 = ($$$$) (constant1,constant1,constant1,constant1)
 --
 -- Constructors: @infinite[1-4]@.
 --
--- >>> let (inf1, inf2) = infinite2 (sin', cos')
+-- >>> let (inf1, inf2) = infinite2 (sin', cos') :: (Signal Time, Signal Time)
 -- >>> dumpDat $ prepareL cfg {labels=["infinite2-1", "infinite2-2"]} [inf1, inf2] 
 -- Dumped infinite2-1, infinite2-2 in ./fig
 -- ["./fig/infinite2-1.dat","./fig/infinite2-2.dat"]
@@ -331,7 +332,8 @@ infinite4 = ($$$$) (infinite,infinite,infinite,infinite)
 -- Constructors: @generate[1-4]@.
 --
 -- >>> let { osc 0 = 1 ; osc 1 = 0 }
--- >>> dumpDat $ prepare cfg {labels=["generate"]} $ generate1 osc (pi', \_->0)
+-- >>> let sg = generate1 osc (pi', \_->0) :: Signal Int
+-- >>> dumpDat $ prepare cfg {labels=["generate"]} sg
 -- Dumped generate in ./fig
 -- ["./fig/generate.dat"]
 --
@@ -382,7 +384,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- Constructors: @stated[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
--- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
+-- >>> let s1 = signal [(0,\_->1), (6,\_->0)] :: Signal Int
 -- >>> dumpDat $ prepare cfg {labels=["stated"]} $ stated11 osc (1,\_->0) s1
 -- Dumped stated in ./fig
 -- ["./fig/stated.dat"]
@@ -500,7 +502,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- Constructors: @state[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
--- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
+-- >>> let s1 = signal [(0,\_->1), (6,\_->0)] :: Signal Int
 -- >>> dumpDat $ prepare cfg {labels=["state"]} $ state11 osc (1,\_->0) s1
 -- Dumped state in ./fig
 -- ["./fig/state.dat"]
@@ -618,7 +620,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 -- Constructors: @moore[1-4][1-4]@.
 --
 -- >>> let { osc 0 a = a; osc _ a = 0 }   
--- >>> let s1 = signal [(0,\_->1), (6,\_->0)]
+-- >>> let s1 = signal [(0,\_->1), (6,\_->0)] :: Signal Int
 -- >>> dumpDat $ prepare cfg {labels=["moore"]} $ moore11 osc (*3) (1,\_->0) s1
 -- Dumped moore in ./fig
 -- ["./fig/moore.dat"]

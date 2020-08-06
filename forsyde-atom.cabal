@@ -1,7 +1,12 @@
 name:                forsyde-atom
 version:             0.3.0.0
 synopsis:            Shallow-embedded DSL for modeling cyber-physical systems 
-description:         This package is a spin-off from the <https://forsyde.github.io/forsyde-shallow/ ForSyDe-Shallow> project, aiming to incorporate a large set of modelling concepts for describing various aspects of cyber-physical systems. The API documentation is structured as a manual and can be read as such. For a general overview of this library and the formal concepts implemented, we recommend starting your lecture with the "ForSyDe.Atom" module. For more resources, such as tutorials, user manual or publicatons, visit <https://forsyde.github.io/forsyde-atom/>.
+description:
+  This package is a spin-off from the <https://forsyde.github.io/forsyde-shallow/ ForSyDe-Shallow> project, aiming to incorporate a set of novel modeling concepts useful in the design of cyber-physical systems (CPS). Among others, ForSyde-Atom introduces the concept of /layer/ as a disciplined means to seamlessly combine multiple DSLs capturing various behavioral aspects of a CPS, such as timing, distribution, probability, etc. into one unified modeling framework. Currently only four layers are provided, but new layers can be formulated and added following the examples of the existing ones.
+  .
+  As of today ForSyDe-Atom is only implemented as a (set of) shallow-embedded DSL(s), meaning that it can only be used for the purpose of simulation, behavior tracing and validation.  Its associated formalism however, in theory, could be used a starting point for a formal or rigorous system design methodology, showing potential for other design activities, such as refinement or synthesis. For an overview presentation of the main concepts behind this framework, see @[1]@. For more resources, such as tutorials, user manual or publicatons, visit <https://forsyde.github.io/forsyde-atom/>.
+  .
+  @[1]@ Ungureanu, G., et. al. , ForSyDe-Atom: Taming complexity in cyber-physical system design with layers, /under review/.                     
 license:             BSD3
 license-file:        LICENSE
 author:              George Ungureanu
@@ -44,8 +49,8 @@ library
                    , ForSyDe.Atom.MoC.SDF.Core
                    , ForSyDe.Atom.MoC.SDF.Interface
                    , ForSyDe.Atom.MoC.SDF.SDF
-                   , ForSyDe.Atom.MoC.SDF.SADF
                    , ForSyDe.Atom.MoC.SDF.SADFDemo
+                   , ForSyDe.Atom.MoC.SDF.SADF
                    , ForSyDe.Atom.MoC.SDF.CSDF
                    , ForSyDe.Atom.MoC.SDF.BDF
                    , ForSyDe.Atom.Skel

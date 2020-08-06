@@ -40,12 +40,13 @@ module ForSyDe.Atom.Utility.Plot (
   
   ) where
 
+import Control.Arrow
 import Control.Exception
 import Control.Monad (unless, when)
 import Data.List (intercalate, intersperse, unwords)
 import System.Directory (createDirectoryIfMissing)
-import System.Process
 import System.Exit (ExitCode(..))
+import System.Process
 
 import qualified ForSyDe.Atom.ExB.Absent as AE (
   AbstExt(..))
@@ -67,6 +68,9 @@ import ForSyDe.Atom.MoC.Stream (
   Stream(..), fromStream, takeS)
 import qualified ForSyDe.Atom.Skel.Vector as V (
   Vector(..), fromVector, take, vector)
+import qualified ForSyDe.Atom.Prob as P (
+  Histogram(..)
+  )
 
 -------------------------- TYPES --------------------------
 
@@ -318,6 +322,20 @@ instance Plottable a => Plot (V.Vector a) where
                    , sparse   = False
                    }
 
+-- | For plotting vectors of coordinates
+instance Plot P.Histogram where
+  sample' = map (toCoord *** toCoord) . P.getBins
+  ------------------------
+  takeUntil n = P.Hist . take (truncate n) . P.getBins
+  ------------------------
+  getInfo _ = Info { typeid   = "hist"
+                   , command  = "HIST"
+                   , measure  = "bin"
+                   , style    = "boxes"
+                   , stacking = True
+                   , sparse   = False
+                   }
+
 -------------------------- PREPARE --------------------------
 
 -- | Prepares a single plottable data structure to be dumped and/or
@@ -461,7 +479,11 @@ alterForGnuHeatmap (cfg,info,lsamp) = (cfg, info, map alter lsamp)
 mkPlotScript :: Config -> PInfo -> [FilePath] -> String 
 mkPlotScript cfg info files =
   (if plotTitle == "plot" then "" else "set title \"" ++ plotTitle ++  "\"\n")
-  ++ "set xzeroaxis\nset xlabel \"" ++ unitOfMeasure ++ "\" \n"
+  ++ "set xlabel \"" ++ unitOfMeasure ++ "\" \n"
+  ++ (if command info == "HIST" then
+       "set style fill solid\nset boxwidth 0.5\n"
+     else "")
+  ++ "set xzeroaxis\n"
   ++ "plot " ++ plotCmds ++ "\n"
   ++ epsCmd ++ latexCmd ++ pdfCmd
   where
@@ -619,20 +641,31 @@ alterForLatex (cfg,info,lsamp) = (cfg, info, map alter lsamp)
 mkLatex :: PlotData -> String
 mkLatex = latexCmd . alterForLatex 
   where
-    latexCmd (cfg, info, lsamp) =
-      "  \\begin{signals" ++ mocStr ++ "}[]{"
-      ++ lastX ++ "}\n"
-      ++ concatMap toSignal lsamp
-      ++ "  \\end{signals" ++ mocStr ++ "}\n"
+    latexCmd (cfg, info, lsamp)
+      -- SIGNAL plots
+      | command info `elem` ["SY","DE","RE","CT"] =
+        "  \\begin{signals" ++ mocStr ++ "}[]{"
+        ++ lastX ++ "}\n"
+        ++ concatMap toSignal lsamp
+        ++ "  \\end{signals" ++ mocStr ++ "}\n"
+      -- HISTOGRAM plots
+      | command info `elem` ["HIST"] =
+        "  \\begin{axis}[ybar,ytick=\\empty,axis x line*=bottom,axis y line*=left]\n"
+        ++ concatMap toPlot lsamp
+        ++ "\n  \\end{axis}\n"
+      | otherwise = error "mkLatex: plot for this type not implemented."
       where
+        ------ SIGNAL helpers ------  
         toSignal (label,samp) =
           "    \\signal" ++ mocStr ++ "[name= " ++ label ++ "]{"
-          ++ intercalate "," (map toString samp) ++ "}\n"
-        toString (t,v) = v ++ ":" ++ t
-      -- extract settings
+          ++ intercalate "," (map showEvent samp) ++ "}\n"
+        showEvent (t,v) = v ++ ":" ++ t
         mocStr = command info
         lastX  = show $ xmax cfg
-
+        ------ HISTOGRAM helpers ------  
+        toPlot (_,sp) = "  \\addplot coordinates {" ++ concatMap showBin sp ++ "};"
+        showBin (t,v) = "(" ++ v ++ "," ++ t ++ ")"
+       
 mkLatexFile :: String -> String
 mkLatexFile cmd =
   "\\documentclass{standalone}\n"

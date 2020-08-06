@@ -60,7 +60,7 @@ toSDF1 :: SY.Signal a
 -- Constructors: @toSDF[1-4]@.
 --
 -- >>> let s = SY.signal [1,2,3,4,5]
--- >>> toSDF s
+-- >>> toSDF1 s
 -- {1,2,3,4,5}
 --
 -- <<fig/moc-sy-tosdf.png>>
@@ -88,8 +88,8 @@ toSDF1' :: SDF.Prod
 --
 -- Constructors: @toSDF[1-4]'@.
 --
--- >>> let s = read "{<1,2>,<3,4>,<5,6>}"
--- >>> toSDF' 2 s
+-- >>> let s = read "{<1,2>,<3,4>,<5,6>}" :: SY.Signal (V.Vector Int)
+-- >>> toSDF1' 2 s
 -- {1,2,3,4,5,6}
 --
 -- <<fig/moc-sy-tosdfp.png>>

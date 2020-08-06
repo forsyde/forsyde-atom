@@ -1,23 +1,67 @@
-module ForSyDe.Atom.Prob.Normal where
+----------------------------------------------------------------------
+-- |
+-- Module      :  ForSyDe.Atom.Prob.Uniform
+-- Copyright   :  (c) George Ungureanu, 2020
+-- License     :  BSD-style (see the file LICENSE)
+-- 
+-- Maintainer  :  ugeorge@kth.se
+-- Stability   :  experimental
+-- Portability :  portable
+--
+-- This module defines recipes for normally distributed random variables,
+-- i.e. Gaussian distribution. Wraps utilities imported from "Data.Random.Normal".
+----------------------------------------------------------------------
+module ForSyDe.Atom.Prob.Normal (
+  -- * Recipes
+  normal, normal',
+  
+  -- * Layer
+
+  -- | The "ForSyDe.Atom.Prob" module is re-exported for convenience, so it does not
+  -- need to be imported explicitly.
+
+  module ForSyDe.Atom.Prob
+  ) where
 
 import System.Random
 import qualified Data.Random.Normal as N
 import ForSyDe.Atom.Prob
 
+-- $setup
+-- >>> import qualified ForSyDe.Atom.Utility.Plot as Pl
+-- >>> prepare = Pl.prepare
+-- >>> prepareL = Pl.prepareL
+-- >>> dumpDat = Pl.dumpDat
+-- >>> defaultCfg = Pl.defaultCfg
+
+-- | Recipe for normally distributed variables using the default parameters, i.e. mean = 0 and standard deviation = 1.
+--
+-- >>> gen <- getStdGen 
+-- >>> let x = normal' :: Dist Float
+-- >>> let hx = histogram (-1) 1 0.2 $ samplesn gen 10000 x
+-- >>> dumpDat $ prepare defaultCfg hx
+-- Dumped hist1 in ./fig
+-- ["./fig/hist1.dat"]
+--
+-- <<fig/prob-gausp.png>>
 normal' :: (Random a, Floating a) => Dist a
-normal' = Dist (fst . N.normal)
+normal' = Dist N.normals
 
-normal :: (Random a, Floating a) => a -> a -> Dist a
-normal dev m = Dist $ fst . N.normal' (m,dev)
+-- | Recipe for normally distributed variables.
+--
+-- >>> gen <- getStdGen 
+-- >>> let x1 = normal 2 (0.2) :: Dist Float
+-- >>> let x2 = normal 1 (0.5) :: Dist Float
+-- >>> let x3 = normal 2 (0.6) :: Dist Float
+-- >>> let hx = map (histogram 0 3 0.2 . samplesn gen 10000) [x1,x2,x3]
+-- >>> dumpDat $ prepareL defaultCfg hx
+-- Dumped hist1, hist2, hist3 in ./fig
+-- ["./fig/hist1.dat","./fig/hist2.dat","./fig/hist3.dat"]
+--
+-- <<fig/prob-gaus.png>>
+normal :: (Random a, Floating a)
+       => a      -- ^ standard deviation
+       -> a      -- ^ mean
+       -> Dist a
+normal dev m = Dist $ N.normals' (m,dev)
 
-
-ranges l r n = takeWhile (\(x,y) -> x < r)
-               [(l + k*step, l + (k+1)*step-0.0000001) | k <- [0..]]
-  where step = (r-l) / n
-count (l,r) = length.filter (\x -> l <= x && x <= r)
-histogram l r n xs = count <$> range <*> pure xs
-  where range = ranges l r n
-
-plothist r l n = zipWith (\(r,l) h->((r+l)/2,h)) (ranges r l n) . histogram r l n
-
-montecarlo n d qs = take n $ map (\r -> sample r d) qs 

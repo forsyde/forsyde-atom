@@ -69,7 +69,8 @@ toDE4 = ($$$$) (toDE1, toDE1, toDE1, toDE1)
 -- >>> let s = CT.infinite (fromRational . sin')
 -- >>> let c = DE.generate1 id (pi'/2, 1)
 -- >>> takeS 6 $ sampDE1 c s
--- {0.0@0s,1.0@1.570796326794s,1.793238520564752e-12@3.141592653588s,-1.0@4.712388980382s,0.0@6.283185307176s,1.0@7.85398163397s}
+-- {0.0@0.0,1.0@1.5707963267948966,1.2246489323228883e-16@3.141592653589793,-1.0@4.71238898038469,0.0@6.283185307179586,1.0@7.853981633974483}
+
 --
 -- <<fig/moc-ct-sampde.png>>
 sampDE2 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
@@ -109,7 +110,7 @@ sampDE4 c s1 s2 s3 s4 = (sampDE1 c s1, sampDE1 c s2, sampDE1 c s3, sampDE1 c s4)
 -- >>> let s2 = CT.signal [(0,const 1), (2,const 2), (4,const 3)]
 -- >>> let v1 = V.vector [s1,s1,s2,s2]
 -- >>> zipx v1
--- {<1,1,1,1>@0s,<2,2,2,2>@2s,<2,2,3,3>@4s,<3,3,3,3>@6s}
+-- {<1,1,1,1>@0,<2,2,2,2>@2,<2,2,3,3>@4,<3,3,3,3>@6}
 --
 -- See 'ForSyDe.Atom.MoC.DE.zipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
@@ -125,7 +126,7 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- >>> let v1 = V.vector [1,2,3,4]
 -- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 -- >>> unzipx 4 s1
--- <{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}>
+-- <{4@0,4@2,4@6},{3@0,3@2,3@6},{2@0,2@2,2@6},{1@0,1@2,1@6}>
 --
 -- See 'ForSyDe.Atom.MoC.DE.unzipx' from the "ForSyDe.Atom.MoC.DE"
 -- library for a comprehensive visual example.
@@ -140,7 +141,7 @@ unzipx = V.unzipx id
 -- >>> let v1 = V.vector [1,2,3,4]
 -- >>> let s1 = CT.signal [(0,const v1),(2,const v1),(6,const v1)]
 -- >>> unzipx' s1
--- <{4@0s,4@2s,4@6s},{3@0s,3@2s,3@6s},{2@0s,2@2s,2@6s},{1@0s,1@2s,1@6s}>
+-- <{4@0,4@2,4@6},{3@0,3@2,3@6},{2@0,2@2,2@6},{1@0,1@2,1@6}>
 unzipx' :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
         => CT.SignalBase ts tm (V.Vector a) -> V.Vector (CT.SignalBase ts tm a)
 unzipx' s@(a:-_) = unzipx (V.length $ CT.evalEv a) s

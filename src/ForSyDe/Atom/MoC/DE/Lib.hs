@@ -33,7 +33,7 @@ import           ForSyDe.Atom.Utility.Tuple
 -- event. Instantiates the 'ForSyDe.Atom.MoC.delay' pattern defined in
 -- "ForSyDe.Atom.MoC".
 --
--- >>> let s = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> delay 3 0 s
 -- {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
 -- 
@@ -50,8 +50,8 @@ delay t v = MoC.delay (unit (t, v))
 -- "borrows" the first event from one signal and appends it at the
 -- head of another signal.
 --
--- >>> let s1 = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int
--- >>> let s2 = readSignalBase t "{3@0, 4@4, 5@5, 6@8, 7@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int
+-- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
 -- >>> delay' s1 s2
 -- {1@0s,3@2s,4@6s,5@7s,6@10s,7@11s}
 --
@@ -72,7 +72,7 @@ delay' = MoC.delay
 -- Constructors: @comb[1-4][1-4]@.
 --
 -- >>> let s1 = infinite 1
--- >>> let s2 = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int
+-- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> comb11 (+1) s2
 -- {2@0s,3@2s,4@6s,5@8s,6@9s}
 -- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
@@ -143,7 +143,7 @@ comb44 = MoC.comb44
 -- >>> let sf = signal [(0,(+1)),(2,(*2)),(5,(+1)),(7,(*2))]
 -- >>> let s1 = signal [(0,1),(3,2),(5,3),(9,4)]
 -- >>> reconfig11 sf s1
--- {2@0s,2@2s,4@3s,4@5s,6@7s,8@9s}
+-- {2@0,2@2,4@3,4@5,6@7,8@9}
 --
 -- <<fig/moc-de-pattern-reconfig.png>>
 reconfig22 :: (Num t, Ord t, Eq t) => SignalBase t (a1 -> a2 -> (b1, b2))
@@ -212,7 +212,7 @@ reconfig44 = MoC.reconfig44
 -- Constructors: @constant[1-4]@.
 --
 -- >>> constant1 2
--- {2@0s}
+-- {2@0}
 --
 -- <<fig/moc-de-pattern-constant.png>>
 constant2 :: (Num t, Ord t, Eq t) => (b1, b2)         -- ^ values to be repeated
@@ -236,9 +236,9 @@ constant4 = ($$$$) (infinite,infinite,infinite,infinite)
 --
 -- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) ((3,1),(1,2))
 -- >>> takeS 5 s1
--- {1@0s,2@3s,2@4s,2@5s,3@6s}
+-- {1@0,2@3,2@4,2@5,3@6}
 -- >>> takeS 7 s2
--- {2@0s,4@1s,6@2s,8@3s,10@4s,12@5s,14@6s}
+-- {2@0,4@1,6@2,8@3,10@4,12@5,14@6}
 --
 -- <<fig/moc-de-pattern-generate.png>>
 generate2 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> (b1, b2))
@@ -268,7 +268,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 --
 -- Constructors: @stated[1-4][1-4]@.
 --
--- >>> let s = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int  
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ stated11 (+) (6,1) s
 -- {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
 --
@@ -369,7 +369,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 --
 -- Constructors: @state[1-4][1-4]@.
 --
--- >>> let s = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int  
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ state11 (+) (6,1) s
 -- {2@0s,3@2s,5@6s,7@8s,8@9s,10@12s,12@14s}
 --
@@ -470,7 +470,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 --
 -- Constructors: @moore[1-4][1-4]@
 --
--- >>> let s = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int  
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
 -- {2@0s,3@6s,4@8s,6@12s,8@14s,9@15s,11@18s}
 --
@@ -583,7 +583,7 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 --
 -- Constructors: @mealy[1-4][1-4]@
 --
--- >>> let s = readSignalBase t "{1@0, 2@2, 3@6, 4@8, 5@9}" :: (Num t, Ord t, Eq t) => SignalBase t Int  
+-- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
 -- {0@0s,-1@2s,-1@6s,-1@8s,-2@9s,0@12s,2@14s}
 --
@@ -698,8 +698,8 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 --
 -- Constructors: @sync[1-4]@
 --
--- >>> let s1 = readSignalBase t "{1@0, 2@2, 3@6, 4@8,  5@9}"  :: (Num t, Ord t, Eq t) => SignalBase t Int
--- >>> let s2 = readSignalBase t "{1@0, 2@5, 3@6, 4@10, 5@12}" :: (Num t, Ord t, Eq t) => SignalBase t Int
+-- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8,  5@9}"  :: Signal Int
+-- >>> let s2 = readSignal "{1@0, 2@5, 3@6, 4@10, 5@12}" :: Signal Int
 -- >>> sync2 s1 s2
 -- ({1@0s,2@2s,2@5s,3@6s,4@8s,5@9s,5@10s,5@12s},{1@0s,1@2s,2@5s,3@6s,3@8s,3@9s,4@10s,5@12s})
 --

@@ -6,7 +6,7 @@ module ForSyDe.Atom.MoC.DE.Interface where
 import           ForSyDe.Atom.MoC.DE.Lib (sync2, sync3, sync4)
 import           ForSyDe.Atom.MoC.Stream (Stream(..))
 import qualified ForSyDe.Atom.Skel.Vector as V (
-  Vector, zipx, unzipx, fanout, length, reverse)
+  Vector, vector, zipx, unzipx, fanout, length, reverse)
 import           ForSyDe.Atom.Utility.Tuple
 
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
@@ -30,7 +30,7 @@ import Prelude hiding ((<>))
 -- Constructors: @toSY[1-4]@
 --
 -- >>> let s1 = DE.infinite 1
--- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.SignalBase t Int
+-- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
 -- >>> toSY2 s1 s2
 -- ({0s,2s,6s,8s,9s},{1,1,1,1,1},{1,2,3,4,5})
 --
@@ -91,8 +91,8 @@ toCT4 s1 s2 s3 s4 = (toCT1, toCT1, toCT1, toCT1) $$$$ (s1,s2,s3,s4)
 -- into one signal of vectors. It instantiates the
 -- 'ForSyDe.Atom.Skel.Vector.zipx' skeleton.
 --
--- >>> let s1 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.SignalBase t Int
--- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@4, 4@8, 5@9}" :: DE.SignalBase t Int
+-- >>> let s1 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
+-- >>> let s2 = DE.readSignal "{1@0, 2@2, 3@4, 4@8, 5@9}" :: DE.Signal Int
 -- >>> let v1 = V.vector [s1,s1,s2,s2]
 -- >>> v1
 -- <{1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@2s,3@4s,4@8s,5@9s},{1@0s,2@2s,3@4s,4@8s,5@9s}>
@@ -110,7 +110,7 @@ zipx = V.zipx (V.fanout (\cat a b -> a `cat` b))
 -- the length of the output vector.
 --
 -- >>> let v1 = V.vector [1,2,3,4]
--- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)] :: DE.SignalBase t (V.Vector Int)
+-- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)] :: DE.Signal (V.Vector Int)
 -- >>> s1
 -- {<1,2,3,4>@0s,<1,2,3,4>@2s,<1,2,3,4>@6s,<1,2,3,4>@8s,<1,2,3,4>@9s}
 -- >>> unzipx 4 s1
@@ -124,7 +124,7 @@ unzipx n = V.reverse . V.unzipx id n
 -- | Same as 'unzipx', but \"sniffs\" the first event to determine the length of the output vector. Might have unsafe behavior!
 --
 -- >>> let v1 = V.vector [1,2,3,4]
--- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)] :: DE.SignalBase t (V.Vector Int)
+-- >>> let s1 = DE.signal [(0,v1),(2,v1),(6,v1),(8,v1),(9,v1)] :: DE.Signal (V.Vector Int)
 -- >>> s1
 -- {<1,2,3,4>@0s,<1,2,3,4>@2s,<1,2,3,4>@6s,<1,2,3,4>@8s,<1,2,3,4>@9s}
 -- >>> unzipx' s1

@@ -54,9 +54,6 @@
 ----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.SDF.SADF (
-  -- $setup
-  -- >>> import ForSyDe.Atom.MoC.SDF.SADFDemo (riscSADF)
-
   -- * Demonstrative example
 
   -- | Below is an example to demonstrate the usage of the SADF MoC: a high-level
@@ -193,8 +190,8 @@ module ForSyDe.Atom.MoC.SDF.SADF (
   -- If you copy-paste the code above in a new @hs@ file and load it in the
   -- interpreter, yout can test the demo program with
   --
-  -- >>> takeS 10 riscSADF
-  -- {100,80,60,40,20,0,100,80,60,40}
+  -- >> takeS 10 riscSADF
+  -- > {100,80,60,40,20,0,100,80,60,40}
 
   -- * Re-Exported from SDF
 
@@ -246,7 +243,7 @@ kernel12 :: Signal (Cons, (Prod, Prod), [a1] -> ([b1], [b2]))
 -- >>> let s1 = signal [1..]
 -- >>> let sf = signal [(3,1,(:[]).sum), (3,3,id), (2,1,(:[]).sum), (2,2,id)]
 -- >>> kernel11 sf s1
--- {6,4,5,6,15,9,19}
+-- {6,4,5,6,15,9,10}
 --
 -- <<fig/moc-ddf-sadf-kernel.png>>
 kernel22 :: Signal ((Cons, Cons), (Prod, Prod),
