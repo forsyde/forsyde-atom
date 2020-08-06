@@ -1,0 +1,418 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Module      :  ForSyDe.Atom.Skel.Vector.Core</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Stability   :  experimental</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- Portability :  portable</span><span>
+</span><span id="line-11"></span><span class="hs-comment">--</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- The core implementation of the 'Vector' type</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.Skel.Vector.Core</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.html"><span class="hs-identifier">ForSyDe.Atom.Skel</span></a></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">null</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">infixr</span><span> </span><span class="hs-number">3</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">infixl</span><span> </span><span class="hs-number">5</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%3A"><span class="hs-operator hs-type">&lt;:</span></a></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">infixr</span><span> </span><span class="hs-number">5</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%2B%2B%3E"><span class="hs-operator hs-type">&lt;++&gt;</span></a></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- | Although the name 'Vector' is borrowed from &lt;ForSyDe-Atom.html#reekie95</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- [Reekie95]&gt; since it is more suggestive in the context of process networks, the</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- 'Vector' type is in fact modeling an infinite list defined as a category in</span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- &lt;ForSyDe-Atom.html#skillicorn05 [Skillicorn05]&gt;. According to this definition it</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- should be implemented as following:</span><span>
+</span><span id="line-29"></span><span class="hs-comment">--</span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- &gt; data Vector a = Null                   -- null element</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- &gt;               | Unit a                 -- singleton vector</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- &gt;               | Vector a &lt;++&gt; Vector a -- concatenate two vectors</span><span>
+</span><span id="line-33"></span><span class="hs-comment">--</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- This construction suggests the possibility of splitting a 'Vector' into multiple</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- parts and evaluating it in parallel. For simplicity and to ensure that the</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- structure is flat and homogeneous, 'Vector' is implemented using the same</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- constructors as a regular Haskell list (see below). When defining skeletons of</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- vectors we will not use the real constructors though, but the theoretical ones</span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- defined above and provided as &lt;#g:2 functions&gt;. This way we align ForSyDe-Atom's</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- 'Vector' type with the skeleton theory and its theorems.</span><span>
+</span><span id="line-41"></span><span class="hs-comment">--</span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- Another particularity of 'Vector' is that it instantiates the reduction atom '=\='</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- as a /right fold/, as it is the most efficient lazy implementation of lists. As a</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- consequence reduction is performed __/from right to left/__. This is noticed</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- especially in the case of pipeline-based skeletons (see definition of</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- 'ForSyDe.Atom.Skel.pipe' as a reduction with the right-associative composition</span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- operator '.') is performed from right to left. Thus for 'reduce'-based skeletons</span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- (e.g. 'prefix', 'suffix', 'recur', 'cascade', 'mesh') the result vectors shall be</span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- read from end to beginning.</span><span>
+</span><span id="line-50"></span><span class="hs-keyword">data</span><span> </span><span id="Vector"><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span></span><span> </span><span id="local-6989586621679196251"><span class="annot"><a href="#local-6989586621679196251"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Null"><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span></span><span>
+</span><span id="line-51"></span><span>              </span><span class="hs-comment">-- ^ Null element. Terminates a vector.</span><span>
+</span><span id="line-52"></span><span>              </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="#local-6989586621679196251"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span id="%3A%3E"><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679196251"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>              </span><span class="hs-comment">-- ^ appends an element at the head of a vector.</span><span>
+</span><span id="line-54"></span><span>              </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196122"><span id="local-6989586621679196124"><span class="annot"><span class="annottext">Vector a -&gt; Vector a -&gt; Bool
+(Vector a -&gt; Vector a -&gt; Bool)
+-&gt; (Vector a -&gt; Vector a -&gt; Bool) -&gt; Eq (Vector a)
+forall a. Eq a =&gt; Vector a -&gt; Vector a -&gt; Bool
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Vector a -&gt; Vector a -&gt; Bool
+$c/= :: forall a. Eq a =&gt; Vector a -&gt; Vector a -&gt; Bool
+== :: Vector a -&gt; Vector a -&gt; Bool
+$c== :: forall a. Eq a =&gt; Vector a -&gt; Vector a -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-comment">--------------------</span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- &quot;Constructors&quot; --</span><span>
+</span><span id="line-58"></span><span class="hs-comment">--------------------</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- | Constructs a null vector.</span><span>
+</span><span id="line-61"></span><span class="hs-comment">--</span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- &gt;&gt;&gt; null</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- &lt;&gt;</span><span>
+</span><span id="line-64"></span><span id="null"><span class="annot"><span class="annottext">null :: Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#null"><span class="hs-identifier hs-var hs-var">null</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- | Constructs a singleton vector.</span><span>
+</span><span id="line-67"></span><span class="hs-comment">--</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- &gt;&gt;&gt; unit 1</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- &lt;1&gt;</span><span>
+</span><span id="line-70"></span><span id="unit"><span class="annot"><span class="annottext">unit :: a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#unit"><span class="hs-keyword hs-var hs-var">unit</span></a></span></span><span> </span><span id="local-6989586621679196118"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679196118"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196118"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a -&gt; Vector a
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- | Constructs a vector by appending two existing vectors.</span><span>
+</span><span id="line-73"></span><span class="hs-comment">--</span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- &gt;&gt;&gt; unit 1 &lt;++&gt; unit 2</span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- &lt;1,2&gt;</span><span>
+</span><span id="line-76"></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>    </span><span id="%3C%2B%2B%3E"><span class="annot"><span class="annottext">&lt;++&gt; :: Vector a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%2B%2B%3E"><span class="hs-operator hs-var hs-var">&lt;++&gt;</span></a></span></span><span> </span><span id="local-6989586621679196117"><span class="annot"><span class="annottext">ys :: Vector a
+</span><a href="#local-6989586621679196117"><span class="hs-identifier hs-var">ys</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196117"><span class="hs-identifier hs-var">ys</span></a></span><span>
+</span><span id="line-77"></span><span class="hs-special">(</span><span id="local-6989586621679196116"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196116"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span id="local-6989586621679196115"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679196115"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%2B%2B%3E"><span class="hs-operator hs-var">&lt;++&gt;</span></a></span><span> </span><span id="local-6989586621679196114"><span class="annot"><span class="annottext">ys :: Vector a
+</span><a href="#local-6989586621679196114"><span class="hs-identifier hs-var">ys</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196116"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a -&gt; Vector a
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196115"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%2B%2B%3E"><span class="hs-operator hs-var">&lt;++&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196114"><span class="hs-identifier hs-var">ys</span></a></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="hs-comment">---------------</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- Instances --</span><span>
+</span><span id="line-81"></span><span class="hs-comment">---------------</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- | Provides an implementation for '=.='.</span><span>
+</span><span id="line-84"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679196111"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-85"></span><span>  </span><span id="local-6989586621679196109"><span class="annot"><span class="annottext">fmap :: (a -&gt; b) -&gt; Vector a -&gt; Vector b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector b
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span>
+</span><span id="line-86"></span><span>  </span><span class="annot"><span class="hs-identifier hs-var">fmap</span></span><span> </span><span id="local-6989586621679196108"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679196108"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196107"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196107"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span id="local-6989586621679196106"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679196106"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679196108"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196107"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">b -&gt; Vector b -&gt; Vector b
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; b) -&gt; Vector a -&gt; Vector b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679196108"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196106"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- | Provides an implementation for '=*='.</span><span>
+</span><span id="line-90"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679196097"><span id="local-6989586621679196099"><span id="local-6989586621679196101"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-91"></span><span>  </span><span id="local-6989586621679196095"><span class="annot"><span class="annottext">pure :: a -&gt; Vector a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span id="local-6989586621679196094"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196094"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196094"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a -&gt; Vector a
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196094"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-identifier">_</span><span>         </span><span id="local-6989586621679196093"><span class="annot"><span class="annottext">&lt;*&gt; :: Vector (a -&gt; b) -&gt; Vector a -&gt; Vector b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector b
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span>
+</span><span id="line-93"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>      </span><span class="annot"><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="hs-identifier">_</span><span>         </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector b
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679196092"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679196092"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span id="local-6989586621679196091"><span class="annot"><span class="annottext">fs :: Vector (a -&gt; b)
+</span><a href="#local-6989586621679196091"><span class="hs-identifier hs-var">fs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196090"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196090"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span id="local-6989586621679196089"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679196089"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679196092"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196090"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">b -&gt; Vector b -&gt; Vector b
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Vector (a -&gt; b)
+</span><a href="#local-6989586621679196091"><span class="hs-identifier hs-var">fs</span></a></span><span> </span><span class="annot"><span class="annottext">Vector (a -&gt; b) -&gt; Vector a -&gt; Vector b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196089"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- | Provides an implementation for '=\='.</span><span>
+</span><span id="line-97"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679196056"><span id="local-6989586621679196058"><span id="local-6989586621679196060"><span id="local-6989586621679196062"><span id="local-6989586621679196064"><span id="local-6989586621679196066"><span id="local-6989586621679196068"><span id="local-6989586621679196070"><span id="local-6989586621679196072"><span id="local-6989586621679196074"><span id="local-6989586621679196076"><span id="local-6989586621679196078"><span id="local-6989586621679196080"><span id="local-6989586621679196083"><span id="local-6989586621679196085"><span id="local-6989586621679196087"><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-98"></span><span>  </span><span id="local-6989586621679196054"><span class="annot"><span class="annottext">foldr :: (a -&gt; b -&gt; b) -&gt; b -&gt; Vector a -&gt; b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">foldr</span></span></span><span> </span><span id="local-6989586621679196052"><span class="annot"><span class="annottext">k :: a -&gt; b -&gt; b
+</span><a href="#local-6989586621679196052"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span id="local-6989586621679196051"><span class="annot"><span class="annottext">z :: b
+</span><a href="#local-6989586621679196051"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; b
+</span><a href="#local-6989586621679196050"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-99"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679196050"><span class="annot"><span class="annottext">go :: Vector a -&gt; b
+</span><a href="#local-6989586621679196050"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679196051"><span class="hs-identifier hs-var">z</span></a></span><span>
+</span><span id="line-100"></span><span>          </span><span class="annot"><a href="#local-6989586621679196050"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196049"><span class="annot"><span class="annottext">y :: a
+</span><a href="#local-6989586621679196049"><span class="hs-identifier hs-var">y</span></a></span></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span id="local-6989586621679196048"><span class="annot"><span class="annottext">ys :: Vector a
+</span><a href="#local-6989586621679196048"><span class="hs-identifier hs-var">ys</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196049"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; b -&gt; b
+</span><a href="#local-6989586621679196052"><span class="hs-operator hs-var">`k`</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; b
+</span><a href="#local-6989586621679196050"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196048"><span class="hs-identifier hs-var">ys</span></a></span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- | Ensures that 'Vector' is a structure associated with the Skeleton Layer.</span><span>
+</span><span id="line-103"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679196040"><span class="annot"><a href="ForSyDe.Atom.Skel.html#Skeleton"><span class="hs-identifier hs-type">Skeleton</span></a></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-104"></span><span>  </span><span id="local-6989586621679196038"><span class="annot"><span class="annottext">=.= :: (a -&gt; b) -&gt; Vector a -&gt; Vector b
+</span><a href="ForSyDe.Atom.Skel.html#%3D.%3D"><span class="hs-operator hs-var hs-var hs-var hs-var">(=.=)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; b) -&gt; Vector a -&gt; Vector b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">(&lt;$&gt;)</span></span><span>
+</span><span id="line-105"></span><span>  </span><span id="local-6989586621679196035"><span class="annot"><span class="annottext">=*= :: Vector (a -&gt; b) -&gt; Vector a -&gt; Vector b
+</span><a href="ForSyDe.Atom.Skel.html#%3D%2A%3D"><span class="hs-operator hs-var hs-var hs-var hs-var">(=*=)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector (a -&gt; b) -&gt; Vector a -&gt; Vector b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">(&lt;*&gt;)</span></span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-identifier">_</span><span> </span><span id="local-6989586621679196033"><span class="annot"><span class="annottext">=\= :: (a -&gt; a -&gt; a) -&gt; Vector a -&gt; a
+</span><a href="ForSyDe.Atom.Skel.html#%3D%5C%3D"><span class="hs-operator hs-var hs-var hs-var hs-var">=\=</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; a
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="hs-string">&quot;[Skel.Vector] cannot reduce empty vector&quot;</span></span><span> </span><span>
+</span><span id="line-107"></span><span>  </span><span id="local-6989586621679196030"><span class="annot"><span class="annottext">f :: a -&gt; a -&gt; a
+</span><a href="#local-6989586621679196030"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.html#%3D%5C%3D"><span class="hs-operator hs-var">=\=</span></a></span><span> </span><span id="local-6989586621679196029"><span class="annot"><span class="annottext">v :: Vector a
+</span><a href="#local-6989586621679196029"><span class="hs-identifier hs-var">v</span></a></span></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; a) -&gt; Vector a -&gt; a
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; a -&gt; a) -&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">foldr1</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+</span><a href="#local-6989586621679196030"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196029"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-108"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span> </span><span id="local-6989586621679196027"><span class="annot"><span class="annottext">=&lt;&lt;= :: Vector (a -&gt; a) -&gt; a -&gt; a
+</span><a href="ForSyDe.Atom.Skel.html#%3D%3C%3C%3D"><span class="hs-operator hs-var hs-var hs-var hs-var">=&lt;&lt;=</span></a></span></span><span> </span><span id="local-6989586621679196025"><span class="annot"><span class="annottext">s :: a
+</span><a href="#local-6989586621679196025"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196025"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-109"></span><span>  </span><span id="local-6989586621679196024"><span class="annot"><span class="annottext">ps :: Vector (a -&gt; a)
+</span><a href="#local-6989586621679196024"><span class="hs-identifier hs-var">ps</span></a></span></span><span>   </span><span class="annot"><a href="ForSyDe.Atom.Skel.html#%3D%3C%3C%3D"><span class="hs-operator hs-var">=&lt;&lt;=</span></a></span><span> </span><span id="local-6989586621679196023"><span class="annot"><span class="annottext">s :: a
+</span><a href="#local-6989586621679196023"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; a) -&gt; (a -&gt; a) -&gt; a -&gt; a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">(.)</span></span><span> </span><span class="annot"><span class="annottext">((a -&gt; a) -&gt; (a -&gt; a) -&gt; a -&gt; a) -&gt; Vector (a -&gt; a) -&gt; a -&gt; a
+forall (c :: * -&gt; *) a. Skeleton c =&gt; (a -&gt; a -&gt; a) -&gt; c a -&gt; a
+</span><a href="ForSyDe.Atom.Skel.html#%3D%5C%3D"><span class="hs-operator hs-var">=\=</span></a></span><span> </span><span class="annot"><span class="annottext">Vector (a -&gt; a)
+</span><a href="#local-6989586621679196024"><span class="hs-identifier hs-var">ps</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a) -&gt; a -&gt; a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196023"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-110"></span><span>  </span><span id="local-6989586621679196021"><span class="annot"><span class="annottext">first :: Vector a -&gt; a
+</span><a href="ForSyDe.Atom.Skel.html#first"><span class="hs-identifier hs-var hs-var hs-var hs-var">first</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196019"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196019"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span class="hs-identifier">_</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196019"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- | The vector 1 :&gt; 2 :&gt; Null is represented as \&lt;1,2\&gt;.</span><span>
+</span><span id="line-113"></span><span id="local-6989586621679196018"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679196013"><span id="local-6989586621679196015"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621679196018"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679196018"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-114"></span><span>  </span><span id="local-6989586621679196011"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; Vector a -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">showsPrec</span></span></span><span> </span><span id="local-6989586621679196009"><span class="annot"><span class="annottext">p :: Int
+</span><a href="#local-6989586621679196009"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
+</span><span class="hs-identifier hs-var">showParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679196009"><span class="hs-identifier hs-var">p</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(ShowS -&gt; ShowS) -&gt; (Vector a -&gt; ShowS) -&gt; Vector a -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; ShowS
+forall a. Show a =&gt; Vector a -&gt; ShowS
+</span><a href="#local-6989586621679196006"><span class="hs-identifier hs-var">showVector</span></a></span><span>
+</span><span id="line-115"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-116"></span><span>      </span><span id="local-6989586621679196006"><span class="annot"><span class="annottext">showVector :: Vector a -&gt; ShowS
+</span><a href="#local-6989586621679196006"><span class="hs-identifier hs-var hs-var">showVector</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196005"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196005"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span id="local-6989586621679196004"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679196004"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&lt;'</span></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><a href="#local-6989586621679196002"><span class="hs-identifier hs-var">showEvent</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196005"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; ShowS
+forall a. Show a =&gt; Vector a -&gt; ShowS
+</span><a href="#local-6989586621679196001"><span class="hs-identifier hs-var">showVector'</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679196004"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-117"></span><span>      </span><span class="annot"><a href="#local-6989586621679196006"><span class="hs-identifier hs-var">showVector</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span class="hs-special">)</span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&lt;'</span></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&gt;'</span></span><span>
+</span><span id="line-118"></span><span>      </span><span id="local-6989586621679196001"><span class="annot"><span class="annottext">showVector' :: Vector a -&gt; ShowS
+</span><a href="#local-6989586621679196001"><span class="hs-identifier hs-var hs-var">showVector'</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679196000"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679196000"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span id="local-6989586621679195999"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679195999"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">','</span></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><a href="#local-6989586621679196002"><span class="hs-identifier hs-var">showEvent</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679196000"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; ShowS
+</span><a href="#local-6989586621679196001"><span class="hs-identifier hs-var">showVector'</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679195999"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-119"></span><span>      </span><span class="annot"><a href="#local-6989586621679196001"><span class="hs-identifier hs-var">showVector'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span class="hs-special">)</span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&gt;'</span></span><span>
+</span><span id="line-120"></span><span>      </span><span id="local-6989586621679196002"><span class="annot"><span class="annottext">showEvent :: a -&gt; ShowS
+</span><a href="#local-6989586621679196002"><span class="hs-identifier hs-var hs-var">showEvent</span></a></span></span><span> </span><span id="local-6989586621679195998"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679195998"><span class="hs-identifier hs-var">x</span></a></span></span><span>           </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679195998"><span class="hs-identifier hs-var">x</span></a></span></span><span>
+</span><span id="line-121"></span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- | The vector 1 :&gt; 2 :&gt; Null is read using the string \&quot;\&lt;1,2\&gt;\&quot;.</span><span>
+</span><span id="line-123"></span><span id="local-6989586621679195996"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679195989"><span id="local-6989586621679195991"><span id="local-6989586621679195993"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Read</span></span><span> </span><span class="annot"><a href="#local-6989586621679195996"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Read</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679195996"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-124"></span><span>  </span><span id="local-6989586621679195987"><span class="annot"><span class="annottext">readsPrec :: Int -&gt; ReadS (Vector a)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">readsPrec</span></span></span><span> </span><span id="local-6989586621679195985"><span class="annot"><span class="annottext">d :: Int
+</span><a href="#local-6989586621679195985"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ReadS (Vector a) -&gt; ReadS (Vector a)
+forall a. Bool -&gt; ReadS a -&gt; ReadS a
+</span><span class="hs-identifier hs-var">readParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679195985"><span class="hs-identifier hs-var">d</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ReadS (Vector a)
+</span><a href="#local-6989586621679195983"><span class="hs-identifier hs-var">readVecSigtart</span></a></span><span>
+</span><span id="line-125"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-126"></span><span>      </span><span id="local-6989586621679195983"><span class="annot"><span class="annottext">readVecSigtart :: ReadS (Vector a)
+</span><a href="#local-6989586621679195983"><span class="hs-identifier hs-var hs-var">readVecSigtart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span id="local-6989586621679195982"><span class="annot"><span class="annottext">a :: [Char]
+</span><a href="#local-6989586621679195982"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679195981"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195980"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="hs-string">&quot;&lt;&quot;</span><span class="hs-special">,</span><span id="local-6989586621679195979"><span class="annot"><span class="annottext">b :: [Char]
+</span><a href="#local-6989586621679195979"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadS [Char]
+</span><span class="hs-identifier hs-var">lex</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195982"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195981"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679195981"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679195980"><span class="annot"><span class="annottext">c :: [Char]
+</span><a href="#local-6989586621679195980"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadS (Vector a)
+forall a. Read a =&gt; [Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195977"><span class="hs-identifier hs-var">readVector</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-char">','</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195979"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Vector a, [Char])]
+-&gt; [(Vector a, [Char])] -&gt; [(Vector a, [Char])]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">ReadS (Vector a)
+forall a. [Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195976"><span class="hs-identifier hs-var">readNull</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195979"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span><span>      </span><span id="local-6989586621679195977"><span class="annot"><span class="annottext">readVector :: [Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195977"><span class="hs-identifier hs-var hs-var">readVector</span></a></span></span><span> </span><span id="local-6989586621679195975"><span class="annot"><span class="annottext">r :: [Char]
+</span><a href="#local-6989586621679195975"><span class="hs-identifier hs-var">r</span></a></span></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195974"><span class="hs-identifier hs-var">readEvent</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195975"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">[(Vector a, [Char])]
+-&gt; [(Vector a, [Char])] -&gt; [(Vector a, [Char])]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [(Vector a, [Char])]
+forall a. [Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195976"><span class="hs-identifier hs-var">readNull</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195975"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-128"></span><span>      </span><span id="local-6989586621679195974"><span class="annot"><span class="annottext">readEvent :: [Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195974"><span class="hs-identifier hs-var hs-var">readEvent</span></a></span></span><span> </span><span id="local-6989586621679195973"><span class="annot"><span class="annottext">a :: [Char]
+</span><a href="#local-6989586621679195973"><span class="hs-identifier hs-var">a</span></a></span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679195972"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a -&gt; Vector a
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679195971"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195970"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="hs-string">&quot;,&quot;</span><span class="hs-special">,</span><span id="local-6989586621679195969"><span class="annot"><span class="annottext">b :: [Char]
+</span><a href="#local-6989586621679195969"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadS [Char]
+</span><span class="hs-identifier hs-var">lex</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195973"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195972"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679195972"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679195968"><span class="annot"><span class="annottext">c :: [Char]
+</span><a href="#local-6989586621679195968"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadS a
+forall a. Read a =&gt; ReadS a
+</span><span class="hs-identifier hs-var">reads</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195969"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195971"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679195971"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679195970"><span class="annot"><span class="annottext">d :: [Char]
+</span><a href="#local-6989586621679195970"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195977"><span class="hs-identifier hs-var">readVector</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195968"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-129"></span><span>      </span><span id="local-6989586621679195976"><span class="annot"><span class="annottext">readNull :: [Char] -&gt; [(Vector a, [Char])]
+</span><a href="#local-6989586621679195976"><span class="hs-identifier hs-var hs-var">readNull</span></a></span></span><span> </span><span id="local-6989586621679195966"><span class="annot"><span class="annottext">a :: [Char]
+</span><a href="#local-6989586621679195966"><span class="hs-identifier hs-var">a</span></a></span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195965"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="hs-string">&quot;&gt;&quot;</span><span class="hs-special">,</span><span id="local-6989586621679195965"><span class="annot"><span class="annottext">b :: [Char]
+</span><a href="#local-6989586621679195965"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadS [Char]
+</span><span class="hs-identifier hs-var">lex</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679195966"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span>
+</span><span id="line-132"></span><span class="hs-comment">---------------</span><span>
+</span><span id="line-133"></span><span class="hs-comment">-- Utilities --</span><span>
+</span><span id="line-134"></span><span class="hs-comment">---------------</span><span>
+</span><span id="line-135"></span><span>
+</span><span id="line-136"></span><span class="hs-comment">-- | Converts a list to a vector.</span><span>
+</span><span id="line-137"></span><span id="vector"><span class="annot"><span class="annottext">vector :: [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#vector"><span class="hs-identifier hs-var hs-var">vector</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a
+forall a. Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-var">Null</span></a></span><span>
+</span><span id="line-138"></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195963"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679195963"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679195962"><span class="annot"><span class="annottext">xs :: [a]
+</span><a href="#local-6989586621679195962"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679195963"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a -&gt; Vector a
+forall a. a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-var">:&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679195962"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- | Converts a vector to a list.</span><span>
+</span><span id="line-141"></span><span id="fromVector"><span class="annot"><span class="annottext">fromVector :: Vector a -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#fromVector"><span class="hs-identifier hs-var hs-var">fromVector</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-142"></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#fromVector"><span class="hs-identifier hs-var">fromVector</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195960"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679195960"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span id="local-6989586621679195959"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679195959"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679195960"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#fromVector"><span class="hs-identifier hs-var">fromVector</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679195959"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span class="hs-comment">-- | Creates the infinite vector:</span><span>
+</span><span id="line-145"></span><span class="hs-comment">--</span><span>
+</span><span id="line-146"></span><span class="hs-comment">-- &gt; &lt;1,2,3,4,...&gt;</span><span>
+</span><span id="line-147"></span><span class="hs-comment">--</span><span>
+</span><span id="line-148"></span><span class="hs-comment">-- Used mainly for operation on indexes.</span><span>
+</span><span id="line-149"></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#indexes"><span class="hs-identifier hs-type">indexes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-150"></span><span id="indexes"><span class="annot"><span class="annottext">indexes :: Vector Int
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#indexes"><span class="hs-identifier hs-var hs-var">indexes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Vector Int
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span>
+</span><span id="line-151"></span><span>
+</span><span id="line-152"></span><span class="hs-comment">-- | Returns @True@ if the argument is a null vector.</span><span>
+</span><span id="line-153"></span><span id="isNull"><span class="annot"><span class="annottext">isNull :: Vector a -&gt; Bool
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#isNull"><span class="hs-identifier hs-var hs-var">isNull</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#Null"><span class="hs-identifier hs-type">Null</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-154"></span><span class="annot"><a href="ForSyDe.Atom.Skel.Vector.Core.html#isNull"><span class="hs-identifier hs-var">isNull</span></a></span><span> </span><span class="hs-identifier">_</span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span class="hs-comment">-- | Appends an element at the end of a vector.</span><span>
+</span><span id="line-157"></span><span id="local-6989586621679195956"><span class="annot"><span class="annottext">xs :: Vector a
+</span><a href="#local-6989586621679195956"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span id="%3C%3A"><span class="annot"><span class="annottext">&lt;: :: Vector a -&gt; a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%3A"><span class="hs-operator hs-var hs-var">&lt;:</span></a></span></span><span> </span><span id="local-6989586621679195955"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679195955"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679195956"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; Vector a -&gt; Vector a
+forall a. Vector a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#%3C%2B%2B%3E"><span class="hs-operator hs-var">&lt;++&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; Vector a
+forall a. a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.Vector.Core.html#unit"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679195955"><span class="hs-identifier hs-var">x</span></a></span><span>         </span><span>
+</span><span id="line-158"></span></pre></body></html>

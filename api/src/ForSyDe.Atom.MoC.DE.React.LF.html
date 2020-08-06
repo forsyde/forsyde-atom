@@ -1,0 +1,687 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React.LF</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React.Core</span></a></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React.Lib</span></a></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Clocked.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Clocked</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">SYC</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="ForSyDe.Atom.MoC.TimeStamp.html"><span class="hs-identifier">ForSyDe.Atom.MoC.TimeStamp</span></a></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="ForSyDe.Atom.Utility.Tuple.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Tuple</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator">(&gt;&lt;)</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator">(&gt;&lt;&lt;)</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator">(&gt;&lt;&lt;&lt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- CLOCKS --</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- | The equivalent of a timer set to period @0@ in LF. It triggers once at the</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- beginning of the execution and then it never triggers again.</span><span>
+</span><span id="line-14"></span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer0"><span class="hs-identifier hs-type">timer0</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span id="timer0"><span class="annot"><span class="annottext">timer0 :: Signal ()
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer0"><span class="hs-identifier hs-var hs-var">timer0</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; Signal ()
+forall t a. (Num t, Ord t) =&gt; a -&gt; SignalBase t a
+</span><a href="ForSyDe.Atom.MoC.DE.React.Core.html#instant"><span class="hs-identifier hs-var">instant</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- | A timer signal generator</span><span>
+</span><span id="line-18"></span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer"><span class="hs-identifier hs-type">timer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.TimeStamp.html#TimeStamp"><span class="hs-identifier hs-type">TimeStamp</span></a></span><span> </span><span class="hs-comment">-- ^ period</span><span>
+</span><span id="line-19"></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- ^ timer signal</span><span>
+</span><span id="line-20"></span><span id="timer"><span class="annot"><span class="annottext">timer :: TimeStamp -&gt; Signal ()
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer"><span class="hs-identifier hs-var hs-var">timer</span></a></span></span><span> </span><span id="local-6989586621679221890"><span class="annot"><span class="annottext">period :: TimeStamp
+</span><a href="#local-6989586621679221890"><span class="hs-identifier hs-var">period</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([()] -&gt; [()]) -&gt; (TimeStamp, ()) -&gt; Signal ()
+forall t b1.
+(Num t, Ord t) =&gt;
+([b1] -&gt; [b1]) -&gt; (t, b1) -&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#generate1"><span class="hs-identifier hs-var">generate1</span></a></span><span> </span><span class="annot"><span class="annottext">[()] -&gt; [()]
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TimeStamp
+</span><a href="#local-6989586621679221890"><span class="hs-identifier hs-var">period</span></a></span><span class="hs-special">,</span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- | Like 'timer', but you can specify an initial phase.</span><span>
+</span><span id="line-23"></span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer%27"><span class="hs-identifier hs-type">timer'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.TimeStamp.html#TimeStamp"><span class="hs-identifier hs-type">TimeStamp</span></a></span><span> </span><span class="hs-comment">-- ^ phase</span><span>
+</span><span id="line-24"></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.TimeStamp.html#TimeStamp"><span class="hs-identifier hs-type">TimeStamp</span></a></span><span> </span><span class="hs-comment">-- ^ period</span><span>
+</span><span id="line-25"></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- ^ timer signal</span><span>
+</span><span id="line-26"></span><span id="timer%27"><span class="annot"><span class="annottext">timer' :: TimeStamp -&gt; TimeStamp -&gt; Signal ()
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer%27"><span class="hs-identifier hs-var hs-var">timer'</span></a></span></span><span> </span><span id="local-6989586621679221886"><span class="annot"><span class="annottext">phase :: TimeStamp
+</span><a href="#local-6989586621679221886"><span class="hs-identifier hs-var">phase</span></a></span></span><span> </span><span id="local-6989586621679221885"><span class="annot"><span class="annottext">period :: TimeStamp
+</span><a href="#local-6989586621679221885"><span class="hs-identifier hs-var">period</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TimeStamp -&gt; () -&gt; Signal () -&gt; Signal ()
+forall t a.
+(Num t, Ord t) =&gt;
+t -&gt; a -&gt; SignalBase t a -&gt; SignalBase t a
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#delay"><span class="hs-identifier hs-var">delay</span></a></span><span> </span><span class="annot"><span class="annottext">TimeStamp
+</span><a href="#local-6989586621679221886"><span class="hs-identifier hs-var">phase</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Signal () -&gt; Signal ()) -&gt; Signal () -&gt; Signal ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TimeStamp -&gt; Signal ()
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer"><span class="hs-identifier hs-var">timer</span></a></span><span> </span><span class="annot"><span class="annottext">TimeStamp
+</span><a href="#local-6989586621679221885"><span class="hs-identifier hs-var">period</span></a></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- ACTIONS</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- | A delayed action is simply a delayed signal. In ForSyDe the initial value is</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- /mandatory/. If there is a notion of /unknown/, this has to be captured by the</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- domain @a@ of the event (i.e. \&quot;one layer below\&quot;).</span><span>
+</span><span id="line-33"></span><span id="local-6989586621679221899"><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#actionD"><span class="hs-identifier hs-type">actionD</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.TimeStamp.html#TimeStamp"><span class="hs-identifier hs-type">TimeStamp</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679221899"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679221899"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span>
+</span><span id="line-34"></span><span id="actionD"><span class="annot"><span class="annottext">actionD :: TimeStamp -&gt; Signal a -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#actionD"><span class="hs-identifier hs-var hs-var">actionD</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TimeStamp -&gt; Signal a -&gt; Signal a
+forall t a. (Num t, Ord t) =&gt; t -&gt; SignalBase t a -&gt; SignalBase t a
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#unsafeDelay"><span class="hs-identifier hs-var">unsafeDelay</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- SYNC UTILITIES</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span id="states0inputs2"><span class="annot"><span class="annottext">states0inputs2 :: a -&gt; b -&gt; (a, b)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states0inputs2"><span class="hs-identifier hs-var hs-var">states0inputs2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">,</span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span id="states0inputs3"><span class="annot"><span class="annottext">states0inputs3 :: a -&gt; b -&gt; c -&gt; (a, b, c)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states0inputs3"><span class="hs-identifier hs-var hs-var">states0inputs3</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">,</span><span class="hs-special">,</span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span id="states0inputs4"><span class="annot"><span class="annottext">states0inputs4 :: a -&gt; b -&gt; c -&gt; d -&gt; (a, b, c, d)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states0inputs4"><span class="hs-identifier hs-var hs-var">states0inputs4</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">,</span><span class="hs-special">,</span><span class="hs-special">,</span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span id="states1inputs1"><span class="annot"><span class="annottext">states1inputs1 :: b2
+-&gt; SignalBase t b2
+-&gt; SignalBase t b1
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs1"><span class="hs-identifier hs-var hs-var">states1inputs1</span></a></span></span><span> </span><span id="local-6989586621679221877"><span class="annot"><span class="annottext">i :: b2
+</span><a href="#local-6989586621679221877"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679221876"><span class="annot"><span class="annottext">s1 :: SignalBase t b2
+</span><a href="#local-6989586621679221876"><span class="hs-identifier hs-var">s1</span></a></span></span><span> </span><span id="local-6989586621679221875"><span class="annot"><span class="annottext">i1 :: SignalBase t b1
+</span><a href="#local-6989586621679221875"><span class="hs-identifier hs-var">i1</span></a></span></span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b2
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall t b2 b1.
+(Num t, Ord t) =&gt;
+b2
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs11"><span class="hs-identifier hs-var">syncAndObs11</span></a></span><span> </span><span class="annot"><span class="annottext">b2
+</span><a href="#local-6989586621679221877"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b1
+</span><a href="#local-6989586621679221875"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b2
+</span><a href="#local-6989586621679221876"><span class="hs-identifier hs-var">s1</span></a></span><span>
+</span><span id="line-42"></span><span id="states2inputs1"><span class="annot"><span class="annottext">states2inputs1 :: (b2, b3)
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b1
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states2inputs1"><span class="hs-identifier hs-var hs-var">states2inputs1</span></a></span></span><span> </span><span id="local-6989586621679221872"><span class="annot"><span class="annottext">i :: (b2, b3)
+</span><a href="#local-6989586621679221872"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679221871"><span class="annot"><span class="annottext">s1 :: SignalBase t b2
+</span><a href="#local-6989586621679221871"><span class="hs-identifier hs-var">s1</span></a></span></span><span> </span><span id="local-6989586621679221870"><span class="annot"><span class="annottext">s2 :: SignalBase t b3
+</span><a href="#local-6989586621679221870"><span class="hs-identifier hs-var">s2</span></a></span></span><span> </span><span id="local-6989586621679221869"><span class="annot"><span class="annottext">i1 :: SignalBase t b1
+</span><a href="#local-6989586621679221869"><span class="hs-identifier hs-var">i1</span></a></span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(b2, b3)
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t b2 b3 b1.
+(Num t, Ord t) =&gt;
+(b2, b3)
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs12"><span class="hs-identifier hs-var">syncAndObs12</span></a></span><span> </span><span class="annot"><span class="annottext">(b2, b3)
+</span><a href="#local-6989586621679221872"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b1
+</span><a href="#local-6989586621679221869"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b2
+</span><a href="#local-6989586621679221871"><span class="hs-identifier hs-var">s1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b3
+</span><a href="#local-6989586621679221870"><span class="hs-identifier hs-var">s2</span></a></span><span>
+</span><span id="line-43"></span><span id="states3inputs1"><span class="annot"><span class="annottext">states3inputs1 :: (b2, b3, b4)
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; SignalBase t b1
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states3inputs1"><span class="hs-identifier hs-var hs-var">states3inputs1</span></a></span></span><span> </span><span id="local-6989586621679221866"><span class="annot"><span class="annottext">i :: (b2, b3, b4)
+</span><a href="#local-6989586621679221866"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679221865"><span class="annot"><span class="annottext">s1 :: SignalBase t b2
+</span><a href="#local-6989586621679221865"><span class="hs-identifier hs-var">s1</span></a></span></span><span> </span><span id="local-6989586621679221864"><span class="annot"><span class="annottext">s2 :: SignalBase t b3
+</span><a href="#local-6989586621679221864"><span class="hs-identifier hs-var">s2</span></a></span></span><span> </span><span id="local-6989586621679221863"><span class="annot"><span class="annottext">s3 :: SignalBase t b4
+</span><a href="#local-6989586621679221863"><span class="hs-identifier hs-var">s3</span></a></span></span><span> </span><span id="local-6989586621679221862"><span class="annot"><span class="annottext">i1 :: SignalBase t b1
+</span><a href="#local-6989586621679221862"><span class="hs-identifier hs-var">i1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(b2, b3, b4)
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t b2 b3 b4 b1.
+(Num t, Ord t) =&gt;
+(b2, b3, b4)
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs13"><span class="hs-identifier hs-var">syncAndObs13</span></a></span><span> </span><span class="annot"><span class="annottext">(b2, b3, b4)
+</span><a href="#local-6989586621679221866"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b1
+</span><a href="#local-6989586621679221862"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b2
+</span><a href="#local-6989586621679221865"><span class="hs-identifier hs-var">s1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b3
+</span><a href="#local-6989586621679221864"><span class="hs-identifier hs-var">s2</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b4
+</span><a href="#local-6989586621679221863"><span class="hs-identifier hs-var">s3</span></a></span><span>
+</span><span id="line-44"></span><span id="states1inputs2"><span class="annot"><span class="annottext">states1inputs2 :: b3
+-&gt; SignalBase t b3
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs2"><span class="hs-identifier hs-var hs-var">states1inputs2</span></a></span></span><span> </span><span id="local-6989586621679221859"><span class="annot"><span class="annottext">i :: b3
+</span><a href="#local-6989586621679221859"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679221858"><span class="annot"><span class="annottext">s1 :: SignalBase t b3
+</span><a href="#local-6989586621679221858"><span class="hs-identifier hs-var">s1</span></a></span></span><span> </span><span id="local-6989586621679221857"><span class="annot"><span class="annottext">i1 :: SignalBase t b1
+</span><a href="#local-6989586621679221857"><span class="hs-identifier hs-var">i1</span></a></span></span><span> </span><span id="local-6989586621679221856"><span class="annot"><span class="annottext">i2 :: SignalBase t b2
+</span><a href="#local-6989586621679221856"><span class="hs-identifier hs-var">i2</span></a></span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b3
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t b3 b1 b2.
+(Num t, Ord t) =&gt;
+b3
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs21"><span class="hs-identifier hs-var">syncAndObs21</span></a></span><span> </span><span class="annot"><span class="annottext">b3
+</span><a href="#local-6989586621679221859"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b1
+</span><a href="#local-6989586621679221857"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b2
+</span><a href="#local-6989586621679221856"><span class="hs-identifier hs-var">i2</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b3
+</span><a href="#local-6989586621679221858"><span class="hs-identifier hs-var">s1</span></a></span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- | Alias for 'syncAndObs11'. Denotes which actions come from states (with persistent</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- values) and which come from other actions or inputs (instantaneous).</span><span>
+</span><span id="line-47"></span><span class="hs-comment">--</span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- &gt;&gt;&gt; let sts = read &quot;{1@0,2@3,3@6,4@10,5@13}&quot; :: Signal Int</span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- &gt;&gt;&gt; let ins = read &quot;{1@3,2@4,3@5,4@6,5@13}&quot;  :: Signal Int</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- &gt;&gt;&gt; states1inputs1 0 sts ins</span><span>
+</span><span id="line-51"></span><span class="hs-comment">-- ({1@3s,2@4s,3@5s,4@6s,5@13s},{1@0s,2@3s,2@4s,2@5s,3@6s,4@10s,5@13s})</span><span>
+</span><span id="line-52"></span><span id="states2inputs2"><span class="annot"><span class="annottext">states2inputs2 :: (b3, b4)
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states2inputs2"><span class="hs-identifier hs-var hs-var">states2inputs2</span></a></span></span><span> </span><span id="local-6989586621679221853"><span class="annot"><span class="annottext">i :: (b3, b4)
+</span><a href="#local-6989586621679221853"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679221852"><span class="annot"><span class="annottext">s1 :: SignalBase t b3
+</span><a href="#local-6989586621679221852"><span class="hs-identifier hs-var">s1</span></a></span></span><span> </span><span id="local-6989586621679221851"><span class="annot"><span class="annottext">s2 :: SignalBase t b4
+</span><a href="#local-6989586621679221851"><span class="hs-identifier hs-var">s2</span></a></span></span><span> </span><span id="local-6989586621679221850"><span class="annot"><span class="annottext">i1 :: SignalBase t b1
+</span><a href="#local-6989586621679221850"><span class="hs-identifier hs-var">i1</span></a></span></span><span> </span><span id="local-6989586621679221849"><span class="annot"><span class="annottext">i2 :: SignalBase t b2
+</span><a href="#local-6989586621679221849"><span class="hs-identifier hs-var">i2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(b3, b4)
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t b3 b4 b1 b2.
+(Num t, Ord t) =&gt;
+(b3, b4)
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs22"><span class="hs-identifier hs-var">syncAndObs22</span></a></span><span> </span><span class="annot"><span class="annottext">(b3, b4)
+</span><a href="#local-6989586621679221853"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b1
+</span><a href="#local-6989586621679221850"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b2
+</span><a href="#local-6989586621679221849"><span class="hs-identifier hs-var">i2</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b3
+</span><a href="#local-6989586621679221852"><span class="hs-identifier hs-var">s1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b4
+</span><a href="#local-6989586621679221851"><span class="hs-identifier hs-var">s2</span></a></span><span>
+</span><span id="line-53"></span><span id="states1inputs3"><span class="annot"><span class="annottext">states1inputs3 :: b4
+-&gt; SignalBase t b4
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs3"><span class="hs-identifier hs-var hs-var">states1inputs3</span></a></span></span><span> </span><span id="local-6989586621679221846"><span class="annot"><span class="annottext">i :: b4
+</span><a href="#local-6989586621679221846"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679221845"><span class="annot"><span class="annottext">s1 :: SignalBase t b4
+</span><a href="#local-6989586621679221845"><span class="hs-identifier hs-var">s1</span></a></span></span><span> </span><span id="local-6989586621679221844"><span class="annot"><span class="annottext">i1 :: SignalBase t b1
+</span><a href="#local-6989586621679221844"><span class="hs-identifier hs-var">i1</span></a></span></span><span> </span><span id="local-6989586621679221843"><span class="annot"><span class="annottext">i2 :: SignalBase t b2
+</span><a href="#local-6989586621679221843"><span class="hs-identifier hs-var">i2</span></a></span></span><span> </span><span id="local-6989586621679221842"><span class="annot"><span class="annottext">i3 :: SignalBase t b3
+</span><a href="#local-6989586621679221842"><span class="hs-identifier hs-var">i3</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b4
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t b4 b1 b2 b3.
+(Num t, Ord t) =&gt;
+b4
+-&gt; SignalBase t b1
+-&gt; SignalBase t b2
+-&gt; SignalBase t b3
+-&gt; SignalBase t b4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs31"><span class="hs-identifier hs-var">syncAndObs31</span></a></span><span> </span><span class="annot"><span class="annottext">b4
+</span><a href="#local-6989586621679221846"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b1
+</span><a href="#local-6989586621679221844"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b2
+</span><a href="#local-6989586621679221843"><span class="hs-identifier hs-var">i2</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b3
+</span><a href="#local-6989586621679221842"><span class="hs-identifier hs-var">i3</span></a></span><span> </span><span class="annot"><span class="annottext">SignalBase t b4
+</span><a href="#local-6989586621679221845"><span class="hs-identifier hs-var">s1</span></a></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- REACTIONS</span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span id="reaction11"><span class="annot"><span class="annottext">reaction11 :: ([a1] -&gt; [b1]) -&gt; SignalBase Integer a1 -&gt; SignalBase Integer b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction11"><span class="hs-identifier hs-var hs-var">reaction11</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a1] -&gt; [b1]) -&gt; SignalBase Integer a1 -&gt; SignalBase Integer b1
+forall t a1 b1.
+(Ord t, Num t) =&gt;
+([a1] -&gt; [b1]) -&gt; SignalBase t a1 -&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb11"><span class="hs-identifier hs-var">comb11</span></a></span><span> </span><span>
+</span><span id="line-58"></span><span id="reaction12"><span class="annot"><span class="annottext">reaction12 :: ([a1] -&gt; ([b1], [b2]))
+-&gt; SignalBase Integer a1
+-&gt; (SignalBase Integer b1, SignalBase Integer b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction12"><span class="hs-identifier hs-var hs-var">reaction12</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a1] -&gt; ([b1], [b2]))
+-&gt; SignalBase Integer a1
+-&gt; (SignalBase Integer b1, SignalBase Integer b2)
+forall t a1 b1 b2.
+(Num t, Ord t) =&gt;
+([a1] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1 -&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb12"><span class="hs-identifier hs-var">comb12</span></a></span><span>  </span><span>
+</span><span id="line-59"></span><span id="reaction13"><span class="annot"><span class="annottext">reaction13 :: ([a1] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase Integer a1
+-&gt; (SignalBase Integer b1, SignalBase Integer b2,
+    SignalBase Integer b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction13"><span class="hs-identifier hs-var hs-var">reaction13</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a1] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase Integer a1
+-&gt; (SignalBase Integer b1, SignalBase Integer b2,
+    SignalBase Integer b3)
+forall t a1 b1 b2 b3.
+(Num t, Ord t) =&gt;
+([a1] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb13"><span class="hs-identifier hs-var">comb13</span></a></span><span> </span><span>
+</span><span id="line-60"></span><span id="reaction14"><span class="annot"><span class="annottext">reaction14 :: ([a1] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase Integer a1
+-&gt; (SignalBase Integer b1, SignalBase Integer b2,
+    SignalBase Integer b3, SignalBase Integer b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction14"><span class="hs-identifier hs-var hs-var">reaction14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a1] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase Integer a1
+-&gt; (SignalBase Integer b1, SignalBase Integer b2,
+    SignalBase Integer b3, SignalBase Integer b4)
+forall t a1 b1 b2 b3 b4.
+(Num t, Ord t) =&gt;
+([a1] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb14"><span class="hs-identifier hs-var">comb14</span></a></span><span> </span><span>
+</span><span id="line-61"></span><span id="reaction21"><span class="annot"><span class="annottext">reaction21 :: ([a1] -&gt; [a2] -&gt; [b1])
+-&gt; (SignalBase t a1, SignalBase t a2) -&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction21"><span class="hs-identifier hs-var hs-var">reaction21</span></a></span></span><span> </span><span id="local-6989586621679221831"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [b1]
+</span><a href="#local-6989586621679221831"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1 -&gt; SignalBase t a2 -&gt; SignalBase t b1)
+-&gt; (SignalBase t a1, SignalBase t a2) -&gt; SignalBase t b1
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">(&gt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [b1])
+-&gt; SignalBase t a1 -&gt; SignalBase t a2 -&gt; SignalBase t b1
+forall t a1 a2 b1.
+(Ord t, Num t) =&gt;
+([a1] -&gt; [a2] -&gt; [b1])
+-&gt; SignalBase t a1 -&gt; SignalBase t a2 -&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb21"><span class="hs-identifier hs-var">comb21</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [b1]
+</span><a href="#local-6989586621679221831"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- | Alias for 'comb22', tupled version, that can be chained directly from a</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- @statesXinputsY@ &quot;utility&quot;, see 'states2inputs2'.</span><span>
+</span><span id="line-64"></span><span class="hs-comment">--</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- &gt;&gt;&gt; let sts = read &quot;{1@0,2@3,3@6,4@10,5@13}&quot; :: Signal Int</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- &gt;&gt;&gt; let ins = read &quot;{1@3,2@4,3@5,4@6,5@13}&quot;  :: Signal Int</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- &gt;&gt;&gt; reaction21 (\a b -&gt; [sum a + sum b]) $ states1inputs1 0 sts ins</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- {1@0s,3@3s,4@4s,5@5s,7@6s,4@10s,10@13s}</span><span>
+</span><span id="line-69"></span><span id="reaction22"><span class="annot"><span class="annottext">reaction22 :: ([a1] -&gt; [a2] -&gt; ([b1], [b2]))
+-&gt; (SignalBase t a1, SignalBase t a2)
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction22"><span class="hs-identifier hs-var hs-var">reaction22</span></a></span></span><span> </span><span id="local-6989586621679221828"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; ([b1], [b2])
+</span><a href="#local-6989586621679221828"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2 -&gt; (SignalBase t b1, SignalBase t b2))
+-&gt; (SignalBase t a1, SignalBase t a2)
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">(&gt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall t a1 a2 b1 b2.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb22"><span class="hs-identifier hs-var">comb22</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; ([b1], [b2])
+</span><a href="#local-6989586621679221828"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span id="reaction23"><span class="annot"><span class="annottext">reaction23 :: ([a1] -&gt; [a2] -&gt; ([b1], [b2], [b3]))
+-&gt; (SignalBase t a1, SignalBase t a2)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction23"><span class="hs-identifier hs-var hs-var">reaction23</span></a></span></span><span> </span><span id="local-6989586621679221825"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; ([b1], [b2], [b3])
+</span><a href="#local-6989586621679221825"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3))
+-&gt; (SignalBase t a1, SignalBase t a2)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">(&gt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t a1 a2 b1 b2 b3.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb23"><span class="hs-identifier hs-var">comb23</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; ([b1], [b2], [b3])
+</span><a href="#local-6989586621679221825"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span id="reaction24"><span class="annot"><span class="annottext">reaction24 :: ([a1] -&gt; [a2] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; (SignalBase t a1, SignalBase t a2)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction24"><span class="hs-identifier hs-var hs-var">reaction24</span></a></span></span><span> </span><span id="local-6989586621679221822"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; ([b1], [b2], [b3], [b4])
+</span><a href="#local-6989586621679221822"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+     SignalBase t b4))
+-&gt; (SignalBase t a1, SignalBase t a2)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">(&gt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t a1 a2 b1 b2 b3 b4.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb24"><span class="hs-identifier hs-var">comb24</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; ([b1], [b2], [b3], [b4])
+</span><a href="#local-6989586621679221822"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span id="reaction31"><span class="annot"><span class="annottext">reaction31 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; [b1])
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction31"><span class="hs-identifier hs-var hs-var">reaction31</span></a></span></span><span> </span><span id="local-6989586621679221819"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; [b1]
+</span><a href="#local-6989586621679221819"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2 -&gt; SignalBase t a3 -&gt; SignalBase t b1)
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; SignalBase t b1
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; [b1])
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t b1
+forall t a1 a2 a3 b1.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; [b1])
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb31"><span class="hs-identifier hs-var">comb31</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; [b1]
+</span><a href="#local-6989586621679221819"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span id="reaction32"><span class="annot"><span class="annottext">reaction32 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2]))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction32"><span class="hs-identifier hs-var hs-var">reaction32</span></a></span></span><span> </span><span id="local-6989586621679221816"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2])
+</span><a href="#local-6989586621679221816"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; (SignalBase t b1, SignalBase t b2))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall t a1 a2 a3 b1 b2.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb32"><span class="hs-identifier hs-var">comb32</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2])
+</span><a href="#local-6989586621679221816"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span id="reaction33"><span class="annot"><span class="annottext">reaction33 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3]))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction33"><span class="hs-identifier hs-var hs-var">reaction33</span></a></span></span><span> </span><span id="local-6989586621679221813"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3])
+</span><a href="#local-6989586621679221813"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t a1 a2 a3 b1 b2 b3.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb33"><span class="hs-identifier hs-var">comb33</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3])
+</span><a href="#local-6989586621679221813"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span id="reaction34"><span class="annot"><span class="annottext">reaction34 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction34"><span class="hs-identifier hs-var hs-var">reaction34</span></a></span></span><span> </span><span id="local-6989586621679221810"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3], [b4])
+</span><a href="#local-6989586621679221810"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+     SignalBase t b4))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t a1 a2 a3 b1 b2 b3 b4.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb34"><span class="hs-identifier hs-var">comb34</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; ([b1], [b2], [b3], [b4])
+</span><a href="#local-6989586621679221810"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span id="reaction41"><span class="annot"><span class="annottext">reaction41 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; [b1])
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction41"><span class="hs-identifier hs-var hs-var">reaction41</span></a></span></span><span> </span><span id="local-6989586621679221807"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; [b1]
+</span><a href="#local-6989586621679221807"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; SignalBase t a4
+ -&gt; SignalBase t b1)
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; SignalBase t b1
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; [b1])
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; SignalBase t b1
+forall t a1 a2 a3 a4 b1.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; [b1])
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb41"><span class="hs-identifier hs-var">comb41</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; [b1]
+</span><a href="#local-6989586621679221807"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span id="reaction42"><span class="annot"><span class="annottext">reaction42 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2]))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction42"><span class="hs-identifier hs-var hs-var">reaction42</span></a></span></span><span> </span><span id="local-6989586621679221804"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2])
+</span><a href="#local-6989586621679221804"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; SignalBase t a4
+ -&gt; (SignalBase t b1, SignalBase t b2))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; (SignalBase t b1, SignalBase t b2)
+forall t a1 a2 a3 a4 b1 b2.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb42"><span class="hs-identifier hs-var">comb42</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2])
+</span><a href="#local-6989586621679221804"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span id="reaction43"><span class="annot"><span class="annottext">reaction43 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3]))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction43"><span class="hs-identifier hs-var hs-var">reaction43</span></a></span></span><span> </span><span id="local-6989586621679221801"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3])
+</span><a href="#local-6989586621679221801"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; SignalBase t a4
+ -&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+forall t a1 a2 a3 a4 b1 b2 b3.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb43"><span class="hs-identifier hs-var">comb43</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3])
+</span><a href="#local-6989586621679221801"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span id="reaction44"><span class="annot"><span class="annottext">reaction44 :: ([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction44"><span class="hs-identifier hs-var hs-var">reaction44</span></a></span></span><span> </span><span id="local-6989586621679221798"><span class="annot"><span class="annottext">f :: [a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3], [b4])
+</span><a href="#local-6989586621679221798"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SignalBase t a1
+ -&gt; SignalBase t a2
+ -&gt; SignalBase t a3
+ -&gt; SignalBase t a4
+ -&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+     SignalBase t b4))
+-&gt; (SignalBase t a1, SignalBase t a2, SignalBase t a3,
+    SignalBase t a4)
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">(&gt;&lt;&lt;&lt;)</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+forall t a1 a2 a3 a4 b1 b2 b3 b4.
+(Num t, Ord t) =&gt;
+([a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3], [b4]))
+-&gt; SignalBase t a1
+-&gt; SignalBase t a2
+-&gt; SignalBase t a3
+-&gt; SignalBase t a4
+-&gt; (SignalBase t b1, SignalBase t b2, SignalBase t b3,
+    SignalBase t b4)
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb44"><span class="hs-identifier hs-var">comb44</span></a></span><span> </span><span class="annot"><span class="annottext">[a1] -&gt; [a2] -&gt; [a3] -&gt; [a4] -&gt; ([b1], [b2], [b3], [b4])
+</span><a href="#local-6989586621679221798"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="hs-comment">--------------- TEST -----------------</span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reactor1"><span class="hs-identifier hs-type">reactor1</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.TimeStamp.html#TimeStamp"><span class="hs-identifier hs-type">TimeStamp</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-85"></span><span id="reactor1"><span class="annot"><span class="annottext">reactor1 :: TimeStamp -&gt; Signal Int -&gt; Signal Int
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reactor1"><span class="hs-identifier hs-var hs-var">reactor1</span></a></span></span><span> </span><span id="local-6989586621679221795"><span class="annot"><span class="annottext">period :: TimeStamp
+</span><a href="#local-6989586621679221795"><span class="hs-identifier hs-var">period</span></a></span></span><span> </span><span id="local-6989586621679221794"><span class="annot"><span class="annottext">x :: Signal Int
+</span><a href="#local-6989586621679221794"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Signal Int
+</span><a href="#local-6989586621679221793"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-87"></span><span>    </span><span id="local-6989586621679221792"><span class="annot"><span class="annottext">t :: Signal ()
+</span><a href="#local-6989586621679221792"><span class="hs-identifier hs-var hs-var">t</span></a></span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TimeStamp -&gt; Signal ()
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer"><span class="hs-identifier hs-var">timer</span></a></span><span> </span><span class="annot"><span class="annottext">TimeStamp
+</span><a href="#local-6989586621679221795"><span class="hs-identifier hs-var">period</span></a></span><span>
+</span><span id="line-88"></span><span>    </span><span id="local-6989586621679221791"><span class="annot"><span class="annottext">count :: Signal Int
+</span><a href="#local-6989586621679221791"><span class="hs-identifier hs-var hs-var">count</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; [()] -&gt; Int) -&gt; Int -&gt; Signal () -&gt; Signal Int
+forall t b1 a1.
+(Num t, Ord t) =&gt;
+(b1 -&gt; [a1] -&gt; b1) -&gt; b1 -&gt; SignalBase t a1 -&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state11"><span class="hs-identifier hs-var">state11</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679221789"><span class="annot"><span class="annottext">s :: Int
+</span><a href="#local-6989586621679221789"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679221789"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Signal ()
+</span><a href="#local-6989586621679221792"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-89"></span><span>    </span><span id="local-6989586621679221787"><span class="annot"><span class="annottext">a :: Signal Int
+</span><a href="#local-6989586621679221787"><span class="hs-identifier hs-var hs-var">a</span></a></span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TimeStamp -&gt; Signal Int -&gt; Signal Int
+forall a. TimeStamp -&gt; Signal a -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#actionD"><span class="hs-identifier hs-var">actionD</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; TimeStamp
+</span><a href="ForSyDe.Atom.MoC.TimeStamp.html#milisec"><span class="hs-identifier hs-var">milisec</span></a></span><span> </span><span class="annot"><span class="hs-number">200</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Signal Int
+</span><a href="#local-6989586621679221791"><span class="hs-identifier hs-var">count</span></a></span><span>
+</span><span id="line-90"></span><span>    </span><span id="local-6989586621679221793"><span class="annot"><span class="annottext">y :: Signal Int
+</span><a href="#local-6989586621679221793"><span class="hs-identifier hs-var hs-var">y</span></a></span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Int] -&gt; [Int] -&gt; [Int]) -&gt; (Signal Int, Signal Int) -&gt; Signal Int
+forall t a1 a2 b1.
+(Ord t, Num t) =&gt;
+([a1] -&gt; [a2] -&gt; [b1])
+-&gt; (SignalBase t a1, SignalBase t a2) -&gt; SignalBase t b1
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction21"><span class="hs-identifier hs-var">reaction21</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679221785"><span class="annot"><span class="annottext">i1 :: [Int]
+</span><a href="#local-6989586621679221785"><span class="hs-identifier hs-var">i1</span></a></span></span><span> </span><span id="local-6989586621679221784"><span class="annot"><span class="annottext">i2 :: [Int]
+</span><a href="#local-6989586621679221784"><span class="hs-identifier hs-var">i2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679221785"><span class="hs-identifier hs-var">i1</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679221784"><span class="hs-identifier hs-var">i2</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>            </span><span class="annot"><span class="annottext">((Signal Int, Signal Int) -&gt; Signal Int)
+-&gt; (Signal Int, Signal Int) -&gt; Signal Int
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Signal Int -&gt; Signal Int -&gt; (Signal Int, Signal Int)
+forall t b2 b1.
+(Num t, Ord t) =&gt;
+b2
+-&gt; SignalBase t b2
+-&gt; SignalBase t b1
+-&gt; (SignalBase t b1, SignalBase t b2)
+</span><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs1"><span class="hs-identifier hs-var">states1inputs1</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Signal Int
+</span><a href="#local-6989586621679221787"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Signal Int
+</span><a href="#local-6989586621679221794"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-92"></span></pre></body></html>

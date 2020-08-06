@@ -1,0 +1,668 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.Skel.FastVector.Lib</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.html"><span class="hs-identifier">ForSyDe.Atom</span></a></span><span> </span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List.Split</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.List</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">L</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">take</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">drop</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">length</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">zip</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">unzip</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- | In this library 'Vector' is just a wrapper around a list.</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">newtype</span><span> </span><span id="Vector"><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span></span><span> </span><span id="local-6989586621679222952"><span class="annot"><a href="#local-6989586621679222952"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Vector"><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="fromVector"><span class="annot"><span class="annottext">Vector a -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#fromVector"><span class="hs-identifier hs-var hs-var">fromVector</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679222952"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679222774"><span id="local-6989586621679222776"><span class="annot"><span class="annottext">Vector a -&gt; Vector a -&gt; Bool
+(Vector a -&gt; Vector a -&gt; Bool)
+-&gt; (Vector a -&gt; Vector a -&gt; Bool) -&gt; Eq (Vector a)
+forall a. Eq a =&gt; Vector a -&gt; Vector a -&gt; Bool
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Vector a -&gt; Vector a -&gt; Bool
+$c/= :: forall a. Eq a =&gt; Vector a -&gt; Vector a -&gt; Bool
+== :: Vector a -&gt; Vector a -&gt; Bool
+$c== :: forall a. Eq a =&gt; Vector a -&gt; Vector a -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span id="vector"><span class="annot"><span class="annottext">vector :: [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var hs-var">vector</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679222769"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>  </span><span id="local-6989586621679222767"><span class="annot"><span class="annottext">fmap :: (a -&gt; b) -&gt; Vector a -&gt; Vector b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span id="local-6989586621679222766"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679222766"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222765"><span class="annot"><span class="annottext">a :: [a]
+</span><a href="#local-6989586621679222765"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[b] -&gt; Vector b
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(a -&gt; b) -&gt; [a] -&gt; [b]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679222766"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222765"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679222756"><span id="local-6989586621679222758"><span id="local-6989586621679222760"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-21"></span><span>  </span><span id="local-6989586621679222754"><span class="annot"><span class="annottext">pure :: a -&gt; Vector a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span id="local-6989586621679222753"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679222753"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222753"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222752"><span class="annot"><span class="annottext">fs :: [a -&gt; b]
+</span><a href="#local-6989586621679222752"><span class="hs-identifier hs-var">fs</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679222751"><span class="annot"><span class="annottext">&lt;*&gt; :: Vector (a -&gt; b) -&gt; Vector a -&gt; Vector b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222750"><span class="annot"><span class="annottext">as :: [a]
+</span><a href="#local-6989586621679222750"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[b] -&gt; Vector b
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span><span> </span><span class="annot"><span class="annottext">([b] -&gt; Vector b) -&gt; [b] -&gt; Vector b
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ZipList b -&gt; [b]
+forall a. ZipList a -&gt; [a]
+</span><span class="hs-identifier hs-var hs-var">getZipList</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a -&gt; b] -&gt; ZipList (a -&gt; b)
+forall a. [a] -&gt; ZipList a
+</span><span class="hs-identifier hs-var">ZipList</span></span><span> </span><span class="annot"><span class="annottext">[a -&gt; b]
+</span><a href="#local-6989586621679222752"><span class="hs-identifier hs-var">fs</span></a></span><span> </span><span class="annot"><span class="annottext">ZipList (a -&gt; b) -&gt; ZipList a -&gt; ZipList b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; ZipList a
+forall a. [a] -&gt; ZipList a
+</span><span class="hs-identifier hs-var">ZipList</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222750"><span class="hs-keyword hs-var">as</span></a></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span id="local-6989586621679222747"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679222742"><span id="local-6989586621679222744"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621679222747"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679222747"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>  </span><span id="local-6989586621679222740"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; Vector a -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">showsPrec</span></span></span><span> </span><span id="local-6989586621679222738"><span class="annot"><span class="annottext">p :: Int
+</span><a href="#local-6989586621679222738"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
+</span><span class="hs-identifier hs-var">showParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222738"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="hs-number">9</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="annot"><span class="hs-string">&quot;&lt;&gt;&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>  </span><span class="annot"><span class="hs-identifier hs-var">showsPrec</span></span><span> </span><span id="local-6989586621679222734"><span class="annot"><span class="annottext">p :: Int
+</span><a href="#local-6989586621679222734"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222733"><span class="annot"><span class="annottext">xs :: [a]
+</span><a href="#local-6989586621679222733"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
+</span><span class="hs-identifier hs-var">showParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222734"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="hs-number">9</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&lt;'</span></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; ShowS
+forall a. Show a =&gt; [a] -&gt; ShowS
+</span><a href="#local-6989586621679222730"><span class="hs-identifier hs-var">showVector1</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222733"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-28"></span><span>      </span><span id="local-6989586621679222730"><span class="annot"><span class="annottext">showVector1 :: [a] -&gt; ShowS
+</span><a href="#local-6989586621679222730"><span class="hs-identifier hs-var hs-var">showVector1</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&gt;'</span></span><span>            </span><span>
+</span><span id="line-29"></span><span>      </span><span class="annot"><a href="#local-6989586621679222730"><span class="hs-identifier hs-var">showVector1</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679222729"><span class="annot"><span class="annottext">y :: a
+</span><a href="#local-6989586621679222729"><span class="hs-identifier hs-var">y</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222729"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">'&gt;'</span></span><span>
+</span><span id="line-30"></span><span>      </span><span class="annot"><a href="#local-6989586621679222730"><span class="hs-identifier hs-var">showVector1</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679222727"><span class="annot"><span class="annottext">y :: a
+</span><a href="#local-6989586621679222727"><span class="hs-identifier hs-var">y</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679222726"><span class="annot"><span class="annottext">ys :: [a]
+</span><a href="#local-6989586621679222726"><span class="hs-identifier hs-var">ys</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222727"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; ShowS
+</span><span class="hs-identifier hs-var">showChar</span></span><span> </span><span class="annot"><span class="hs-char">','</span></span><span> </span><span>
+</span><span id="line-31"></span><span>        </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; ShowS
+</span><a href="#local-6989586621679222730"><span class="hs-identifier hs-var">showVector1</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222726"><span class="hs-identifier hs-var">ys</span></a></span></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679222693"><span id="local-6989586621679222695"><span id="local-6989586621679222697"><span id="local-6989586621679222699"><span id="local-6989586621679222701"><span id="local-6989586621679222703"><span id="local-6989586621679222705"><span id="local-6989586621679222707"><span id="local-6989586621679222709"><span id="local-6989586621679222711"><span id="local-6989586621679222713"><span id="local-6989586621679222715"><span id="local-6989586621679222717"><span id="local-6989586621679222720"><span id="local-6989586621679222722"><span id="local-6989586621679222724"><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-34"></span><span>  </span><span id="local-6989586621679222691"><span class="annot"><span class="annottext">foldr :: (a -&gt; b -&gt; b) -&gt; b -&gt; Vector a -&gt; b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">foldr</span></span></span><span> </span><span id="local-6989586621679222689"><span class="annot"><span class="annottext">f :: a -&gt; b -&gt; b
+</span><a href="#local-6989586621679222689"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222688"><span class="annot"><span class="annottext">x :: b
+</span><a href="#local-6989586621679222688"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222687"><span class="annot"><span class="annottext">a :: [a]
+</span><a href="#local-6989586621679222687"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; b -&gt; b) -&gt; b -&gt; [a] -&gt; b
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; b -&gt; b
+</span><a href="#local-6989586621679222689"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679222688"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222687"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span id="farm11"><span class="annot"><span class="annottext">farm11 :: (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm11"><span class="hs-identifier hs-var hs-var">farm11</span></a></span></span><span> </span><span id="local-6989586621679222685"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679222685"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679222685"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-37"></span><span id="farm21"><span class="annot"><span class="annottext">farm21 :: (a -&gt; a -&gt; b) -&gt; f a -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm21"><span class="hs-identifier hs-var hs-var">farm21</span></a></span></span><span> </span><span id="local-6989586621679222683"><span class="annot"><span class="annottext">f :: a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222683"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222682"><span class="annot"><span class="annottext">a :: f a
+</span><a href="#local-6989586621679222682"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679222681"><span class="annot"><span class="annottext">b :: f a
+</span><a href="#local-6989586621679222681"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222683"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222682"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222681"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-38"></span><span id="farm31"><span class="annot"><span class="annottext">farm31 :: (a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f a -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm31"><span class="hs-identifier hs-var hs-var">farm31</span></a></span></span><span> </span><span id="local-6989586621679222678"><span class="annot"><span class="annottext">f :: a -&gt; a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222678"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222677"><span class="annot"><span class="annottext">a :: f a
+</span><a href="#local-6989586621679222677"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679222676"><span class="annot"><span class="annottext">b :: f a
+</span><a href="#local-6989586621679222676"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span id="local-6989586621679222675"><span class="annot"><span class="annottext">c :: f a
+</span><a href="#local-6989586621679222675"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222678"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; a -&gt; b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222677"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; b)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222676"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222675"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-39"></span><span id="farm41"><span class="annot"><span class="annottext">farm41 :: (a -&gt; a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f a -&gt; f a -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm41"><span class="hs-identifier hs-var hs-var">farm41</span></a></span></span><span> </span><span id="local-6989586621679222673"><span class="annot"><span class="annottext">f :: a -&gt; a -&gt; a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222673"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222672"><span class="annot"><span class="annottext">a :: f a
+</span><a href="#local-6989586621679222672"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679222671"><span class="annot"><span class="annottext">b :: f a
+</span><a href="#local-6989586621679222671"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span id="local-6989586621679222670"><span class="annot"><span class="annottext">c :: f a
+</span><a href="#local-6989586621679222670"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679222669"><span class="annot"><span class="annottext">d :: f a
+</span><a href="#local-6989586621679222669"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222673"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; a -&gt; a -&gt; b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222672"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; a -&gt; b)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222671"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; b)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222670"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222669"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-40"></span><span id="farm51"><span class="annot"><span class="annottext">farm51 :: (a -&gt; a -&gt; a -&gt; a -&gt; a -&gt; b)
+-&gt; f a -&gt; f a -&gt; f a -&gt; f a -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm51"><span class="hs-identifier hs-var hs-var">farm51</span></a></span></span><span> </span><span id="local-6989586621679222667"><span class="annot"><span class="annottext">f :: a -&gt; a -&gt; a -&gt; a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222667"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222666"><span class="annot"><span class="annottext">a :: f a
+</span><a href="#local-6989586621679222666"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679222665"><span class="annot"><span class="annottext">b :: f a
+</span><a href="#local-6989586621679222665"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span id="local-6989586621679222664"><span class="annot"><span class="annottext">c :: f a
+</span><a href="#local-6989586621679222664"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679222663"><span class="annot"><span class="annottext">d :: f a
+</span><a href="#local-6989586621679222663"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span id="local-6989586621679222662"><span class="annot"><span class="annottext">e :: f a
+</span><a href="#local-6989586621679222662"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a -&gt; a -&gt; a -&gt; b
+</span><a href="#local-6989586621679222667"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; a -&gt; a -&gt; a -&gt; b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222666"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; a -&gt; a -&gt; b)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222665"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; a -&gt; b)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222664"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; a -&gt; b) -&gt; f a -&gt; f (a -&gt; b)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222663"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">f (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222662"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-41"></span><span id="farm12"><span class="annot"><span class="annottext">farm12 :: (a -&gt; (a1, b)) -&gt; f a -&gt; (f a1, f b)
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm12"><span class="hs-identifier hs-var hs-var">farm12</span></a></span></span><span> </span><span id="local-6989586621679222660"><span class="annot"><span class="annottext">f :: a -&gt; (a1, b)
+</span><a href="#local-6989586621679222660"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">f (a1, b) -&gt; (f a1, f b)
+forall (f :: * -&gt; *) a1 b. Functor f =&gt; f (a1, b) -&gt; (f a1, f b)
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%7C%3C"><span class="hs-operator hs-var">(|&lt;)</span></a></span><span> </span><span class="annot"><span class="annottext">(f (a1, b) -&gt; (f a1, f b))
+-&gt; (f a -&gt; f (a1, b)) -&gt; f a -&gt; (f a1, f b)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; (a1, b)) -&gt; f a -&gt; f (a1, b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; (a1, b)
+</span><a href="#local-6989586621679222660"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-42"></span><span id="farm22"><span class="annot"><span class="annottext">farm22 :: (a -&gt; a -&gt; (a1, b)) -&gt; f a -&gt; f a -&gt; (f a1, f b)
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm22"><span class="hs-identifier hs-var hs-var">farm22</span></a></span></span><span> </span><span id="local-6989586621679222657"><span class="annot"><span class="annottext">f :: a -&gt; a -&gt; (a1, b)
+</span><a href="#local-6989586621679222657"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222656"><span class="annot"><span class="annottext">a :: f a
+</span><a href="#local-6989586621679222656"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">f (a1, b) -&gt; (f a1, f b)
+forall (f :: * -&gt; *) a1 b. Functor f =&gt; f (a1, b) -&gt; (f a1, f b)
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%7C%3C"><span class="hs-operator hs-var">(|&lt;)</span></a></span><span> </span><span class="annot"><span class="annottext">(f (a1, b) -&gt; (f a1, f b))
+-&gt; (f a -&gt; f (a1, b)) -&gt; f a -&gt; (f a1, f b)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; (a1, b)) -&gt; f a -&gt; f a -&gt; f (a1, b)
+forall (f :: * -&gt; *) a a b.
+Applicative f =&gt;
+(a -&gt; a -&gt; b) -&gt; f a -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm21"><span class="hs-identifier hs-var">farm21</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; (a1, b)
+</span><a href="#local-6989586621679222657"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679222656"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">infixr</span><span> </span><span class="hs-number">5</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#%3C%2B%2B%3E"><span class="hs-operator hs-type">&lt;++&gt;</span></a></span><span>
+</span><span id="line-45"></span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222654"><span class="annot"><span class="annottext">a :: [a]
+</span><a href="#local-6989586621679222654"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span id="%3C%2B%2B%3E"><span class="annot"><span class="annottext">&lt;++&gt; :: Vector a -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#%3C%2B%2B%3E"><span class="hs-operator hs-var hs-var">&lt;++&gt;</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222653"><span class="annot"><span class="annottext">b :: [a]
+</span><a href="#local-6989586621679222653"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222654"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222653"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span id="unsafeApply"><span class="annot"><span class="annottext">unsafeApply :: ([a] -&gt; t) -&gt; Vector a -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier hs-var hs-var">unsafeApply</span></a></span></span><span> </span><span id="local-6989586621679222651"><span class="annot"><span class="annottext">f :: [a] -&gt; t
+</span><a href="#local-6989586621679222651"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222650"><span class="annot"><span class="annottext">a :: [a]
+</span><a href="#local-6989586621679222650"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; t
+</span><a href="#local-6989586621679222651"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222650"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-48"></span><span id="unsafeLift"><span class="annot"><span class="annottext">unsafeLift :: ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var hs-var">unsafeLift</span></a></span></span><span>  </span><span id="local-6989586621679222648"><span class="annot"><span class="annottext">f :: [a] -&gt; [a]
+</span><a href="#local-6989586621679222648"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222647"><span class="annot"><span class="annottext">a :: [a]
+</span><a href="#local-6989586621679222647"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-var">Vector</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; [a]
+</span><a href="#local-6989586621679222648"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222647"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.reduce'.</span><span>
+</span><span id="line-51"></span><span id="reduce"><span class="annot"><span class="annottext">reduce :: (t -&gt; t -&gt; t) -&gt; Vector t -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#reduce"><span class="hs-identifier hs-var hs-var">reduce</span></a></span></span><span> </span><span id="local-6989586621679222645"><span class="annot"><span class="annottext">f :: t -&gt; t -&gt; t
+</span><a href="#local-6989586621679222645"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([t] -&gt; t) -&gt; Vector t -&gt; t
+forall a t. ([a] -&gt; t) -&gt; Vector a -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier hs-var">unsafeApply</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(t -&gt; t -&gt; t) -&gt; [t] -&gt; t
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; a -&gt; a) -&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">L.foldr1</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; t -&gt; t
+</span><a href="#local-6989586621679222645"><span class="hs-identifier hs-var">f</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.length'.</span><span>
+</span><span id="line-54"></span><span id="length"><span class="annot"><span class="annottext">length :: Vector a -&gt; Int
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#length"><span class="hs-identifier hs-var hs-var">length</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Int) -&gt; Vector a -&gt; Int
+forall a t. ([a] -&gt; t) -&gt; Vector a -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier hs-var">unsafeApply</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">L.length</span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.drop'.</span><span>
+</span><span id="line-57"></span><span id="drop"><span class="annot"><span class="annottext">drop :: Int -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#drop"><span class="hs-identifier hs-var hs-var">drop</span></a></span></span><span> </span><span id="local-6989586621679222641"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222641"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">L.drop</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222641"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.take'.</span><span>
+</span><span id="line-60"></span><span id="take"><span class="annot"><span class="annottext">take :: Int -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#take"><span class="hs-identifier hs-var hs-var">take</span></a></span></span><span> </span><span id="local-6989586621679222639"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222639"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">L.take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222639"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.first'.</span><span>
+</span><span id="line-63"></span><span id="first"><span class="annot"><span class="annottext">first :: Vector t -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#first"><span class="hs-identifier hs-var hs-var">first</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([t] -&gt; t) -&gt; Vector t -&gt; t
+forall a t. ([a] -&gt; t) -&gt; Vector a -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier hs-var">unsafeApply</span></a></span><span> </span><span class="annot"><span class="annottext">[t] -&gt; t
+forall a. [a] -&gt; a
+</span><span class="hs-identifier hs-var">L.head</span></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.group'.</span><span>
+</span><span id="line-66"></span><span id="local-6989586621679222636"><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#group"><span class="hs-identifier hs-type">group</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679222636"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679222636"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-67"></span><span id="group"><span class="annot"><span class="annottext">group :: Int -&gt; Vector a -&gt; Vector (Vector a)
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#group"><span class="hs-identifier hs-var hs-var">group</span></a></span></span><span> </span><span id="local-6989586621679222634"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222634"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span id="local-6989586621679222633"><span class="annot"><span class="annottext">a :: [a]
+</span><a href="#local-6989586621679222633"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Vector a] -&gt; Vector (Vector a)
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([Vector a] -&gt; Vector (Vector a))
+-&gt; [Vector a] -&gt; Vector (Vector a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Vector a) -&gt; [[a]] -&gt; [Vector a]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([[a]] -&gt; [Vector a]) -&gt; [[a]] -&gt; [Vector a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [[a]]
+forall e. Int -&gt; [e] -&gt; [[e]]
+</span><span class="hs-identifier hs-var">chunksOf</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222634"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222633"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.fanout'.</span><span>
+</span><span id="line-70"></span><span id="fanout"><span class="annot"><span class="annottext">fanout :: a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#fanout"><span class="hs-identifier hs-var hs-var">fanout</span></a></span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Vector a) -&gt; (a -&gt; [a]) -&gt; a -&gt; Vector a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a]
+forall a. a -&gt; [a]
+</span><span class="hs-identifier hs-var">L.repeat</span></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.fanoutn'.</span><span>
+</span><span id="line-73"></span><span id="fanoutn"><span class="annot"><span class="annottext">fanoutn :: Int -&gt; a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#fanoutn"><span class="hs-identifier hs-var hs-var">fanoutn</span></a></span></span><span> </span><span id="local-6989586621679222628"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222628"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Vector a) -&gt; (a -&gt; [a]) -&gt; a -&gt; Vector a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; a -&gt; [a]
+forall a. Int -&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">L.replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222628"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.stencil'.</span><span>
+</span><span id="line-76"></span><span id="stencil"><span class="annot"><span class="annottext">stencil :: Int -&gt; Vector a -&gt; Vector (Vector a)
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#stencil"><span class="hs-identifier hs-var hs-var">stencil</span></a></span></span><span> </span><span id="local-6989586621679222625"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222625"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679222624"><span class="annot"><span class="annottext">v :: Vector a
+</span><a href="#local-6989586621679222624"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Vector a -&gt; Vector a) -&gt; Vector (Vector a) -&gt; Vector (Vector a)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm11"><span class="hs-identifier hs-var">farm11</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Vector a -&gt; Vector a
+forall a. Int -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#take"><span class="hs-identifier hs-var">take</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222625"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Vector (Vector a) -&gt; Vector (Vector a))
+-&gt; Vector (Vector a) -&gt; Vector (Vector a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Vector (Vector a) -&gt; Vector (Vector a)
+forall a. Int -&gt; Vector a -&gt; Vector a
+</span><a href="#local-6989586621679222623"><span class="hs-identifier hs-var">dropFromEnd</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222625"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector (Vector a) -&gt; Vector (Vector a))
+-&gt; Vector (Vector a) -&gt; Vector (Vector a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; Vector (Vector a)
+forall a. Vector a -&gt; Vector (Vector a)
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#tails"><span class="hs-identifier hs-var">tails</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679222624"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679222623"><span class="annot"><span class="annottext">dropFromEnd :: Int -&gt; Vector a -&gt; Vector a
+</span><a href="#local-6989586621679222623"><span class="hs-identifier hs-var hs-var">dropFromEnd</span></a></span></span><span> </span><span id="local-6989586621679222621"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222621"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Vector a -&gt; Vector a
+forall a. Int -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#take"><span class="hs-identifier hs-var">take</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a -&gt; Int
+forall a. Vector a -&gt; Int
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#length"><span class="hs-identifier hs-var">length</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679222624"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222621"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.tails'.</span><span>
+</span><span id="line-80"></span><span id="tails"><span class="annot"><span class="annottext">tails :: Vector a -&gt; Vector (Vector a)
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#tails"><span class="hs-identifier hs-var hs-var">tails</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [Vector a]) -&gt; Vector a -&gt; Vector (Vector a)
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Vector a] -&gt; [Vector a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">L.init</span></span><span> </span><span class="annot"><span class="annottext">([Vector a] -&gt; [Vector a])
+-&gt; ([a] -&gt; [Vector a]) -&gt; [a] -&gt; [Vector a]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Vector a) -&gt; [[a]] -&gt; [Vector a]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([[a]] -&gt; [Vector a]) -&gt; ([a] -&gt; [[a]]) -&gt; [a] -&gt; [Vector a]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [[a]]
+forall a. [a] -&gt; [[a]]
+</span><span class="hs-identifier hs-var">L.tails</span></span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.concat'.</span><span>
+</span><span id="line-83"></span><span id="concat"><span class="annot"><span class="annottext">concat :: Vector (Vector a) -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#concat"><span class="hs-identifier hs-var hs-var">concat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Vector a] -&gt; [a]) -&gt; Vector (Vector a) -&gt; Vector a
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[[a]] -&gt; [a]
+forall (t :: * -&gt; *) a. Foldable t =&gt; t [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">L.concat</span></span><span> </span><span class="annot"><span class="annottext">([[a]] -&gt; [a]) -&gt; ([Vector a] -&gt; [[a]]) -&gt; [Vector a] -&gt; [a]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Vector a -&gt; [a]) -&gt; [Vector a] -&gt; [[a]]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; [a]
+forall a. Vector a -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#fromVector"><span class="hs-identifier hs-var hs-var">fromVector</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.iterate'.</span><span>
+</span><span id="line-86"></span><span id="iterate"><span class="annot"><span class="annottext">iterate :: Int -&gt; (a -&gt; a) -&gt; a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#iterate"><span class="hs-identifier hs-var hs-var">iterate</span></a></span></span><span> </span><span id="local-6989586621679222614"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222614"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679222613"><span class="annot"><span class="annottext">f :: a -&gt; a
+</span><a href="#local-6989586621679222613"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222612"><span class="annot"><span class="annottext">i :: a
+</span><a href="#local-6989586621679222612"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Vector a
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Vector a) -&gt; [a] -&gt; Vector a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">L.take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222614"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; [a] -&gt; [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a) -&gt; a -&gt; [a]
+forall a. (a -&gt; a) -&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">L.iterate</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a
+</span><a href="#local-6989586621679222613"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222612"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.pipe'.</span><span>
+</span><span id="line-89"></span><span id="pipe"><span class="annot"><span class="annottext">pipe :: Vector (a -&gt; a) -&gt; a -&gt; a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#pipe"><span class="hs-identifier hs-var hs-var">pipe</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679222609"><span class="annot"><span class="annottext">i :: a
+</span><a href="#local-6989586621679222609"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222609"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#pipe"><span class="hs-identifier hs-var">pipe</span></a></span><span> </span><span id="local-6989586621679222608"><span class="annot"><span class="annottext">v :: Vector (a -&gt; a)
+</span><a href="#local-6989586621679222608"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span id="local-6989586621679222607"><span class="annot"><span class="annottext">i :: a
+</span><a href="#local-6989586621679222607"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a -&gt; a] -&gt; a -&gt; a) -&gt; Vector (a -&gt; a) -&gt; a -&gt; a
+forall a t. ([a] -&gt; t) -&gt; Vector a -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier hs-var">unsafeApply</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((a -&gt; a) -&gt; (a -&gt; a) -&gt; a -&gt; a) -&gt; [a -&gt; a] -&gt; a -&gt; a
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; a -&gt; a) -&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">L.foldr1</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; a) -&gt; (a -&gt; a) -&gt; a -&gt; a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">(.)</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector (a -&gt; a)
+</span><a href="#local-6989586621679222608"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222607"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.pipe1'.</span><span>
+</span><span id="line-93"></span><span id="pipe1"><span class="annot"><span class="annottext">pipe1 :: (a -&gt; t -&gt; t) -&gt; Vector a -&gt; t -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#pipe1"><span class="hs-identifier hs-var hs-var">pipe1</span></a></span></span><span> </span><span id="local-6989586621679222605"><span class="annot"><span class="annottext">f :: a -&gt; t -&gt; t
+</span><a href="#local-6989586621679222605"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679222604"><span class="annot"><span class="annottext">v :: Vector a
+</span><a href="#local-6989586621679222604"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span id="local-6989586621679222603"><span class="annot"><span class="annottext">i :: t
+</span><a href="#local-6989586621679222603"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; t) -&gt; Vector a -&gt; t
+forall a t. ([a] -&gt; t) -&gt; Vector a -&gt; t
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier hs-var">unsafeApply</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(a -&gt; t -&gt; t) -&gt; t -&gt; [a] -&gt; t
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">L.foldr</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; t -&gt; t
+</span><a href="#local-6989586621679222605"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679222603"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679222604"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.reverse'.</span><span>
+</span><span id="line-96"></span><span id="reverse"><span class="annot"><span class="annottext">reverse :: Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#reverse"><span class="hs-identifier hs-var hs-var">reverse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">L.reverse</span></span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.recuri'.</span><span>
+</span><span id="line-99"></span><span id="recuri"><span class="annot"><span class="annottext">recuri :: Vector (b -&gt; b) -&gt; b -&gt; Vector b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#recuri"><span class="hs-identifier hs-var hs-var">recuri</span></a></span></span><span> </span><span id="local-6989586621679222599"><span class="annot"><span class="annottext">ps :: Vector (b -&gt; b)
+</span><a href="#local-6989586621679222599"><span class="hs-identifier hs-var">ps</span></a></span></span><span> </span><span id="local-6989586621679222598"><span class="annot"><span class="annottext">s :: b
+</span><a href="#local-6989586621679222598"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Vector (b -&gt; b) -&gt; b) -&gt; Vector (Vector (b -&gt; b)) -&gt; Vector b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#farm11"><span class="hs-identifier hs-var">farm11</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector (b -&gt; b) -&gt; b -&gt; b
+forall a. Vector (a -&gt; a) -&gt; a -&gt; a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#pipe"><span class="hs-operator hs-var">`pipe`</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679222598"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([b -&gt; b] -&gt; [Vector (b -&gt; b)])
+-&gt; Vector (b -&gt; b) -&gt; Vector (Vector (b -&gt; b))
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([b -&gt; b] -&gt; Vector (b -&gt; b)) -&gt; [[b -&gt; b]] -&gt; [Vector (b -&gt; b)]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">L.map</span></span><span> </span><span class="annot"><span class="annottext">[b -&gt; b] -&gt; Vector (b -&gt; b)
+forall a. [a] -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#vector"><span class="hs-identifier hs-var">vector</span></a></span><span> </span><span class="annot"><span class="annottext">([[b -&gt; b]] -&gt; [Vector (b -&gt; b)])
+-&gt; ([b -&gt; b] -&gt; [[b -&gt; b]]) -&gt; [b -&gt; b] -&gt; [Vector (b -&gt; b)]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[b -&gt; b] -&gt; [[b -&gt; b]]
+forall a. [a] -&gt; [[a]]
+</span><span class="hs-identifier hs-var">L.tails</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector (b -&gt; b)
+</span><a href="#local-6989586621679222599"><span class="hs-identifier hs-var">ps</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span>
+</span><span id="line-103"></span><span class="hs-comment">-- reducei1 p i v1 vs       = S.farm21 p v1 vs =&lt;&lt;= i</span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- tail'  Null = Null</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- tail'  xs   = V.tail xs</span><span>
+</span><span id="line-106"></span><span class="hs-comment">-- first' Null = Null</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- first' xs   = V.first xs</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="hs-comment">-- -- | The function 'rotate' rotates a vector based on an index offset.</span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- -- * @(&gt; 0)@ : rotates the vector left with the corresponding number</span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- -- of positions.</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-114"></span><span class="hs-comment">-- -- * @(= 0)@ : does not modify the vector.</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- -- * @(&lt; 0)@ : rotates the vector right with the corresponding number</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- -- of positions.</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- rotate :: Int -&gt; Vector a -&gt; Vector a</span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- rotate n</span><span>
+</span><span id="line-120"></span><span class="hs-comment">--   | n &gt; 0     = V.pipe (V.fanoutn (abs n) V.rotl)</span><span>
+</span><span id="line-121"></span><span class="hs-comment">--   | n &lt; 0     = V.pipe (V.fanoutn (abs n) V.rotr)</span><span>
+</span><span id="line-122"></span><span class="hs-comment">--   | otherwise = id</span><span>
+</span><span id="line-123"></span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span class="hs-comment">-- -- | takes the first /n/ elements of a vector.</span><span>
+</span><span id="line-126"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-127"></span><span class="hs-comment">-- -- &gt;&gt;&gt; take 5 $ vector [1,2,3,4,5,6,7,8,9]</span><span>
+</span><span id="line-128"></span><span class="hs-comment">-- -- &lt;1,2,3,4,5&gt;</span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-130"></span><span class="hs-comment">-- -- &lt;&lt;fig/eqs-skel-vector-take.png&gt;&gt;</span><span>
+</span><span id="line-131"></span><span class="hs-comment">-- take _ Null = Null</span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- take n v    = reducei1 sel Null indexes . S.farm11 unit $ v</span><span>
+</span><span id="line-133"></span><span class="hs-comment">--   where sel i x y = if i &lt; n then x &lt;++&gt; y else x</span><span>
+</span><span id="line-134"></span><span>
+</span><span id="line-135"></span><span class="hs-comment">-- -- | drops the first /n/ elements of a vector.</span><span>
+</span><span id="line-136"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-137"></span><span class="hs-comment">-- -- &gt;&gt;&gt; drop 5 $ vector [1,2,3,4,5,6,7,8,9]</span><span>
+</span><span id="line-138"></span><span class="hs-comment">-- -- &lt;6,7,8,9&gt;</span><span>
+</span><span id="line-139"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- -- &lt;&lt;fig/eqs-skel-vector-drop.png&gt;&gt;</span><span>
+</span><span id="line-141"></span><span class="hs-comment">-- drop _ Null = Null</span><span>
+</span><span id="line-142"></span><span class="hs-comment">-- drop n v    = reducei1 sel Null indexes . S.farm11 unit $ v</span><span>
+</span><span id="line-143"></span><span class="hs-comment">--   where sel i x y = if i &gt; n then x &lt;++&gt; y else y</span><span>
+</span><span id="line-144"></span><span>
+</span><span id="line-145"></span><span class="hs-comment">-- -- | groups a vector into sub-vectors of /n/ elements.</span><span>
+</span><span id="line-146"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-147"></span><span class="hs-comment">-- -- &gt;&gt;&gt; group 3 $ vector [1,2,3,4,5,6,7,8]</span><span>
+</span><span id="line-148"></span><span class="hs-comment">-- -- &lt;&lt;1,2,3&gt;,&lt;4,5,6&gt;,&lt;7,8&gt;&gt;</span><span>
+</span><span id="line-149"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-150"></span><span class="hs-comment">-- -- &lt;&lt;fig/eqs-skel-vector-group.png&gt;&gt;</span><span>
+</span><span id="line-151"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-152"></span><span class="hs-comment">-- -- &lt;&lt;fig/skel-vector-comm-group.png&gt;&gt;</span><span>
+</span><span id="line-153"></span><span class="hs-comment">-- -- &lt;&lt;fig/skel-vector-comm-group-net.png&gt;&gt;</span><span>
+</span><span id="line-154"></span><span class="hs-comment">-- group :: Int -&gt; Vector a -&gt; Vector (Vector a)</span><span>
+</span><span id="line-155"></span><span class="hs-comment">-- group _ Null = unit Null</span><span>
+</span><span id="line-156"></span><span class="hs-comment">-- group n v = reducei1 sel Null indexes . S.farm11 (unit . unit) $ v</span><span>
+</span><span id="line-157"></span><span class="hs-comment">--   where sel i x y</span><span>
+</span><span id="line-158"></span><span class="hs-comment">--           | i `mod` n == 0 = x &lt;++&gt; y</span><span>
+</span><span id="line-159"></span><span class="hs-comment">--           | otherwise      = (S.first x &lt;++&gt; first' y) :&gt; tail' y</span><span>
+</span><span id="line-160"></span><span>
+</span><span id="line-161"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.get'.</span><span>
+</span><span id="line-162"></span><span id="local-6989586621679222597"><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#get"><span class="hs-identifier hs-type">get</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679222597"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679222597"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span>
+</span><span id="line-163"></span><span id="get"><span class="annot"><span class="annottext">get :: Int -&gt; Vector a -&gt; Maybe a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#get"><span class="hs-identifier hs-var hs-var">get</span></a></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#Vector"><span class="hs-identifier hs-type">Vector</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe a
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-164"></span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#get"><span class="hs-identifier hs-var">get</span></a></span><span> </span><span id="local-6989586621679222595"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679222595"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679222594"><span class="annot"><span class="annottext">v :: Vector a
+</span><a href="#local-6989586621679222594"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222595"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; Int
+forall a. Vector a -&gt; Int
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#length"><span class="hs-identifier hs-var">length</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679222594"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe a
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-165"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Maybe a
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; Maybe a) -&gt; a -&gt; Maybe a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; [a]
+forall a. Vector a -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#fromVector"><span class="hs-identifier hs-var hs-var">fromVector</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679222594"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Int -&gt; a
+forall a. [a] -&gt; Int -&gt; a
+</span><span class="hs-operator hs-var">!!</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679222595"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-166"></span><span>
+</span><span id="line-167"></span><span class="hs-comment">-- -- | the same as 'get' but with flipped arguments.</span><span>
+</span><span id="line-168"></span><span class="hs-comment">-- v &lt;@  ix = get ix v</span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- -- | unsafe version of '&lt;@&gt;'. Throws an exception if /n &gt; l/.</span><span>
+</span><span id="line-171"></span><span class="hs-comment">-- v &lt;@! ix | isNothing e = error &quot;get!: index out of bounds&quot;</span><span>
+</span><span id="line-172"></span><span class="hs-comment">--          | otherwise   = fromJust e</span><span>
+</span><span id="line-173"></span><span class="hs-comment">--   where e = get ix v</span><span>
+</span><span id="line-174"></span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-comment">-- indexes = V.vector [1..] :: Vector Int</span><span>
+</span><span id="line-177"></span><span>
+</span><span id="line-178"></span><span class="hs-comment">-- indexesTo n = take n $ indexes</span><span>
+</span><span id="line-179"></span><span>
+</span><span id="line-180"></span><span>
+</span><span id="line-181"></span><span class="hs-comment">-- -- | Returns a stencil of @n@ neighboring elements for each possible</span><span>
+</span><span id="line-182"></span><span class="hs-comment">-- -- element in a vector.</span><span>
+</span><span id="line-183"></span><span class="hs-comment">-- --</span><span>
+</span><span id="line-184"></span><span class="hs-comment">-- -- &gt;&gt;&gt; stencilV 3 $ vector [1..5]</span><span>
+</span><span id="line-185"></span><span class="hs-comment">-- -- &lt;&lt;1,2,3&gt;,&lt;2,3,4&gt;,&lt;3,4,5&gt;&gt;</span><span>
+</span><span id="line-186"></span><span class="hs-comment">-- stencil :: Int               -- ^ stencil size @= n@</span><span>
+</span><span id="line-187"></span><span class="hs-comment">--         -&gt; Vector a          -- ^ /length/ = @la@ </span><span>
+</span><span id="line-188"></span><span class="hs-comment">--         -&gt; Vector (Vector a) -- ^ /length/ = @la - n + 1@ </span><span>
+</span><span id="line-189"></span><span class="hs-comment">-- stencil n v = V.farm11 (take n) $ dropFromEnd n $ V.tails v</span><span>
+</span><span id="line-190"></span><span class="hs-comment">--   where dropFromEnd n = take (length v - n + 1)</span><span>
+</span><span id="line-191"></span><span>
+</span><span id="line-192"></span><span>
+</span><span id="line-193"></span><span class="hs-comment">-- zip = farm21 (,)</span><span>
+</span><span id="line-194"></span><span>
+</span><span id="line-195"></span><span class="hs-comment">-- unzip = farm12 id</span><span>
+</span><span id="line-196"></span><span>
+</span><span id="line-197"></span><span id="evensF"><span class="annot"><span class="annottext">evensF :: [a] -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evensF"><span class="hs-identifier hs-var hs-var">evensF</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-198"></span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evensF"><span class="hs-identifier hs-var">evensF</span></a></span><span> </span><span class="hs-special">[</span><span id="local-6989586621679222591"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679222591"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222591"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-199"></span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evensF"><span class="hs-identifier hs-var">evensF</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679222590"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679222590"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="hs-identifier">_</span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679222589"><span class="annot"><span class="annottext">xs :: [a]
+</span><a href="#local-6989586621679222589"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222590"><span class="hs-identifier hs-var">x</span></a></span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[a] -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evensF"><span class="hs-identifier hs-var">evensF</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222589"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-200"></span><span id="oddsF"><span class="annot"><span class="annottext">oddsF :: [a] -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#oddsF"><span class="hs-identifier hs-var hs-var">oddsF</span></a></span></span><span>  </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-201"></span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#oddsF"><span class="hs-identifier hs-var">oddsF</span></a></span><span>  </span><span class="hs-special">[</span><span class="hs-identifier">_</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-202"></span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#oddsF"><span class="hs-identifier hs-var">oddsF</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-identifier">_</span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679222587"><span class="annot"><span class="annottext">y :: a
+</span><a href="#local-6989586621679222587"><span class="hs-identifier hs-var">y</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679222586"><span class="annot"><span class="annottext">xs :: [a]
+</span><a href="#local-6989586621679222586"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679222587"><span class="hs-identifier hs-var">y</span></a></span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[a] -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#oddsF"><span class="hs-identifier hs-var">oddsF</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679222586"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-203"></span><span>
+</span><span id="line-204"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.DSP.evens'.</span><span>
+</span><span id="line-205"></span><span id="evens"><span class="annot"><span class="annottext">evens :: Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evens"><span class="hs-identifier hs-var hs-var">evens</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evensF"><span class="hs-identifier hs-var">evensF</span></a></span><span>
+</span><span id="line-206"></span><span>
+</span><span id="line-207"></span><span class="hs-comment">-- | See 'ForSyDe.Atom.Skel.Vector.DSP.odds'.</span><span>
+</span><span id="line-208"></span><span id="odds"><span class="annot"><span class="annottext">odds :: Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#odds"><span class="hs-identifier hs-var hs-var">odds</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+forall a a. ([a] -&gt; [a]) -&gt; Vector a -&gt; Vector a
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier hs-var">unsafeLift</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#oddsF"><span class="hs-identifier hs-var">oddsF</span></a></span><span>
+</span><span id="line-209"></span></pre></body></html>

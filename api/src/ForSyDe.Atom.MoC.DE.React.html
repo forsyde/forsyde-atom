@@ -1,0 +1,366 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE PostfixOperators #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK show-extensions, prune #-}</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Module      :  ForSyDe.Atom.MoC.DE.React</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, 2020</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- Stability   :  experimental</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Portability :  portable</span><span>
+</span><span id="line-12"></span><span class="hs-comment">--</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- This is an experimental library implementing the atoms and a set of specific</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- patterns for representing the discrete event model of computation</span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- &lt;ForSyDe-Atom.html#cassandras09 [Cassandras09]&gt;. One main source of inspiration for</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- this MoC execution model is the /reactor model/</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- &lt;ForSyDe-Atom.html#lohstroh19 [Lohstroh19]&gt;, hence the abbreviation 'RE'.</span><span>
+</span><span id="line-18"></span><span class="hs-comment">--</span><span>
+</span><span id="line-19"></span><span class="hs-comment">-- #detector# This module exports a more liberal interpretation of DE than</span><span>
+</span><span id="line-20"></span><span class="hs-comment">-- &quot;ForSyDe.Atom.MoC.DE&quot;, where events are considered non-persistent,</span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- i.e. &quot;instantaneous&quot;. Unambiguous behaviors for processes can be achieved by virtue</span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- of pattern-matching agains the presence/absence of events at different input ports</span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- at specific time instants (see API examples). This type of behavior implies a</span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- dynamic/adaptive rate of consuming and producing events in streams, hence</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- internally each 'RE' process is a /detector/-/kernel/ pair along the lines of</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- &quot;ForSyDe.Atom.MoC.SDF.SADF&quot;, as shown in the picture below. In this representation</span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- the detector monitors the tags of each incoming event and for each &quot;earliest event&quot;</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- it sets the execution context \(\Gamma\) dictating the event consumption rate of</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- the kernel, here implemented using 'RE' atoms.</span><span>
+</span><span id="line-30"></span><span class="hs-comment">--</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- &lt;&lt;fig/moc-re-principle.png&gt;&gt;</span><span>
+</span><span id="line-32"></span><span class="hs-comment">--</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- Useful pointers:</span><span>
+</span><span id="line-34"></span><span class="hs-comment">--</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom&quot; contains general guidelines for using the API</span><span>
+</span><span id="line-36"></span><span class="hs-comment">--</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom.MoC&quot; documents details about the internals of the MoC layer, the</span><span>
+</span><span id="line-38"></span><span class="hs-comment">--   atoms and the basic structure of all process constructors as MoC patterns.</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom.MoC.DE&quot; contains a conservative DE language where events are</span><span>
+</span><span id="line-41"></span><span class="hs-comment">--   treated as persistent, each new event is triggering a new action seen on all</span><span>
+</span><span id="line-42"></span><span class="hs-comment">--   outputs.</span><span>
+</span><span id="line-43"></span><span class="hs-comment">--</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- * the &lt;ForSyDe-Atom.html#naming_conv naming convention&gt; rules on how to interpret</span><span>
+</span><span id="line-45"></span><span class="hs-comment">--   the function names based on their number of inputs and outputs.</span><span>
+</span><span id="line-46"></span><span class="hs-comment">---------------------------------------------------------------------</span><span>
+</span><span id="line-47"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-comment">-- | The definitions of the DE MoC are the same as the ones presented in the</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-comment">-- &quot;ForSyDe.Atom.MoC.DE&quot; module, however this library implements a non-conservative</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-comment">-- interpretation of this MoC, more appropriate to model timed computing</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-comment">-- applicatios. In this sense signals are carrying &quot;instant&quot;, non-persistent</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-comment">-- events. The user is then responsible to define how the process should react in</span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-comment">-- case new events exist or not at any of the input ports, respectively if the</span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-comment">-- process reacts at all. This is done by pattern-matching the functions passed as</span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-comment">-- arguments: at any evaluation instant, a process passes to its function either</span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-comment">-- singleton lists @[x]@ if new events exist at a particular input port for a</span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-comment">-- particular timestamp, respectively empty lists @[]@ if no event has triggered the</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-comment">-- respective port. This modeling style gives rise to two new very important</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-comment">-- notions. For any process \(p(si^m)=so^n\) we say that:</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-comment">-- * an input signal \(si_i\) is associated with a /triggering port/ with respect to</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-comment">--   an output signal \(so_j\) if \(\forall e_i\in si_i, \exists e_o\in so_j\),</span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-comment">--   i.e. every event observed on the input port associated with \(si_i\) triggers a</span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-comment">--   reaction observed in \(so_j\). Using the &quot;ForSyDe.Atom.MoC.DE.React&quot; API we can</span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-comment">--   model this along the lines of:</span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-comment">-- &gt; (...,so_j,...) = p f ... si_i ...</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-comment">-- &gt;   where f ... [a_i] ... = (...,[b_j],...)</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-comment">-- * an input signal \(si_i\) is associated with a /non-triggering/ or /observing/</span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-comment">--   /port/ with respect to an output signal \(so_j\) if \(\forall e_i\in si_i,</span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-comment">--   \nexists e_o\in so_j\), i.e. there exist events observed on the input port</span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-comment">--   associated with \(si_i\) which do not trigger a reaction observable in </span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-comment">--   \(so_j\). Using the &quot;ForSyDe.Atom.MoC.DE.React&quot; API we can model this along the</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-comment">--   lines of:</span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-comment">-- &gt; (...,so_j,...) = p f ... si_i ...</span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-comment">-- &gt;   where f ... [a_i] ... = (...,[],...)</span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-comment">-- The non-triggering behavior has deep implications and needs to be treated with</span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-comment">-- care especially when considering feedback loops, as it violates the</span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-comment">-- &quot;non-cleaning&quot; rule imposed by the host 'ForSyDe.Atom.MoC.Stream'. In the picture</span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-comment">-- below you see an example behavior of a 'RE' process where both inputs are</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-comment">-- triggering, and function \(\Sigma\) @a b = [sum a + sum b]@.</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-comment">-- &lt;&lt;fig/moc-re-example.png&gt;&gt;</span><span>
+</span><span id="line-88"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-comment">-- In this example, if only the first signal is triggering, i.e.</span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-comment">-- &gt; f [a] b = [a + sum b]</span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-comment">-- &gt; f _   _ = []</span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-comment">-- then</span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-comment">-- &lt;&lt;fig/moc-re-example2.png&gt;&gt;</span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-comment">-- A conservative variant of the DE MoC is in &quot;ForSyDe.Atom.MoC.DE.React&quot;. Below are</span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-comment">-- stated a few particularities of this DE MoC implementation:</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-comment">-- 1. As compared to &quot;ForSyDe.Atom.MoC.DE&quot; this MoC is also one-sided, but time</span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-comment">--    \(0\) is not necessarily the global start any longer, because there exists the</span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-comment">--    notion of &quot;absent&quot; event. Tags in a signal still need to be strictly</span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-comment">--    incremental, but a signal can start at any timestamp, including negative ones.</span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-comment">-- 1. since events are non-persistent, they are considered to be &quot;lost&quot;, or</span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-comment">--    discarded after they happen, and a process is not allowed to &quot;go back in time&quot;</span><span>
+</span><span id="line-108"></span><span>  </span><span class="hs-comment">--    to retrieve them. Persistent behaviors can be modeled in this MoC with</span><span>
+</span><span id="line-109"></span><span>  </span><span class="hs-comment">--    e.g. buffer patterns, see 'syncAndHold2'.</span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-comment">-- 1. a safe 'delay' is still considered one which both prepends</span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-comment">--    'ForSyDe.Atom.MoC.-&lt;-' (i.e. generating a new value) and a phase shifts</span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-comment">--    'ForSyDe.Atom.MoC.-&amp;-' (i.e. advancing time with a positive integer). However,</span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-comment">--    since we are not restricted to start from global \(0\) any longer, we can also</span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-comment">--    use an 'unsafeDelay' variant. This process is named so because it does not</span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-comment">--    have a prepend behavior, which means that is /never/ allowed to be part of any</span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-comment">--    feedback datapath, otherwise it causes a simulation deadlock.</span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-119"></span><span>  </span><span class="hs-comment">-- 1. also because events are non-persistent, /as a design choice, stateful/</span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-comment">--    /processes that involve feedback pattern (see 'state22', 'stated22',/</span><span>
+</span><span id="line-121"></span><span>  </span><span class="hs-comment">--    /'moore22', 'mealy22') do not expose oscillating behavior/, but rather an</span><span>
+</span><span id="line-122"></span><span>  </span><span class="hs-comment">--    instantaneous one (i.e. they embed a 'ForSyDe.Atom.MoC.SY.SY' behavior).</span><span>
+</span><span id="line-123"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-comment">-- 1. since signal cleaning behavior is possible, it might cause unexpected</span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-comment">--    deadlocks, and should be avoided altogether. However, if this situation cannot</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-comment">--    be avoided, the designer should take /special care/ to enforce the following</span><span>
+</span><span id="line-127"></span><span>  </span><span class="hs-comment">--    rule: /all ports involved in a feedback loop's datapath need to be/</span><span>
+</span><span id="line-128"></span><span>  </span><span class="hs-comment">--    /triggering, and pass through at lease one safe 'delay'/.</span><span>
+</span><span id="line-129"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-130"></span><span>  </span><span class="hs-comment">-- 1. any signal from outside needs to be sane ( \(T\) must be a total order) before</span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-comment">--    being injected into a ForSyDe process network. Helper functions are equipped</span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-comment">--    with sanity checkers. Inside a ForSyDe process network, transformations are</span><span>
+</span><span id="line-133"></span><span>  </span><span class="hs-comment">--    monotonic, thus output signals are guaranteed to be sane.</span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-comment">-- 1. Since the execution of a process is dictated by the arrival of events, then</span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-comment">--    the 'RE' atoms require the triggering information as a set of Booleans passed</span><span>
+</span><span id="line-137"></span><span>  </span><span class="hs-comment">--    through the &lt;ForSyDe-Atom-MoC.html#context execution context&gt;: \[</span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-comment">--    \Gamma\vdash\alpha\rightarrow\beta =</span><span>
+</span><span id="line-139"></span><span>  </span><span class="hs-comment">--    [\mathtt{Bool}]\times([\alpha]\rightarrow[\beta]) \] This context however does</span><span>
+</span><span id="line-140"></span><span>  </span><span class="hs-comment">--    not need to be touched by the user of this API, but rather is taken care of by</span><span>
+</span><span id="line-141"></span><span>  </span><span class="hs-comment">--    the &lt;#detector detector pattern&gt;.</span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#RE"><span class="hs-identifier">RE</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-144"></span><span>  </span><span>
+</span><span id="line-145"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Aliases &amp; utilities</span></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span>  </span><span class="hs-comment">-- | These are type synonyms and utilities provided for user convenience. They</span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-comment">-- mainly concern the construction and usage of signals.</span><span>
+</span><span id="line-149"></span><span>
+</span><span id="line-150"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#Signal"><span class="hs-identifier">Signal</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#SignalBase"><span class="hs-identifier">SignalBase</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#unit"><span class="hs-keyword">unit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#unit2"><span class="hs-identifier">unit2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#unit3"><span class="hs-identifier">unit3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#unit4"><span class="hs-identifier">unit4</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#instant"><span class="hs-identifier">instant</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#until"><span class="hs-identifier">until</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-151"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#signal"><span class="hs-identifier">signal</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#checkSignal"><span class="hs-identifier">checkSignal</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html#readSignal"><span class="hs-identifier">readSignal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-152"></span><span>  </span><span>
+</span><span id="line-153"></span><span>   </span><span class="annot"><span class="hs-comment">-- * Process Constuctors</span></span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span>  </span><span class="hs-comment">-- | These process constructors are re-interpretations of the atom patterns defined</span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-comment">-- in &quot;ForSyDe.Atom.MoC&quot;, using the /reactor/ @comb@ (see 'comb22') presented</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-comment">-- &lt;#detector# above&gt;.</span><span>
+</span><span id="line-158"></span><span>  </span><span>
+</span><span id="line-159"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** Simple</span></span><span>
+</span><span id="line-160"></span><span>
+</span><span id="line-161"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#delay"><span class="hs-identifier">delay</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#delay%27"><span class="hs-identifier">delay'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#unsafeDelay"><span class="hs-identifier">unsafeDelay</span></a></span><span class="hs-special">,</span><span> </span><span>
+</span><span id="line-162"></span><span>  </span><span>
+</span><span id="line-163"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb11"><span class="hs-identifier">comb11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb12"><span class="hs-identifier">comb12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb13"><span class="hs-identifier">comb13</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb14"><span class="hs-identifier">comb14</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-164"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb21"><span class="hs-identifier">comb21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb22"><span class="hs-identifier">comb22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb23"><span class="hs-identifier">comb23</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb24"><span class="hs-identifier">comb24</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-165"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb31"><span class="hs-identifier">comb31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb32"><span class="hs-identifier">comb32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb33"><span class="hs-identifier">comb33</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb34"><span class="hs-identifier">comb34</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-166"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb41"><span class="hs-identifier">comb41</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb42"><span class="hs-identifier">comb42</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb43"><span class="hs-identifier">comb43</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#comb44"><span class="hs-identifier">comb44</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-167"></span><span>  </span><span>
+</span><span id="line-168"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#generate1"><span class="hs-identifier">generate1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#generate2"><span class="hs-identifier">generate2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#generate3"><span class="hs-identifier">generate3</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-169"></span><span>  </span><span>
+</span><span id="line-170"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state11"><span class="hs-identifier">state11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state12"><span class="hs-identifier">state12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state13"><span class="hs-identifier">state13</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-171"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state21"><span class="hs-identifier">state21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state22"><span class="hs-identifier">state22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state23"><span class="hs-identifier">state23</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-172"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state31"><span class="hs-identifier">state31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state32"><span class="hs-identifier">state32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#state33"><span class="hs-identifier">state33</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-173"></span><span>
+</span><span id="line-174"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated11"><span class="hs-identifier">stated11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated12"><span class="hs-identifier">stated12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated13"><span class="hs-identifier">stated13</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-175"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated21"><span class="hs-identifier">stated21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated22"><span class="hs-identifier">stated22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated23"><span class="hs-identifier">stated23</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-176"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated31"><span class="hs-identifier">stated31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated32"><span class="hs-identifier">stated32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#stated33"><span class="hs-identifier">stated33</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-177"></span><span>
+</span><span id="line-178"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore11"><span class="hs-identifier">moore11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore12"><span class="hs-identifier">moore12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore13"><span class="hs-identifier">moore13</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-179"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore21"><span class="hs-identifier">moore21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore22"><span class="hs-identifier">moore22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore23"><span class="hs-identifier">moore23</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-180"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore31"><span class="hs-identifier">moore31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore32"><span class="hs-identifier">moore32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#moore33"><span class="hs-identifier">moore33</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-181"></span><span>
+</span><span id="line-182"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy11"><span class="hs-identifier">mealy11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy12"><span class="hs-identifier">mealy12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy13"><span class="hs-identifier">mealy13</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-183"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy21"><span class="hs-identifier">mealy21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy22"><span class="hs-identifier">mealy22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy23"><span class="hs-identifier">mealy23</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-184"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy31"><span class="hs-identifier">mealy31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy32"><span class="hs-identifier">mealy32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#mealy33"><span class="hs-identifier">mealy33</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-185"></span><span>
+</span><span id="line-186"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndHold2"><span class="hs-identifier">syncAndHold2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndHold3"><span class="hs-identifier">syncAndHold3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndHold4"><span class="hs-identifier">syncAndHold4</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-187"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndFill2"><span class="hs-identifier">syncAndFill2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndFill3"><span class="hs-identifier">syncAndFill3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndFill4"><span class="hs-identifier">syncAndFill4</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-188"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs11"><span class="hs-identifier">syncAndObs11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs12"><span class="hs-identifier">syncAndObs12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs13"><span class="hs-identifier">syncAndObs13</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-189"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs21"><span class="hs-identifier">syncAndObs21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs22"><span class="hs-identifier">syncAndObs22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#syncAndObs31"><span class="hs-identifier">syncAndObs31</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-190"></span><span>
+</span><span id="line-191"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** Interfaces</span></span><span>
+</span><span id="line-192"></span><span>
+</span><span id="line-193"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toDE1"><span class="hs-identifier">toDE1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toDE2"><span class="hs-identifier">toDE2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toDE3"><span class="hs-identifier">toDE3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toDE4"><span class="hs-identifier">toDE4</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-194"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromDE1"><span class="hs-identifier">fromDE1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromDE2"><span class="hs-identifier">fromDE2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromDE3"><span class="hs-identifier">fromDE3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromDE4"><span class="hs-identifier">fromDE4</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-195"></span><span>
+</span><span id="line-196"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toSYC1"><span class="hs-identifier">toSYC1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toSYC2"><span class="hs-identifier">toSYC2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toSYC3"><span class="hs-identifier">toSYC3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#toSYC4"><span class="hs-identifier">toSYC4</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-197"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromSYC1"><span class="hs-identifier">fromSYC1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromSYC2"><span class="hs-identifier">fromSYC2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromSYC3"><span class="hs-identifier">fromSYC3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#fromSYC4"><span class="hs-identifier">fromSYC4</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-198"></span><span>
+</span><span id="line-199"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY11"><span class="hs-identifier">embedSY11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY12"><span class="hs-identifier">embedSY12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY13"><span class="hs-identifier">embedSY13</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY14"><span class="hs-identifier">embedSY14</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-200"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY21"><span class="hs-identifier">embedSY21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY22"><span class="hs-identifier">embedSY22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY23"><span class="hs-identifier">embedSY23</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY24"><span class="hs-identifier">embedSY24</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-201"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY31"><span class="hs-identifier">embedSY31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY32"><span class="hs-identifier">embedSY32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY33"><span class="hs-identifier">embedSY33</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY34"><span class="hs-identifier">embedSY34</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-202"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY41"><span class="hs-identifier">embedSY41</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY42"><span class="hs-identifier">embedSY42</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY43"><span class="hs-identifier">embedSY43</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html#embedSY44"><span class="hs-identifier">embedSY44</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-203"></span><span>  </span><span>
+</span><span id="line-204"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Lingua Franca constructs</span></span><span>
+</span><span id="line-205"></span><span>
+</span><span id="line-206"></span><span>  </span><span class="hs-comment">-- | This library also exports functions and helpers to re-create reactor networks</span><span>
+</span><span id="line-207"></span><span>  </span><span class="hs-comment">-- from &lt;https://github.com/icyphy/lingua-franca Lingua Franca&gt; (LF) language</span><span>
+</span><span id="line-208"></span><span>  </span><span class="hs-comment">-- &lt;ForSyDe-Atom.html#lohstroh19 [Lohstroh19]&gt;, as ForSyDe process</span><span>
+</span><span id="line-209"></span><span>  </span><span class="hs-comment">-- networks. Basically each expression in the LF language is given an equivalent</span><span>
+</span><span id="line-210"></span><span>  </span><span class="hs-comment">-- ForSyDe 'RE' construct. Due to fundamental differences between the two languages</span><span>
+</span><span id="line-211"></span><span>  </span><span class="hs-comment">-- (LF being a parsed language and ForSyDe an EDSL hosted on the strictly-typed pure</span><span>
+</span><span id="line-212"></span><span>  </span><span class="hs-comment">-- functional programming language Haskell) the syntax and user experience in</span><span>
+</span><span id="line-213"></span><span>  </span><span class="hs-comment">-- general is quite different between the two languages. The scope of this library</span><span>
+</span><span id="line-214"></span><span>  </span><span class="hs-comment">-- is merely to provide an (executable) behavioral model of LF reactors for study</span><span>
+</span><span id="line-215"></span><span>  </span><span class="hs-comment">-- purposes rather than imitate/replace LF. In particular each construct in the LF</span><span>
+</span><span id="line-216"></span><span>  </span><span class="hs-comment">-- language is associated with a ForSyDe process constructor, and thus @reactor@</span><span>
+</span><span id="line-217"></span><span>  </span><span class="hs-comment">-- definitions in LF are built as specific composite processes in ForSyDe.</span><span>
+</span><span id="line-218"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-219"></span><span>  </span><span class="hs-comment">-- According to  the &lt;https://github.com/icyphy/lingua-franca/wiki/Language-Specification Language Reference wiki&gt;</span><span>
+</span><span id="line-220"></span><span>  </span><span class="hs-comment">-- this is how a @reactor@ is defined in LF:</span><span>
+</span><span id="line-221"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-222"></span><span>  </span><span class="hs-comment">-- &gt; reactor name (parameters) {</span><span>
+</span><span id="line-223"></span><span>  </span><span class="hs-comment">-- &gt;   state declarations</span><span>
+</span><span id="line-224"></span><span>  </span><span class="hs-comment">-- &gt;   input declarations</span><span>
+</span><span id="line-225"></span><span>  </span><span class="hs-comment">-- &gt;   output declarations</span><span>
+</span><span id="line-226"></span><span>  </span><span class="hs-comment">-- &gt;   timer declarations</span><span>
+</span><span id="line-227"></span><span>  </span><span class="hs-comment">-- &gt;   action declarations</span><span>
+</span><span id="line-228"></span><span>  </span><span class="hs-comment">-- &gt;   reaction declarations</span><span>
+</span><span id="line-229"></span><span>  </span><span class="hs-comment">-- &gt;    ...</span><span>
+</span><span id="line-230"></span><span>  </span><span class="hs-comment">-- &gt; }</span><span>
+</span><span id="line-231"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-232"></span><span>  </span><span class="hs-comment">-- Here is how a reactor would be defined as a process network/composite process</span><span>
+</span><span id="line-233"></span><span>  </span><span class="hs-comment">-- using this library, along the lines of:</span><span>
+</span><span id="line-234"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-235"></span><span>  </span><span class="hs-comment">-- &gt; reactorName :: ParamTypes -&gt; InputSignalTypes ... -&gt; OutputSignalTypes ...</span><span>
+</span><span id="line-236"></span><span>  </span><span class="hs-comment">-- &gt; reactorName param inputS ... = (outputS, ...)</span><span>
+</span><span id="line-237"></span><span>  </span><span class="hs-comment">-- &gt;   where</span><span>
+</span><span id="line-238"></span><span>  </span><span class="hs-comment">-- &gt;     stateS      = stateP nextStateF initV {inputS|timerS|actionS} ...</span><span>
+</span><span id="line-239"></span><span>  </span><span class="hs-comment">-- &gt;     timerS      = clockP</span><span>
+</span><span id="line-240"></span><span>  </span><span class="hs-comment">-- &gt;     actionS     = actionP {reactionS|other_actionS} ... </span><span>
+</span><span id="line-241"></span><span>  </span><span class="hs-comment">-- &gt;     reactionS   = reactionP reactF reactInS</span><span>
+</span><span id="line-242"></span><span>  </span><span class="hs-comment">-- &gt;       where syncS = statesXinputsY initV stateS ... {inputS|timerS|actionS} ...</span><span>
+</span><span id="line-243"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-244"></span><span>  </span><span class="hs-comment">-- The pseudo-code above suggests the syntax and what kind of constructs a designer</span><span>
+</span><span id="line-245"></span><span>  </span><span class="hs-comment">-- would use, to make a rough association between the ForSyDe-Reactors style and the</span><span>
+</span><span id="line-246"></span><span>  </span><span class="hs-comment">-- LF-Reactors style. As with every functional program, the ForSyDe-Reactors</span><span>
+</span><span id="line-247"></span><span>  </span><span class="hs-comment">-- processes are defined in an &quot;equational&quot; style. The elements in the pseudo-code</span><span>
+</span><span id="line-248"></span><span>  </span><span class="hs-comment">-- denote:</span><span>
+</span><span id="line-249"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-250"></span><span>  </span><span class="hs-comment">-- * words between @{...|...}@ represents what different choices of</span><span>
+</span><span id="line-251"></span><span>  </span><span class="hs-comment">-- input/output arguments;</span><span>
+</span><span id="line-252"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-253"></span><span>  </span><span class="hs-comment">-- * words with the @S@ suffix suggest that these identifiers are signals; words</span><span>
+</span><span id="line-254"></span><span>  </span><span class="hs-comment">-- with @P@ suffix suggest that these identifiers are processes or process</span><span>
+</span><span id="line-255"></span><span>  </span><span class="hs-comment">-- constructors; words with @F@ suffix suggest that these are functions, and @V@</span><span>
+</span><span id="line-256"></span><span>  </span><span class="hs-comment">-- values respectively;</span><span>
+</span><span id="line-257"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-258"></span><span>  </span><span class="hs-comment">-- * @stateP@ are state modifiers, and should be stateful process constructors, see</span><span>
+</span><span id="line-259"></span><span>  </span><span class="hs-comment">-- 'state22', 'stated22' 'moore22', 'mealy22';</span><span>
+</span><span id="line-260"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-261"></span><span>  </span><span class="hs-comment">-- * @clockP@ is a clock generator process, see 'timer0', 'timer', 'timer'';</span><span>
+</span><span id="line-262"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-263"></span><span>  </span><span class="hs-comment">-- * @actionP@ might be an action &quot;delayer&quot; if the action is to be delayed, or</span><span>
+</span><span id="line-264"></span><span>  </span><span class="hs-comment">-- simply a name binding if it is not to be delayed;</span><span>
+</span><span id="line-265"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-266"></span><span>  </span><span class="hs-comment">-- * @reactionP@ is a combinational process constructor (see the 'reaction22'</span><span>
+</span><span id="line-267"></span><span>  </span><span class="hs-comment">-- aliases), which operates on a set of /synchronized/ signals, using the</span><span>
+</span><span id="line-268"></span><span>  </span><span class="hs-comment">-- @statesXinputsY@ utility (see 'states2inputs2'). This utility manipulates the</span><span>
+</span><span id="line-269"></span><span>  </span><span class="hs-comment">-- different signals inside a reactor as to denote which originate from internal</span><span>
+</span><span id="line-270"></span><span>  </span><span class="hs-comment">-- state processes (i.e. values are persistent until the next state modifier action</span><span>
+</span><span id="line-271"></span><span>  </span><span class="hs-comment">-- occurs) and other/input actions (i.e. events are instant, and values are lost</span><span>
+</span><span id="line-272"></span><span>  </span><span class="hs-comment">-- after the event is consumed).</span><span>
+</span><span id="line-273"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-274"></span><span>  </span><span class="hs-comment">-- Here is a simple example of how a LF reactor can be translated using this </span><span>
+</span><span id="line-275"></span><span>  </span><span class="hs-comment">-- library. Consider this LF code:</span><span>
+</span><span id="line-276"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-277"></span><span>  </span><span class="hs-comment">-- &gt; reactor reactor1 (period:time) {</span><span>
+</span><span id="line-278"></span><span>  </span><span class="hs-comment">-- &gt;   input x:int;</span><span>
+</span><span id="line-279"></span><span>  </span><span class="hs-comment">-- &gt;   output y:int;</span><span>
+</span><span id="line-280"></span><span>  </span><span class="hs-comment">-- &gt;   timer t(period);</span><span>
+</span><span id="line-281"></span><span>  </span><span class="hs-comment">-- &gt;   state count:int(0);</span><span>
+</span><span id="line-282"></span><span>  </span><span class="hs-comment">-- &gt;   action a:int;</span><span>
+</span><span id="line-283"></span><span>  </span><span class="hs-comment">-- &gt;   reaction(t) -&gt; a {=</span><span>
+</span><span id="line-284"></span><span>  </span><span class="hs-comment">-- &gt;     (self-&gt;count)++;</span><span>
+</span><span id="line-285"></span><span>  </span><span class="hs-comment">-- &gt;     schedule(a, MSEC(200), self-&gt;count)</span><span>
+</span><span id="line-286"></span><span>  </span><span class="hs-comment">-- &gt;   =}</span><span>
+</span><span id="line-287"></span><span>  </span><span class="hs-comment">-- &gt;   reaction(a,x) -&gt; y {=</span><span>
+</span><span id="line-288"></span><span>  </span><span class="hs-comment">-- &gt;     set(y, a + x)</span><span>
+</span><span id="line-289"></span><span>  </span><span class="hs-comment">-- &gt;   =}</span><span>
+</span><span id="line-290"></span><span>  </span><span class="hs-comment">-- &gt; }</span><span>
+</span><span id="line-291"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-292"></span><span>  </span><span class="hs-comment">-- The ForSyDe equivalent model for @reactor1@ would be:</span><span>
+</span><span id="line-293"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-294"></span><span>  </span><span class="hs-comment">-- &gt; reactor1 :: TimeStamp -&gt; Signal Int -&gt; Signal Int</span><span>
+</span><span id="line-295"></span><span>  </span><span class="hs-comment">-- &gt; reactor1 period x = y</span><span>
+</span><span id="line-296"></span><span>  </span><span class="hs-comment">-- &gt;   where</span><span>
+</span><span id="line-297"></span><span>  </span><span class="hs-comment">-- &gt;     t       = timer period</span><span>
+</span><span id="line-298"></span><span>  </span><span class="hs-comment">-- &gt;     count   = state11 (\s _ -&gt; s + 1) 0 t</span><span>
+</span><span id="line-299"></span><span>  </span><span class="hs-comment">-- &gt;     a       = actionD (milisec 200) count</span><span>
+</span><span id="line-300"></span><span>  </span><span class="hs-comment">-- &gt;     y       = reaction21 (\i1 i2 -&gt; [sum i1 + sum i2])</span><span>
+</span><span id="line-301"></span><span>  </span><span class="hs-comment">-- &gt;               $ states1inputs1 0 a x</span><span>
+</span><span id="line-302"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-303"></span><span>  </span><span class="hs-comment">-- Executing the above reactor with a test input signal in the @ghci@ interpreter</span><span>
+</span><span id="line-304"></span><span>  </span><span class="hs-comment">-- gives you the output:</span><span>
+</span><span id="line-305"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-306"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; let s2 = read &quot;{1@0,2@3,3@6,4@10,5@13}&quot; :: Signal Int</span><span>
+</span><span id="line-307"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; simulate 11.2 $ reactor1 1 s2</span><span>
+</span><span id="line-308"></span><span>  </span><span class="hs-comment">-- 0s	1</span><span>
+</span><span id="line-309"></span><span>  </span><span class="hs-comment">-- 0.2s	1</span><span>
+</span><span id="line-310"></span><span>  </span><span class="hs-comment">-- 1.2s	2</span><span>
+</span><span id="line-311"></span><span>  </span><span class="hs-comment">-- 2.2s	3</span><span>
+</span><span id="line-312"></span><span>  </span><span class="hs-comment">-- 3s	5</span><span>
+</span><span id="line-313"></span><span>  </span><span class="hs-comment">-- 3.2s	4</span><span>
+</span><span id="line-314"></span><span>  </span><span class="hs-comment">-- 4.2s	5</span><span>
+</span><span id="line-315"></span><span>  </span><span class="hs-comment">-- 5.2s	6</span><span>
+</span><span id="line-316"></span><span>  </span><span class="hs-comment">-- 6s	9</span><span>
+</span><span id="line-317"></span><span>  </span><span class="hs-comment">-- 6.2s	7</span><span>
+</span><span id="line-318"></span><span>  </span><span class="hs-comment">-- 7.2s	8</span><span>
+</span><span id="line-319"></span><span>  </span><span class="hs-comment">-- 8.2s	9</span><span>
+</span><span id="line-320"></span><span>  </span><span class="hs-comment">-- 9.2s	10</span><span>
+</span><span id="line-321"></span><span>  </span><span class="hs-comment">-- 10s	14</span><span>
+</span><span id="line-322"></span><span>  </span><span class="hs-comment">-- 10.2s	11</span><span>
+</span><span id="line-323"></span><span>  </span><span class="hs-comment">-- 11.2s	12</span><span>
+</span><span id="line-324"></span><span>
+</span><span id="line-325"></span><span>  </span><span>
+</span><span id="line-326"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** Clock Generators</span></span><span>
+</span><span id="line-327"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-328"></span><span>  </span><span class="hs-comment">-- These processes generate signals with periodic events with no data.</span><span>
+</span><span id="line-329"></span><span>
+</span><span id="line-330"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer0"><span class="hs-identifier">timer0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer"><span class="hs-identifier">timer</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#timer%27"><span class="hs-identifier">timer'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-331"></span><span>
+</span><span id="line-332"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** Delayed Actions</span></span><span>
+</span><span id="line-333"></span><span>
+</span><span id="line-334"></span><span>  </span><span class="hs-comment">-- | Non-delayed actions are not provided, because, as seen in the example above,</span><span>
+</span><span id="line-335"></span><span>  </span><span class="hs-comment">-- they are simply (name bindings to) signals. Consequently delayed/scheduled</span><span>
+</span><span id="line-336"></span><span>  </span><span class="hs-comment">-- actions are delayed signals in ForSyDe.</span><span>
+</span><span id="line-337"></span><span>
+</span><span id="line-338"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#actionD"><span class="hs-identifier">actionD</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-339"></span><span>
+</span><span id="line-340"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** Reactions</span></span><span>
+</span><span id="line-341"></span><span>
+</span><span id="line-342"></span><span>  </span><span class="hs-comment">-- | Reactions are ForSyDe combinational process constructors, having both</span><span>
+</span><span id="line-343"></span><span>  </span><span class="hs-comment">-- triggering and non-triggering (observing) inputs. Due to the current</span><span>
+</span><span id="line-344"></span><span>  </span><span class="hs-comment">-- implementation of the host 'RE' MoC, the inputs of a reaction need to come from a</span><span>
+</span><span id="line-345"></span><span>  </span><span class="hs-comment">-- @statesXinputsY@ utility, which tells which signals are persistent</span><span>
+</span><span id="line-346"></span><span>  </span><span class="hs-comment">-- (i.e. originating from stateful processes/reactions) or instantaneous (originatig</span><span>
+</span><span id="line-347"></span><span>  </span><span class="hs-comment">-- from non-stateful reactions or inputs).</span><span>
+</span><span id="line-348"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-349"></span><span>  </span><span class="hs-comment">-- __Note:__ The equivalent of the @is_present@ construct in LF can be expressed</span><span>
+</span><span id="line-350"></span><span>  </span><span class="hs-comment">-- using pattern-matching on process function arguments (see 'comb22').</span><span>
+</span><span id="line-351"></span><span>
+</span><span id="line-352"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs1"><span class="hs-identifier">states1inputs1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states2inputs1"><span class="hs-identifier">states2inputs1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states3inputs1"><span class="hs-identifier">states3inputs1</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-353"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs2"><span class="hs-identifier">states1inputs2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states2inputs2"><span class="hs-identifier">states2inputs2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#states1inputs3"><span class="hs-identifier">states1inputs3</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-354"></span><span>
+</span><span id="line-355"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction11"><span class="hs-identifier">reaction11</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction12"><span class="hs-identifier">reaction12</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction13"><span class="hs-identifier">reaction13</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction14"><span class="hs-identifier">reaction14</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-356"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction21"><span class="hs-identifier">reaction21</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction22"><span class="hs-identifier">reaction22</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction23"><span class="hs-identifier">reaction23</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction24"><span class="hs-identifier">reaction24</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-357"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction31"><span class="hs-identifier">reaction31</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction32"><span class="hs-identifier">reaction32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction33"><span class="hs-identifier">reaction33</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction34"><span class="hs-identifier">reaction34</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-358"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction41"><span class="hs-identifier">reaction41</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction42"><span class="hs-identifier">reaction42</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction43"><span class="hs-identifier">reaction43</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html#reaction44"><span class="hs-identifier">reaction44</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-359"></span><span>  </span><span>
+</span><span id="line-360"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-361"></span><span>
+</span><span id="line-362"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React.Core</span></a></span><span>
+</span><span id="line-363"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.Lib.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React.Lib</span></a></span><span>
+</span><span id="line-364"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.React.LF.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.React.LF</span></a></span><span>
+</span><span id="line-365"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">until</span></span><span class="hs-special">)</span><span>
+</span><span id="line-366"></span></pre></body></html>

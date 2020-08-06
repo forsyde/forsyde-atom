@@ -1,115 +1,1347 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE TypeFamilies, FlexibleInstances, PostfixOperators #-}</span><span>
-</span><a name="line-2"></a><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
-</span><a name="line-3"></a><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
-</span><a name="line-4"></a><span class="hs-comment">-- |</span><span>
-</span><a name="line-5"></a><span class="hs-comment">-- Module      :  ForSyDe.MoC.SDF</span><span>
-</span><a name="line-6"></a><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; </span><span>
-</span><a name="line-7"></a><span class="hs-comment">--                    SAM Group, KTH/ICT/ECS 2007-2008</span><span>
-</span><a name="line-8"></a><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
-</span><a name="line-9"></a><span class="hs-comment">-- </span><span>
-</span><a name="line-10"></a><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
-</span><a name="line-11"></a><span class="hs-comment">-- Stability   :  experimental</span><span>
-</span><a name="line-12"></a><span class="hs-comment">-- Portability :  portable</span><span>
-</span><a name="line-13"></a><span class="hs-comment">--</span><span>
-</span><a name="line-14"></a><span class="hs-comment">-- The synchronuous library defines process constructors, processes and a signal conduit</span><span>
-</span><a name="line-15"></a><span class="hs-comment">-- for the synchronous computational model. A process constructor is a</span><span>
-</span><a name="line-16"></a><span class="hs-comment">-- higher order function which together with combinational function(s)</span><span>
-</span><a name="line-17"></a><span class="hs-comment">-- and values as arguments constructs a process. </span><span>
-</span><a name="line-18"></a><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
-</span><a name="line-19"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.SDF.Core</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-20"></a><span>
-</span><a name="line-21"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.html"><span class="hs-identifier">ForSyDe.Atom.MoC</span></a><span>
-</span><a name="line-22"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Stream</span></a><span>
-</span><a name="line-23"></a><span class="hs-keyword">import</span><span> </span><a href="ForSyDe.Atom.Utility.html"><span class="hs-identifier">ForSyDe.Atom.Utility</span></a><span>
-</span><a name="line-24"></a><span>
-</span><a name="line-25"></a><span class="hs-comment">-- | Type synonym for production rate</span><span>
-</span><a name="line-26"></a><span class="hs-keyword">type</span><span> </span><a name="Cons"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Cons"><span class="hs-identifier">Cons</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">Int</span><span>
-</span><a name="line-27"></a><span>
-</span><a name="line-28"></a><span class="hs-comment">-- | Type synonym for consumption rate</span><span>
-</span><a name="line-29"></a><span class="hs-keyword">type</span><span> </span><a name="Prod"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Prod"><span class="hs-identifier">Prod</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">Int</span><span>
-</span><a name="line-30"></a><span>
-</span><a name="line-31"></a><span class="hs-comment">-- | Type synonym for a SY signal, i.e. &quot;a signal of SY events&quot;</span><span>
-</span><a name="line-32"></a><span class="hs-keyword">type</span><span> </span><a name="Signal"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Signal"><span class="hs-identifier">Signal</span></a></a><span> </span><a name="local-6989586621679096538"><a href="#local-6989586621679096538"><span class="hs-identifier">a</span></a></a><span>   </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#Stream"><span class="hs-identifier hs-type">Stream</span></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><a href="#local-6989586621679096538"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">)</span><span>
-</span><a name="line-33"></a><span>
-</span><a name="line-34"></a><span class="hs-comment">-- | The SDF event. It identifies a synchronous dataflow signal, and</span><span>
-</span><a name="line-35"></a><span class="hs-comment">-- wraps only a value.</span><span>
-</span><a name="line-36"></a><span class="hs-keyword">newtype</span><span> </span><a name="SDF"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier">SDF</span></a></a><span> </span><a name="local-6989586621679096537"><a href="#local-6989586621679096537"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a name="SDF"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier">SDF</span></a></a><span> </span><span class="hs-special">{</span><span> </span><a name="val"><a href="ForSyDe.Atom.MoC.SDF.Core.html#val"><span class="hs-identifier">val</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="#local-6989586621679096537"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-special">}</span><span>
-</span><a name="line-37"></a><span>
-</span><a name="line-38"></a><span class="hs-comment">-- | Implenents the SDF semantics for the MoC atoms.</span><span>
-</span><a name="line-39"></a><span class="hs-keyword">instance</span><span> </span><a href="ForSyDe.Atom.MoC.html#MoC"><span class="hs-identifier hs-type">MoC</span></a><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-40"></a><span>  </span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">Fun</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><a href="#local-6989586621679096579"><span class="hs-identifier hs-type">a</span></a><span> </span><a href="#local-6989586621679096580"><span class="hs-identifier hs-type">b</span></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#Cons"><span class="hs-identifier hs-type">Cons</span></a><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><a href="#local-6989586621679096579"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="#local-6989586621679096580"><span class="hs-identifier hs-type">b</span></a><span class="hs-special">)</span><span>
-</span><a name="line-41"></a><span>  </span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">Ret</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><a href="#local-6989586621679096581"><span class="hs-identifier hs-type">a</span></a><span>   </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#Prod"><span class="hs-identifier hs-type">Prod</span></a><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><a href="#local-6989586621679096581"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">]</span><span class="hs-special">)</span><span>
-</span><a name="line-42"></a><span>  </span><span class="hs-comment">---------------------</span><span>
-</span><a name="line-43"></a><span>  </span><span class="hs-identifier">_</span><span> </span><a name="local-8214565720323850338"><a href="ForSyDe.Atom.MoC.html#-.-"><span class="hs-operator">-.-</span></a></a><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-44"></a><span>  </span><span class="hs-special">(</span><a name="local-6989586621679096557"><a href="#local-6989586621679096557"><span class="hs-identifier">c</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096558"><a href="#local-6989586621679096558"><span class="hs-identifier">f</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-operator">-.-</span><span> </span><a name="local-6989586621679096559"><a href="#local-6989586621679096559"><span class="hs-identifier">s</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096560"><span class="hs-identifier hs-var">comb</span></a><span> </span><a href="#local-6989586621679096557"><span class="hs-identifier hs-var">c</span></a><span> </span><a href="#local-6989586621679096558"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">map</span><span> </span><span class="hs-identifier">val</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#fromStream"><span class="hs-identifier hs-var">fromStream</span></a><span class="hs-special">)</span><span> </span><a href="#local-6989586621679096559"><span class="hs-identifier hs-var">s</span></a><span>
-</span><a name="line-45"></a><span>    </span><span class="hs-keyword">where</span><span> </span><a name="local-6989586621679096560"><a href="#local-6989586621679096560"><span class="hs-identifier">comb</span></a></a><span> </span><a name="local-6989586621679096561"><a href="#local-6989586621679096561"><span class="hs-identifier">c</span></a></a><span> </span><a name="local-6989586621679096562"><a href="#local-6989586621679096562"><span class="hs-identifier">f</span></a></a><span> </span><a name="local-6989586621679096563"><a href="#local-6989586621679096563"><span class="hs-identifier">l</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><a name="local-6989586621679096564"><a href="#local-6989586621679096564"><span class="hs-identifier">x'</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">take</span><span> </span><a href="#local-6989586621679096561"><span class="hs-identifier hs-var">c</span></a><span> </span><a href="#local-6989586621679096563"><span class="hs-identifier hs-var">l</span></a><span>
-</span><a name="line-46"></a><span>                           </span><a name="local-6989586621679096565"><a href="#local-6989586621679096565"><span class="hs-identifier">xs'</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">drop</span><span> </span><a href="#local-6989586621679096561"><span class="hs-identifier hs-var">c</span></a><span> </span><a href="#local-6989586621679096563"><span class="hs-identifier hs-var">l</span></a><span>
-</span><a name="line-47"></a><span>                       </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span>   </span><span class="hs-identifier hs-var">length</span><span> </span><a href="#local-6989586621679096564"><span class="hs-identifier hs-var">x'</span></a><span> </span><span class="hs-operator hs-var">==</span><span> </span><a href="#local-6989586621679096561"><span class="hs-identifier hs-var">c</span></a><span>
-</span><a name="line-48"></a><span>                          </span><span class="hs-keyword">then</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096562"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096564"><span class="hs-identifier hs-var">x'</span></a><span class="hs-special">)</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-var">:-</span></a><span> </span><a href="#local-6989586621679096560"><span class="hs-identifier hs-var">comb</span></a><span> </span><a href="#local-6989586621679096561"><span class="hs-identifier hs-var">c</span></a><span> </span><a href="#local-6989586621679096562"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096565"><span class="hs-identifier hs-var">xs'</span></a><span>
-</span><a name="line-49"></a><span>                          </span><span class="hs-keyword">else</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-50"></a><span>  </span><span class="hs-comment">---------------------</span><span>
-</span><a name="line-51"></a><span>  </span><span class="hs-identifier">_</span><span>  </span><a name="local-8214565720323850339"><a href="ForSyDe.Atom.MoC.html#-%2A-"><span class="hs-operator">-*-</span></a></a><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-52"></a><span>  </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span> </span><span class="hs-operator">-*-</span><span> </span><span class="hs-identifier">_</span><span>  </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-53"></a><span>  </span><a name="local-6989586621679096566"><a href="#local-6989586621679096566"><span class="hs-identifier">cfs</span></a></a><span> </span><span class="hs-operator">-*-</span><span> </span><a name="local-6989586621679096567"><a href="#local-6989586621679096567"><span class="hs-identifier">s</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096568"><span class="hs-identifier hs-var">comb2</span></a><span> </span><a href="#local-6989586621679096566"><span class="hs-identifier hs-var">cfs</span></a><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">map</span><span> </span><span class="hs-identifier">val</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#fromStream"><span class="hs-identifier hs-var">fromStream</span></a><span class="hs-special">)</span><span> </span><a href="#local-6989586621679096567"><span class="hs-identifier hs-var">s</span></a><span>
-</span><a name="line-54"></a><span>    </span><span class="hs-keyword">where</span><span> </span><a name="local-6989586621679096568"><a href="#local-6989586621679096568"><span class="hs-identifier">comb2</span></a></a><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>           </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-55"></a><span>          </span><span class="hs-identifier">comb2</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679096569"><a href="#local-6989586621679096569"><span class="hs-identifier">c</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096570"><a href="#local-6989586621679096570"><span class="hs-identifier">f</span></a></a><span class="hs-special">)</span><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-var">:-</span></a><a name="local-6989586621679096571"><a href="#local-6989586621679096571"><span class="hs-identifier">fs</span></a></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679096572"><a href="#local-6989586621679096572"><span class="hs-identifier">l</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><a name="local-6989586621679096573"><a href="#local-6989586621679096573"><span class="hs-identifier">x'</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">take</span><span> </span><a href="#local-6989586621679096569"><span class="hs-identifier hs-var">c</span></a><span> </span><a href="#local-6989586621679096572"><span class="hs-identifier hs-var">l</span></a><span>
-</span><a name="line-56"></a><span>                                        </span><a name="local-6989586621679096574"><a href="#local-6989586621679096574"><span class="hs-identifier">xs'</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">drop</span><span> </span><a href="#local-6989586621679096569"><span class="hs-identifier hs-var">c</span></a><span> </span><a href="#local-6989586621679096572"><span class="hs-identifier hs-var">l</span></a><span>
-</span><a name="line-57"></a><span>                                    </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span>   </span><span class="hs-identifier hs-var">length</span><span> </span><a href="#local-6989586621679096573"><span class="hs-identifier hs-var">x'</span></a><span> </span><span class="hs-operator hs-var">==</span><span> </span><a href="#local-6989586621679096569"><span class="hs-identifier hs-var">c</span></a><span>
-</span><a name="line-58"></a><span>                                       </span><span class="hs-keyword">then</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096570"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096573"><span class="hs-identifier hs-var">x'</span></a><span class="hs-special">)</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-var">:-</span></a><span> </span><a href="#local-6989586621679096568"><span class="hs-identifier hs-var">comb2</span></a><span> </span><a href="#local-6989586621679096571"><span class="hs-identifier hs-var">fs</span></a><span> </span><a href="#local-6989586621679096574"><span class="hs-identifier hs-var">xs'</span></a><span>
-</span><a name="line-59"></a><span>                                       </span><span class="hs-keyword">else</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-60"></a><span>  </span><span class="hs-comment">---------------------</span><span>
-</span><a name="line-61"></a><span>  </span><span class="hs-special">(</span><a name="local-8214565720323850340"><a href="ForSyDe.Atom.MoC.html#-%2A"><span class="hs-operator">-*</span></a></a><span class="hs-special">)</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a><span>
-</span><a name="line-62"></a><span>  </span><span class="hs-special">(</span><span class="hs-operator">-*</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679096575"><a href="#local-6989586621679096575"><span class="hs-identifier">p</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096576"><a href="#local-6989586621679096576"><span class="hs-identifier">r</span></a></a><span class="hs-special">)</span><span class="hs-special">)</span><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-var">:-</span></a><a name="local-6989586621679096577"><a href="#local-6989586621679096577"><span class="hs-identifier">xs</span></a></a><span class="hs-special">)</span><span>
-</span><a name="line-63"></a><span>    </span><span class="hs-glyph">|</span><span> </span><span class="hs-identifier hs-var">length</span><span> </span><a href="#local-6989586621679096576"><span class="hs-identifier hs-var">r</span></a><span> </span><span class="hs-operator hs-var">==</span><span> </span><a href="#local-6989586621679096575"><span class="hs-identifier hs-var">p</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#stream"><span class="hs-identifier hs-var">stream</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">map</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a href="#local-6989586621679096576"><span class="hs-identifier hs-var">r</span></a><span class="hs-special">)</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#%2B-%2B"><span class="hs-operator hs-var">+-+</span></a><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096577"><span class="hs-identifier hs-var">xs</span></a><span> </span><a href="ForSyDe.Atom.MoC.html#-%2A"><span class="hs-operator hs-var">-*</span></a><span class="hs-special">)</span><span>
-</span><a name="line-64"></a><span>    </span><span class="hs-glyph">|</span><span> </span><span class="hs-identifier hs-var">otherwise</span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">error</span><span> </span><span class="hs-string">&quot;[MoC.SDF] Wrong production&quot;</span><span>
-</span><a name="line-65"></a><span>  </span><span class="hs-comment">---------------------</span><span>
-</span><a name="line-66"></a><span>  </span><span class="hs-special">(</span><a name="local-8214565720323850341"><a href="ForSyDe.Atom.MoC.html#-%3C-"><span class="hs-operator">-&lt;-</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.Stream.html#%2B-%2B"><span class="hs-operator hs-var">+-+</span></a><span class="hs-special">)</span><span>
-</span><a name="line-67"></a><span>  </span><span class="hs-comment">---------------------</span><span>
-</span><a name="line-68"></a><span>  </span><span class="hs-special">(</span><a name="local-8214565720323850342"><a href="ForSyDe.Atom.MoC.html#-%26-"><span class="hs-operator">-&amp;-</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-identifier">_</span><span> </span><a name="local-6989586621679096578"><a href="#local-6989586621679096578"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679096578"><span class="hs-identifier hs-var">a</span></a><span>
-</span><a name="line-69"></a><span>  </span><span class="hs-comment">---------------------</span><span>
-</span><a name="line-70"></a><span>
-</span><a name="line-71"></a><span class="hs-comment">-- | Allows for mapping of functions on a SDF event.</span><span>
-</span><a name="line-72"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">Functor</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-73"></a><span>  </span><a name="local-3458764513820541101"><span class="hs-identifier">fmap</span></a><span> </span><a name="local-6989586621679096555"><a href="#local-6989586621679096555"><span class="hs-identifier">f</span></a></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096556"><a href="#local-6989586621679096556"><span class="hs-identifier">a</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096555"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096556"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span>
-</span><a name="line-74"></a><span>
-</span><a name="line-75"></a><span class="hs-comment">-- | Allows for lifting functions on a pair of SDF events.</span><span>
-</span><a name="line-76"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">Applicative</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-77"></a><span>  </span><a name="local-3458764513820541680"><span class="hs-identifier">pure</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span>
-</span><a name="line-78"></a><span>  </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096553"><a href="#local-6989586621679096553"><span class="hs-identifier">a</span></a></a><span class="hs-special">)</span><span> </span><a name="local-3458764513820541679"><span class="hs-operator">&lt;*&gt;</span></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096554"><a href="#local-6989586621679096554"><span class="hs-identifier">b</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-special">(</span><a href="#local-6989586621679096553"><span class="hs-identifier hs-var">a</span></a><span> </span><a href="#local-6989586621679096554"><span class="hs-identifier hs-var">b</span></a><span class="hs-special">)</span><span>
-</span><a name="line-79"></a><span>
-</span><a name="line-80"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">Foldable</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-81"></a><span>    </span><a name="local-8214565720323788699"><span class="hs-identifier">foldr</span></a><span> </span><a name="local-6989586621679096547"><a href="#local-6989586621679096547"><span class="hs-identifier">f</span></a></a><span> </span><a name="local-6989586621679096548"><a href="#local-6989586621679096548"><span class="hs-identifier">z</span></a></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096549"><a href="#local-6989586621679096549"><span class="hs-identifier">x</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679096547"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096549"><span class="hs-identifier hs-var">x</span></a><span> </span><a href="#local-6989586621679096548"><span class="hs-identifier hs-var">z</span></a><span>
-</span><a name="line-82"></a><span>    </span><a name="local-8214565720323788697"><span class="hs-identifier">foldl</span></a><span> </span><a name="local-6989586621679096550"><a href="#local-6989586621679096550"><span class="hs-identifier">f</span></a></a><span> </span><a name="local-6989586621679096551"><a href="#local-6989586621679096551"><span class="hs-identifier">z</span></a></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096552"><a href="#local-6989586621679096552"><span class="hs-identifier">x</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679096550"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096551"><span class="hs-identifier hs-var">z</span></a><span> </span><a href="#local-6989586621679096552"><span class="hs-identifier hs-var">x</span></a><span>
-</span><a name="line-83"></a><span>
-</span><a name="line-84"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">Traversable</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-85"></a><span>    </span><a name="local-8214565720323787271"><span class="hs-identifier">traverse</span></a><span> </span><a name="local-6989586621679096545"><a href="#local-6989586621679096545"><span class="hs-identifier">f</span></a></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096546"><a href="#local-6989586621679096546"><span class="hs-identifier">x</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-operator hs-var">&lt;$&gt;</span><span> </span><a href="#local-6989586621679096545"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679096546"><span class="hs-identifier hs-var">x</span></a><span>
-</span><a name="line-86"></a><span>
-</span><a name="line-87"></a><span class="hs-comment">-- | Shows the value wrapped</span><span>
-</span><a name="line-88"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">Show</span><span> </span><a href="#local-6989586621679096543"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">Show</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><a href="#local-6989586621679096543"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-89"></a><span>  </span><a name="local-8214565720323790000"><span class="hs-identifier">showsPrec</span></a><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a name="local-6989586621679096544"><a href="#local-6989586621679096544"><span class="hs-identifier">x</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-operator hs-var">++</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">show</span><span> </span><a href="#local-6989586621679096544"><span class="hs-identifier hs-var">x</span></a><span class="hs-special">)</span><span>
-</span><a name="line-90"></a><span>
-</span><a name="line-91"></a><span class="hs-comment">-- | Reads the value wrapped</span><span>
-</span><a name="line-92"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">Read</span><span> </span><a href="#local-6989586621679096539"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">Read</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a><span> </span><a href="#local-6989586621679096539"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-93"></a><span>  </span><a name="local-8214565720323789704"><span class="hs-identifier">readsPrec</span></a><span> </span><span class="hs-identifier">_</span><span> </span><a name="local-6989586621679096540"><a href="#local-6989586621679096540"><span class="hs-identifier">s</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><a href="#local-6989586621679096541"><span class="hs-identifier hs-var">x</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679096542"><span class="hs-identifier hs-var">r</span></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679096541"><a href="#local-6989586621679096541"><span class="hs-identifier">x</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679096542"><a href="#local-6989586621679096542"><span class="hs-identifier">r</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-identifier hs-var">reads</span><span> </span><a href="#local-6989586621679096540"><span class="hs-identifier hs-var">s</span></a><span class="hs-special">]</span><span>
-</span><a name="line-94"></a><span>
-</span><a name="line-95"></a><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
-</span><a name="line-96"></a><span>
-</span><a name="line-97"></a><span class="hs-comment">-- | Transforms a list of values into a SDF signal with only one</span><span>
-</span><a name="line-98"></a><span class="hs-comment">-- partition, i.e. all events share the same (initial) tag.</span><span>
-</span><a name="line-99"></a><span class="hs-identifier">signal</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><a href="#local-6989586621679096583"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a><span> </span><a href="#local-6989586621679096583"><span class="hs-identifier hs-type">a</span></a><span>
-</span><a name="line-100"></a><a name="signal"><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier">signal</span></a></a><span> </span><a name="local-6989586621679096584"><a href="#local-6989586621679096584"><span class="hs-identifier">l</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.Stream.html#stream"><span class="hs-identifier hs-var">stream</span></a><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a><span> </span><span class="hs-operator hs-var">&lt;$&gt;</span><span> </span><a href="#local-6989586621679096584"><span class="hs-identifier hs-var">l</span></a><span class="hs-special">)</span><span>
-</span><a name="line-101"></a><span>
-</span><a name="line-102"></a><a name="signal2"><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal2"><span class="hs-identifier">signal2</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679096585"><a href="#local-6989586621679096585"><span class="hs-identifier">l1</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096586"><a href="#local-6989586621679096586"><span class="hs-identifier">l2</span></a></a><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096585"><span class="hs-identifier hs-var">l1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096586"><span class="hs-identifier hs-var">l2</span></a><span class="hs-special">)</span><span>
-</span><a name="line-103"></a><a name="signal3"><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal3"><span class="hs-identifier">signal3</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679096587"><a href="#local-6989586621679096587"><span class="hs-identifier">l1</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096588"><a href="#local-6989586621679096588"><span class="hs-identifier">l2</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096589"><a href="#local-6989586621679096589"><span class="hs-identifier">l3</span></a></a><span class="hs-special">)</span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096587"><span class="hs-identifier hs-var">l1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096588"><span class="hs-identifier hs-var">l2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096589"><span class="hs-identifier hs-var">l3</span></a><span class="hs-special">)</span><span>
-</span><a name="line-104"></a><a name="signal4"><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal4"><span class="hs-identifier">signal4</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679096590"><a href="#local-6989586621679096590"><span class="hs-identifier">l1</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096591"><a href="#local-6989586621679096591"><span class="hs-identifier">l2</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096592"><a href="#local-6989586621679096592"><span class="hs-identifier">l3</span></a></a><span class="hs-special">,</span><a name="local-6989586621679096593"><a href="#local-6989586621679096593"><span class="hs-identifier">l4</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096590"><span class="hs-identifier hs-var">l1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096591"><span class="hs-identifier hs-var">l2</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096592"><span class="hs-identifier hs-var">l3</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a><span> </span><a href="#local-6989586621679096593"><span class="hs-identifier hs-var">l4</span></a><span class="hs-special">)</span><span>
-</span><a name="line-105"></a><span>
-</span><a name="line-106"></a><span class="hs-comment">-- | Reads a signal from a string. Like with the @read@ function from</span><span>
-</span><a name="line-107"></a><span class="hs-comment">-- @Prelude@, you must specify the tipe of the signal.</span><span>
-</span><a name="line-108"></a><span class="hs-comment">--</span><span>
-</span><a name="line-109"></a><span class="hs-comment">-- &gt;&gt;&gt; readSignal &quot;{1,2,3,4,5}&quot; :: Signal Int</span><span>
-</span><a name="line-110"></a><span class="hs-comment">-- {1,2,3,4,5}</span><span>
-</span><a name="line-111"></a><span class="hs-identifier">readSignal</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Read</span><span> </span><a href="#local-6989586621679096582"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">String</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="ForSyDe.Atom.MoC.SDF.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a><span> </span><a href="#local-6989586621679096582"><span class="hs-identifier hs-type">a</span></a><span>
-</span><a name="line-112"></a><a name="readSignal"><a href="ForSyDe.Atom.MoC.SDF.Core.html#readSignal"><span class="hs-identifier">readSignal</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">read</span><span>
-</span><a name="line-113"></a><span>
-</span><a name="line-114"></a><span class="hs-comment">----------------------------------------------------------------------</span><span>
-</span><a name="line-115"></a></pre></body></html>
+</span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Module      :  ForSyDe.MoC.SDF</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, KTH/ICT/E 2015; </span><span>
+</span><span id="line-7"></span><span class="hs-comment">--                    SAM Group, KTH/ICT/ECS 2007-2008</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Stability   :  experimental</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- Portability :  portable</span><span>
+</span><span id="line-13"></span><span class="hs-comment">--</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- The synchronuous library defines process constructors, processes and a signal conduit</span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- for the synchronous computational model. A process constructor is a</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- higher order function which together with combinational function(s)</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- and values as arguments constructs a process. </span><span>
+</span><span id="line-18"></span><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.SDF.Core</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.html"><span class="hs-identifier">ForSyDe.Atom.MoC</span></a></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html"><span class="hs-identifier">ForSyDe.Atom.MoC.Stream</span></a></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Utility.Tuple.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Tuple</span></a></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- | Type synonym for production rate</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">type</span><span> </span><span id="Cons"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Cons"><span class="hs-identifier hs-var">Cons</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- | Type synonym for consumption rate</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">type</span><span> </span><span id="Prod"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Prod"><span class="hs-identifier hs-var">Prod</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- | Type synonym for a SY signal, i.e. &quot;a signal of SY events&quot;</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">type</span><span> </span><span id="Signal"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Signal"><span class="hs-identifier hs-var">Signal</span></a></span></span><span> </span><span id="local-6989586621679202365"><span class="annot"><a href="#local-6989586621679202365"><span class="hs-identifier hs-type">a</span></a></span></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679202365"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- | The SDF event. It identifies a synchronous dataflow signal, and</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- wraps only a value.</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">newtype</span><span> </span><span id="SDF"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span></span><span> </span><span id="local-6989586621679203366"><span class="annot"><a href="#local-6989586621679203366"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SDF"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="val"><span class="annot"><span class="annottext">SDF a -&gt; a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#val"><span class="hs-identifier hs-var hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679203366"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- | Implenents the SDF semantics for the MoC atoms.</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.html#MoC"><span class="hs-identifier hs-type">MoC</span></a></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">type</span><span> </span><span id="Fun"><span class="annot"><a href="ForSyDe.Atom.MoC.html#Fun"><span class="hs-identifier hs-var">Fun</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202355"><span class="annot"><a href="#local-6989586621679202355"><span class="hs-identifier hs-type hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679202354"><span class="annot"><a href="#local-6989586621679202354"><span class="hs-identifier hs-type hs-type">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Cons"><span class="hs-identifier hs-type">Cons</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679202355"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679202354"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">type</span><span> </span><span id="Ret"><span class="annot"><a href="ForSyDe.Atom.MoC.html#Ret"><span class="hs-identifier hs-var">Ret</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202353"><span class="annot"><a href="#local-6989586621679202353"><span class="hs-identifier hs-type hs-type">a</span></a></span></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Prod"><span class="hs-identifier hs-type">Prod</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679202353"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-comment">---------------------</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-identifier">_</span><span> </span><span id="local-6989586621679202352"><span class="annot"><span class="annottext">-.- :: Fun SDF a b -&gt; Stream (SDF a) -&gt; Stream (SDF b)
+</span><a href="ForSyDe.Atom.MoC.html#-.-"><span class="hs-operator hs-var hs-var hs-var hs-var">-.-</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-type">NullS</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (SDF b)
+forall e. Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679202349"><span class="annot"><a href="#local-6989586621679202349"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202348"><span class="annot"><a href="#local-6989586621679202348"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.html#-.-"><span class="hs-operator hs-var">-.-</span></a></span><span> </span><span id="local-6989586621679202347"><span class="annot"><span class="annottext">s :: Stream (SDF a)
+</span><a href="#local-6989586621679202347"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ([a] -&gt; b) -&gt; [a] -&gt; Stream (SDF b)
+forall a a. Int -&gt; ([a] -&gt; a) -&gt; [a] -&gt; Stream (SDF a)
+</span><a href="#local-6989586621679202346"><span class="hs-identifier hs-var">comb</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202349"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; b
+</span><a href="#local-6989586621679202348"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Stream (SDF b))
+-&gt; (Stream (SDF a) -&gt; [a]) -&gt; Stream (SDF a) -&gt; Stream (SDF b)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(SDF a -&gt; a) -&gt; [SDF a] -&gt; [a]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">SDF a -&gt; a
+forall a. SDF a -&gt; a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#val"><span class="hs-identifier hs-var hs-var">val</span></a></span><span> </span><span class="annot"><span class="annottext">([SDF a] -&gt; [a])
+-&gt; (Stream (SDF a) -&gt; [SDF a]) -&gt; Stream (SDF a) -&gt; [a]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Stream (SDF a) -&gt; [SDF a]
+forall a. Stream a -&gt; [a]
+</span><a href="ForSyDe.Atom.MoC.Stream.html#fromStream"><span class="hs-identifier hs-var">fromStream</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a)
+</span><a href="#local-6989586621679202347"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679202346"><span class="annot"><span class="annottext">comb :: Int -&gt; ([a] -&gt; a) -&gt; [a] -&gt; Stream (SDF a)
+</span><a href="#local-6989586621679202346"><span class="hs-identifier hs-var hs-var">comb</span></a></span></span><span> </span><span id="local-6989586621679202343"><span class="annot"><span class="annottext">c :: Int
+</span><a href="#local-6989586621679202343"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679202342"><span class="annot"><span class="annottext">f :: [a] -&gt; a
+</span><a href="#local-6989586621679202342"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679202341"><span class="annot"><span class="annottext">l :: [a]
+</span><a href="#local-6989586621679202341"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679202340"><span class="annot"><span class="annottext">x' :: [a]
+</span><a href="#local-6989586621679202340"><span class="hs-identifier hs-var hs-var">x'</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202343"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202341"><span class="hs-identifier hs-var">l</span></a></span><span>
+</span><span id="line-46"></span><span>                           </span><span id="local-6989586621679202338"><span class="annot"><span class="annottext">xs' :: [a]
+</span><a href="#local-6989586621679202338"><span class="hs-identifier hs-var hs-var">xs'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202343"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202341"><span class="hs-identifier hs-var">l</span></a></span><span>
+</span><span id="line-47"></span><span>                       </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span>   </span><span class="annot"><span class="annottext">[a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202340"><span class="hs-identifier hs-var">x'</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202343"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-48"></span><span>                          </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">a -&gt; SDF a
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; a
+</span><a href="#local-6989586621679202342"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202340"><span class="hs-identifier hs-var">x'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SDF a -&gt; Stream (SDF a) -&gt; Stream (SDF a)
+forall e. e -&gt; Stream e -&gt; Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-var">:-</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; ([a] -&gt; a) -&gt; [a] -&gt; Stream (SDF a)
+</span><a href="#local-6989586621679202346"><span class="hs-identifier hs-var">comb</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202343"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; a
+</span><a href="#local-6989586621679202342"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202338"><span class="hs-identifier hs-var">xs'</span></a></span><span>
+</span><span id="line-49"></span><span>                          </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a)
+forall e. Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-comment">---------------------</span><span>
+</span><span id="line-51"></span><span>  </span><span id="local-6989586621679202334"><span class="annot"><span class="annottext">cfs :: Stream (SDF (Fun SDF a b))
+</span><a href="#local-6989586621679202334"><span class="hs-identifier hs-var">cfs</span></a></span></span><span> </span><span id="local-6989586621679202333"><span class="annot"><span class="annottext">-*- :: Stream (SDF (Fun SDF a b)) -&gt; Stream (SDF a) -&gt; Stream (SDF b)
+</span><a href="ForSyDe.Atom.MoC.html#-%2A-"><span class="hs-operator hs-var hs-var hs-var hs-var">-*-</span></a></span></span><span> </span><span id="local-6989586621679202331"><span class="annot"><span class="annottext">s :: Stream (SDF a)
+</span><a href="#local-6989586621679202331"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stream (SDF (Int, [a] -&gt; b)) -&gt; [a] -&gt; Stream (SDF b)
+forall a a. Stream (SDF (Int, [a] -&gt; a)) -&gt; [a] -&gt; Stream (SDF a)
+</span><a href="#local-6989586621679202330"><span class="hs-identifier hs-var">comb2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (SDF (Int, [a] -&gt; b))
+Stream (SDF (Fun SDF a b))
+</span><a href="#local-6989586621679202334"><span class="hs-identifier hs-var">cfs</span></a></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Stream (SDF b))
+-&gt; (Stream (SDF a) -&gt; [a]) -&gt; Stream (SDF a) -&gt; Stream (SDF b)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(SDF a -&gt; a) -&gt; [SDF a] -&gt; [a]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">SDF a -&gt; a
+forall a. SDF a -&gt; a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#val"><span class="hs-identifier hs-var hs-var">val</span></a></span><span> </span><span class="annot"><span class="annottext">([SDF a] -&gt; [a])
+-&gt; (Stream (SDF a) -&gt; [SDF a]) -&gt; Stream (SDF a) -&gt; [a]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Stream (SDF a) -&gt; [SDF a]
+forall a. Stream a -&gt; [a]
+</span><a href="ForSyDe.Atom.MoC.Stream.html#fromStream"><span class="hs-identifier hs-var">fromStream</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a)
+</span><a href="#local-6989586621679202331"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679202330"><span class="annot"><span class="annottext">comb2 :: Stream (SDF (Int, [a] -&gt; a)) -&gt; [a] -&gt; Stream (SDF a)
+</span><a href="#local-6989586621679202330"><span class="hs-identifier hs-var hs-var">comb2</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-type">NullS</span></a></span><span>           </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a)
+forall e. Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a></span><span>
+</span><span id="line-53"></span><span>          </span><span class="annot"><a href="#local-6989586621679202330"><span class="hs-identifier hs-var">comb2</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202329"><span class="annot"><span class="annottext">c :: Int
+</span><a href="#local-6989586621679202329"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202328"><span class="annot"><span class="annottext">f :: [a] -&gt; a
+</span><a href="#local-6989586621679202328"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-type">:-</span></a></span><span id="local-6989586621679202327"><span class="annot"><span class="annottext">fs :: Stream (SDF (Int, [a] -&gt; a))
+</span><a href="#local-6989586621679202327"><span class="hs-identifier hs-var">fs</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679202326"><span class="annot"><span class="annottext">l :: [a]
+</span><a href="#local-6989586621679202326"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679202325"><span class="annot"><span class="annottext">x' :: [a]
+</span><a href="#local-6989586621679202325"><span class="hs-identifier hs-var hs-var">x'</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202329"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202326"><span class="hs-identifier hs-var">l</span></a></span><span>
+</span><span id="line-54"></span><span>                                        </span><span id="local-6989586621679202324"><span class="annot"><span class="annottext">xs' :: [a]
+</span><a href="#local-6989586621679202324"><span class="hs-identifier hs-var hs-var">xs'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; [a]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202329"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202326"><span class="hs-identifier hs-var">l</span></a></span><span>
+</span><span id="line-55"></span><span>                                    </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span>   </span><span class="annot"><span class="annottext">[a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202325"><span class="hs-identifier hs-var">x'</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202329"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-56"></span><span>                                       </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">a -&gt; SDF a
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; a
+</span><a href="#local-6989586621679202328"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202325"><span class="hs-identifier hs-var">x'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SDF a -&gt; Stream (SDF a) -&gt; Stream (SDF a)
+forall e. e -&gt; Stream e -&gt; Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-var">:-</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (SDF (Int, [a] -&gt; a)) -&gt; [a] -&gt; Stream (SDF a)
+</span><a href="#local-6989586621679202330"><span class="hs-identifier hs-var">comb2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (SDF (Int, [a] -&gt; a))
+</span><a href="#local-6989586621679202327"><span class="hs-identifier hs-var">fs</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202324"><span class="hs-identifier hs-var">xs'</span></a></span><span>
+</span><span id="line-57"></span><span>                                       </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a)
+forall e. Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-comment">---------------------</span><span>
+</span><span id="line-59"></span><span>  </span><span id="local-6989586621679202323"><span class="annot"><span class="annottext">-* :: Stream (SDF (Ret SDF b)) -&gt; Stream (SDF b)
+</span><a href="ForSyDe.Atom.MoC.html#-%2A"><span class="hs-operator hs-var hs-var hs-var hs-var">(-*)</span></a></span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-type">NullS</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (SDF b)
+forall e. Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#NullS"><span class="hs-identifier hs-var">NullS</span></a></span><span>
+</span><span id="line-60"></span><span>  </span><span class="annot"><a href="ForSyDe.Atom.MoC.html#-%2A"><span class="hs-operator hs-var">(-*)</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202321"><span class="annot"><a href="#local-6989586621679202321"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202320"><span class="annot"><a href="#local-6989586621679202320"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="annot"><a href="ForSyDe.Atom.MoC.Stream.html#%3A-"><span class="hs-operator hs-type">:-</span></a></span><span id="local-6989586621679202319"><span class="annot"><span class="annottext">xs :: Stream (SDF (Ret SDF b))
+</span><a href="#local-6989586621679202319"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">[b] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[b]
+</span><a href="#local-6989586621679202320"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679202321"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[SDF b] -&gt; Stream (SDF b)
+forall a. [a] -&gt; Stream a
+</span><a href="ForSyDe.Atom.MoC.Stream.html#stream"><span class="hs-identifier hs-var">stream</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(b -&gt; SDF b) -&gt; [b] -&gt; [SDF b]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">b -&gt; SDF b
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="annot"><span class="annottext">[b]
+</span><a href="#local-6989586621679202320"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Stream (SDF b) -&gt; Stream (SDF b) -&gt; Stream (SDF b)
+forall e. Stream e -&gt; Stream e -&gt; Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#%2B-%2B"><span class="hs-operator hs-var">+-+</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stream (SDF (Ret SDF b))
+</span><a href="#local-6989586621679202319"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (SDF (Ret SDF b)) -&gt; Stream (SDF b)
+forall (e :: * -&gt; *) b.
+MoC e =&gt;
+Stream (e (Ret e b)) -&gt; Stream (e b)
+</span><a href="ForSyDe.Atom.MoC.html#-%2A"><span class="hs-operator hs-var">-*</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Stream (SDF b)
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="hs-string">&quot;[MoC.SDF] Wrong production&quot;</span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-comment">---------------------</span><span>
+</span><span id="line-64"></span><span>  </span><span id="local-6989586621679202315"><span class="annot"><span class="annottext">-&lt;- :: Stream (SDF a) -&gt; Stream (SDF a) -&gt; Stream (SDF a)
+</span><a href="ForSyDe.Atom.MoC.html#-%3C-"><span class="hs-operator hs-var hs-var hs-var hs-var">(-&lt;-)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a) -&gt; Stream (SDF a) -&gt; Stream (SDF a)
+forall e. Stream e -&gt; Stream e -&gt; Stream e
+</span><a href="ForSyDe.Atom.MoC.Stream.html#%2B-%2B"><span class="hs-operator hs-var">(+-+)</span></a></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-comment">---------------------</span><span>
+</span><span id="line-66"></span><span>  </span><span id="local-6989586621679202313"><span class="annot"><span class="annottext">-&amp;- :: Stream (SDF a) -&gt; Stream (SDF a) -&gt; Stream (SDF a)
+</span><a href="ForSyDe.Atom.MoC.html#-%26-"><span class="hs-operator hs-var hs-var hs-var hs-var">(-&amp;-)</span></a></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span id="local-6989586621679202311"><span class="annot"><span class="annottext">a :: Stream (SDF a)
+</span><a href="#local-6989586621679202311"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (SDF a)
+</span><a href="#local-6989586621679202311"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-comment">---------------------</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- | Allows for mapping of functions on a SDF event.</span><span>
+</span><span id="line-70"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679202308"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-71"></span><span>  </span><span id="local-6989586621679202306"><span class="annot"><span class="annottext">fmap :: (a -&gt; b) -&gt; SDF a -&gt; SDF b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span id="local-6989586621679202305"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679202305"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202304"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679202304"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; SDF b
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679202305"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202304"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- | Allows for lifting functions on a pair of SDF events.</span><span>
+</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679202295"><span id="local-6989586621679202297"><span id="local-6989586621679202299"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-75"></span><span>  </span><span id="local-6989586621679202293"><span class="annot"><span class="annottext">pure :: a -&gt; SDF a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; SDF a
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202292"><span class="annot"><span class="annottext">a :: a -&gt; b
+</span><a href="#local-6989586621679202292"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679202291"><span class="annot"><span class="annottext">&lt;*&gt; :: SDF (a -&gt; b) -&gt; SDF a -&gt; SDF b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202290"><span class="annot"><span class="annottext">b :: a
+</span><a href="#local-6989586621679202290"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; SDF b
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679202292"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202290"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679202258"><span id="local-6989586621679202260"><span id="local-6989586621679202262"><span id="local-6989586621679202264"><span id="local-6989586621679202266"><span id="local-6989586621679202268"><span id="local-6989586621679202270"><span id="local-6989586621679202272"><span id="local-6989586621679202274"><span id="local-6989586621679202276"><span id="local-6989586621679202278"><span id="local-6989586621679202281"><span id="local-6989586621679202284"><span id="local-6989586621679202286"><span id="local-6989586621679202288"><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621679202256"><span class="annot"><span class="annottext">foldr :: (a -&gt; b -&gt; b) -&gt; b -&gt; SDF a -&gt; b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">foldr</span></span></span><span> </span><span id="local-6989586621679202254"><span class="annot"><span class="annottext">f :: a -&gt; b -&gt; b
+</span><a href="#local-6989586621679202254"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679202253"><span class="annot"><span class="annottext">z :: b
+</span><a href="#local-6989586621679202253"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202252"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679202252"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; b -&gt; b
+</span><a href="#local-6989586621679202254"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202252"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679202253"><span class="hs-identifier hs-var">z</span></a></span><span>
+</span><span id="line-80"></span><span>    </span><span id="local-6989586621679202251"><span class="annot"><span class="annottext">foldl :: (b -&gt; a -&gt; b) -&gt; b -&gt; SDF a -&gt; b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">foldl</span></span></span><span> </span><span id="local-6989586621679202249"><span class="annot"><span class="annottext">f :: b -&gt; a -&gt; b
+</span><a href="#local-6989586621679202249"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679202248"><span class="annot"><span class="annottext">z :: b
+</span><a href="#local-6989586621679202248"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202247"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679202247"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; a -&gt; b
+</span><a href="#local-6989586621679202249"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679202248"><span class="hs-identifier hs-var">z</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202247"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679202238"><span id="local-6989586621679202240"><span id="local-6989586621679202242"><span class="annot"><span class="hs-identifier hs-type">Traversable</span></span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-83"></span><span>    </span><span id="local-6989586621679202236"><span class="annot"><span class="annottext">traverse :: (a -&gt; f b) -&gt; SDF a -&gt; f (SDF b)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">traverse</span></span></span><span> </span><span id="local-6989586621679202234"><span class="annot"><span class="annottext">f :: a -&gt; f b
+</span><a href="#local-6989586621679202234"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202233"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679202233"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; SDF b
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="annot"><span class="annottext">(b -&gt; SDF b) -&gt; f b -&gt; f (SDF b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679202234"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202233"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- | Shows the value wrapped</span><span>
+</span><span id="line-86"></span><span id="local-6989586621679202231"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679202226"><span id="local-6989586621679202228"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621679202231"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679202231"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-87"></span><span>  </span><span id="local-6989586621679202224"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; SDF a -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">showsPrec</span></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span id="local-6989586621679202222"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679202222"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">(++)</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202222"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- | Reads the value wrapped</span><span>
+</span><span id="line-90"></span><span id="local-6989586621679202220"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679202213"><span id="local-6989586621679202215"><span id="local-6989586621679202217"><span class="annot"><span class="hs-identifier hs-type">Read</span></span><span> </span><span class="annot"><a href="#local-6989586621679202220"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Read</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-type">SDF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679202220"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-91"></span><span>  </span><span id="local-6989586621679202211"><span class="annot"><span class="annottext">readsPrec :: Int -&gt; ReadS (SDF a)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">readsPrec</span></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span id="local-6989586621679202209"><span class="annot"><span class="annottext">s :: [Char]
+</span><a href="#local-6989586621679202209"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; SDF a
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679202208"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679202207"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202208"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679202208"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679202207"><span class="annot"><span class="annottext">r :: [Char]
+</span><a href="#local-6989586621679202207"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadS a
+forall a. Read a =&gt; ReadS a
+</span><span class="hs-identifier hs-var">reads</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679202209"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- | Transforms a list of values into a SDF signal with only one</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- partition, i.e. all events share the same (initial) tag.</span><span>
+</span><span id="line-97"></span><span id="local-6989586621679203245"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-type">signal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679203245"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679203245"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-98"></span><span id="signal"><span class="annot"><span class="annottext">signal :: [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var hs-var">signal</span></a></span></span><span> </span><span id="local-6989586621679202204"><span class="annot"><span class="annottext">l :: [a]
+</span><a href="#local-6989586621679202204"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[SDF a] -&gt; Signal a
+forall a. [a] -&gt; Stream a
+</span><a href="ForSyDe.Atom.MoC.Stream.html#stream"><span class="hs-identifier hs-var">stream</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; SDF a
+forall a. a -&gt; SDF a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#SDF"><span class="hs-identifier hs-var">SDF</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; SDF a) -&gt; [a] -&gt; [SDF a]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202204"><span class="hs-identifier hs-var">l</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-99"></span><span>
+</span><span id="line-100"></span><span id="signal2"><span class="annot"><span class="annottext">signal2 :: ([a], [a]) -&gt; (Signal a, Signal a)
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal2"><span class="hs-identifier hs-var hs-var">signal2</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202202"><span class="annot"><span class="annottext">l1 :: [a]
+</span><a href="#local-6989586621679202202"><span class="hs-identifier hs-var">l1</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202201"><span class="annot"><span class="annottext">l2 :: [a]
+</span><a href="#local-6989586621679202201"><span class="hs-identifier hs-var">l2</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202202"><span class="hs-identifier hs-var">l1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202201"><span class="hs-identifier hs-var">l2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span id="signal3"><span class="annot"><span class="annottext">signal3 :: ([a], [a], [a]) -&gt; (Signal a, Signal a, Signal a)
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal3"><span class="hs-identifier hs-var hs-var">signal3</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202199"><span class="annot"><span class="annottext">l1 :: [a]
+</span><a href="#local-6989586621679202199"><span class="hs-identifier hs-var">l1</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202198"><span class="annot"><span class="annottext">l2 :: [a]
+</span><a href="#local-6989586621679202198"><span class="hs-identifier hs-var">l2</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202197"><span class="annot"><span class="annottext">l3 :: [a]
+</span><a href="#local-6989586621679202197"><span class="hs-identifier hs-var">l3</span></a></span></span><span class="hs-special">)</span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202199"><span class="hs-identifier hs-var">l1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202198"><span class="hs-identifier hs-var">l2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202197"><span class="hs-identifier hs-var">l3</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span id="signal4"><span class="annot"><span class="annottext">signal4 :: ([a], [a], [a], [a]) -&gt; (Signal a, Signal a, Signal a, Signal a)
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal4"><span class="hs-identifier hs-var hs-var">signal4</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202195"><span class="annot"><span class="annottext">l1 :: [a]
+</span><a href="#local-6989586621679202195"><span class="hs-identifier hs-var">l1</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202194"><span class="annot"><span class="annottext">l2 :: [a]
+</span><a href="#local-6989586621679202194"><span class="hs-identifier hs-var">l2</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202193"><span class="annot"><span class="annottext">l3 :: [a]
+</span><a href="#local-6989586621679202193"><span class="hs-identifier hs-var">l3</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202192"><span class="annot"><span class="annottext">l4 :: [a]
+</span><a href="#local-6989586621679202192"><span class="hs-identifier hs-var">l4</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202195"><span class="hs-identifier hs-var">l1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202194"><span class="hs-identifier hs-var">l2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202193"><span class="hs-identifier hs-var">l3</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Signal a
+forall a. [a] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#signal"><span class="hs-identifier hs-var">signal</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679202192"><span class="hs-identifier hs-var">l4</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- | Reads a signal from a string. Like with the @read@ function from</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- @Prelude@, you must specify the tipe of the signal.</span><span>
+</span><span id="line-106"></span><span class="hs-comment">--</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- &gt;&gt;&gt; readSignal &quot;{1,2,3,4,5}&quot; :: Signal Int</span><span>
+</span><span id="line-108"></span><span class="hs-comment">-- {1,2,3,4,5}</span><span>
+</span><span id="line-109"></span><span id="local-6989586621679202191"><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#readSignal"><span class="hs-identifier hs-type">readSignal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Read</span></span><span> </span><span class="annot"><a href="#local-6989586621679202191"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SDF.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679202191"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-110"></span><span id="readSignal"><span class="annot"><span class="annottext">readSignal :: [Char] -&gt; Signal a
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#readSignal"><span class="hs-identifier hs-var hs-var">readSignal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Signal a
+forall a. Read a =&gt; [Char] -&gt; a
+</span><span class="hs-identifier hs-var">read</span></span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="hs-comment">----------------------------------------------------------------------</span><span>
+</span><span id="line-113"></span><span>
+</span><span id="line-114"></span><span id="scen11"><span class="annot"><span class="annottext">scen11 :: (c, p, a -&gt; b) -&gt; (c, a -&gt; (p, b))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen11"><span class="hs-identifier hs-var hs-var">scen11</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202186"><span class="annot"><span class="annottext">c :: c
+</span><a href="#local-6989586621679202186"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202185"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202185"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202184"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679202184"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">c -&gt; p -&gt; (a -&gt; b) -&gt; (c, a -&gt; (p, b))
+forall c p a b. c -&gt; p -&gt; (a -&gt; b) -&gt; (c, a -&gt; (p, b))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt11"><span class="hs-identifier hs-var">ctxt11</span></a></span><span> </span><span class="annot"><span class="annottext">c
+</span><a href="#local-6989586621679202186"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202185"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679202184"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-115"></span><span id="scen12"><span class="annot"><span class="annottext">scen12 :: (c, (p1, p2), a -&gt; (b1, b2)) -&gt; (c, a -&gt; ((p1, b1), (p2, b2)))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen12"><span class="hs-identifier hs-var hs-var">scen12</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202181"><span class="annot"><span class="annottext">c :: c
+</span><a href="#local-6989586621679202181"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202180"><span class="annot"><span class="annottext">p :: (p1, p2)
+</span><a href="#local-6989586621679202180"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202179"><span class="annot"><span class="annottext">f :: a -&gt; (b1, b2)
+</span><a href="#local-6989586621679202179"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">c -&gt; (p1, p2) -&gt; (a -&gt; (b1, b2)) -&gt; (c, a -&gt; ((p1, b1), (p2, b2)))
+forall c p1 p2 a b1 b2.
+c -&gt; (p1, p2) -&gt; (a -&gt; (b1, b2)) -&gt; (c, a -&gt; ((p1, b1), (p2, b2)))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt12"><span class="hs-identifier hs-var">ctxt12</span></a></span><span> </span><span class="annot"><span class="annottext">c
+</span><a href="#local-6989586621679202181"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2)
+</span><a href="#local-6989586621679202180"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; (b1, b2)
+</span><a href="#local-6989586621679202179"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-116"></span><span id="scen13"><span class="annot"><span class="annottext">scen13 :: (c, (p1, p2, p3), a -&gt; (b1, b2, b3))
+-&gt; (c, a -&gt; ((p1, b1), (p2, b2), (p3, b3)))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen13"><span class="hs-identifier hs-var hs-var">scen13</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202176"><span class="annot"><span class="annottext">c :: c
+</span><a href="#local-6989586621679202176"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202175"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202175"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202174"><span class="annot"><span class="annottext">f :: a -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202174"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">c
+-&gt; (p1, p2, p3)
+-&gt; (a -&gt; (b1, b2, b3))
+-&gt; (c, a -&gt; ((p1, b1), (p2, b2), (p3, b3)))
+forall c p1 p2 p3 a b1 b2 b3.
+c
+-&gt; (p1, p2, p3)
+-&gt; (a -&gt; (b1, b2, b3))
+-&gt; (c, a -&gt; ((p1, b1), (p2, b2), (p3, b3)))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt13"><span class="hs-identifier hs-var">ctxt13</span></a></span><span> </span><span class="annot"><span class="annottext">c
+</span><a href="#local-6989586621679202176"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202175"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202174"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-117"></span><span id="scen14"><span class="annot"><span class="annottext">scen14 :: (c, (p1, p2, p3, p4), a -&gt; (b1, b2, b3, b4))
+-&gt; (c, a -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen14"><span class="hs-identifier hs-var hs-var">scen14</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202171"><span class="annot"><span class="annottext">c :: c
+</span><a href="#local-6989586621679202171"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202170"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202170"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202169"><span class="annot"><span class="annottext">f :: a -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202169"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">c
+-&gt; (p1, p2, p3, p4)
+-&gt; (a -&gt; (b1, b2, b3, b4))
+-&gt; (c, a -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))
+forall c p1 p2 p3 p4 a b1 b2 b3 b4.
+c
+-&gt; (p1, p2, p3, p4)
+-&gt; (a -&gt; (b1, b2, b3, b4))
+-&gt; (c, a -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt14"><span class="hs-identifier hs-var">ctxt14</span></a></span><span> </span><span class="annot"><span class="annottext">c
+</span><a href="#local-6989586621679202171"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202170"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202169"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-118"></span><span id="scen21"><span class="annot"><span class="annottext">scen21 :: ((c1, c2), p, a1 -&gt; a2 -&gt; b) -&gt; (c1, a1 -&gt; (c2, a2 -&gt; (p, b)))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen21"><span class="hs-identifier hs-var hs-var">scen21</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202166"><span class="annot"><span class="annottext">c :: (c1, c2)
+</span><a href="#local-6989586621679202166"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202165"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202165"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202164"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; b
+</span><a href="#local-6989586621679202164"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2) -&gt; p -&gt; (a1 -&gt; a2 -&gt; b) -&gt; (c1, a1 -&gt; (c2, a2 -&gt; (p, b)))
+forall c1 c2 p a1 a2 b.
+(c1, c2) -&gt; p -&gt; (a1 -&gt; a2 -&gt; b) -&gt; (c1, a1 -&gt; (c2, a2 -&gt; (p, b)))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt21"><span class="hs-identifier hs-var">ctxt21</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2)
+</span><a href="#local-6989586621679202166"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202165"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; b
+</span><a href="#local-6989586621679202164"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-119"></span><span id="scen22"><span class="annot"><span class="annottext">scen22 :: ((ctxa, ctxa), (ctxb, ctxb), a1 -&gt; a2 -&gt; (b1, b2))
+-&gt; (ctxa, a1 -&gt; (ctxa, a2 -&gt; ((ctxb, b1), (ctxb, b2))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen22"><span class="hs-identifier hs-var hs-var">scen22</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202161"><span class="annot"><span class="annottext">c :: (ctxa, ctxa)
+</span><a href="#local-6989586621679202161"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202160"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202160"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202159"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202159"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; (b1, b2))
+-&gt; (ctxa, a1 -&gt; (ctxa, a2 -&gt; ((ctxb, b1), (ctxb, b2))))
+forall ctxa ctxb a1 a2 b1 b2.
+(ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; (b1, b2))
+-&gt; (ctxa, a1 -&gt; (ctxa, a2 -&gt; ((ctxb, b1), (ctxb, b2))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt22"><span class="hs-identifier hs-var">ctxt22</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxa, ctxa)
+</span><a href="#local-6989586621679202161"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202160"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202159"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-120"></span><span id="scen23"><span class="annot"><span class="annottext">scen23 :: ((c1, c2), (p1, p2, p3), a1 -&gt; a2 -&gt; (b1, b2, b3))
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; ((p1, b1), (p2, b2), (p3, b3))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen23"><span class="hs-identifier hs-var hs-var">scen23</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202156"><span class="annot"><span class="annottext">c :: (c1, c2)
+</span><a href="#local-6989586621679202156"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202155"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202155"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202154"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202154"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; (b1, b2, b3))
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; ((p1, b1), (p2, b2), (p3, b3))))
+forall c1 c2 p1 p2 p3 a1 a2 b1 b2 b3.
+(c1, c2)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; (b1, b2, b3))
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; ((p1, b1), (p2, b2), (p3, b3))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt23"><span class="hs-identifier hs-var">ctxt23</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2)
+</span><a href="#local-6989586621679202156"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202155"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202154"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-121"></span><span id="scen24"><span class="annot"><span class="annottext">scen24 :: ((c1, c2), (p1, p2, p3, p4), a1 -&gt; a2 -&gt; (b1, b2, b3, b4))
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen24"><span class="hs-identifier hs-var hs-var">scen24</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202151"><span class="annot"><span class="annottext">c :: (c1, c2)
+</span><a href="#local-6989586621679202151"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202150"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202150"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202149"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202149"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; (b1, b2, b3, b4))
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))
+forall c1 c2 p1 p2 p3 p4 a1 a2 b1 b2 b3 b4.
+(c1, c2)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; (b1, b2, b3, b4))
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt24"><span class="hs-identifier hs-var">ctxt24</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2)
+</span><a href="#local-6989586621679202151"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202150"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202149"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-122"></span><span id="scen31"><span class="annot"><span class="annottext">scen31 :: ((c1, c2, c3), p, a1 -&gt; a2 -&gt; a3 -&gt; b)
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (p, b))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen31"><span class="hs-identifier hs-var hs-var">scen31</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202146"><span class="annot"><span class="annottext">c :: (c1, c2, c3)
+</span><a href="#local-6989586621679202146"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202145"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202145"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202144"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; b
+</span><a href="#local-6989586621679202144"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; b)
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (p, b))))
+forall c1 c2 c3 p a1 a2 a3 b.
+(c1, c2, c3)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; b)
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (p, b))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt31"><span class="hs-identifier hs-var">ctxt31</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3)
+</span><a href="#local-6989586621679202146"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202145"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; b
+</span><a href="#local-6989586621679202144"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-123"></span><span id="scen32"><span class="annot"><span class="annottext">scen32 :: ((c, ctxa, ctxa), (ctxb, ctxb), a -&gt; a1 -&gt; a2 -&gt; (b1, b2))
+-&gt; (c, a -&gt; (ctxa, a1 -&gt; (ctxa, a2 -&gt; ((ctxb, b1), (ctxb, b2)))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen32"><span class="hs-identifier hs-var hs-var">scen32</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202141"><span class="annot"><span class="annottext">c :: (c, ctxa, ctxa)
+</span><a href="#local-6989586621679202141"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202140"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202140"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202139"><span class="annot"><span class="annottext">f :: a -&gt; a1 -&gt; a2 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202139"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a -&gt; a1 -&gt; a2 -&gt; (b1, b2))
+-&gt; (c, a -&gt; (ctxa, a1 -&gt; (ctxa, a2 -&gt; ((ctxb, b1), (ctxb, b2)))))
+forall c ctxa ctxb a a1 a2 b1 b2.
+(c, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a -&gt; a1 -&gt; a2 -&gt; (b1, b2))
+-&gt; (c, a -&gt; (ctxa, a1 -&gt; (ctxa, a2 -&gt; ((ctxb, b1), (ctxb, b2)))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt32"><span class="hs-identifier hs-var">ctxt32</span></a></span><span> </span><span class="annot"><span class="annottext">(c, ctxa, ctxa)
+</span><a href="#local-6989586621679202141"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202140"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a1 -&gt; a2 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202139"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-124"></span><span id="scen33"><span class="annot"><span class="annottext">scen33 :: ((c1, c2, c3), (p1, p2, p3), a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen33"><span class="hs-identifier hs-var hs-var">scen33</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202136"><span class="annot"><span class="annottext">c :: (c1, c2, c3)
+</span><a href="#local-6989586621679202136"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202135"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202135"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202134"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202134"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))
+forall c1 c2 c3 p1 p2 p3 a1 a2 a3 b1 b2 b3.
+(c1, c2, c3)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt33"><span class="hs-identifier hs-var">ctxt33</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3)
+</span><a href="#local-6989586621679202136"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202135"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202134"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-125"></span><span id="scen34"><span class="annot"><span class="annottext">scen34 :: ((c1, c2, c3), (p1, p2, p3, p4),
+ a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen34"><span class="hs-identifier hs-var hs-var">scen34</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202131"><span class="annot"><span class="annottext">c :: (c1, c2, c3)
+</span><a href="#local-6989586621679202131"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202130"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202130"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202129"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202129"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))
+forall c1 c2 c3 p1 p2 p3 p4 a1 a2 a3 b1 b2 b3 b4.
+(c1, c2, c3)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt34"><span class="hs-identifier hs-var">ctxt34</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3)
+</span><a href="#local-6989586621679202131"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202130"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202129"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-126"></span><span id="scen41"><span class="annot"><span class="annottext">scen41 :: ((c1, c2, c3, c4), p, a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; b)
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (p, b)))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen41"><span class="hs-identifier hs-var hs-var">scen41</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202126"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4)
+</span><a href="#local-6989586621679202126"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202125"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202125"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202124"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; b
+</span><a href="#local-6989586621679202124"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; b)
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (p, b)))))
+forall c1 c2 c3 c4 p a1 a2 a3 a4 b.
+(c1, c2, c3, c4)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; b)
+-&gt; (c1, a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (p, b)))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt41"><span class="hs-identifier hs-var">ctxt41</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4)
+</span><a href="#local-6989586621679202126"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202125"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; b
+</span><a href="#local-6989586621679202124"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-127"></span><span id="scen42"><span class="annot"><span class="annottext">scen42 :: ((c1, c2, ctxa, ctxa), (ctxb, ctxb),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (ctxa, a3 -&gt; (ctxa, a4 -&gt; ((ctxb, b1), (ctxb, b2))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen42"><span class="hs-identifier hs-var hs-var">scen42</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202121"><span class="annot"><span class="annottext">c :: (c1, c2, ctxa, ctxa)
+</span><a href="#local-6989586621679202121"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202120"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202120"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202119"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202119"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (ctxa, a3 -&gt; (ctxa, a4 -&gt; ((ctxb, b1), (ctxb, b2))))))
+forall c1 c2 ctxa ctxb a1 a2 a3 a4 b1 b2.
+(c1, c2, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (ctxa, a3 -&gt; (ctxa, a4 -&gt; ((ctxb, b1), (ctxb, b2))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt42"><span class="hs-identifier hs-var">ctxt42</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, ctxa, ctxa)
+</span><a href="#local-6989586621679202121"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202120"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202119"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-128"></span><span id="scen43"><span class="annot"><span class="annottext">scen43 :: ((c1, c2, c3, c4), (p1, p2, p3),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen43"><span class="hs-identifier hs-var hs-var">scen43</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202116"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4)
+</span><a href="#local-6989586621679202116"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202115"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202115"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202114"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202114"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))
+forall c1 c2 c3 c4 p1 p2 p3 a1 a2 a3 a4 b1 b2 b3.
+(c1, c2, c3, c4)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt43"><span class="hs-identifier hs-var">ctxt43</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4)
+</span><a href="#local-6989586621679202116"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202115"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202114"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-129"></span><span id="scen44"><span class="annot"><span class="annottext">scen44 :: ((c1, c2, c3, c4), (p1, p2, p3, p4),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen44"><span class="hs-identifier hs-var hs-var">scen44</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202111"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4)
+</span><a href="#local-6989586621679202111"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202110"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202110"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202109"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202109"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))
+forall c1 c2 c3 c4 p1 p2 p3 p4 a1 a2 a3 a4 b1 b2 b3 b4.
+(c1, c2, c3, c4)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt44"><span class="hs-identifier hs-var">ctxt44</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4)
+</span><a href="#local-6989586621679202111"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202110"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202109"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-130"></span><span id="scen51"><span class="annot"><span class="annottext">scen51 :: ((c1, c2, c3, c4, c5), p, a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; b)
+-&gt; (c1,
+    a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (p, b))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen51"><span class="hs-identifier hs-var hs-var">scen51</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202106"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5)
+</span><a href="#local-6989586621679202106"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202105"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202105"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202104"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; b
+</span><a href="#local-6989586621679202104"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; b)
+-&gt; (c1,
+    a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (p, b))))))
+forall c1 c2 c3 c4 c5 p a1 a2 a3 a4 a5 b.
+(c1, c2, c3, c4, c5)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; b)
+-&gt; (c1,
+    a1 -&gt; (c2, a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (p, b))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt51"><span class="hs-identifier hs-var">ctxt51</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5)
+</span><a href="#local-6989586621679202106"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202105"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; b
+</span><a href="#local-6989586621679202104"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-131"></span><span id="scen52"><span class="annot"><span class="annottext">scen52 :: ((c1, c2, c3, ctxa, ctxa), (ctxb, ctxb),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (ctxa, a4 -&gt; (ctxa, a5 -&gt; ((ctxb, b1), (ctxb, b2)))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen52"><span class="hs-identifier hs-var hs-var">scen52</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202101"><span class="annot"><span class="annottext">c :: (c1, c2, c3, ctxa, ctxa)
+</span><a href="#local-6989586621679202101"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202100"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202100"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202099"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202099"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (ctxa, a4 -&gt; (ctxa, a5 -&gt; ((ctxb, b1), (ctxb, b2)))))))
+forall c1 c2 c3 ctxa ctxb a1 a2 a3 a4 a5 b1 b2.
+(c1, c2, c3, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (ctxa, a4 -&gt; (ctxa, a5 -&gt; ((ctxb, b1), (ctxb, b2)))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt52"><span class="hs-identifier hs-var">ctxt52</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, ctxa, ctxa)
+</span><a href="#local-6989586621679202101"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202100"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202099"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-132"></span><span id="scen53"><span class="annot"><span class="annottext">scen53 :: ((c1, c2, c3, c4, c5), (p1, p2, p3),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen53"><span class="hs-identifier hs-var hs-var">scen53</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202096"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5)
+</span><a href="#local-6989586621679202096"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202095"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202095"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202094"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202094"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))))
+forall c1 c2 c3 c4 c5 p1 p2 p3 a1 a2 a3 a4 a5 b1 b2 b3.
+(c1, c2, c3, c4, c5)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt53"><span class="hs-identifier hs-var">ctxt53</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5)
+</span><a href="#local-6989586621679202096"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202095"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202094"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-133"></span><span id="scen54"><span class="annot"><span class="annottext">scen54 :: ((c1, c2, c3, c4, c5), (p1, p2, p3, p4),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen54"><span class="hs-identifier hs-var hs-var">scen54</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202091"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5)
+</span><a href="#local-6989586621679202091"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202090"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202090"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202089"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202089"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))))
+forall c1 c2 c3 c4 c5 p1 p2 p3 p4 a1 a2 a3 a4 a5 b1 b2 b3 b4.
+(c1, c2, c3, c4, c5)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt54"><span class="hs-identifier hs-var">ctxt54</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5)
+</span><a href="#local-6989586621679202091"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202090"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202089"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-134"></span><span id="scen61"><span class="annot"><span class="annottext">scen61 :: ((c1, c2, c3, c4, c5, c6), p,
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (p, b)))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen61"><span class="hs-identifier hs-var hs-var">scen61</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202086"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6)
+</span><a href="#local-6989586621679202086"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202085"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202085"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202084"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; b
+</span><a href="#local-6989586621679202084"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (p, b)))))))
+forall c1 c2 c3 c4 c5 c6 p a1 a2 a3 a4 a5 a6 b.
+(c1, c2, c3, c4, c5, c6)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2 -&gt; (c3, a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (p, b)))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt61"><span class="hs-identifier hs-var">ctxt61</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6)
+</span><a href="#local-6989586621679202086"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202085"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; b
+</span><a href="#local-6989586621679202084"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-135"></span><span id="scen62"><span class="annot"><span class="annottext">scen62 :: ((c1, c2, c3, c4, ctxa, ctxa), (ctxb, ctxb),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (ctxa, a5 -&gt; (ctxa, a6 -&gt; ((ctxb, b1), (ctxb, b2))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen62"><span class="hs-identifier hs-var hs-var">scen62</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202081"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, ctxa, ctxa)
+</span><a href="#local-6989586621679202081"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202080"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202080"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202079"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202079"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (ctxa, a5 -&gt; (ctxa, a6 -&gt; ((ctxb, b1), (ctxb, b2))))))))
+forall c1 c2 c3 c4 ctxa ctxb a1 a2 a3 a4 a5 a6 b1 b2.
+(c1, c2, c3, c4, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (ctxa, a5 -&gt; (ctxa, a6 -&gt; ((ctxb, b1), (ctxb, b2))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt62"><span class="hs-identifier hs-var">ctxt62</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, ctxa, ctxa)
+</span><a href="#local-6989586621679202081"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202080"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202079"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-136"></span><span id="scen63"><span class="annot"><span class="annottext">scen63 :: ((c1, c2, c3, c4, c5, c6), (p1, p2, p3),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen63"><span class="hs-identifier hs-var hs-var">scen63</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202076"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6)
+</span><a href="#local-6989586621679202076"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202075"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202075"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202074"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202074"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))))
+forall c1 c2 c3 c4 c5 c6 p1 p2 p3 a1 a2 a3 a4 a5 a6 b1 b2 b3.
+(c1, c2, c3, c4, c5, c6)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt63"><span class="hs-identifier hs-var">ctxt63</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6)
+</span><a href="#local-6989586621679202076"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202075"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202074"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-137"></span><span id="scen64"><span class="annot"><span class="annottext">scen64 :: ((c1, c2, c3, c4, c5, c6), (p1, p2, p3, p4),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (c6, a6 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen64"><span class="hs-identifier hs-var hs-var">scen64</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202071"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6)
+</span><a href="#local-6989586621679202071"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202070"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202070"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202069"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202069"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (c6, a6 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))))
+forall c1 c2 c3 c4 c5 c6 p1 p2 p3 p4 a1 a2 a3 a4 a5 a6 b1 b2 b3 b4.
+(c1, c2, c3, c4, c5, c6)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (c6, a6 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt64"><span class="hs-identifier hs-var">ctxt64</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6)
+</span><a href="#local-6989586621679202071"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202070"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202069"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-138"></span><span id="scen71"><span class="annot"><span class="annottext">scen71 :: ((c1, c2, c3, c4, c5, c6, c7), p,
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; (p, b))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen71"><span class="hs-identifier hs-var hs-var">scen71</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202066"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, c7)
+</span><a href="#local-6989586621679202066"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202065"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202065"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202064"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; b
+</span><a href="#local-6989586621679202064"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; (p, b))))))))
+forall c1 c2 c3 c4 c5 c6 c7 p a1 a2 a3 a4 a5 a6 a7 b.
+(c1, c2, c3, c4, c5, c6, c7)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3 -&gt; (c4, a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; (p, b))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt71"><span class="hs-identifier hs-var">ctxt71</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7)
+</span><a href="#local-6989586621679202066"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202065"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; b
+</span><a href="#local-6989586621679202064"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-139"></span><span id="scen72"><span class="annot"><span class="annottext">scen72 :: ((c1, c2, c3, c4, c5, ctxa, ctxa), (ctxb, ctxb),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (ctxa, a6 -&gt; (ctxa, a7 -&gt; ((ctxb, b1), (ctxb, b2)))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen72"><span class="hs-identifier hs-var hs-var">scen72</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202061"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, ctxa, ctxa)
+</span><a href="#local-6989586621679202061"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202060"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202060"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202059"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202059"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (ctxa, a6 -&gt; (ctxa, a7 -&gt; ((ctxb, b1), (ctxb, b2)))))))))
+forall c1 c2 c3 c4 c5 ctxa ctxb a1 a2 a3 a4 a5 a6 a7 b1 b2.
+(c1, c2, c3, c4, c5, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (ctxa, a6 -&gt; (ctxa, a7 -&gt; ((ctxb, b1), (ctxb, b2)))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt72"><span class="hs-identifier hs-var">ctxt72</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, ctxa, ctxa)
+</span><a href="#local-6989586621679202061"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202060"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202059"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-140"></span><span id="scen73"><span class="annot"><span class="annottext">scen73 :: ((c1, c2, c3, c4, c5, c6, c7), (p1, p2, p3),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen73"><span class="hs-identifier hs-var hs-var">scen73</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202056"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, c7)
+</span><a href="#local-6989586621679202056"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202055"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202055"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202054"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202054"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))))))
+forall c1 c2 c3 c4 c5 c6 c7 p1 p2 p3 a1 a2 a3 a4 a5 a6 a7 b1 b2 b3.
+(c1, c2, c3, c4, c5, c6, c7)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; ((p1, b1), (p2, b2), (p3, b3)))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt73"><span class="hs-identifier hs-var">ctxt73</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7)
+</span><a href="#local-6989586621679202056"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202055"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202054"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-141"></span><span id="scen74"><span class="annot"><span class="annottext">scen74 :: ((c1, c2, c3, c4, c5, c6, c7), (p1, p2, p3, p4),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (c7, a7 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen74"><span class="hs-identifier hs-var hs-var">scen74</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202051"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, c7)
+</span><a href="#local-6989586621679202051"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202050"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202050"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202049"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202049"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (c7, a7 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))))))
+forall c1 c2 c3 c4 c5 c6 c7 p1 p2 p3 p4 a1 a2 a3 a4 a5 a6 a7 b1 b2
+       b3 b4.
+(c1, c2, c3, c4, c5, c6, c7)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (c7, a7 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4)))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt74"><span class="hs-identifier hs-var">ctxt74</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7)
+</span><a href="#local-6989586621679202051"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202050"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202049"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-142"></span><span id="scen81"><span class="annot"><span class="annottext">scen81 :: ((c1, c2, c3, c4, c5, c6, c7, c8), p,
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; (c8, a8 -&gt; (p, b)))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen81"><span class="hs-identifier hs-var hs-var">scen81</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202046"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, c7, c8)
+</span><a href="#local-6989586621679202046"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202045"><span class="annot"><span class="annottext">p :: p
+</span><a href="#local-6989586621679202045"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202044"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; b
+</span><a href="#local-6989586621679202044"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7, c8)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; (c8, a8 -&gt; (p, b)))))))))
+forall c1 c2 c3 c4 c5 c6 c7 c8 p a1 a2 a3 a4 a5 a6 a7 a8 b.
+(c1, c2, c3, c4, c5, c6, c7, c8)
+-&gt; p
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; b)
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4 -&gt; (c5, a5 -&gt; (c6, a6 -&gt; (c7, a7 -&gt; (c8, a8 -&gt; (p, b)))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt81"><span class="hs-identifier hs-var">ctxt81</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7, c8)
+</span><a href="#local-6989586621679202046"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621679202045"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; b
+</span><a href="#local-6989586621679202044"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-143"></span><span id="scen82"><span class="annot"><span class="annottext">scen82 :: ((c1, c2, c3, c4, c5, c6, ctxa, ctxa), (ctxb, ctxb),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (ctxa, a7 -&gt; (ctxa, a8 -&gt; ((ctxb, b1), (ctxb, b2))))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen82"><span class="hs-identifier hs-var hs-var">scen82</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202041"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, ctxa, ctxa)
+</span><a href="#local-6989586621679202041"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202040"><span class="annot"><span class="annottext">p :: (ctxb, ctxb)
+</span><a href="#local-6989586621679202040"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202039"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202039"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (ctxa, a7 -&gt; (ctxa, a8 -&gt; ((ctxb, b1), (ctxb, b2))))))))))
+forall c1 c2 c3 c4 c5 c6 ctxa ctxb a1 a2 a3 a4 a5 a6 a7 a8 b1 b2.
+(c1, c2, c3, c4, c5, c6, ctxa, ctxa)
+-&gt; (ctxb, ctxb)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (ctxa, a7 -&gt; (ctxa, a8 -&gt; ((ctxb, b1), (ctxb, b2))))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt82"><span class="hs-identifier hs-var">ctxt82</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, ctxa, ctxa)
+</span><a href="#local-6989586621679202041"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(ctxb, ctxb)
+</span><a href="#local-6989586621679202040"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2)
+</span><a href="#local-6989586621679202039"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-144"></span><span id="scen83"><span class="annot"><span class="annottext">scen83 :: ((c1, c2, c3, c4, c5, c6, c7, c8), (p1, p2, p3),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (c7, a7 -&gt; (c8, a8 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen83"><span class="hs-identifier hs-var hs-var">scen83</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202036"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, c7, c8)
+</span><a href="#local-6989586621679202036"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202035"><span class="annot"><span class="annottext">p :: (p1, p2, p3)
+</span><a href="#local-6989586621679202035"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202034"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202034"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7, c8)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (c7, a7 -&gt; (c8, a8 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))))))
+forall c1 c2 c3 c4 c5 c6 c7 c8 p1 p2 p3 a1 a2 a3 a4 a5 a6 a7 a8 b1
+       b2 b3.
+(c1, c2, c3, c4, c5, c6, c7, c8)
+-&gt; (p1, p2, p3)
+-&gt; (a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6 -&gt; (c7, a7 -&gt; (c8, a8 -&gt; ((p1, b1), (p2, b2), (p3, b3))))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt83"><span class="hs-identifier hs-var">ctxt83</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7, c8)
+</span><a href="#local-6989586621679202036"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3)
+</span><a href="#local-6989586621679202035"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3)
+</span><a href="#local-6989586621679202034"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span>
+</span><span id="line-145"></span><span id="scen84"><span class="annot"><span class="annottext">scen84 :: ((c1, c2, c3, c4, c5, c6, c7, c8), (p1, p2, p3, p4),
+ a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6
+                        -&gt; (c7,
+                            a7 -&gt; (c8, a8 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))))))
+</span><a href="ForSyDe.Atom.MoC.SDF.Core.html#scen84"><span class="hs-identifier hs-var hs-var">scen84</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679202031"><span class="annot"><span class="annottext">c :: (c1, c2, c3, c4, c5, c6, c7, c8)
+</span><a href="#local-6989586621679202031"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202030"><span class="annot"><span class="annottext">p :: (p1, p2, p3, p4)
+</span><a href="#local-6989586621679202030"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679202029"><span class="annot"><span class="annottext">f :: a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202029"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7, c8)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1
+    -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6
+                        -&gt; (c7,
+                            a7 -&gt; (c8, a8 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))))))
+forall c1 c2 c3 c4 c5 c6 c7 c8 p1 p2 p3 p4 a1 a2 a3 a4 a5 a6 a7 a8
+       b1 b2 b3 b4.
+(c1, c2, c3, c4, c5, c6, c7, c8)
+-&gt; (p1, p2, p3, p4)
+-&gt; (a1
+    -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3, b4))
+-&gt; (c1,
+    a1
+    -&gt; (c2,
+        a2
+        -&gt; (c3,
+            a3
+            -&gt; (c4,
+                a4
+                -&gt; (c5,
+                    a5
+                    -&gt; (c6,
+                        a6
+                        -&gt; (c7,
+                            a7 -&gt; (c8, a8 -&gt; ((p1, b1), (p2, b2), (p3, b3), (p4, b4))))))))))
+</span><a href="ForSyDe.Atom.MoC.html#ctxt84"><span class="hs-identifier hs-var">ctxt84</span></a></span><span> </span><span class="annot"><span class="annottext">(c1, c2, c3, c4, c5, c6, c7, c8)
+</span><a href="#local-6989586621679202031"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">(p1, p2, p3, p4)
+</span><a href="#local-6989586621679202030"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">a1 -&gt; a2 -&gt; a3 -&gt; a4 -&gt; a5 -&gt; a6 -&gt; a7 -&gt; a8 -&gt; (b1, b2, b3, b4)
+</span><a href="#local-6989586621679202029"><span class="hs-identifier hs-var">f</span></a></span><span>  </span><span>
+</span><span id="line-146"></span></pre></body></html>

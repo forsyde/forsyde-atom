@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>ForSyDe.Atom.MoC.SDF.SADF</title><link href="linuwial.css" rel="stylesheet" type="text/css" title="Linuwial" /><link rel="stylesheet" type="text/css" href="quick-jump.css" /><link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700" /><script src="haddock-bundle.min.js" async="async" type="text/javascript"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { processClass: "mathjax", ignoreClass: ".*" } });</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script></head><body><div id="package-header"><span class="caption">forsyde-atom-0.3.0.0: Shallow-embedded DSL for modeling cyber-physical systems </span><ul class="links" id="page-menu"><li><a href="src/ForSyDe.Atom.MoC.SDF.SADF.html">Source</a></li><li><a href="index.html">Contents</a></li><li><a href="doc-index.html">Index</a></li><li><a href="https://forsyde.github.io/forsyde-atom/">Back to ForSyDe Web</a></li></ul></div><div id="content"><div id="module-header"><table class="info"><tr><th valign="top">Copyright</th><td>(c) George Ungureanu KTH/EECS/ESY 2018-2020</td></tr><tr><th>License</th><td>BSD-style (see the file LICENSE)</td></tr><tr><th>Maintainer</th><td>ugeorge@kth.se</td></tr><tr><th>Stability</th><td>experimental</td></tr><tr><th>Portability</th><td>portable</td></tr><tr><th>Safe Haskell</th><td>Safe</td></tr><tr><th>Language</th><td>Haskell2010</td></tr></table><p class="caption">ForSyDe.Atom.MoC.SDF.SADF</p></div><div id="table-of-contents"><div id="contents-list"><p class="caption" onclick="window.scrollTo(0,0)">Contents</p><ul><li><a href="#g:1">Demonstrative example</a></li><li><a href="#g:2">Re-Exported from SDF</a></li><li><a href="#g:3">SADF processes</a></li></ul></div></div><div id="description"><p class="caption">Description</p><div class="doc"><p>The <code>SADF</code> library implements a DSL of atoms operating according to the
+ scenario-aware dataflow model of computation, in terms of the atoms of
+ <a href="ForSyDe-Atom-MoC-SDF.html">ForSyDe.Atom.MoC.SDF</a>. As such SADF patterns are operating on
+ <code><a href="ForSyDe-Atom-MoC-SDF.html#v:SDF" title="ForSyDe.Atom.MoC.SDF">SDF</a></code> signals, i.e. they have the exact same time semantics,
+ hence there is no need for MoC interfaces between these two MoCs. Also mixing the
+ two kinds of processes is considered legal, as SADF is simply an extension of SDF.</p><p>SADF is one of the more recent attempts to increase the expressivity of the SDF MoC
+ by adding the possibility to describe dynamic behaviors in a way that still
+ maintains high analyzability for its process networks, like its predecessor. For
+ more details on the SADF MoC and its uses, please consult
+ <a href="ForSyDe-Atom.html#stuijk11">[Stuijk11]</a>. In short, SADF defines two types of
+ actors:</p><ul><li><em>detectors</em>: are Mealy-like finite state machines (i.e. react immediately) that
+   input signals carrying data tokens and, based on the input status, produce
+   &quot;control tokens&quot; on their output signals.</li><li><em>kernels</em>: are combinational processes that input one control signal and
+   (possibly many) data signals and during a firing consumes one control token and,
+   based on it, it adapts its behavior accordingly. The behavior adaptation can be
+   seen in the consumption rate, production rate, process function, or any
+   cobination of these three.</li></ul><p>ForSyDe-Atom takes advantage of the host paradigm, where functions are first-class
+ citizens and can be passed as values, and implements control tokens as <em>the</em> actual
+ behavior parameters passed to a process (i.e. a triple containing the consumption
+ rate, the production rate and the process function). The applicative mechanism
+ enabling such execution schema is similar to the one depicted for
+ <code><a href="ForSyDe-Atom-MoC-SDF.html#v:reconfig22" title="ForSyDe.Atom.MoC.SDF">reconfig22</a></code>. For a detailed description of their
+ implementation in ForSyDe as well as comprehensive examples please consult
+ <a href="ForSyDe-Atom.html#bonna19">[Bonna19]</a>.</p><p>Useful pointers:</p><ul><li><a href="ForSyDe-Atom.html">ForSyDe.Atom</a> contains general guidelines for using the API</li><li><a href="ForSyDe-Atom-MoC-SDF.html">ForSyDe.Atom.MoC.SDF</a> defines the synchronous dataflow MoC.</li><li>the <a href="ForSyDe-Atom.html#naming_conv">naming convention</a> rules on how to interpret
+   the function names based on their number of inputs and outputs.</li></ul></div></div><div id="synopsis"><details id="syn"><summary>Synopsis</summary><ul class="details-toggle" data-details-id="syn"><li class="src short"><span class="keyword">type</span> <a href="#t:Signal">Signal</a> a = <a href="ForSyDe-Atom-MoC-Stream.html#t:Stream" title="ForSyDe.Atom.MoC.Stream">Stream</a> (<a href="ForSyDe-Atom-MoC-SDF.html#t:SDF" title="ForSyDe.Atom.MoC.SDF">SDF</a> a)</li><li class="src short"><span class="keyword">type</span> <a href="#t:Prod">Prod</a> = <a href="https://hackage.haskell.org/package/base-4.13.0.0/docs/Data-Int.html#t:Int" title="Data.Int">Int</a></li><li class="src short"><span class="keyword">type</span> <a href="#t:Cons">Cons</a> = <a href="https://hackage.haskell.org/package/base-4.13.0.0/docs/Data-Int.html#t:Int" title="Data.Int">Int</a></li><li class="src short"><a href="#v:signal">signal</a> :: [a] -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a</li><li class="src short"><a href="#v:delay">delay</a> :: [a] -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a</li><li class="src short"><a href="#v:kernel22">kernel22</a> :: <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> ((<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>), (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>), [a1] -&gt; [a2] -&gt; ([b1], [b2])) -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a1 -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a2 -&gt; (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> b1, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> b2)</li><li class="src short"><a href="#v:detector22">detector22</a> :: (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>) -&gt; (s -&gt; [a1] -&gt; [a2] -&gt; s) -&gt; (s -&gt; ((<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>, [y1]), (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>, [y2]))) -&gt; s -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a1 -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a2 -&gt; (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> y1, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> y2)</li></ul></details></div><div id="interface"><a href="#g:1" id="g:1"><h1>Demonstrative example</h1></a><div class="doc"><p>Below is an example to demonstrate the usage of the SADF MoC: a high-level
+ model of a RISC processor. In this model the instruction decoder is described as
+ a SADF <em>detector</em> <code>decDetector</code> which dynamically adapts the shape of the proces
+ network and its functionality depending on the type of instruction fetched
+ (e.g. branch, operation, terminal output, etc.). The instruction fetch and
+ execution unit are implemented as a kernel each <code>ifKernel</code> and <code>exeKernel</code>
+ respectively, whose execution parameters are controlled by the decoder. The code
+ below is a simplification of the example presented in
+ <a href="ForSyDe-Atom.html#bonna19">[Bonna19]</a>, with less instructions and no programmable
+ memory, only registers.</p><p><img src="fig/moc-ddf-sadf-risc.png" /></p><p>Each of the kernels has a self-loop (not shown in the picture) modeling their
+ state: <code>ifKernel</code> has one for modeling its program counter; <code>exeKernel</code> has one
+ for modeling the register set. Notice that the feedback loop between <code>ifKernel</code>
+ and <code>exeKernel</code> (and the ones derived) has no initial token, yet as seen in the
+ simulations, it does not deadlock. This is because all scenario graphs infered by
+ the detector are causal. More exactly, the two channels involved in this loop are
+ mutually exclusive.</p><pre>import ForSyDe.Atom
+import ForSyDe.Atom.MoC (takeS)
+import ForSyDe.Atom.MoC.SDF.SADF
+import ForSyDe.Atom.Skel.Vector as V
+
+type StateDEC = Int      -- state decoder
+type Instr = (Op, [Arg]) -- instruction type (operation, args)
+type Arg = Integer       -- numerical arguments
+type Op  = String        -- operation name
+type PC  = Integer       -- program counter
+type Reg = Arg           -- register
+
+---------------------------------------------------------
+-- Instruction Fetch (IF) Kernel
+---------------------------------------------------------
+
+type ScenarioIF = ( (Cons, Cons), (Prod, Prod, Prod)
+                  , [Arg] -&gt; [PC] -&gt; ([Op], [[Arg]], [PC]) )
+
+ifScenario :: StateDEC -&gt; ScenarioIF
+ifScenario n
+  | n &gt; 9 || n &lt; 0  = error &quot;ifScenario: Non existent scenario&quot;
+  | n &gt;= 6 &amp;&amp; n &lt; 9 = -- branch
+    ((1,1), (1,1,1), \[a] [pc] -&gt; ([op program (pc+a)], [arg program (pc+a)], [pc+a+1])) 
+  | otherwise       = -- no branch
+    ((0,1), (1,1,1), \_   [pc] -&gt; ([op program pc],     [arg program pc],     [pc+1]))
+  where arg mem i = snd $ mem &lt;@! i
+        op  mem i = fst $ mem &lt;@! i
+
+ifKernel :: Signal ScenarioIF -&gt; Signal Arg -&gt; (Signal Op, Signal [Arg])
+ifKernel ifCt sigBr = (sigOp, sigArg)
+  where (sigOp, sigArg, sigPc) = <a href="#v:kernel22">kernel23</a> ifCt sigBr sigPc'
+        sigPc' = delay [1] sigPc
+
+---------------------------------------------------------
+-- Execute (EXE) Kernel
+---------------------------------------------------------
+
+type ScenarioEXE = ( (Cons, Cons), (Prod, Prod, Prod)
+                   , [[Arg]] -&gt; [Vector Reg] -&gt; ([Arg], [Arg], [Vector Reg]))
+
+exeScenario :: StateDEC -&gt; ScenarioEXE
+exeScenario 0 = ((1,0), (0,0,0), \_ _ -&gt; ([], [], []))                                                  -- nop
+exeScenario 1 = ((1,1), (0,0,1), \[[rd, rs]] [r] -&gt; ([], [], [replace rd (r &lt;@! rs) r]))                -- mov
+exeScenario 2 = ((1,1), (0,0,1), \[[rd, i]]  [r] -&gt; ([], [], [replace rd i r]))                         -- movi
+exeScenario 3 = ((1,1), (0,0,1), \[[rd, rs]] [r] -&gt; ([], [], [replace rd ((r &lt;@! rd) + (r &lt;@! rs)) r])) -- add
+exeScenario 4 = ((1,1), (0,0,1), \[[rd, rs]] [r] -&gt; ([], [], [replace rd ((r &lt;@! rd) - (r &lt;@! rs)) r])) -- sub
+exeScenario 5 = ((1,1), (0,0,1), \[[rd, rs]] [r] -&gt; ([], [], [replace rd ((r &lt;@! rd) * (r &lt;@! rs)) r])) -- mul
+exeScenario 6 = ((1,1), (1,0,1), \[[rs, v]]  [r] -&gt; ([if r &lt;@! rs == 0 then v else 0], [], [r]))        -- bez
+exeScenario 7 = ((1,1), (1,0,1), \[[rs, v]]  [r] -&gt; ([if r &lt;@! rs &gt; 0  then v else 0], [], [r]))        -- bgz
+exeScenario 8 = ((1,0), (1,0,0), \[[v]]       _  -&gt; ([v], [], []))                                      -- jmp
+exeScenario 9 = ((1,1), (0,1,1), \[[rs]]     [r] -&gt; ([], [r &lt;@! rs], [r]))                           -- printf
+exeScenario _  = error &quot;exeScenario: Non existent scenario&quot;
+
+exeKernel :: Signal ScenarioEXE -&gt; Signal [Arg] -&gt; (Signal Arg, Signal Arg)
+exeKernel exeCt sigArg = (sigBr, sigPrf)
+  where (sigBr, sigPrf, sigReg) = <a href="#v:kernel22">kernel23</a> exeCt sigArg sigReg' 
+        sigReg' = delay [fanoutn 32 0] sigReg
+
+---------------------------------------------------------
+-- Decode Detector
+---------------------------------------------------------
+
+type ScenarioDEC = ((Prod,[ScenarioIF]), (Prod,[ScenarioEXE]))
+
+decScenario :: StateDEC -&gt; ScenarioDEC
+decScenario n = ((1,[ifScenario n]), (1,[exeScenario n]))
+
+decState :: StateDEC -&gt; [Op] -&gt; StateDEC
+decState _ [&quot;nop&quot;]    = 0
+decState _ [&quot;mov&quot;]    = 1
+decState _ [&quot;movi&quot;]   = 2
+decState _ [&quot;add&quot;]    = 3
+decState _ [&quot;sub&quot;]    = 4
+decState _ [&quot;mul&quot;]    = 5
+decState _ [&quot;bez&quot;]    = 6
+decState _ [&quot;bgz&quot;]    = 7
+decState _ [&quot;jmp&quot;]    = 8
+decState _ [&quot;printf&quot;] = 9
+decState _ _ = error &quot;decState: Input not recognized&quot;
+
+decDetector :: Signal Op -&gt; (Signal ScenarioIF, Signal ScenarioEXE)
+decDetector = <a href="#v:detector22">detector12</a> 1 decState decScenario 0
+
+---------------------------------------------------------
+-- RISC Model: Process Network
+---------------------------------------------------------
+
+riscSADF = sigPrintf
+  where (sigBr, sigPrintf) = exeKernel exeCt sigArg
+        (sigOp, sigArg) = ifKernel ifCt' sigBr
+        (ifCt, exeCt) = decDetector sigOp
+        ifCt' = delay [ifScenario 0] ifCt
+
+---------------------------------------------------------
+-- TEST Program
+---------------------------------------------------------
+
+program = vector
+  [ (&quot;movi&quot;, [1,100])
+  , (&quot;movi&quot;, [2,20])
+  , (&quot;printf&quot;, [1])
+  , (&quot;sub&quot;, [1,2])
+  , (&quot;printf&quot;, [1])
+  , (&quot;bgz&quot;,  [1,-3])
+  , (&quot;jmp&quot;, [-7])
+  ]
+</pre><p>If you copy-paste the code above in a new <code>hs</code> file and load it in the
+ interpreter, yout can test the demo program with</p><pre>&gt; takeS 10 riscSADF
+ {100,80,60,40,20,0,100,80,60,40}</pre></div><a href="#g:2" id="g:2"><h1>Re-Exported from SDF</h1></a><div class="doc"><p>These constructors and utilities are re-exported from <a href="ForSyDe-Atom-MoC-SDF.html">ForSyDe.Atom.MoC.SDF</a>
+ for convenience.</p></div><div class="top"><p class="src"><span class="keyword">type</span> <a id="t:Signal" class="def">Signal</a> a = <a href="ForSyDe-Atom-MoC-Stream.html#t:Stream" title="ForSyDe.Atom.MoC.Stream">Stream</a> (<a href="ForSyDe-Atom-MoC-SDF.html#t:SDF" title="ForSyDe.Atom.MoC.SDF">SDF</a> a) <a href="src/ForSyDe.Atom.MoC.SDF.Core.html#Signal" class="link">Source</a> <a href="#t:Signal" class="selflink">#</a></p><div class="doc"><p>Type synonym for a SY signal, i.e. &quot;a signal of SY events&quot;</p></div></div><div class="top"><p class="src"><span class="keyword">type</span> <a id="t:Prod" class="def">Prod</a> = <a href="https://hackage.haskell.org/package/base-4.13.0.0/docs/Data-Int.html#t:Int" title="Data.Int">Int</a> <a href="src/ForSyDe.Atom.MoC.SDF.Core.html#Prod" class="link">Source</a> <a href="#t:Prod" class="selflink">#</a></p><div class="doc"><p>Type synonym for consumption rate</p></div></div><div class="top"><p class="src"><span class="keyword">type</span> <a id="t:Cons" class="def">Cons</a> = <a href="https://hackage.haskell.org/package/base-4.13.0.0/docs/Data-Int.html#t:Int" title="Data.Int">Int</a> <a href="src/ForSyDe.Atom.MoC.SDF.Core.html#Cons" class="link">Source</a> <a href="#t:Cons" class="selflink">#</a></p><div class="doc"><p>Type synonym for production rate</p></div></div><div class="top"><p class="src"><a id="v:signal" class="def">signal</a> :: [a] -&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a <a href="src/ForSyDe.Atom.MoC.SDF.Core.html#signal" class="link">Source</a> <a href="#v:signal" class="selflink">#</a></p><div class="doc"><p>Transforms a list of values into a SDF signal with only one
+ partition, i.e. all events share the same (initial) tag.</p></div></div><div class="top"><p class="src"><a id="v:delay" class="def">delay</a> <a href="src/ForSyDe.Atom.MoC.SDF.SDF.html#delay" class="link">Source</a> <a href="#v:delay" class="selflink">#</a></p><div class="subs arguments"><p class="caption">Arguments</p><table><tr><td class="src">:: [a]</td><td class="doc"><p>list of initial values</p></td></tr><tr><td class="src">-&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a</td><td class="doc"><p>input signal</p></td></tr><tr><td class="src">-&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a</td><td class="doc"><p>output signal</p></td></tr></table></div><div class="doc"><p>The <code>delay</code> process &quot;delays&quot; a signal with initial events built
+ from a list. It is an instantiation of the <code><a href="ForSyDe-Atom-MoC.html#v:delay" title="ForSyDe.Atom.MoC">delay</a></code>
+ constructor.</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let s = signal [1,2,3,4,5]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>delay [0,0,0] s
+</code></strong>{0,0,0,1,2,3,4,5}
+</pre><p><img src="fig/moc-sdf-pattern-delay.png" /></p></div></div><a href="#g:3" id="g:3"><h1>SADF processes</h1></a><div class="top"><p class="src"><a id="v:kernel22" class="def">kernel22</a> <a href="src/ForSyDe.Atom.MoC.SDF.SADF.html#kernel22" class="link">Source</a> <a href="#v:kernel22" class="selflink">#</a></p><div class="subs arguments"><p class="caption">Arguments</p><table><tr><td class="src">:: <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> ((<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>), (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>), [a1] -&gt; [a2] -&gt; ([b1], [b2]))</td><td class="doc"><p>control signal</p></td></tr><tr><td class="src">-&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a1</td><td class="doc"><p>data signal</p></td></tr><tr><td class="src">-&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a2</td><td class="doc"><p>data signal </p></td></tr><tr><td class="src">-&gt; (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> b1, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> b2)</td><td class="doc"><p>output data signals</p></td></tr></table></div><div class="doc"><p>A SADF kernel process takes a control signal and one or many data signals and
+ changes its behavior according to the control tokens. In ForSyDe-Atom the control
+ tokens are in fact the behavior parameters: the consumption rate, the production
+ rate and the process function.</p><p>Constructors: <code>kernel[1-4][1-4]</code>.</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let s1 = signal [1..]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let sf = signal [(3,1,(:[]).sum), (3,3,id), (2,1,(:[]).sum), (2,2,id)]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>kernel11 sf s1
+</code></strong>{6,4,5,6,15,9,10}
+</pre><p><img src="fig/moc-ddf-sadf-kernel.png" /></p></div></div><div class="top"><p class="src"><a id="v:detector22" class="def">detector22</a> <a href="src/ForSyDe.Atom.MoC.SDF.SADF.html#detector22" class="link">Source</a> <a href="#v:detector22" class="selflink">#</a></p><div class="subs arguments"><p class="caption">Arguments</p><table><tr><td class="src">:: (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Cons" title="ForSyDe.Atom.MoC.SDF.SADF">Cons</a>)</td><td class="doc"><p>consumption rates for input data signals</p></td></tr><tr><td class="src">-&gt; (s -&gt; [a1] -&gt; [a2] -&gt; s)</td><td class="doc"><p>next state functions</p></td></tr><tr><td class="src">-&gt; (s -&gt; ((<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>, [y1]), (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Prod" title="ForSyDe.Atom.MoC.SDF.SADF">Prod</a>, [y2])))</td><td class="doc"><p>scenario selection function</p></td></tr><tr><td class="src">-&gt; s</td><td class="doc"><p>initial state</p></td></tr><tr><td class="src">-&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a1</td><td class="doc"><p>data signal</p></td></tr><tr><td class="src">-&gt; <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> a2</td><td class="doc"><p>data signal</p></td></tr><tr><td class="src">-&gt; (<a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> y1, <a href="ForSyDe-Atom-MoC-SDF-SADF.html#t:Signal" title="ForSyDe.Atom.MoC.SDF.SADF">Signal</a> y2)</td><td class="doc"><p>control signals</p></td></tr></table></div><div class="doc"><p>A detector is a finite state machine that consumes data tokens (like a regular
+ SDF process) and produces control signals for kernel processes. The type of the
+ output must match the signature of the kernel processes downstream. The state
+ machine reacts instantaneously, meaning that it first changes the state and then it
+ decodes the scenario based on the new state.</p><p>Constructors: <code>detector[1-4][1-4]</code>.</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let ns s [i] = if odd i then 1 else 0
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let od s = if s == 0 then (1,[(1,1,id)]) else (1,[(1,0,\_-&gt;[])])
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let det = detector11 1 ns od 0
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let s1 = signal [1..10]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>kernel11 (det s1) s1
+</code></strong>{2,4,6,8,10}
+</pre><p><img src="fig/moc-ddf-sadf-detector.png" /></p></div></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.23.0</p></div></body></html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">----------------------------------------------------------------------</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Module      :  ForSyDe.Atom.Skel.Vector</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Copyright   :  (c) George Ungureanu, KTH/EECS/ESY 2019-2020</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- License     :  BSD-style (see the file LICENSE)</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Maintainer  :  ugeorge@kth.se</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Stability   :  experimental</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Portability :  portable</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- This library is is an un-official alternative to 'ForSyDe.Atom.Skel.Vector'</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- meant for simulations of large data which is likely to become too</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- cumbersome. &quot;Fast&quot; 'Vector' functions do not use atoms, but rather use 'Prelude'</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- functions on a wrapped @newtype@ using a native Haskell type (in this case</span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- lists). The API tries to copy the exported functions of</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- &quot;ForSyDe.Atom.Skel.Vector&quot; and its submodule so that switching betwen libraries</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- can be made seamlessly just by @Vector@ with @FastVector@ in the library import.</span><span>
+</span><span id="line-18"></span><span class="hs-comment">--</span><span>
+</span><span id="line-19"></span><span class="hs-comment">-- Useful links:</span><span>
+</span><span id="line-20"></span><span class="hs-comment">--</span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom&quot; contains general guidelines for using the API</span><span>
+</span><span id="line-22"></span><span class="hs-comment">--</span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom.Skel.Vector&quot; documents the API which this module is trying to</span><span>
+</span><span id="line-24"></span><span class="hs-comment">--   replicate.</span><span>
+</span><span id="line-25"></span><span class="hs-comment">--</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom.Skel.FastVector.Matrix&quot; contains a collection of patterns for</span><span>
+</span><span id="line-27"></span><span class="hs-comment">--   working with 2-dimensional 'Vector's.</span><span>
+</span><span id="line-28"></span><span class="hs-comment">--</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom.Skel.FastVector.Cube&quot; contains a collection of patterns for</span><span>
+</span><span id="line-30"></span><span class="hs-comment">--   working with 3-dimensional 'Vector's.</span><span>
+</span><span id="line-31"></span><span class="hs-comment">--</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- * &quot;ForSyDe.Atom.Skel.FastVector.DSP&quot; contains a collection of patterns commonly</span><span>
+</span><span id="line-33"></span><span class="hs-comment">--   used in signal processing designs.</span><span>
+</span><span id="line-34"></span><span class="hs-comment">--</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- * the &lt;ForSyDe-Atom.html#naming_conv naming convention&gt; rules on how to interpret</span><span>
+</span><span id="line-36"></span><span class="hs-comment">--   the function names based on their number of inputs and outputs.</span><span>
+</span><span id="line-37"></span><span class="hs-comment">----------------------------------------------------------------------</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.Skel.FastVector</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html"><span class="hs-identifier">ForSyDe.Atom.Skel.FastVector.Lib</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html"><span class="hs-identifier">ForSyDe.Atom.Skel.FastVector.Lib</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeApply"><span class="hs-identifier">unsafeApply</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#unsafeLift"><span class="hs-identifier">unsafeLift</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#evensF"><span class="hs-identifier">evensF</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.Skel.FastVector.Lib.html#oddsF"><span class="hs-identifier">oddsF</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span></pre></body></html>

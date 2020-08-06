@@ -1,84 +1,805 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span> </span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide, show-extensions #-}</span><span>
-</span><a name="line-2"></a><span>
-</span><a name="line-3"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.DE.Hybrid</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-4"></a><span>
-</span><a name="line-5"></a><span class="hs-keyword">import</span><span>           </span><a href="ForSyDe.Atom.MoC.html"><span class="hs-identifier">ForSyDe.Atom.MoC</span></a><span>
-</span><a name="line-6"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.Core</span></a><span>      </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">DE</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a><span class="hs-special">)</span><span>
-</span><a name="line-7"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.Interface</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">DE</span><span>
-</span><a name="line-8"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="ForSyDe.Atom.MoC.SY.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Core</span></a><span>      </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">SY</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">Signal</span></a><span class="hs-special">)</span><span>
-</span><a name="line-9"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="ForSyDe.Atom.MoC.SY.Interface.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Interface</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">SY</span><span>
-</span><a name="line-10"></a><span class="hs-keyword">import</span><span>           </span><a href="ForSyDe.Atom.Utility.html"><span class="hs-identifier">ForSyDe.Atom.Utility</span></a><span>
-</span><a name="line-11"></a><span>
-</span><a name="line-12"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="ForSyDe.Atom.MoC.SY.Lib.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Lib</span></a><span>
-</span><a name="line-13"></a><span>
-</span><a name="line-14"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Prelude</span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-operator hs-var">&lt;&gt;</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><a name="line-15"></a><span>
-</span><a name="line-16"></a><span class="hs-comment">------- DOCTEST SETUP -------</span><span>
-</span><a name="line-17"></a><span>
-</span><a name="line-18"></a><span class="hs-comment">-- $setup</span><span>
-</span><a name="line-19"></a><span class="hs-comment">-- &gt;&gt;&gt; import ForSyDe.Atom.MoC.SY.Lib as SY</span><span>
-</span><a name="line-20"></a><span class="hs-comment">-- &gt;&gt;&gt; import ForSyDe.Atom.MoC.DE.Core (readSignal, signal)</span><span>
-</span><a name="line-21"></a><span>
-</span><a name="line-22"></a><span class="hs-comment">------- HYBRID PROCESSES -------</span><span>
-</span><a name="line-23"></a><span>
-</span><a name="line-24"></a><span class="hs-comment">-- | Embeds a 'ForSyDe.Atom.MoC.SY.SY' process inside a</span><span>
-</span><a name="line-25"></a><span class="hs-comment">-- 'ForSyDe.Atom.MoC.DE.DE' environment. Internally, it synchronizes</span><span>
-</span><a name="line-26"></a><span class="hs-comment">-- the input signals, translates them to SY, feeds them to a SY</span><span>
-</span><a name="line-27"></a><span class="hs-comment">-- process and translates the result back to DE using the same input</span><span>
-</span><a name="line-28"></a><span class="hs-comment">-- tags. Seen from outside, this process behaves like a DE process</span><span>
-</span><a name="line-29"></a><span class="hs-comment">-- with &quot;instantaneous response&quot;, even for feedback loops.</span><span>
-</span><a name="line-30"></a><span class="hs-comment">--</span><span>
-</span><a name="line-31"></a><span class="hs-comment">-- Constructors: @embedSY[1-4][1-4]@.</span><span>
-</span><a name="line-32"></a><span class="hs-comment">--</span><span>
-</span><a name="line-33"></a><span class="hs-comment">-- For the following example, see the difference between its output</span><span>
-</span><a name="line-34"></a><span class="hs-comment">-- and the one of 'ForSyDe.Atom.MoC.DE.stated22'</span><span>
-</span><a name="line-35"></a><span class="hs-comment">--</span><span>
-</span><a name="line-36"></a><span class="hs-comment">-- &gt;&gt;&gt; let s = readSignal &quot;{1@0, 2@2, 3@6, 4@8, 5@9}&quot; :: DE.Signal Int</span><span>
-</span><a name="line-37"></a><span class="hs-comment">-- &gt;&gt;&gt; embedSY11 (SY.stated11 (+) 1) s</span><span>
-</span><a name="line-38"></a><span class="hs-comment">-- {1@0s,2@2s,4@6s,7@8s,11@9s}</span><span>
-</span><a name="line-39"></a><span class="hs-comment">--</span><span>
-</span><a name="line-40"></a><span class="hs-comment">-- &lt;&lt;fig/moc-de-pattern-embedsy.png&gt;&gt;</span><span>
-</span><a name="line-41"></a><span class="hs-identifier">embedSY22</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a><span> </span><a href="#local-6989586621679152506"><span class="hs-identifier hs-type">a1</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a><span> </span><a href="#local-6989586621679152507"><span class="hs-identifier hs-type">a2</span></a><span>
-</span><a name="line-42"></a><span>              </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a><span> </span><a href="#local-6989586621679152508"><span class="hs-identifier hs-type">b1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a><span> </span><a href="#local-6989586621679152509"><span class="hs-identifier hs-type">b2</span></a><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><a name="line-43"></a><span>          </span><span class="hs-comment">-- ^ 'ForSyDe.Atom.MoC.SY.SY' process</span><span>
-</span><a name="line-44"></a><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a><span> </span><a href="#local-6989586621679152506"><span class="hs-identifier hs-type">a1</span></a><span> </span><span class="hs-comment">-- ^ first input DE signal</span><span>
-</span><a name="line-45"></a><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a><span> </span><a href="#local-6989586621679152507"><span class="hs-identifier hs-type">a2</span></a><span> </span><span class="hs-comment">-- ^ second input DE signal </span><span>
-</span><a name="line-46"></a><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a><span> </span><a href="#local-6989586621679152508"><span class="hs-identifier hs-type">b1</span></a><span class="hs-special">,</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a><span> </span><a href="#local-6989586621679152509"><span class="hs-identifier hs-type">b2</span></a><span class="hs-special">)</span><span>
-</span><a name="line-47"></a><span>          </span><span class="hs-comment">-- ^ two output 'ForSyDe.Atom.MoC.DE.DE' signals</span><span>
-</span><a name="line-48"></a><span>
-</span><a name="line-49"></a><a name="embedSY11"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY11"><span class="hs-identifier">embedSY11</span></a></a><span> </span><a name="local-6989586621679152510"><a href="#local-6989586621679152510"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152511"><a href="#local-6989586621679152511"><span class="hs-identifier">de1</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152512"><a href="#local-6989586621679152512"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152513"><a href="#local-6989586621679152513"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a><span> </span><a href="#local-6989586621679152511"><span class="hs-identifier hs-var">de1</span></a><span>
-</span><a name="line-50"></a><span>                       </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a><span> </span><a href="#local-6989586621679152512"><span class="hs-identifier hs-var">ts</span></a><span> </span><span class="hs-operator hs-var">$</span><span>     </span><a href="#local-6989586621679152510"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152513"><span class="hs-identifier hs-var">sy1</span></a><span>
-</span><a name="line-51"></a><a name="embedSY12"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY12"><span class="hs-identifier">embedSY12</span></a></a><span> </span><a name="local-6989586621679152514"><a href="#local-6989586621679152514"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152515"><a href="#local-6989586621679152515"><span class="hs-identifier">de1</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152516"><a href="#local-6989586621679152516"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152517"><a href="#local-6989586621679152517"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a><span> </span><a href="#local-6989586621679152515"><span class="hs-identifier hs-var">de1</span></a><span>
-</span><a name="line-52"></a><span>                       </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a><span> </span><a href="#local-6989586621679152516"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a><span>   </span><a href="#local-6989586621679152514"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152517"><span class="hs-identifier hs-var">sy1</span></a><span>
-</span><a name="line-53"></a><a name="embedSY13"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY13"><span class="hs-identifier">embedSY13</span></a></a><span> </span><a name="local-6989586621679152518"><a href="#local-6989586621679152518"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152519"><a href="#local-6989586621679152519"><span class="hs-identifier">de1</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152520"><a href="#local-6989586621679152520"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152521"><a href="#local-6989586621679152521"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a><span> </span><a href="#local-6989586621679152519"><span class="hs-identifier hs-var">de1</span></a><span>
-</span><a name="line-54"></a><span>                       </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a><span> </span><a href="#local-6989586621679152520"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;</span></a><span>  </span><a href="#local-6989586621679152518"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152521"><span class="hs-identifier hs-var">sy1</span></a><span>
-</span><a name="line-55"></a><a name="embedSY14"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY14"><span class="hs-identifier">embedSY14</span></a></a><span> </span><a name="local-6989586621679152522"><a href="#local-6989586621679152522"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152523"><a href="#local-6989586621679152523"><span class="hs-identifier">de1</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152524"><a href="#local-6989586621679152524"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152525"><a href="#local-6989586621679152525"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a><span> </span><a href="#local-6989586621679152523"><span class="hs-identifier hs-var">de1</span></a><span>
-</span><a name="line-56"></a><span>                       </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a><span> </span><a href="#local-6989586621679152524"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;&gt;</span></a><span> </span><a href="#local-6989586621679152522"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152525"><span class="hs-identifier hs-var">sy1</span></a><span>
-</span><a name="line-57"></a><span>
-</span><a name="line-58"></a><a name="embedSY21"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY21"><span class="hs-identifier">embedSY21</span></a></a><span> </span><a name="local-6989586621679152526"><a href="#local-6989586621679152526"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152527"><a href="#local-6989586621679152527"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152528"><a href="#local-6989586621679152528"><span class="hs-identifier">de2</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152529"><a href="#local-6989586621679152529"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152530"><a href="#local-6989586621679152530"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152531"><a href="#local-6989586621679152531"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a><span> </span><a href="#local-6989586621679152527"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152528"><span class="hs-identifier hs-var">de2</span></a><span>
-</span><a name="line-59"></a><span>                           </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a><span> </span><a href="#local-6989586621679152529"><span class="hs-identifier hs-var">ts</span></a><span> </span><span class="hs-operator hs-var">$</span><span>     </span><a href="#local-6989586621679152526"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152530"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">sy2</span></a><span>
-</span><a name="line-60"></a><a name="embedSY22"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY22"><span class="hs-identifier">embedSY22</span></a></a><span> </span><a name="local-6989586621679152532"><a href="#local-6989586621679152532"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152533"><a href="#local-6989586621679152533"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152534"><a href="#local-6989586621679152534"><span class="hs-identifier">de2</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152535"><a href="#local-6989586621679152535"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152536"><a href="#local-6989586621679152536"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152537"><a href="#local-6989586621679152537"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a><span> </span><a href="#local-6989586621679152533"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152534"><span class="hs-identifier hs-var">de2</span></a><span>
-</span><a name="line-61"></a><span>                           </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a><span> </span><a href="#local-6989586621679152535"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a><span>   </span><a href="#local-6989586621679152532"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152536"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152537"><span class="hs-identifier hs-var">sy2</span></a><span>
-</span><a name="line-62"></a><a name="embedSY23"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY23"><span class="hs-identifier">embedSY23</span></a></a><span> </span><a name="local-6989586621679152538"><a href="#local-6989586621679152538"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152539"><a href="#local-6989586621679152539"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152540"><a href="#local-6989586621679152540"><span class="hs-identifier">de2</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152541"><a href="#local-6989586621679152541"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152542"><a href="#local-6989586621679152542"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152543"><a href="#local-6989586621679152543"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a><span> </span><a href="#local-6989586621679152539"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152540"><span class="hs-identifier hs-var">de2</span></a><span>
-</span><a name="line-63"></a><span>                           </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a><span> </span><a href="#local-6989586621679152541"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;</span></a><span>  </span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152542"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152543"><span class="hs-identifier hs-var">sy2</span></a><span>
-</span><a name="line-64"></a><a name="embedSY24"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY24"><span class="hs-identifier">embedSY24</span></a></a><span> </span><a name="local-6989586621679152544"><a href="#local-6989586621679152544"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152545"><a href="#local-6989586621679152545"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152546"><a href="#local-6989586621679152546"><span class="hs-identifier">de2</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152547"><a href="#local-6989586621679152547"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152548"><a href="#local-6989586621679152548"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152549"><a href="#local-6989586621679152549"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a><span> </span><a href="#local-6989586621679152545"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152546"><span class="hs-identifier hs-var">de2</span></a><span>
-</span><a name="line-65"></a><span>                           </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a><span> </span><a href="#local-6989586621679152547"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;&gt;</span></a><span> </span><a href="#local-6989586621679152544"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152548"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152549"><span class="hs-identifier hs-var">sy2</span></a><span>
-</span><a name="line-66"></a><span>
-</span><a name="line-67"></a><a name="embedSY31"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY31"><span class="hs-identifier">embedSY31</span></a></a><span> </span><a name="local-6989586621679152550"><a href="#local-6989586621679152550"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152551"><a href="#local-6989586621679152551"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152552"><a href="#local-6989586621679152552"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152553"><a href="#local-6989586621679152553"><span class="hs-identifier">de3</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152554"><a href="#local-6989586621679152554"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152555"><a href="#local-6989586621679152555"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152556"><a href="#local-6989586621679152556"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152557"><a href="#local-6989586621679152557"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a><span> </span><a href="#local-6989586621679152551"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152552"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152553"><span class="hs-identifier hs-var">de3</span></a><span>
-</span><a name="line-68"></a><span>                               </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a><span> </span><a href="#local-6989586621679152554"><span class="hs-identifier hs-var">ts</span></a><span> </span><span class="hs-operator hs-var">$</span><span>     </span><a href="#local-6989586621679152550"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152555"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152556"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152557"><span class="hs-identifier hs-var">sy3</span></a><span>
-</span><a name="line-69"></a><a name="embedSY32"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY32"><span class="hs-identifier">embedSY32</span></a></a><span> </span><a name="local-6989586621679152558"><a href="#local-6989586621679152558"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152559"><a href="#local-6989586621679152559"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152560"><a href="#local-6989586621679152560"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152561"><a href="#local-6989586621679152561"><span class="hs-identifier">de3</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152562"><a href="#local-6989586621679152562"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152563"><a href="#local-6989586621679152563"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152564"><a href="#local-6989586621679152564"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152565"><a href="#local-6989586621679152565"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a><span> </span><a href="#local-6989586621679152559"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152560"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152561"><span class="hs-identifier hs-var">de3</span></a><span>
-</span><a name="line-70"></a><span>                               </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a><span> </span><a href="#local-6989586621679152562"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a><span>   </span><a href="#local-6989586621679152558"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152563"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152564"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152565"><span class="hs-identifier hs-var">sy3</span></a><span>
-</span><a name="line-71"></a><a name="embedSY33"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY33"><span class="hs-identifier">embedSY33</span></a></a><span> </span><a name="local-6989586621679152566"><a href="#local-6989586621679152566"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152567"><a href="#local-6989586621679152567"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152568"><a href="#local-6989586621679152568"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152569"><a href="#local-6989586621679152569"><span class="hs-identifier">de3</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152570"><a href="#local-6989586621679152570"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152571"><a href="#local-6989586621679152571"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152572"><a href="#local-6989586621679152572"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152573"><a href="#local-6989586621679152573"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a><span> </span><a href="#local-6989586621679152567"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152568"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152569"><span class="hs-identifier hs-var">de3</span></a><span>
-</span><a name="line-72"></a><span>                               </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a><span> </span><a href="#local-6989586621679152570"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;</span></a><span>  </span><a href="#local-6989586621679152566"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152571"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152572"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152573"><span class="hs-identifier hs-var">sy3</span></a><span>
-</span><a name="line-73"></a><a name="embedSY34"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY34"><span class="hs-identifier">embedSY34</span></a></a><span> </span><a name="local-6989586621679152574"><a href="#local-6989586621679152574"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152575"><a href="#local-6989586621679152575"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152576"><a href="#local-6989586621679152576"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152577"><a href="#local-6989586621679152577"><span class="hs-identifier">de3</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152578"><a href="#local-6989586621679152578"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152579"><a href="#local-6989586621679152579"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152580"><a href="#local-6989586621679152580"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152581"><a href="#local-6989586621679152581"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a><span> </span><a href="#local-6989586621679152575"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152576"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152577"><span class="hs-identifier hs-var">de3</span></a><span>
-</span><a name="line-74"></a><span>                               </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a><span> </span><a href="#local-6989586621679152578"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;&gt;</span></a><span> </span><a href="#local-6989586621679152574"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152579"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152580"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152581"><span class="hs-identifier hs-var">sy3</span></a><span>
-</span><a name="line-75"></a><span>
-</span><a name="line-76"></a><a name="embedSY41"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY41"><span class="hs-identifier">embedSY41</span></a></a><span> </span><a name="local-6989586621679152582"><a href="#local-6989586621679152582"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152583"><a href="#local-6989586621679152583"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152584"><a href="#local-6989586621679152584"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152585"><a href="#local-6989586621679152585"><span class="hs-identifier">de3</span></a></a><span> </span><a name="local-6989586621679152586"><a href="#local-6989586621679152586"><span class="hs-identifier">de4</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152587"><a href="#local-6989586621679152587"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152588"><a href="#local-6989586621679152588"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152589"><a href="#local-6989586621679152589"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152590"><a href="#local-6989586621679152590"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152591"><a href="#local-6989586621679152591"><span class="hs-identifier">sy4</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a><span> </span><a href="#local-6989586621679152583"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152584"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152585"><span class="hs-identifier hs-var">de3</span></a><span> </span><a href="#local-6989586621679152586"><span class="hs-identifier hs-var">de4</span></a><span>
-</span><a name="line-77"></a><span>                                   </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a><span> </span><a href="#local-6989586621679152587"><span class="hs-identifier hs-var">ts</span></a><span> </span><span class="hs-operator hs-var">$</span><span>     </span><a href="#local-6989586621679152582"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152588"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152589"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152590"><span class="hs-identifier hs-var">sy3</span></a><span> </span><a href="#local-6989586621679152591"><span class="hs-identifier hs-var">sy4</span></a><span>
-</span><a name="line-78"></a><a name="embedSY42"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY42"><span class="hs-identifier">embedSY42</span></a></a><span> </span><a name="local-6989586621679152592"><a href="#local-6989586621679152592"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152593"><a href="#local-6989586621679152593"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152594"><a href="#local-6989586621679152594"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152595"><a href="#local-6989586621679152595"><span class="hs-identifier">de3</span></a></a><span> </span><a name="local-6989586621679152596"><a href="#local-6989586621679152596"><span class="hs-identifier">de4</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152597"><a href="#local-6989586621679152597"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152598"><a href="#local-6989586621679152598"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152599"><a href="#local-6989586621679152599"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152600"><a href="#local-6989586621679152600"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152601"><a href="#local-6989586621679152601"><span class="hs-identifier">sy4</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a><span> </span><a href="#local-6989586621679152593"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152594"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152595"><span class="hs-identifier hs-var">de3</span></a><span> </span><a href="#local-6989586621679152596"><span class="hs-identifier hs-var">de4</span></a><span>
-</span><a name="line-79"></a><span>                                   </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a><span> </span><a href="#local-6989586621679152597"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a><span>   </span><a href="#local-6989586621679152592"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152598"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152599"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152600"><span class="hs-identifier hs-var">sy3</span></a><span> </span><a href="#local-6989586621679152601"><span class="hs-identifier hs-var">sy4</span></a><span>
-</span><a name="line-80"></a><a name="embedSY43"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY43"><span class="hs-identifier">embedSY43</span></a></a><span> </span><a name="local-6989586621679152602"><a href="#local-6989586621679152602"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152603"><a href="#local-6989586621679152603"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152604"><a href="#local-6989586621679152604"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152605"><a href="#local-6989586621679152605"><span class="hs-identifier">de3</span></a></a><span> </span><a name="local-6989586621679152606"><a href="#local-6989586621679152606"><span class="hs-identifier">de4</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152607"><a href="#local-6989586621679152607"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152608"><a href="#local-6989586621679152608"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152609"><a href="#local-6989586621679152609"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152610"><a href="#local-6989586621679152610"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152611"><a href="#local-6989586621679152611"><span class="hs-identifier">sy4</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a><span> </span><a href="#local-6989586621679152603"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152604"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152605"><span class="hs-identifier hs-var">de3</span></a><span> </span><a href="#local-6989586621679152606"><span class="hs-identifier hs-var">de4</span></a><span>
-</span><a name="line-81"></a><span>                                   </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a><span> </span><a href="#local-6989586621679152607"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;</span></a><span>  </span><a href="#local-6989586621679152602"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152608"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152609"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152610"><span class="hs-identifier hs-var">sy3</span></a><span> </span><a href="#local-6989586621679152611"><span class="hs-identifier hs-var">sy4</span></a><span>
-</span><a name="line-82"></a><a name="embedSY44"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY44"><span class="hs-identifier">embedSY44</span></a></a><span> </span><a name="local-6989586621679152612"><a href="#local-6989586621679152612"><span class="hs-identifier">syproc</span></a></a><span> </span><a name="local-6989586621679152613"><a href="#local-6989586621679152613"><span class="hs-identifier">de1</span></a></a><span> </span><a name="local-6989586621679152614"><a href="#local-6989586621679152614"><span class="hs-identifier">de2</span></a></a><span> </span><a name="local-6989586621679152615"><a href="#local-6989586621679152615"><span class="hs-identifier">de3</span></a></a><span> </span><a name="local-6989586621679152616"><a href="#local-6989586621679152616"><span class="hs-identifier">de4</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679152617"><a href="#local-6989586621679152617"><span class="hs-identifier">ts</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152618"><a href="#local-6989586621679152618"><span class="hs-identifier">sy1</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152619"><a href="#local-6989586621679152619"><span class="hs-identifier">sy2</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152620"><a href="#local-6989586621679152620"><span class="hs-identifier">sy3</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679152621"><a href="#local-6989586621679152621"><span class="hs-identifier">sy4</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a><span> </span><a href="#local-6989586621679152613"><span class="hs-identifier hs-var">de1</span></a><span> </span><a href="#local-6989586621679152614"><span class="hs-identifier hs-var">de2</span></a><span> </span><a href="#local-6989586621679152615"><span class="hs-identifier hs-var">de3</span></a><span> </span><a href="#local-6989586621679152616"><span class="hs-identifier hs-var">de4</span></a><span>
-</span><a name="line-83"></a><span>                                   </span><span class="hs-keyword">in</span><span>  </span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a><span> </span><a href="#local-6989586621679152617"><span class="hs-identifier hs-var">ts</span></a><span> </span><a href="ForSyDe.Atom.Utility.Tuple.html#%3C%3E%3E%3E"><span class="hs-operator hs-var">&lt;&gt;&gt;&gt;</span></a><span> </span><a href="#local-6989586621679152612"><span class="hs-identifier hs-var">syproc</span></a><span> </span><a href="#local-6989586621679152618"><span class="hs-identifier hs-var">sy1</span></a><span> </span><a href="#local-6989586621679152619"><span class="hs-identifier hs-var">sy2</span></a><span> </span><a href="#local-6989586621679152620"><span class="hs-identifier hs-var">sy3</span></a><span> </span><a href="#local-6989586621679152621"><span class="hs-identifier hs-var">sy4</span></a><span>
-</span><a name="line-84"></a></pre></body></html>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">ForSyDe.Atom.MoC.DE.Hybrid</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="ForSyDe.Atom.MoC.html"><span class="hs-identifier">ForSyDe.Atom.MoC</span></a></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.Core</span></a></span><span>      </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">DE</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier">Signal</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Interface.html"><span class="hs-identifier">ForSyDe.Atom.MoC.DE.Interface</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">DE</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Core.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Core</span></a></span><span>      </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">SY</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier">Signal</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Interface.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Interface</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">SY</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="ForSyDe.Atom.Utility.Tuple.html"><span class="hs-identifier">ForSyDe.Atom.Utility.Tuple</span></a></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Lib.html"><span class="hs-identifier">ForSyDe.Atom.MoC.SY.Lib</span></a></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&lt;&gt;)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-comment">------- DOCTEST SETUP -------</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-comment">-- $setup</span><span>
+</span><span id="line-19"></span><span class="hs-comment">-- &gt;&gt;&gt; import ForSyDe.Atom.MoC.SY.Lib as SY</span><span>
+</span><span id="line-20"></span><span class="hs-comment">-- &gt;&gt;&gt; import ForSyDe.Atom.MoC.DE.Core (readSignal, signal)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-comment">------- HYBRID PROCESSES -------</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- | Embeds a 'ForSyDe.Atom.MoC.SY.SY' process inside a</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- 'ForSyDe.Atom.MoC.DE.DE' environment. Internally, it synchronizes</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- the input signals, translates them to SY, feeds them to a SY</span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- process and translates the result back to DE using the same input</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- tags. Seen from outside, this process behaves like a DE process</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- with &quot;instantaneous response&quot;, even for feedback loops.</span><span>
+</span><span id="line-30"></span><span class="hs-comment">--</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- Constructors: @embedSY[1-4][1-4]@.</span><span>
+</span><span id="line-32"></span><span class="hs-comment">--</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- For the following example, see the difference between its output</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- and the one of 'ForSyDe.Atom.MoC.DE.stated22'</span><span>
+</span><span id="line-35"></span><span class="hs-comment">--</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- &gt;&gt;&gt; let s = readSignal &quot;{1@0, 2@2, 3@6, 4@8, 5@9}&quot; :: DE.Signal Int</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- &gt;&gt;&gt; embedSY11 (SY.stated11 (+) 1) s</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- {1@0s,2@2s,4@6s,7@8s,11@9s}</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- &lt;&lt;fig/moc-de-pattern-embedsy.png&gt;&gt;</span><span>
+</span><span id="line-41"></span><span id="local-6989586621679218249"><span id="local-6989586621679218250"><span id="local-6989586621679218251"><span id="local-6989586621679218252"><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY22"><span class="hs-identifier hs-type">embedSY22</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218252"><span class="hs-identifier hs-type">a1</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218251"><span class="hs-identifier hs-type">a2</span></a></span><span>
+</span><span id="line-42"></span><span>              </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218250"><span class="hs-identifier hs-type">b1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.SY.Core.html#Signal"><span class="hs-identifier hs-type">SY.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218249"><span class="hs-identifier hs-type">b2</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>          </span><span class="hs-comment">-- ^ 'ForSyDe.Atom.MoC.SY.SY' process</span><span>
+</span><span id="line-44"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218252"><span class="hs-identifier hs-type">a1</span></a></span><span> </span><span class="hs-comment">-- ^ first input DE signal</span><span>
+</span><span id="line-45"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218251"><span class="hs-identifier hs-type">a2</span></a></span><span> </span><span class="hs-comment">-- ^ second input DE signal </span><span>
+</span><span id="line-46"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218250"><span class="hs-identifier hs-type">b1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="ForSyDe.Atom.MoC.DE.Core.html#Signal"><span class="hs-identifier hs-type">DE.Signal</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679218249"><span class="hs-identifier hs-type">b2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>          </span><span class="hs-comment">-- ^ two output 'ForSyDe.Atom.MoC.DE.DE' signals</span></span></span></span></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span id="embedSY11"><span class="annot"><span class="annottext">embedSY11 :: (Signal a -&gt; Stream (SY a)) -&gt; Stream (DE t a) -&gt; Stream (DE t a)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY11"><span class="hs-identifier hs-var hs-var">embedSY11</span></a></span></span><span> </span><span id="local-6989586621679218246"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218246"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218245"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218245"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218244"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218244"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218243"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218243"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a) -&gt; (Signal t, Signal a)
+forall t a.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; (Signal t, Signal a)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218245"><span class="hs-identifier hs-var">de1</span></a></span><span>
+</span><span id="line-50"></span><span>                       </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t -&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall (f :: * -&gt; *) t a.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t) -&gt; f (SY a) -&gt; f (DE t a)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218244"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a) -&gt; Stream (DE t a))
+-&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>     </span><span class="annot"><span class="annottext">Signal a -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218246"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218243"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span>
+</span><span id="line-51"></span><span id="embedSY12"><span class="annot"><span class="annottext">embedSY12 :: (Signal a -&gt; (Signal a, Signal b))
+-&gt; Stream (DE t a) -&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY12"><span class="hs-identifier hs-var hs-var">embedSY12</span></a></span></span><span> </span><span id="local-6989586621679218239"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; (Signal a, Signal b)
+</span><a href="#local-6989586621679218239"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218238"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218238"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218237"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218237"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218236"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218236"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a) -&gt; (Signal t, Signal a)
+forall t a.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; (Signal t, Signal a)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218238"><span class="hs-identifier hs-var">de1</span></a></span><span>
+</span><span id="line-52"></span><span>                       </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218237"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b))
+-&gt; (Signal a, Signal b) -&gt; (SignalBase t a, SignalBase t b)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">&gt;&lt;</span></a></span><span>   </span><span class="annot"><span class="annottext">Signal a -&gt; (Signal a, Signal b)
+</span><a href="#local-6989586621679218239"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218236"><span class="hs-identifier hs-var">sy1</span></a></span><span>
+</span><span id="line-53"></span><span id="embedSY13"><span class="annot"><span class="annottext">embedSY13 :: (Signal a -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3)))
+-&gt; Stream (DE t a)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY13"><span class="hs-identifier hs-var hs-var">embedSY13</span></a></span></span><span> </span><span id="local-6989586621679218232"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218232"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218231"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218231"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218230"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218230"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218229"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218229"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a) -&gt; (Signal t, Signal a)
+forall t a.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; (Signal t, Signal a)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218231"><span class="hs-identifier hs-var">de1</span></a></span><span>
+</span><span id="line-54"></span><span>                       </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall (f :: * -&gt; *) t a1 a2 a3.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218230"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;</span></a></span><span>  </span><span class="annot"><span class="annottext">Signal a -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218232"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218229"><span class="hs-identifier hs-var">sy1</span></a></span><span>
+</span><span id="line-55"></span><span id="embedSY14"><span class="annot"><span class="annottext">embedSY14 :: (Signal a
+ -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3),
+     Stream (SY a4)))
+-&gt; Stream (DE t a)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY14"><span class="hs-identifier hs-var hs-var">embedSY14</span></a></span></span><span> </span><span id="local-6989586621679218225"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218225"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218224"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218224"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218223"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218223"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218222"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218222"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a) -&gt; (Signal t, Signal a)
+forall t a.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; (Signal t, Signal a)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY1"><span class="hs-identifier hs-var">DE.toSY1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218224"><span class="hs-identifier hs-var">de1</span></a></span><span>
+</span><span id="line-56"></span><span>                       </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; Stream (SY a4)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall (f :: * -&gt; *) t a1 a2 a3 a4.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; f (SY a4)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3), f (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218223"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; Stream (SY a4)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+     Stream (DE t a4)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218225"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218222"><span class="hs-identifier hs-var">sy1</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span id="embedSY21"><span class="annot"><span class="annottext">embedSY21 :: (Signal a -&gt; Signal b -&gt; Stream (SY a))
+-&gt; Stream (DE t a) -&gt; Stream (DE t b) -&gt; Stream (DE t a)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY21"><span class="hs-identifier hs-var hs-var">embedSY21</span></a></span></span><span> </span><span id="local-6989586621679218218"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; Signal b -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218218"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218217"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218217"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218216"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218216"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218215"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218215"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218214"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218214"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218213"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218213"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b) -&gt; (Signal t, Signal a, Signal b)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; SignalBase t b -&gt; (Signal t, Signal a, Signal b)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218217"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218216"><span class="hs-identifier hs-var">de2</span></a></span><span>
+</span><span id="line-59"></span><span>                           </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t -&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall (f :: * -&gt; *) t a.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t) -&gt; f (SY a) -&gt; f (DE t a)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218215"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a) -&gt; Stream (DE t a))
+-&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>     </span><span class="annot"><span class="annottext">Signal a -&gt; Signal b -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218218"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218214"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218213"><span class="hs-identifier hs-var">sy2</span></a></span><span>
+</span><span id="line-60"></span><span id="embedSY22"><span class="annot"><span class="annottext">embedSY22 :: (Signal a1 -&gt; Signal a2 -&gt; (Signal b1, Signal b2))
+-&gt; Signal a1 -&gt; Signal a2 -&gt; (Signal b1, Signal b2)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY22"><span class="hs-identifier hs-var hs-var">embedSY22</span></a></span></span><span> </span><span id="local-6989586621679218211"><span class="annot"><span class="annottext">syproc :: Signal a1 -&gt; Signal a2 -&gt; (Signal b1, Signal b2)
+</span><a href="#local-6989586621679218211"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218210"><span class="annot"><span class="annottext">de1 :: Signal a1
+</span><a href="#local-6989586621679218210"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218209"><span class="annot"><span class="annottext">de2 :: Signal a2
+</span><a href="#local-6989586621679218209"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218208"><span class="annot"><span class="annottext">ts :: Signal TimeStamp
+</span><a href="#local-6989586621679218208"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218207"><span class="annot"><span class="annottext">sy1 :: Signal a1
+</span><a href="#local-6989586621679218207"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218206"><span class="annot"><span class="annottext">sy2 :: Signal a2
+</span><a href="#local-6989586621679218206"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Signal a1 -&gt; Signal a2 -&gt; (Signal TimeStamp, Signal a1, Signal a2)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; SignalBase t b -&gt; (Signal t, Signal a, Signal b)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a1
+</span><a href="#local-6989586621679218210"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a2
+</span><a href="#local-6989586621679218209"><span class="hs-identifier hs-var">de2</span></a></span><span>
+</span><span id="line-61"></span><span>                           </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal TimeStamp
+-&gt; Signal b1 -&gt; Signal b2 -&gt; (Signal b1, Signal b2)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal TimeStamp
+</span><a href="#local-6989586621679218208"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Signal b1 -&gt; Signal b2 -&gt; (Signal b1, Signal b2))
+-&gt; (Signal b1, Signal b2) -&gt; (Signal b1, Signal b2)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">&gt;&lt;</span></a></span><span>   </span><span class="annot"><span class="annottext">Signal a1 -&gt; Signal a2 -&gt; (Signal b1, Signal b2)
+</span><a href="#local-6989586621679218211"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a1
+</span><a href="#local-6989586621679218207"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a2
+</span><a href="#local-6989586621679218206"><span class="hs-identifier hs-var">sy2</span></a></span><span>
+</span><span id="line-62"></span><span id="embedSY23"><span class="annot"><span class="annottext">embedSY23 :: (Signal a
+ -&gt; Signal b -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3)))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY23"><span class="hs-identifier hs-var hs-var">embedSY23</span></a></span></span><span> </span><span id="local-6989586621679218204"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218204"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218203"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218203"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218202"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218202"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218201"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218201"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218200"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218200"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218199"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218199"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b) -&gt; (Signal t, Signal a, Signal b)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; SignalBase t b -&gt; (Signal t, Signal a, Signal b)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218203"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218202"><span class="hs-identifier hs-var">de2</span></a></span><span>
+</span><span id="line-63"></span><span>                           </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall (f :: * -&gt; *) t a1 a2 a3.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218201"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;</span></a></span><span>  </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218204"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218200"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218199"><span class="hs-identifier hs-var">sy2</span></a></span><span>
+</span><span id="line-64"></span><span id="embedSY24"><span class="annot"><span class="annottext">embedSY24 :: (Signal a
+ -&gt; Signal b
+ -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3),
+     Stream (SY a4)))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY24"><span class="hs-identifier hs-var hs-var">embedSY24</span></a></span></span><span> </span><span id="local-6989586621679218197"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218197"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218196"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218196"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218195"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218195"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218194"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218194"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218193"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218193"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218192"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218192"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b) -&gt; (Signal t, Signal a, Signal b)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a -&gt; SignalBase t b -&gt; (Signal t, Signal a, Signal b)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY2"><span class="hs-identifier hs-var">DE.toSY2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218196"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218195"><span class="hs-identifier hs-var">de2</span></a></span><span>
+</span><span id="line-65"></span><span>                           </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; Stream (SY a4)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall (f :: * -&gt; *) t a1 a2 a3 a4.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; f (SY a4)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3), f (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218194"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; Stream (SY a4)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+     Stream (DE t a4)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218197"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218193"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218192"><span class="hs-identifier hs-var">sy2</span></a></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span id="embedSY31"><span class="annot"><span class="annottext">embedSY31 :: (Signal a -&gt; Signal b -&gt; Signal c -&gt; Stream (SY a))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t a)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY31"><span class="hs-identifier hs-var hs-var">embedSY31</span></a></span></span><span> </span><span id="local-6989586621679218190"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; Signal b -&gt; Signal c -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218190"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218189"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218189"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218188"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218188"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218187"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218187"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218186"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218186"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218185"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218185"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218184"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218184"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218183"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218183"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+forall t a b c.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218189"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218188"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218187"><span class="hs-identifier hs-var">de3</span></a></span><span>
+</span><span id="line-68"></span><span>                               </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t -&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall (f :: * -&gt; *) t a.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t) -&gt; f (SY a) -&gt; f (DE t a)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218186"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a) -&gt; Stream (DE t a))
+-&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>     </span><span class="annot"><span class="annottext">Signal a -&gt; Signal b -&gt; Signal c -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218190"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218185"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218184"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218183"><span class="hs-identifier hs-var">sy3</span></a></span><span>
+</span><span id="line-69"></span><span id="embedSY32"><span class="annot"><span class="annottext">embedSY32 :: (Signal a -&gt; Signal b -&gt; Signal c -&gt; (Signal a, Signal b))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY32"><span class="hs-identifier hs-var hs-var">embedSY32</span></a></span></span><span> </span><span id="local-6989586621679218180"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; Signal b -&gt; Signal c -&gt; (Signal a, Signal b)
+</span><a href="#local-6989586621679218180"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218179"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218179"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218178"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218178"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218177"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218177"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218176"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218176"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218175"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218175"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218174"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218174"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218173"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218173"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+forall t a b c.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218179"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218178"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218177"><span class="hs-identifier hs-var">de3</span></a></span><span>
+</span><span id="line-70"></span><span>                               </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218176"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b))
+-&gt; (Signal a, Signal b) -&gt; (SignalBase t a, SignalBase t b)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">&gt;&lt;</span></a></span><span>   </span><span class="annot"><span class="annottext">Signal a -&gt; Signal b -&gt; Signal c -&gt; (Signal a, Signal b)
+</span><a href="#local-6989586621679218180"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218175"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218174"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218173"><span class="hs-identifier hs-var">sy3</span></a></span><span>
+</span><span id="line-71"></span><span id="embedSY33"><span class="annot"><span class="annottext">embedSY33 :: (Signal a
+ -&gt; Signal b
+ -&gt; Signal c
+ -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3)))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY33"><span class="hs-identifier hs-var hs-var">embedSY33</span></a></span></span><span> </span><span id="local-6989586621679218171"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218171"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218170"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218170"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218169"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218169"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218168"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218168"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218167"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218167"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218166"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218166"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218165"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218165"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218164"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218164"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+forall t a b c.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218170"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218169"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218168"><span class="hs-identifier hs-var">de3</span></a></span><span>
+</span><span id="line-72"></span><span>                               </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall (f :: * -&gt; *) t a1 a2 a3.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218167"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;</span></a></span><span>  </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218171"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218166"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218165"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218164"><span class="hs-identifier hs-var">sy3</span></a></span><span>
+</span><span id="line-73"></span><span id="embedSY34"><span class="annot"><span class="annottext">embedSY34 :: (Signal a
+ -&gt; Signal b
+ -&gt; Signal c
+ -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3),
+     Stream (SY a4)))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY34"><span class="hs-identifier hs-var hs-var">embedSY34</span></a></span></span><span> </span><span id="local-6989586621679218162"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218162"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218161"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218161"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218160"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218160"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218159"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218159"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218158"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218158"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218157"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218157"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218156"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218156"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218155"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218155"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+forall t a b c.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; (Signal t, Signal a, Signal b, Signal c)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY3"><span class="hs-identifier hs-var">DE.toSY3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218161"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218160"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218159"><span class="hs-identifier hs-var">de3</span></a></span><span>
+</span><span id="line-74"></span><span>                               </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; Stream (SY a4)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall (f :: * -&gt; *) t a1 a2 a3 a4.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; f (SY a4)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3), f (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218158"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; Stream (SY a4)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+     Stream (DE t a4)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218162"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218157"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218156"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218155"><span class="hs-identifier hs-var">sy3</span></a></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span id="embedSY41"><span class="annot"><span class="annottext">embedSY41 :: (Signal a -&gt; Signal b -&gt; Signal c -&gt; Signal d -&gt; Stream (SY a))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; Stream (DE t a)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY41"><span class="hs-identifier hs-var hs-var">embedSY41</span></a></span></span><span> </span><span id="local-6989586621679218153"><span class="annot"><span class="annottext">syproc :: Signal a -&gt; Signal b -&gt; Signal c -&gt; Signal d -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218153"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218152"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218152"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218151"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218151"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218150"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218150"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span id="local-6989586621679218149"><span class="annot"><span class="annottext">de4 :: Stream (DE t d)
+</span><a href="#local-6989586621679218149"><span class="hs-identifier hs-var">de4</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218148"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218148"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218147"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218147"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218146"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218146"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218145"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218145"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218144"><span class="annot"><span class="annottext">sy4 :: Signal d
+</span><a href="#local-6989586621679218144"><span class="hs-identifier hs-var">sy4</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+forall t a b c d.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; SignalBase t d
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218152"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218151"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218150"><span class="hs-identifier hs-var">de3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t d)
+</span><a href="#local-6989586621679218149"><span class="hs-identifier hs-var">de4</span></a></span><span>
+</span><span id="line-77"></span><span>                                   </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t -&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall (f :: * -&gt; *) t a.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t) -&gt; f (SY a) -&gt; f (DE t a)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE"><span class="hs-identifier hs-var">SY.toDE</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218148"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a) -&gt; Stream (DE t a))
+-&gt; Stream (SY a) -&gt; Stream (DE t a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>     </span><span class="annot"><span class="annottext">Signal a -&gt; Signal b -&gt; Signal c -&gt; Signal d -&gt; Stream (SY a)
+</span><a href="#local-6989586621679218153"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218147"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218146"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218145"><span class="hs-identifier hs-var">sy3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal d
+</span><a href="#local-6989586621679218144"><span class="hs-identifier hs-var">sy4</span></a></span><span>
+</span><span id="line-78"></span><span id="embedSY42"><span class="annot"><span class="annottext">embedSY42 :: (Signal a
+ -&gt; Signal b -&gt; Signal c -&gt; Signal d -&gt; (Signal a, Signal b))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY42"><span class="hs-identifier hs-var hs-var">embedSY42</span></a></span></span><span> </span><span id="local-6989586621679218141"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b -&gt; Signal c -&gt; Signal d -&gt; (Signal a, Signal b)
+</span><a href="#local-6989586621679218141"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218140"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218140"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218139"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218139"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218138"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218138"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span id="local-6989586621679218137"><span class="annot"><span class="annottext">de4 :: Stream (DE t d)
+</span><a href="#local-6989586621679218137"><span class="hs-identifier hs-var">de4</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218136"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218136"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218135"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218135"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218134"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218134"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218133"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218133"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218132"><span class="annot"><span class="annottext">sy4 :: Signal d
+</span><a href="#local-6989586621679218132"><span class="hs-identifier hs-var">sy4</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+forall t a b c d.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; SignalBase t d
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218140"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218139"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218138"><span class="hs-identifier hs-var">de3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t d)
+</span><a href="#local-6989586621679218137"><span class="hs-identifier hs-var">de4</span></a></span><span>
+</span><span id="line-79"></span><span>                                   </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+forall t a b.
+(Num t, Ord t, Eq t) =&gt;
+Signal t
+-&gt; Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b)
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE2"><span class="hs-identifier hs-var">SY.toDE2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218136"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Signal a -&gt; Signal b -&gt; (SignalBase t a, SignalBase t b))
+-&gt; (Signal a, Signal b) -&gt; (SignalBase t a, SignalBase t b)
+forall a1 a2 b1. (a1 -&gt; a2 -&gt; b1) -&gt; (a1, a2) -&gt; b1
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C"><span class="hs-operator hs-var">&gt;&lt;</span></a></span><span>   </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b -&gt; Signal c -&gt; Signal d -&gt; (Signal a, Signal b)
+</span><a href="#local-6989586621679218141"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218135"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218134"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218133"><span class="hs-identifier hs-var">sy3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal d
+</span><a href="#local-6989586621679218132"><span class="hs-identifier hs-var">sy4</span></a></span><span>
+</span><span id="line-80"></span><span id="embedSY43"><span class="annot"><span class="annottext">embedSY43 :: (Signal a
+ -&gt; Signal b
+ -&gt; Signal c
+ -&gt; Signal d
+ -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3)))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY43"><span class="hs-identifier hs-var hs-var">embedSY43</span></a></span></span><span> </span><span id="local-6989586621679218130"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; Signal d
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218130"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218129"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218129"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218128"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218128"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218127"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218127"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span id="local-6989586621679218126"><span class="annot"><span class="annottext">de4 :: Stream (DE t d)
+</span><a href="#local-6989586621679218126"><span class="hs-identifier hs-var">de4</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218125"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218125"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218124"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218124"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218123"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218123"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218122"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218122"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218121"><span class="annot"><span class="annottext">sy4 :: Signal d
+</span><a href="#local-6989586621679218121"><span class="hs-identifier hs-var">sy4</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+forall t a b c d.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; SignalBase t d
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218129"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218128"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218127"><span class="hs-identifier hs-var">de3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t d)
+</span><a href="#local-6989586621679218126"><span class="hs-identifier hs-var">de4</span></a></span><span>
+</span><span id="line-81"></span><span>                                   </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall (f :: * -&gt; *) t a1 a2 a3.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE3"><span class="hs-identifier hs-var">SY.toDE3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218125"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3))
+forall t1 t2 t3 t4. (t1 -&gt; t2 -&gt; t3 -&gt; t4) -&gt; (t1, t2, t3) -&gt; t4
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;</span></a></span><span>  </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; Signal d
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3))
+</span><a href="#local-6989586621679218130"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218124"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218123"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218122"><span class="hs-identifier hs-var">sy3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal d
+</span><a href="#local-6989586621679218121"><span class="hs-identifier hs-var">sy4</span></a></span><span>
+</span><span id="line-82"></span><span id="embedSY44"><span class="annot"><span class="annottext">embedSY44 :: (Signal a
+ -&gt; Signal b
+ -&gt; Signal c
+ -&gt; Signal d
+ -&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3),
+     Stream (SY a4)))
+-&gt; Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.DE.Hybrid.html#embedSY44"><span class="hs-identifier hs-var hs-var">embedSY44</span></a></span></span><span> </span><span id="local-6989586621679218119"><span class="annot"><span class="annottext">syproc :: Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; Signal d
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218119"><span class="hs-identifier hs-var">syproc</span></a></span></span><span> </span><span id="local-6989586621679218118"><span class="annot"><span class="annottext">de1 :: Stream (DE t a)
+</span><a href="#local-6989586621679218118"><span class="hs-identifier hs-var">de1</span></a></span></span><span> </span><span id="local-6989586621679218117"><span class="annot"><span class="annottext">de2 :: Stream (DE t b)
+</span><a href="#local-6989586621679218117"><span class="hs-identifier hs-var">de2</span></a></span></span><span> </span><span id="local-6989586621679218116"><span class="annot"><span class="annottext">de3 :: Stream (DE t c)
+</span><a href="#local-6989586621679218116"><span class="hs-identifier hs-var">de3</span></a></span></span><span> </span><span id="local-6989586621679218115"><span class="annot"><span class="annottext">de4 :: Stream (DE t d)
+</span><a href="#local-6989586621679218115"><span class="hs-identifier hs-var">de4</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679218114"><span class="annot"><span class="annottext">ts :: Signal t
+</span><a href="#local-6989586621679218114"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218113"><span class="annot"><span class="annottext">sy1 :: Signal a
+</span><a href="#local-6989586621679218113"><span class="hs-identifier hs-var">sy1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218112"><span class="annot"><span class="annottext">sy2 :: Signal b
+</span><a href="#local-6989586621679218112"><span class="hs-identifier hs-var">sy2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218111"><span class="annot"><span class="annottext">sy3 :: Signal c
+</span><a href="#local-6989586621679218111"><span class="hs-identifier hs-var">sy3</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679218110"><span class="annot"><span class="annottext">sy4 :: Signal d
+</span><a href="#local-6989586621679218110"><span class="hs-identifier hs-var">sy4</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+-&gt; Stream (DE t b)
+-&gt; Stream (DE t c)
+-&gt; Stream (DE t d)
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+forall t a b c d.
+(Num t, Ord t, Eq t) =&gt;
+SignalBase t a
+-&gt; SignalBase t b
+-&gt; SignalBase t c
+-&gt; SignalBase t d
+-&gt; (Signal t, Signal a, Signal b, Signal c, Signal d)
+</span><a href="ForSyDe.Atom.MoC.DE.Interface.html#toSY4"><span class="hs-identifier hs-var">DE.toSY4</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t a)
+</span><a href="#local-6989586621679218118"><span class="hs-identifier hs-var">de1</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t b)
+</span><a href="#local-6989586621679218117"><span class="hs-identifier hs-var">de2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t c)
+</span><a href="#local-6989586621679218116"><span class="hs-identifier hs-var">de3</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (DE t d)
+</span><a href="#local-6989586621679218115"><span class="hs-identifier hs-var">de4</span></a></span><span>
+</span><span id="line-83"></span><span>                                   </span><span class="hs-keyword">in</span><span>  </span><span class="annot"><span class="annottext">Signal t
+-&gt; Stream (SY a1)
+-&gt; Stream (SY a2)
+-&gt; Stream (SY a3)
+-&gt; Stream (SY a4)
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall (f :: * -&gt; *) t a1 a2 a3 a4.
+(Applicative f, Num t, Ord t) =&gt;
+f (SY t)
+-&gt; f (SY a1)
+-&gt; f (SY a2)
+-&gt; f (SY a3)
+-&gt; f (SY a4)
+-&gt; (f (DE t a1), f (DE t a2), f (DE t a3), f (DE t a4))
+</span><a href="ForSyDe.Atom.MoC.SY.Interface.html#toDE4"><span class="hs-identifier hs-var">SY.toDE4</span></a></span><span> </span><span class="annot"><span class="annottext">Signal t
+</span><a href="#local-6989586621679218114"><span class="hs-identifier hs-var">ts</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (SY a1)
+ -&gt; Stream (SY a2)
+ -&gt; Stream (SY a3)
+ -&gt; Stream (SY a4)
+ -&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+     Stream (DE t a4)))
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+-&gt; (Stream (DE t a1), Stream (DE t a2), Stream (DE t a3),
+    Stream (DE t a4))
+forall t1 t2 t3 t4 t5.
+(t1 -&gt; t2 -&gt; t3 -&gt; t4 -&gt; t5) -&gt; (t1, t2, t3, t4) -&gt; t5
+</span><a href="ForSyDe.Atom.Utility.Tuple.html#%3E%3C%3C%3C"><span class="hs-operator hs-var">&gt;&lt;&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+-&gt; Signal b
+-&gt; Signal c
+-&gt; Signal d
+-&gt; (Stream (SY a1), Stream (SY a2), Stream (SY a3), Stream (SY a4))
+</span><a href="#local-6989586621679218119"><span class="hs-identifier hs-var">syproc</span></a></span><span> </span><span class="annot"><span class="annottext">Signal a
+</span><a href="#local-6989586621679218113"><span class="hs-identifier hs-var">sy1</span></a></span><span> </span><span class="annot"><span class="annottext">Signal b
+</span><a href="#local-6989586621679218112"><span class="hs-identifier hs-var">sy2</span></a></span><span> </span><span class="annot"><span class="annottext">Signal c
+</span><a href="#local-6989586621679218111"><span class="hs-identifier hs-var">sy3</span></a></span><span> </span><span class="annot"><span class="annottext">Signal d
+</span><a href="#local-6989586621679218110"><span class="hs-identifier hs-var">sy4</span></a></span><span>
+</span><span id="line-84"></span></pre></body></html>
