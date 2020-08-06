@@ -9,87 +9,83 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The @SY@ library implements the execution semantics for the atoms
--- operating according to the synchronous model of computation. This
--- module also provides a set of helpers for instantiating the MoC
--- layer patterns described in the "ForSyDe.Atom.MoC" module as
+-- The @SY@ library implements the atoms that operate according to the synchronous
+-- reactive model of computation. This module also provides a set of helpers for
+-- instantiating the MoC layer patterns described in the "ForSyDe.Atom.MoC" module as
 -- meaningful synchronous process constructors.
 --
--- For an overview about atoms, layers and patterns, please refer to
--- the "ForSyDe.Atom" module documentation, and for an overview of the
--- MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
+-- This module exports a reduced SY language, where all processes are assumed to
+-- operate on the same clock rate. For an extended SY language of implicit multi-clock
+-- rate systems, check "ForSyDe.Atom.MoC.SY.Clocked". Alternatively, this layer can be
+-- extended by explicitly wrapping a "ForSyDe.Atom.ExB"-like layer below it.
 --
--- __IMPORTANT!!!__
--- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
--- on how to interpret, use and develop your own constructors.
+-- Useful pointers:
+--
+-- * "ForSyDe.Atom" contains general guidelines for using the API
+--
+-- * "ForSyDe.Atom.MoC" documents details about the internals of the MoC layer, the
+--   atoms and the basic structure of all process constructors as MoC patterns.
+--
+-- * "ForSyDe.Atom.MoC.SY.Clocked" contains an extended SY language of multi-rate
+--   clocked systems.
+--
+-- * the <ForSyDe-Atom.html#naming_conv naming convention> rules on how to interpret
+--   the function names based on their number of inputs and outputs.
 ---------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.SY (
 
   -- * Synchronous (@SY@) event
 
-  -- | According to <ForSyDe-Atom.html#lee98 [Lee98]>, "two events
-  -- are synchronous if they have the same tag, and two signals are
-  -- synchronous if all events in one signal are synchronous to an
-  -- event in the second signal and vice-versa. A system is
-  -- synchronous if every signals in the system is synchronous to all
-  -- the other signals in the system."
+  -- | Acording to the tagged signal model <ForSyDe-Atom.html#lee98 [Lee98]> "two
+  -- events are synchronous if they have the same tag, and two signals are synchronous
+  -- if all events in one signal are synchronous to an event in the second signal and
+  -- vice-versa. A system is synchronous if every signals in the system is synchronous
+  -- to all the other signals in the system."  The synchronous (@SY@) MoC defines no
+  -- notion of physical time, its tag system suggesting in fact the precedence among
+  -- events. In simpler words:
   --
-  -- The synchronous (@SY@) MoC defines no notion of physical time,
-  -- its tag system suggesting in fact the precedence among events. To
-  -- further demystify its mechanisms, we can say that:
+  -- [The SY MoC] is abstracting the execution semantics of a system where computation
+  --   is assumed to perform instantaneously (with zero delay), at certain
+  --   synchronization instants, when data is assumed to be available.
   --
-  -- [The SY MoC] is abstracting the execution semantics of a system
-  --   where computation is assumed to perform instantaneously (with
-  --   zero delay), at certain synchronization instants, when data is
-  --   assumed to be available.
-  --
-  -- Below is a /possible/ behavior in time of the input and the
-  -- output signals of a SY process, to illustrate these semantics:
+  -- Below is a /possible/ behavior in time of the input and the output signals of a
+  -- SY process, to illustrate these semantics:
   --
   -- <<fig/moc-sy-example.png>>
   --
-  -- Implementing the SY tag system is straightforward if we consider
-  -- that the synchronous 'Signal' is isomorphic to an infinite
-  -- list. In this case the tags are implicitly defined by the
-  -- position of events in a signal: \(t_0\) would correspond with
-  -- the event at the head of a signal, \(t_1\) with the following
-  -- event, etc... The only explicit parameter passed to a SY event
-  -- constructor is the value it carries \(\in V\). As such,
-  -- we can state the following particularities:
+  -- The SY tag system is derived directly from the 'ForSyDe.Atom.MoC.Stream' host.
+  -- Hence a SY 'Signal' is isomorphic to an infinite list, where tags are implicitly
+  -- defined by the position of events in a signal: \(t_0\) corresponds with the event
+  -- at the head of a signal, \(t_1\) with the following event, etc... The only
+  -- explicit parameter passed to a SY event constructor is the value it carries \(\in
+  -- V\). As such, we can state the following particularities:
   --
-  -- 1. tags are implicit from the position in the
-  --    'ForSyDe.Atom.MoC.Stream.Stream', thus they are ignored in the
-  --    type constructor.
+  -- 1. tags are implicit from the position in the 'ForSyDe.Atom.MoC.Stream.Stream',
+  --    thus they are ignored in the type constructor.
   --
   -- 1. the type constructor wraps only a value
   --
-  -- 1. being a /timed MoC/, the order between events is total
-  --    <ForSyDe-Atom.html#lee98 [Lee98]>.
+  -- 1. being a /timed MoC/, the order between events is interpreted as total.
   -- 
-  -- 1. from the previous statement we can conclude that there is no
-  --    need for an <ForSyDe-Atom-MoC.html#context execution context>
-  --    and we can ignore the formatting of functions in
-  --    "ForSyDe.Atom.MoC", thus we can safely assume:
-  --    <<fig/eqs-moc-timed-context.png>>
+  -- 1. there is no need for an <ForSyDe-Atom-MoC.html#context execution context> and
+  --    we can ignore the formatting of functions in "ForSyDe.Atom.MoC", thus we can
+  --    safely assume that \[ \Gamma\vdash\alpha\rightarrow\beta =
+  --    \alpha\rightarrow\beta \]
   SY(..),
 
   -- * Aliases & utilities
 
-  -- | These are type synonyms and utilities provided for user
-  -- convenience. They mainly concern the construction and usage of
-  -- signals.
+  -- | These are type synonyms and utilities provided for user convenience. They
+  -- mainly concern the construction and usage of signals.
 
   Signal, unit, unit2, unit3, unit4, signal, readSignal,
   
   -- * @SY@ process constuctors
 
-  -- | These SY process constructors are basically specific
-  -- instantiations of the atom patterns defined in
-  -- "ForSyDe.Atom.MoC". Some are also wrapping functions in an
-  -- extended behavioural model to describe synchronous processes with
-  -- <#g:5 predicate behavior>.
-
+  -- | These are specific implementations of the atom patterns defined in
+  -- "ForSyDe.Atom.MoC".
+  
   -- ** Simple
 
   delay,
@@ -127,23 +123,12 @@ module ForSyDe.Atom.MoC.SY (
   mealy21, mealy22, mealy23, mealy24,
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
-
-  -- -- ** Storing behavior
   
-  -- buffer1, buffer2, buffer3, buffer4,
-  
-  -- ** Predicate behavior
-
-  -- | These processes manipulate the behavior of a signal based on
-  -- predicates on their status.
-
-  when, when', is, whenPresent, filter, filter', fill, hold,
-  reactPres1, reactPres2, reactPres3, reactPres4,
-
   -- * Interfaces
 
   toDE, toDE2, toDE3, toDE4,
-  toSDF, toSDF2, toSDF3, toSDF4,
+  toSDF1, toSDF2, toSDF3, toSDF4,
+  toSDF1', toSDF2', toSDF3', toSDF4',
   zipx, unzipx, unzipx'  
   
   ) where

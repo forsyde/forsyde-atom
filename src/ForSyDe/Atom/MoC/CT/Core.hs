@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances, GADTs, StandaloneDeriving #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -16,32 +16,59 @@
 
 module ForSyDe.Atom.MoC.CT.Core where
 
-import Data.Ratio
 import ForSyDe.Atom.MoC
-import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.Time
 import ForSyDe.Atom.MoC.TimeStamp
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 
--- | Type synonym for a CT signal, i.e. "a signal of CT events"
-type Signal a = Stream (CT a)
+-- | Type synonym for a base DE signal as a stream of 'DE' events, where the type of
+-- tags has not been determined yet. In designs, it is advised to define a type alias
+-- for signals, using an appropriate numerical type for tags, e.g.
+--
+-- > import ForSyDe.Atom.MoC.CT
+-- >
+-- > type MyCtSignal a = SignalBase Int Float a
+type SignalBase timestamp time a = Stream (CT timestamp time a)
 
--- | The CT type, identifying a continuous time event and implementing an
--- instance of the 'MoC' class.
-data CT a  = CT { tag   :: TimeStamp
-                  -- ^ start time of event
-                , phase :: Time
-                  -- ^ phase. Models function delays
-                , func  :: Time -> a
-                  -- ^ function of time
-                }
+-- | Convenience alias for a CT signal, where tags are represented using our
+-- 'TimeStamp' alias and time is represented usign our 'Time' alias.
+type Signal a = SignalBase TimeStamp Time a
+
+-- | The CT event. It identifies a continuous time signal. It is composed of three
+-- parts: a tag, a phase displacement and a continuous sub-signal as a function of
+-- time. The types passed to this constructor need to satisfy all of the three
+-- properties, as suggested by the type constraints:
+--
+-- * @time@ needs to be an arbitrary numerical type, member of the 'Fractional' class
+--   (see 'MoC' instance). If possible, 'Time', which is an alias for 'Rational' is
+--   preferred, as it is the closest numerical representation for continuums.
+--
+-- * @timestamp@ needs to be a numerical type, to express value 0 (global start) and
+--   every representable number needs to have an additive inverse.
+--
+-- * @timestamp@ needs to be unambiguously comparable (defines a total order).
+--
+-- * @timestamp@ needs to unambiguously define an equality operation.
+--
+-- Due to these properties not all numerical types can represent CT timestamps, see
+-- 'ForSyDe.Atom.MoC.DE.DE'.
+data CT timestamp time a where
+  CT :: (Num time, Num timestamp, Ord timestamp, Eq timestamp)
+     => { tag   :: timestamp
+          -- ^ start time of event
+        , phase :: time
+          -- ^ phase. Models function delays
+        , func  :: time -> a
+          -- ^ function of time
+        } -> CT timestamp time a
 
 -- | Implenents the execution semantics for the CT MoC atoms.
-instance MoC CT where
+instance (Num ts, Num tm, Real ts, Fractional tm, Ord ts, Ord tm, Eq ts) =>
+         MoC (CT ts tm) where
   ---------------------
-  type Fun CT a b = a -> b
-  type Ret CT b   = b 
+  type Fun (CT ts tm) a b = a -> b
+  type Ret (CT ts tm) b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------
@@ -62,22 +89,23 @@ instance MoC CT where
   (CT _ p v :- _) -<- xs = (CT 0 p v) :- xs
   ---------------------
   (_ :- CT d _ _ :- _) -&- xs
-    = (\(CT t p v) -> CT (t + d) (p - toRational d) v) <$> xs
+    = (\(CT t p v) -> CT (t + d) (p - realToFrac d) v) <$> xs
   (_ :- NullS) -&- _  = error "[MoC.CT] signal delayed to infinity"
   ---------------------
     
 -- | Allows for mapping of functions on a CT event.
-instance Functor CT where
+instance (Num tm, Num ts, Ord ts, Eq ts) => Functor (CT tm ts) where
   fmap f (CT t p g) = CT t p (f . g)
 
 -- | Allows for lifting functions on a pair of CT events.
-instance Applicative CT where
+instance (Num tm, Num ts, Ord ts, Ord tm, Eq ts) => Applicative (CT tm ts) where
   pure x = CT 0 0 (\_ -> x)
   (CT t p1 f) <*> (CT _ p2 g) = CT t 0 (\x -> (f (x+p1)) (g (x+p2)))
 
--- | Meant for debug purpose only! It evaluates /only/ the signal at
+-- | __FOR DEBUG ONLY!__ It evaluates /only/ the signal at
 -- the start time.
-instance Show a => Show (CT a) where
+instance (Show a, Show ts, Real ts, Fractional tm) =>
+         Show (CT ts tm a) where
   showsPrec _ e
     = (++) ( show (evalTs (tag e) e) ++
              "@" ++ show (tag e) )
@@ -92,28 +120,41 @@ infixl 7 %>
 -----------------------------------------------------------------------------
 
 evalTm t (CT _ p f) = f (t + p)
-evalTs t (CT _ p f) = f ((toRational t) + p)
-evalEv (CT t p f) = f ((toRational t) + p)
+evalTs t (CT _ p f) = f ((realToFrac t) + p)
+evalEv (CT t p f) = f ((realToFrac t) + p)
                    
-unit  :: (TimeStamp, Time -> a) -> Signal a 
-unit (t,f) = (CT 0 0 f :- CT t 0 f :- NullS)
-
+unit   :: (Num ts, Num tm, Ord ts)
+       => (ts, tm -> a) -> SignalBase ts tm a
 -- | Wraps a (tuple of) pair(s) @(time, function)@ into the equivalent
 -- unit signal(s), i.e. signal(s) with one event with the period
 -- @time@ carrying @function@.
 --
 -- Helpers: @unit@ and @unit[2-4]@.
+unit2  :: (Num ts, Num tm, Ord ts)
+       => ((ts, tm -> a1),(ts, tm -> a2))
+       -> (SignalBase ts tm a1, SignalBase ts tm a2)
+unit3  :: (Num ts, Num tm, Ord ts)
+       => ((ts, tm -> a1),(ts, tm -> a2),(ts, tm -> a3))
+       -> (SignalBase ts tm a1, SignalBase ts tm a2, SignalBase ts tm a3)
+unit4  :: (Num ts, Num tm, Ord ts)
+       => ((ts, tm -> a1),(ts, tm -> a2),(ts, tm -> a3),(ts, tm -> a4))
+       -> (SignalBase ts tm a1, SignalBase ts tm a2, SignalBase ts tm a3
+          ,SignalBase ts tm a4)
+
+unit (t,f) = (CT 0 0 f :- CT t 0 f :- NullS)
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
 
 -- | Creates an infinite signal.
-infinite :: (Time -> a) -> Signal a
+infinite :: (Num ts, Num tm, Ord ts)
+         => (tm -> a) -> SignalBase ts tm a
 infinite f = CT 0 0 f :- NullS
 
 -- | Transforms a list of tuples such as the ones taken by 'event'
 -- into a CT signal
-signal :: [(TimeStamp, Time -> a)] -> Signal a
+signal :: (Num ts, Num tm, Ord ts)
+       => [(ts, tm -> a)] -> SignalBase ts tm a
 signal = checkSignal . stream . fmap (\(t, f) -> CT t 0 f)
 
 -- | Checks if a signal is well-formed or not, according to the CT MoC
@@ -128,36 +169,4 @@ checkSignal s@(x:-_)
     checkOrder (x:-y:-xs)
       | tag x < tag y = x :-checkOrder (y:-xs)
       | otherwise = error "[MoC.CT] malformed signal"
-
--- | Returns a stream with the results of evaluating a signal with a
--- given sampling period.
-plot :: TimeStamp  -- ^ sample period
-     -> TimeStamp  -- ^ end of plotting
-     -> Signal a   -- ^ input CT signal
-     -> Stream a   -- ^ stream with evaluation results
-plot step until = evalPlot 0
-  where
-    evalPlot t s@(x:-y:-xs)
-      | t >= until = NullS
-      | tag y > t  = evalTs t x :- evalPlot (t + step) s
-      | otherwise  = evalPlot t (y:-xs)
-    evalPlot t s@(x:-NullS)
-      | t >= until = NullS
-      | otherwise  = evalTs t x :- evalPlot (t + step) s
-plot2 s u = ($$)   (plot s u, plot s u)
-plot3 s u = ($$$)  (plot s u, plot s u, plot s u)
-plot4 s u = ($$$$) (plot s u, plot s u, plot s u, plot s u)
-
--- | Same as 'plot', but also converts rational outputs to floats
--- (which are easier to be read by drawing engines).
-plotFloat :: RealFloat b
-          => TimeStamp     -- ^ sample period
-          -> TimeStamp     -- ^ end of plotting
-          -> Signal Time   -- ^ CT signal with a 'Time' codomain
-          -> Stream b      -- ^ plot output in floating point format
-plotFloat  s u = fmap  fromRational . plot s u
-plotFloat2 s u = ($$)   (plotFloat s u, plotFloat s u)
-plotFloat3 s u = ($$$)  (plotFloat s u, plotFloat s u, plotFloat s u)
-plotFloat4 s u = ($$$$) (plotFloat s u, plotFloat s u, plotFloat s u, plotFloat s u)
-
 

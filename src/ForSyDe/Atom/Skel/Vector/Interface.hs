@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 ----------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.Core
+-- Module      :  ForSyDe.Atom.Skel.Vector.Core
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -12,13 +12,13 @@
 --
 -- The library for the 'Vector' type. Contains the main skeletons.
 ----------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.Interface where
+module ForSyDe.Atom.Skel.Vector.Interface where
 
 import ForSyDe.Atom.MoC
 import ForSyDe.Atom.MoC.Stream as S
-import ForSyDe.Atom.Skeleton
-import ForSyDe.Atom.Skeleton.Vector.Core
-import ForSyDe.Atom.Skeleton.Vector.Lib as V (recuri, tail, fanout, fanoutn, reduce1)
+import ForSyDe.Atom.Skel
+import ForSyDe.Atom.Skel.Vector.Core
+import ForSyDe.Atom.Skel.Vector.Lib as V (recuri, tail, fanout, fanoutn, reduce1)
   
 
 import Prelude hiding (tail, map, length)
@@ -34,7 +34,7 @@ mapS = fmap . fmap
 -- /translates/ a partition of events (see "ForSyDe.Atom.MoC") into
 -- sub-vectors.
 --
--- There exist helper intances of the 'zipx' skeleton interface for
+-- There exist helper instances of the 'zipx' skeleton interface for
 -- all supported MoCs.
 --
 -- <<fig/eqs-skel-vector-zipx.png>>
@@ -63,7 +63,7 @@ zipx part =  V.reduce1 sync part . farm11 (mapS unit)
 -- scope of skeletons and may lead to unsafe behavior. The length of
 -- the output vector is needed in order to avoid infinite recurrence.
 --
--- There exist helper intances of the 'unzipx' skeleton interface for
+-- There exist helper instances of the 'unzipx' skeleton interface for
 -- all supported MoCs.
 --
 -- <<fig/eqs-skel-vector-unzipx.png>>

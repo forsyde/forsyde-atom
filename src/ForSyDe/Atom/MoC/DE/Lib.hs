@@ -19,7 +19,7 @@ module ForSyDe.Atom.MoC.DE.Lib where
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.DE.Core
 import           ForSyDe.Atom.MoC.TimeStamp
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 
 ------- DOCTEST SETUP -------
 
@@ -38,10 +38,10 @@ import           ForSyDe.Atom.Utility
 -- {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
 -- 
 -- <<fig/moc-de-pattern-delay.png>>
-delay :: TimeStamp        -- ^ time delay
+delay :: (Num t, Ord t, Eq t) => t        -- ^ time delay
       -> a          -- ^ initial value
-      -> Signal a   -- ^ input signal
-      -> Signal a   -- ^ output signal
+      -> SignalBase t a   -- ^ input signal
+      -> SignalBase t a   -- ^ output signal
 
 delay t v = MoC.delay (unit (t, v))
 
@@ -56,9 +56,9 @@ delay t v = MoC.delay (unit (t, v))
 -- {1@0s,3@2s,4@6s,5@7s,6@10s,7@11s}
 --
 -- <<fig/moc-de-pattern-delayp.png>>
-delay' :: Signal a  -- ^ signal "borrowing" the initial event
-      -> Signal a   -- ^ input signal
-      -> Signal a   -- ^ output signal
+delay' :: (Num t, Ord t, Eq t) => SignalBase t a  -- ^ signal "borrowing" the initial event
+      -> SignalBase t a   -- ^ input signal
+      -> SignalBase t a   -- ^ output signal
 
 delay' = MoC.delay
 
@@ -79,40 +79,40 @@ delay' = MoC.delay
 -- ({2@0s,3@2s,4@6s,5@8s,6@9s},{0@0s,-1@2s,-2@6s,-3@8s,-4@9s})
 --
 -- <<fig/moc-de-pattern-comb.png>>
-comb22 :: (a1 -> a2 -> (b1, b2)) -- ^ function on values
-       -> Signal a1                 -- ^ first input signal
-       -> Signal a2                 -- ^ second input signal
-       -> (Signal b1, Signal b2)       -- ^ two output signals
-comb11 :: (a1 -> b1)
-       -> Signal a1 -> Signal b1                                
-comb12 :: (a1 -> (b1, b2))
-       -> Signal a1 -> (Signal b1, Signal b2)                          
-comb13 :: (a1 -> (b1, b2, b3))
-       -> Signal a1 -> (Signal b1, Signal b2, Signal b3)                      
-comb14 :: (a1 -> (b1, b2, b3, b4))
-       -> Signal a1 -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
-comb21 :: (a1 -> a2 -> b1)
-       -> Signal a1 -> Signal a2 -> Signal b1                          
-comb23 :: (a1 -> a2 -> (b1, b2, b3))
-       -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3)                
-comb24 :: (a1 -> a2 -> (b1, b2, b3, b4))
-       -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3, Signal b4)            
-comb31 :: (a1 -> a2 -> a3 -> b1)
-       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal b1                    
-comb32 :: (a1 -> a2 -> a3 -> (b1, b2))
-       -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2)              
-comb33 :: (a1 -> a2 -> a3 -> (b1, b2, b3))
-       -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3)          
-comb34 :: (a1 -> a2 -> a3 -> (b1, b2, b3, b4))
-       -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3, Signal b4)     
-comb41 :: (a1 -> a2 -> a3 -> a4 -> b1)
-       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> Signal b1              
-comb42 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2))
-       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2)        
-comb43 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
-       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3)    
-comb44 :: (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
-       -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+comb22 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> (b1, b2)) -- ^ function on values
+       -> SignalBase t a1                 -- ^ first input signal
+       -> SignalBase t a2                 -- ^ second input signal
+       -> (SignalBase t b1, SignalBase t b2)       -- ^ two output signals
+comb11 :: (Num t, Ord t, Eq t) => (a1 -> b1)
+       -> SignalBase t a1 -> SignalBase t b1                                
+comb12 :: (Num t, Ord t, Eq t) => (a1 -> (b1, b2))
+       -> SignalBase t a1 -> (SignalBase t b1, SignalBase t b2)                          
+comb13 :: (Num t, Ord t, Eq t) => (a1 -> (b1, b2, b3))
+       -> SignalBase t a1 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                      
+comb14 :: (Num t, Ord t, Eq t) => (a1 -> (b1, b2, b3, b4))
+       -> SignalBase t a1 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                  
+comb21 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> b1)
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t b1                          
+comb23 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> (b1, b2, b3))
+       -> SignalBase t a1 -> SignalBase t a2 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                
+comb24 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> (b1, b2, b3, b4))
+       -> SignalBase t a1 -> SignalBase t a2 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)            
+comb31 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> b1)
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t b1                    
+comb32 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> (b1, b2))
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> (SignalBase t b1, SignalBase t b2)              
+comb33 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> (b1, b2, b3))
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)          
+comb34 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)     
+comb41 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> a4 -> b1)
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> SignalBase t b1              
+comb42 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> a4 -> (b1, b2))
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> (SignalBase t b1, SignalBase t b2)        
+comb43 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)    
+comb44 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+       -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 comb11 = MoC.comb11 
 comb12 = MoC.comb12 
@@ -143,47 +143,47 @@ comb44 = MoC.comb44
 -- >>> let sf = signal [(0,(+1)),(2,(*2)),(5,(+1)),(7,(*2))]
 -- >>> let s1 = signal [(0,1),(3,2),(5,3),(9,4)]
 -- >>> reconfig11 sf s1
--- {2@0s,2@2s,4@3s,4@5s,6@7s,8@9s}
+-- {2@0,2@2,4@3,4@5,6@7,8@9}
 --
 -- <<fig/moc-de-pattern-reconfig.png>>
-reconfig22 :: Signal (a1 -> a2 -> (b1, b2))
+reconfig22 :: (Num t, Ord t, Eq t) => SignalBase t (a1 -> a2 -> (b1, b2))
            -- ^ signal carrying functions
-           -> Signal a1
+           -> SignalBase t a1
            -- ^ first input signal carrying arguments
-           -> Signal a2
+           -> SignalBase t a2
            -- ^ second input signal carrying arguments
-           -> (Signal b1, Signal b2)
+           -> (SignalBase t b1, SignalBase t b2)
            -- ^ two output signals
-reconfig11 :: Signal (a1 -> b1)
-           -> Signal a1 -> Signal b1
-reconfig12 :: Signal(a1 -> (b1, b2))
-           -> Signal a1 -> (Signal b1, Signal b2)
-reconfig13 :: Signal(a1 -> (b1, b2, b3))
-           -> Signal a1 -> (Signal b1, Signal b2, Signal b3)
-reconfig14 :: Signal(a1 -> (b1, b2, b3, b4))
-           -> Signal a1 -> (Signal b1, Signal b2, Signal b3, Signal b4)
-reconfig21 :: Signal(a1 -> a2 -> b1)
-           -> Signal a1 -> Signal a2 -> Signal b1
-reconfig23 :: Signal(a1 -> a2 -> (b1, b2, b3))
-           -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3)
-reconfig24 :: Signal(a1 -> a2 -> (b1, b2, b3, b4))
-           -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2, Signal b3, Signal b4)
-reconfig31 :: Signal(a1 -> a2 -> a3 -> b1)
-           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal b1
-reconfig32 :: Signal(a1 -> a2 -> a3 -> (b1, b2))
-           -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2)
-reconfig33 :: Signal(a1 -> a2 -> a3 -> (b1, b2, b3))
-           -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3)
-reconfig34 :: Signal(a1 -> a2 -> a3 -> (b1, b2, b3, b4))
-           -> Signal a1 -> Signal a2 -> Signal a3 -> (Signal b1, Signal b2, Signal b3, Signal b4)
-reconfig41 :: Signal(a1 -> a2 -> a3 -> a4 -> b1)
-           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> Signal b1
-reconfig42 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2))
-           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2)
-reconfig43 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
-           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3)
-reconfig44 :: Signal(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
-           -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 -> (Signal b1, Signal b2, Signal b3, Signal b4)
+reconfig11 :: (Num t, Ord t, Eq t) => SignalBase t (a1 -> b1)
+           -> SignalBase t a1 -> SignalBase t b1
+reconfig12 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> (b1, b2))
+           -> SignalBase t a1 -> (SignalBase t b1, SignalBase t b2)
+reconfig13 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> (b1, b2, b3))
+           -> SignalBase t a1 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+reconfig14 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> (b1, b2, b3, b4))
+           -> SignalBase t a1 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
+reconfig21 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> b1)
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t b1
+reconfig23 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> (b1, b2, b3))
+           -> SignalBase t a1 -> SignalBase t a2 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+reconfig24 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> (b1, b2, b3, b4))
+           -> SignalBase t a1 -> SignalBase t a2 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
+reconfig31 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> b1)
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t b1
+reconfig32 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> (b1, b2))
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> (SignalBase t b1, SignalBase t b2)
+reconfig33 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> (b1, b2, b3))
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+reconfig34 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
+reconfig41 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> a4 -> b1)
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> SignalBase t b1
+reconfig42 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> a4 -> (b1, b2))
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> (SignalBase t b1, SignalBase t b2)
+reconfig43 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+reconfig44 :: (Num t, Ord t, Eq t) => SignalBase t(a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+           -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 reconfig11 = MoC.reconfig11 
 reconfig12 = MoC.reconfig12 
@@ -212,14 +212,14 @@ reconfig44 = MoC.reconfig44
 -- Constructors: @constant[1-4]@.
 --
 -- >>> constant1 2
--- {2@0s}
+-- {2@0}
 --
 -- <<fig/moc-de-pattern-constant.png>>
-constant2 :: (b1, b2)         -- ^ values to be repeated
-          -> (Signal b1, Signal b2) -- ^ generated signals
-constant1 :: b1 -> Signal b1                                
-constant3 :: (b1, b2, b3) -> (Signal b1, Signal b2, Signal b3)
-constant4 :: (b1, b2, b3, b4) -> (Signal b1, Signal b2, Signal b3, Signal b4)
+constant2 :: (Num t, Ord t, Eq t) => (b1, b2)         -- ^ values to be repeated
+          -> (SignalBase t b1, SignalBase t b2) -- ^ generated signals
+constant1 :: (Num t, Ord t, Eq t) => b1 -> SignalBase t b1                                
+constant3 :: (Num t, Ord t, Eq t) => (b1, b2, b3) -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)
+constant4 :: (Num t, Ord t, Eq t) => (b1, b2, b3, b4) -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 constant1 = infinite
 constant2 = ($$) (infinite,infinite)
@@ -236,24 +236,24 @@ constant4 = ($$$$) (infinite,infinite,infinite,infinite)
 --
 -- >>> let (s1,s2) = generate2 (\a b -> (a+1,b+2)) ((3,1),(1,2))
 -- >>> takeS 5 s1
--- {1@0s,2@3s,2@4s,2@5s,3@6s}
+-- {1@0,2@3,2@4,2@5,3@6}
 -- >>> takeS 7 s2
--- {2@0s,4@1s,6@2s,8@3s,10@4s,12@5s,14@6s}
+-- {2@0,4@1,6@2,8@3,10@4,12@5,14@6}
 --
 -- <<fig/moc-de-pattern-generate.png>>
-generate2 :: (b1 -> b2 -> (b1, b2))
+generate2 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> (b1, b2))
           -- ^ function to generate next value
-          -> ((TimeStamp, b1), (TimeStamp, b2))
+          -> ((t, b1), (t, b2))
           -- ^ kernel values tupled with their generation rate.
-          -> (Signal b1, Signal b2) -- ^ generated signals
-generate1 :: (b1 -> b1) -> (TimeStamp, b1)
-          -> Signal b1                                
-generate3 :: (b1 -> b2 -> b3 -> (b1, b2, b3))
-          -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-          -> (Signal b1, Signal b2, Signal b3)                      
-generate4 :: (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4))
-          -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-          -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
+          -> (SignalBase t b1, SignalBase t b2) -- ^ generated signals
+generate1 :: (Num t, Ord t, Eq t) => (b1 -> b1) -> (t, b1)
+          -> SignalBase t b1                                
+generate3 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> (b1, b2, b3))
+          -> ((t, b1), (t, b2), (t, b3))
+          -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                      
+generate4 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> (b1, b2, b3, b4))
+          -> ((t, b1), (t, b2), (t, b3), (t, b4))
+          -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                  
 
 generate1 ns i = MoC.stated01 ns (unit  i)
 generate2 ns i = MoC.stated02 ns (unit2 i)
@@ -273,75 +273,75 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 -- {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
 --
 -- <<fig/moc-de-pattern-stated.png>>
-stated22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
+stated22 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> (b1, b2))
             -- ^ next state function
-           -> ((TimeStamp, b1), (TimeStamp, b2))
+           -> ((t, b1), (t, b2))
            -- ^ initial state values tupled with their initial delay
-            -> Signal a1
+            -> SignalBase t a1
             -- ^ first input signal
-            -> Signal a2
+            -> SignalBase t a2
             -- ^ second input signal
-            -> (Signal b1, Signal b2) -- ^ output signals
-stated11 :: (b1 -> a1 -> b1)
-         -> (TimeStamp, b1)
-         -> Signal a1
-         -> Signal b1 
-stated12 :: (b1 -> b2 -> a1 -> (b1, b2))
-         -> ((TimeStamp, b1), (TimeStamp, b2))
-         -> Signal a1
-         -> (Signal b1, Signal b2) 
-stated13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-         -> Signal a1
-         -> (Signal b1, Signal b2, Signal b3) 
-stated14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-         -> Signal a1
-         -> (Signal b1, Signal b2, Signal b3, Signal b4) 
-stated21 :: (b1 -> a1 -> a2 -> b1)
-         -> (TimeStamp, b1)
-         -> Signal a1 -> Signal a2
-         -> Signal b1 
-stated23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-         -> Signal a1 -> Signal a2
-         -> (Signal b1, Signal b2, Signal b3) 
-stated24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-         -> Signal a1 -> Signal a2
-         -> (Signal b1, Signal b2, Signal b3, Signal b4) 
-stated31 :: (b1 -> a1 -> a2 -> a3 -> b1)
-         -> (TimeStamp, b1)
-         -> Signal a1 -> Signal a2 -> Signal a3
-         -> Signal b1 
-stated32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2))
-         -> ((TimeStamp, b1), (TimeStamp, b2))
-         -> Signal a1 -> Signal a2 -> Signal a3
-         -> (Signal b1, Signal b2) 
-stated33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-         -> Signal a1 -> Signal a2 -> Signal a3
-         -> (Signal b1, Signal b2, Signal b3) 
-stated34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-         -> Signal a1 -> Signal a2 -> Signal a3
-         -> (Signal b1, Signal b2, Signal b3, Signal b4) 
-stated41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
-         -> (TimeStamp, b1)
-         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-         -> Signal b1 
-stated42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2))
-         -> ((TimeStamp, b1), (TimeStamp, b2))
-         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-         -> (Signal b1, Signal b2) 
-stated43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-         -> (Signal b1, Signal b2, Signal b3) 
-stated44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
-         -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-         -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-         -> (Signal b1, Signal b2, Signal b3, Signal b4)
+            -> (SignalBase t b1, SignalBase t b2) -- ^ output signals
+stated11 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> b1)
+         -> (t, b1)
+         -> SignalBase t a1
+         -> SignalBase t b1 
+stated12 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> (b1, b2))
+         -> ((t, b1), (t, b2))
+         -> SignalBase t a1
+         -> (SignalBase t b1, SignalBase t b2) 
+stated13 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3))
+         -> ((t, b1), (t, b2), (t, b3))
+         -> SignalBase t a1
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3) 
+stated14 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4))
+         -> ((t, b1), (t, b2), (t, b3), (t, b4))
+         -> SignalBase t a1
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4) 
+stated21 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> a2 -> b1)
+         -> (t, b1)
+         -> SignalBase t a1 -> SignalBase t a2
+         -> SignalBase t b1 
+stated23 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3))
+         -> ((t, b1), (t, b2), (t, b3))
+         -> SignalBase t a1 -> SignalBase t a2
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3) 
+stated24 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4))
+         -> ((t, b1), (t, b2), (t, b3), (t, b4))
+         -> SignalBase t a1 -> SignalBase t a2
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4) 
+stated31 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> a2 -> a3 -> b1)
+         -> (t, b1)
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+         -> SignalBase t b1 
+stated32 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2))
+         -> ((t, b1), (t, b2))
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+         -> (SignalBase t b1, SignalBase t b2) 
+stated33 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3))
+         -> ((t, b1), (t, b2), (t, b3))
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3) 
+stated34 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4))
+         -> ((t, b1), (t, b2), (t, b3), (t, b4))
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4) 
+stated41 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
+         -> (t, b1)
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+         -> SignalBase t b1 
+stated42 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2))
+         -> ((t, b1), (t, b2))
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+         -> (SignalBase t b1, SignalBase t b2) 
+stated43 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3))
+         -> ((t, b1), (t, b2), (t, b3))
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3) 
+stated44 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4))
+         -> ((t, b1), (t, b2), (t, b3), (t, b4))
+         -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+         -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 stated11 ns i = MoC.stated11 ns (unit  i)
 stated12 ns i = MoC.stated12 ns (unit2 i)
@@ -374,75 +374,75 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 -- {2@0s,3@2s,5@6s,7@8s,8@9s,10@12s,12@14s}
 --
 -- <<fig/moc-de-pattern-state.png>>                   
-state22 :: (b1 -> b2 -> a1 -> a2 -> (b1, b2))
+state22 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> (b1, b2))
            -- ^ next state function
-           -> ((TimeStamp, b1), (TimeStamp, b2))
+           -> ((t, b1), (t, b2))
            -- ^ initial state values tupled with their initial delay
-           -> Signal a1
+           -> SignalBase t a1
            -- ^ first input signal
-           -> Signal a2
+           -> SignalBase t a2
            -- ^ second input signal
-           -> (Signal b1, Signal b2) -- ^ output signals
-state11 :: (b1 -> a1 -> b1)
-        -> (TimeStamp, b1)
-        -> Signal a1
-        -> Signal b1                                
-state12 :: (b1 -> b2 -> a1 -> (b1, b2)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2))
-        -> Signal a1
-        -> (Signal b1, Signal b2)                          
-state13 :: (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-        -> Signal a1
-        -> (Signal b1, Signal b2, Signal b3)                      
-state14 :: (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-        -> Signal a1 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
-state21 :: (b1 -> a1 -> a2 -> b1)
-        -> (TimeStamp, b1)
-        -> Signal a1 -> Signal a2
-        -> Signal b1                          
-state23 :: (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-        -> Signal a1 -> Signal a2 
-        -> (Signal b1, Signal b2, Signal b3)                
-state24 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-        -> Signal a1 -> Signal a2 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
-state31 :: (b1 -> a1 -> a2 -> a3 -> b1)
-        -> (TimeStamp, b1)
-        -> Signal a1 -> Signal a2 -> Signal a3
-        -> Signal b1                    
-state32 :: (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2))
-        -> Signal a1 -> Signal a2 -> Signal a3 
-        -> (Signal b1, Signal b2)              
-state33 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-        -> Signal a1 -> Signal a2 -> Signal a3 
-        -> (Signal b1, Signal b2, Signal b3)          
-state34 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-        -> Signal a1 -> Signal a2 -> Signal a3 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)     
-state41 :: (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
-        -> (TimeStamp, b1)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-        -> Signal b1
-state42 :: (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2))
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
-        -> (Signal b1, Signal b2)        
-state43 :: (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3))
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
-        -> (Signal b1, Signal b2, Signal b3)    
-state44 :: (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
-        -> ((TimeStamp, b1), (TimeStamp, b2), (TimeStamp, b3), (TimeStamp, b4))
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)
+           -> (SignalBase t b1, SignalBase t b2) -- ^ output signals
+state11 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> b1)
+        -> (t, b1)
+        -> SignalBase t a1
+        -> SignalBase t b1                                
+state12 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> (b1, b2)) 
+        -> ((t, b1), (t, b2))
+        -> SignalBase t a1
+        -> (SignalBase t b1, SignalBase t b2)                          
+state13 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> (b1, b2, b3)) 
+        -> ((t, b1), (t, b2), (t, b3))
+        -> SignalBase t a1
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                      
+state14 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> (b1, b2, b3, b4)) 
+        -> ((t, b1), (t, b2), (t, b3), (t, b4))
+        -> SignalBase t a1 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                  
+state21 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> a2 -> b1)
+        -> (t, b1)
+        -> SignalBase t a1 -> SignalBase t a2
+        -> SignalBase t b1                          
+state23 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> a2 -> (b1, b2, b3)) 
+        -> ((t, b1), (t, b2), (t, b3))
+        -> SignalBase t a1 -> SignalBase t a2 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                
+state24 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> (b1, b2, b3, b4)) 
+        -> ((t, b1), (t, b2), (t, b3), (t, b4))
+        -> SignalBase t a1 -> SignalBase t a2 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                     
+state31 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> a2 -> a3 -> b1)
+        -> (t, b1)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+        -> SignalBase t b1                    
+state32 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> a3 -> (b1, b2)) 
+        -> ((t, b1), (t, b2))
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 
+        -> (SignalBase t b1, SignalBase t b2)              
+state33 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
+        -> ((t, b1), (t, b2), (t, b3))
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)          
+state34 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
+        -> ((t, b1), (t, b2), (t, b3), (t, b4))
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)     
+state41 :: (Num t, Ord t, Eq t) => (b1 -> a1 -> a2 -> a3 -> a4 -> b1)
+        -> (t, b1)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+        -> SignalBase t b1
+state42 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
+        -> ((t, b1), (t, b2))
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 
+        -> (SignalBase t b1, SignalBase t b2)        
+state43 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
+        -> ((t, b1), (t, b2), (t, b3))
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)    
+state44 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> b3 -> b4 -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
+        -> ((t, b1), (t, b2), (t, b3), (t, b4))
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 state11 ns i = MoC.state11 ns (unit  i)
 state12 ns i = MoC.state12 ns (unit2 i)
@@ -475,88 +475,88 @@ state44 ns i = MoC.state44 ns (unit4 i)
 -- {2@0s,3@6s,4@8s,6@12s,8@14s,9@15s,11@18s}
 --
 -- <<fig/moc-de-pattern-moore.png>>          
-moore22 :: (st -> a1 -> a2 -> st)
+moore22 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
            -- ^ next state function
            -> (st -> (b1, b2))
            -- ^ output decoder
-           -> (TimeStamp, st)
+           -> (t, st)
            -- ^ initial state: tag and value
-           -> Signal a1 -> Signal a2 -> (Signal b1, Signal b2)
-moore11 :: (st -> a1 -> st)
+           -> SignalBase t a1 -> SignalBase t a2 -> (SignalBase t b1, SignalBase t b2)
+moore11 :: (Num t, Ord t, Eq t) => (st -> a1 -> st)
         -> (st -> b1)
-        -> (TimeStamp, st)
-        -> Signal a1
-        -> Signal b1                                
-moore12 :: (st -> a1 -> st)
+        -> (t, st)
+        -> SignalBase t a1
+        -> SignalBase t b1                                
+moore12 :: (Num t, Ord t, Eq t) => (st -> a1 -> st)
         -> (st -> (b1, b2))
-        -> (TimeStamp, st)
-        -> Signal a1
-        -> (Signal b1, Signal b2)                          
-moore13 :: (st -> a1 -> st)
+        -> (t, st)
+        -> SignalBase t a1
+        -> (SignalBase t b1, SignalBase t b2)                          
+moore13 :: (Num t, Ord t, Eq t) => (st -> a1 -> st)
         -> (st -> (b1, b2, b3))
-        -> (TimeStamp, st)
-        -> Signal a1
-        -> (Signal b1, Signal b2, Signal b3)                      
-moore14 :: (st -> a1 -> st)
+        -> (t, st)
+        -> SignalBase t a1
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                      
+moore14 :: (Num t, Ord t, Eq t) => (st -> a1 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (TimeStamp, st)
-        -> Signal a1
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
-moore21 :: (st -> a1 -> a2 -> st)
+        -> (t, st)
+        -> SignalBase t a1
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                  
+moore21 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
         -> (st -> b1)
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2
-        -> Signal b1                          
-moore23 :: (st -> a1 -> a2 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2
+        -> SignalBase t b1                          
+moore23 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
         -> (st -> (b1, b2, b3))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2
-        -> (Signal b1, Signal b2, Signal b3)                
-moore24 :: (st -> a1 -> a2 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                
+moore24 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
-moore31 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                     
+moore31 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st)
         -> (st -> b1)
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3
-        -> Signal b1                    
-moore32 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+        -> SignalBase t b1                    
+moore32 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st)
         -> (st -> (b1, b2))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3
-        -> (Signal b1, Signal b2)              
-moore33 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+        -> (SignalBase t b1, SignalBase t b2)              
+moore33 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st)
         -> (st -> (b1, b2, b3))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3
-        -> (Signal b1, Signal b2, Signal b3)          
-moore34 :: (st -> a1 -> a2 -> a3 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)          
+moore34 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)     
-moore41 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)     
+moore41 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> b1)
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-        -> Signal b1              
-moore42 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+        -> SignalBase t b1              
+moore42 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> (b1, b2))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-        -> (Signal b1, Signal b2)        
-moore43 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+        -> (SignalBase t b1, SignalBase t b2)        
+moore43 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> (b1, b2, b3))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-        -> (Signal b1, Signal b2, Signal b3)    
-moore44 :: (st -> a1 -> a2 -> a3 -> a4 -> st)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)    
+moore44 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st)
         -> (st -> (b1, b2, b3, b4))
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 moore11 ns od i = MoC.moore11 ns od (unit i)
 moore12 ns od i = MoC.moore12 ns od (unit i)
@@ -588,89 +588,89 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 -- {0@0s,-1@2s,-1@6s,-1@8s,-2@9s,0@12s,2@14s}
 --
 -- <<fig/moc-de-pattern-mealy.png>>
-mealy22 :: (st -> a1 -> a2 -> st)
+mealy22 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
         -- ^ next state function
         -> (st -> a1 -> a2 -> (b1, b2))
         -- ^ outpt decoder
-        -> (TimeStamp, st)
+        -> (t, st)
         -- ^ initial state: tag and value
-        -> Signal a1 -> Signal a2
-        -> (Signal b1, Signal b2)
-mealy11 :: (st -> a1 -> st) 
+        -> SignalBase t a1 -> SignalBase t a2
+        -> (SignalBase t b1, SignalBase t b2)
+mealy11 :: (Num t, Ord t, Eq t) => (st -> a1 -> st) 
         -> (st -> a1 -> b1) 
-        -> (TimeStamp, st)
-        -> Signal a1
-        -> Signal b1                                
-mealy12 :: (st -> a1 -> st) 
+        -> (t, st)
+        -> SignalBase t a1
+        -> SignalBase t b1                                
+mealy12 :: (Num t, Ord t, Eq t) => (st -> a1 -> st) 
         -> (st -> a1 -> (b1, b2)) 
-        -> (TimeStamp, st)
-        -> Signal a1 
-        -> (Signal b1, Signal b2)                          
-mealy13 :: (st -> a1 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 
+        -> (SignalBase t b1, SignalBase t b2)                          
+mealy13 :: (Num t, Ord t, Eq t) => (st -> a1 -> st) 
         -> (st -> a1 -> (b1, b2, b3)) 
-        -> (TimeStamp, st)
-        -> Signal a1 
-        -> (Signal b1, Signal b2, Signal b3)                      
-mealy14 :: (st -> a1 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                      
+mealy14 :: (Num t, Ord t, Eq t) => (st -> a1 -> st) 
         -> (st -> a1 -> (b1, b2, b3, b4)) 
-        -> (TimeStamp, st)
-        -> Signal a1 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)                  
-mealy21 :: (st -> a1 -> a2 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                  
+mealy21 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st) 
         -> (st -> a1 -> a2 -> b1) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2
-        -> Signal b1                          
-mealy23 :: (st -> a1 -> a2 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2
+        -> SignalBase t b1                          
+mealy23 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st) 
         -> (st -> a1 -> a2 -> (b1, b2, b3)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 
-        -> (Signal b1, Signal b2, Signal b3)                
-mealy24 :: (st -> a1 -> a2 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)                
+mealy24 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st) 
         -> (st -> a1 -> a2 -> (b1, b2, b3, b4)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)                     
-mealy31 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)                     
+mealy31 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> b1) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3
-        -> Signal b1  
-mealy32 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+        -> SignalBase t b1  
+mealy32 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> (b1, b2)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 
-        -> (Signal b1, Signal b2)              
-mealy33 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 
+        -> (SignalBase t b1, SignalBase t b2)              
+mealy33 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 
-        -> (Signal b1, Signal b2, Signal b3)          
-mealy34 :: (st -> a1 -> a2 -> a3 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)          
+mealy34 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> st) 
         -> (st -> a1 -> a2 -> a3 -> (b1, b2, b3, b4)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)     
-mealy41 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)     
+mealy41 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> b1) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-        -> Signal b1
-mealy42 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+        -> SignalBase t b1
+mealy42 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
-        -> (Signal b1, Signal b2)        
-mealy43 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 
+        -> (SignalBase t b1, SignalBase t b2)        
+mealy43 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
-        -> (Signal b1, Signal b2, Signal b3)    
-mealy44 :: (st -> a1 -> a2 -> a3 -> a4 -> st) 
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3)    
+mealy44 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> a3 -> a4 -> st) 
         -> (st -> a1 -> a2 -> a3 -> a4 -> (b1, b2, b3, b4)) 
-        -> (TimeStamp, st)
-        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4 
-        -> (Signal b1, Signal b2, Signal b3, Signal b4)
+        -> (t, st)
+        -> SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4 
+        -> (SignalBase t b1, SignalBase t b2, SignalBase t b3, SignalBase t b4)
 
 mealy11 ns od i = MoC.mealy11 ns od (unit i)
 mealy12 ns od i = MoC.mealy12 ns od (unit i)
@@ -704,13 +704,13 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- ({1@0s,2@2s,2@5s,3@6s,4@8s,5@9s,5@10s,5@12s},{1@0s,1@2s,2@5s,3@6s,3@8s,3@9s,4@10s,5@12s})
 --
 -- <<fig/moc-de-pattern-sync.png>>
-sync2 :: Signal a1                    -- ^ first input signal
-      -> Signal a2                    -- ^ second input signal
-      -> (Signal a1, Signal a2)       -- ^ two output signals
-sync3 :: Signal a1 -> Signal a2 -> Signal a3
-      -> (Signal a1, Signal a2, Signal a3)             
-sync4 :: Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
-      -> (Signal a1, Signal a2, Signal a3, Signal a4)
+sync2 :: (Num t, Ord t, Eq t) => SignalBase t a1                    -- ^ first input signal
+      -> SignalBase t a2                    -- ^ second input signal
+      -> (SignalBase t a1, SignalBase t a2)       -- ^ two output signals
+sync3 :: (Num t, Ord t, Eq t) => SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3
+      -> (SignalBase t a1, SignalBase t a2, SignalBase t a3)             
+sync4 :: (Num t, Ord t, Eq t) => SignalBase t a1 -> SignalBase t a2 -> SignalBase t a3 -> SignalBase t a4
+      -> (SignalBase t a1, SignalBase t a2, SignalBase t a3, SignalBase t a4)
 
 sync2 = comb22 (,)
 sync3 = comb33 (,,)

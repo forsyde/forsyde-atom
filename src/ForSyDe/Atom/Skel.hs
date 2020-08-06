@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK show-extensions, prune #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton
+-- Module      :  ForSyDe.Atom.Skel
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -10,17 +10,44 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module exports a type class with the interfaces for the
--- Skeleton layer atoms. It does /NOT/ export any implementation of
--- atoms not any constructor as composition of atoms.
+-- This module defines the Skeleton layer, and is concerned in modeling the aspects of
+-- inherent potential for parallelism in CPS. Its formal foundation is the theory of
+-- algorithmic skeletons <ForSyDe-Atom.html#skillicorn05 [Skillicorn05]>, and it
+-- adapts it according to the atom approach. For more on our approach, and how it fits
+-- into the layered framework, please consult
+-- <ForSyDe-Atom.html#ungureanu20a [Ungureanu20a]>
 --
--- __IMPORTANT!!!__
--- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
--- on how to interpret, use and develop your own constructors.
------------------------------------------------------------------------------
+-- This library is concerned in modeling the theoretical aspects as faithfully as
+-- possible using a shallow DSL, and not necessarily reaping the benefits of
+-- parallelization directly in simulations. The latter would require further
+-- engineering and the modeling concepts are likely to be lost the process. Instead
+-- most of the atom and pattern formulations in this module and sub-modules might not
+-- be the most efficient implementations for the given functionality, but rather
+-- expose the fundamental properties which can be further exploited in design
+-- processes. Of these properties our special interest lies in the /factorization/
+-- theorem (see <ForSyDe-Atom.html#skillicorn05 [Skillicorn05]>,
+-- <ForSyDe-Atom.html#gorlatch03 [Gorlatch03]>), which sets the framework for any
+-- skeleton to be further transformed into semantically-equivalent forms, more
+-- appropriate for execution on various platforms.
+--
+-- Similar to other layer libraries, this module defines only atoms and patterns as
+-- type class methods, i.e. "shells" which are not loaded with any semantics. It is
+-- unlikely that the user will need this API, but rather load any of its sub-modules
+-- directly:
+--
+-- * "ForSyDe.Atom.Skel.Vector" is a shallow interpretation of the /vector/
+--   category, susceptible to algorithmic skeletons. It defines a large library of
+--   patterns commonly used in designs.
+--
+-- * "ForSyDe.Atom.Skel.FastVector" is an un-official alternative to
+--   "ForSyDe.Atom.Skel.Vector" meant for simulations of large data which is
+--   likely to become too cumbersome. It /does not/ use atoms, but rather it wraps
+--   native Haskell types into @newtype@ wrappers and uses "Prelude" functions
+--   internally. The API tries to copy that of "ForSyDe.Atom.Skel.Vector" so that
+--   switching betwen libraries can be made seamlessly just by changing the import.
+-------------------------------------------------------------------------------
 
-
-module ForSyDe.Atom.Skeleton (
+module ForSyDe.Atom.Skel (
 
   -- * Atoms
   
@@ -28,13 +55,12 @@ module ForSyDe.Atom.Skeleton (
 
   -- * Skeleton constructors
 
-  -- | Patterns of in the skeleton layer are provided, like all other
-  -- patterns in ForSyDe-Atom, as constructors. If the layer below
-  -- this one is the 'ForSyDe.Atom.MoC.MoC' layer, i.e. the functions
-  -- taken as arguments are processes, then these skeletons can be
-  -- regarded as process network constructors, as the structures
-  -- created are process networks with inherent potential for parallel
-  -- implementation.
+  -- | Patterns of in the skeleton layer are provided, like all other patterns in
+  -- ForSyDe-Atom, as constructors. If the layer below this one is the
+  -- 'ForSyDe.Atom.MoC.MoC' layer, i.e. the functions taken as arguments are
+  -- processes, then these skeletons can be regarded as process network constructors,
+  -- as the structures created are process networks with inherent potential for
+  -- parallel implementation.
   
   farm11, farm12, farm13, farm14,
   farm21, farm22, farm23, farm24,
@@ -52,42 +78,24 @@ module ForSyDe.Atom.Skeleton (
   
   ) where
 
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 infixl 4 =.=, =*=
 infixl 2 =\=, =<<=
 
 -- | Class containing all the Skeleton layer atoms.
 --
--- This class is instantiated by a set of categorical types,
--- i.e. types which describe an inherent potential for being evaluated
--- in parallel. Skeletons are patterns from this layer. When skeletons
--- take as arguments entities from the MoC layer (i.e. processes), the
--- results themselves are parallel process networks which describe
--- systems with an inherent potential to be implemented on parallel
--- platforms. All skeletons can be described as composition of the
--- three atoms below ('=<<=' being just a specific instantiation of
--- '=\='). This possible due to an existing theorem in the categorical
--- type theory, also called the Bird-Merteens formalism
--- <ForSyDe-Atom.html#bird97 [Bird97]>:
+-- This class is instantiated by a set of categorical types, i.e. types which describe
+-- an inherent potential for being evaluated in parallel. Skeletons are patterns from
+-- this layer. All skeletons can be described as composition of the three atoms
+-- below. This possible due to an existing theorem in the categorical type theory,
+-- also called the Bird-Merteens formalism:
 --
 -- #factorization#
 --
--- [factorization] A function on a categorical type is an algorithmic
--- skeleton (i.e. catamorphism) /iff/ it can be represented in a
--- factorized form, i.e. as a /map/ composed with a /reduce/.
---
--- Consequently, most of the skeletons for the implemented categorical
--- types are described in their factorized form, taking as arguments
--- either:
---
--- * type constructors or functions derived from type constructors
--- * processes, i.e. MoC layer entities
---
--- Most of the ground-work on algorithmic skeletons on which this
--- module is founded has been laid in <ForSyDe-Atom.html#bird97 [Bird97]>,
--- <ForSyDe-Atom.html#skillicorn05 [Skillicorn05]> and it founds many
--- of the frameworks collected in <ForSyDe-Atom.html#gorlatch03 [Gorlatch03]>.
+-- [factorization] A function on a categorical type is an algorithmic skeleton
+-- (i.e. catamorphism) /iff/ it can be represented in a factorized form, i.e. as a
+-- /map/ composed with a /reduce/.
 class Functor c => Skeleton c where
   -- | Atom which maps a function on each element of a structure
   -- (i.e. categorical type), defined as:
@@ -97,55 +105,46 @@ class Functor c => Skeleton c where
   -- '=.=' together with '=*=' form the @map@ pattern.
   (=.=)  :: (a -> b) -> c a -> c b
 
-  -- | Atom which applies the functions contained by as structure
-  -- (i.e. categorical type), on the elements of another structure,
-  -- defined as:
+  -- | Atom which applies the functions contained by as structure (i.e. categorical
+  -- type), on the elements of another structure, defined as:
   --
   -- <<fig/eqs-skel-atom-star.png>>
   --
   -- '=.=' together with '=*=' form the @map@ pattern.
   (=*=)  :: c (a -> b) -> c a -> c b
 
-  -- | Atom which reduces a structure to an element based on an
-  -- /associative/ function, defined as:
+  -- | Atom which reduces a structure to an element based on an /associative/
+  -- function, defined as:
   --
   -- <<fig/eqs-skel-atom-red.png>>
   (=\=)  :: (a -> a -> a) -> c a -> a
 
-  -- | Skeleton which /pipes/ an element through all the functions
-  -- contained by a structure. 
-  --
-  -- __N.B.__: this is not an atom. It has an implicit definition
-  -- which might be augmented by instances of this class to include
-  -- edge cases.
+  -- | Skeleton which /pipes/ an element through all the functions contained by a
+  -- structure. This is not an atom. It has an implicit definition which might be
+  -- augmented by instances of this class to include edge cases.
   --
   -- <<fig/eqs-skel-pattern-pipe.png>>
   --
-  -- As the composition operation is not associative, we cannot treat
-  -- @pipe@ as a true reduction. Alas, it can still be exploited in
-  -- parallel since it exposes another type of parallelism: time
-  -- parallelism.
+  -- As the composition operation is not associative, we cannot treat @pipe@ as a true
+  -- reduction. However it can still be exploited in parallel since it exposes another
+  -- type of parallelism: time parallelism.
   (=<<=) :: c (a -> a)  -- ^ vector of functions
          -> a           -- ^ kernel element
          -> a           -- ^ result 
   (=<<=) ps = (.) =\= ps
 
             
-  -- | Returns the first element in a structure.
-  --
-  -- __N.B.__: this is not an atom. It has an implicit definition
-  -- which might be replaced by instances of this class with a more
-  -- efficient implementation.
+  -- | Returns the first element in a structure. This is not an atom. It has an
+  -- implicit definition which might be replaced by instances of this class with a
+  -- more efficient implementation.
   --
   -- <<fig/eqs-skel-pattern-first.png>>
   first :: c a -> a
   first v = (\x y -> x) =\= v
 
-  -- | Returns the last element in a structure.
-  --
-  -- __N.B.__: this is not an atom. It has an implicit definition
-  -- which might be replaced by instances of this class with a more
-  -- efficient implementation.
+  -- | Returns the last element in a structure. This is not an atom. It has an
+  -- implicit definition which might be replaced by instances of this class with a
+  -- more efficient implementation.
   --
   -- <<fig/eqs-skel-pattern-last.png>>
   last :: c a -> a

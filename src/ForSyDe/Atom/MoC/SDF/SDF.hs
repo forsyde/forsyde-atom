@@ -10,15 +10,18 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
+-- The @SDF@ library implements a DSL of atoms operating according to the synchronous
+-- dataflow model of computation, along with helpers and associated patterns.
+--
 -- This module provides a set of helpers for properly instantiating
 -- process network patterns as process constructors.
 -- 
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.MoC.SDF.Lib where
+module ForSyDe.Atom.MoC.SDF.SDF where
 
 import qualified ForSyDe.Atom.MoC as MoC
 import           ForSyDe.Atom.MoC.SDF.Core
-import           ForSyDe.Atom.Utility
+import           ForSyDe.Atom.Utility.Tuple
 
 ------- DOCTEST SETUP -------
 
@@ -60,107 +63,107 @@ delay' = MoC.delay
 
 ------- COMB -------
 
--- | @comb@ processes map combinatorial functions on signals and take
+-- | @actor@ processes map combnational functions on signals and take
 -- care of synchronization between input signals. It instantiates the
 -- @comb@ atom pattern (see 'ForSyDe.Atom.MoC.comb22').
 --
--- Constructors: @comb[1-4][1-4]@.
+-- Constructors: @actor[1-4][1-4]@.
 --
 -- >>> let s1 = signal [1..]
 -- >>> let s2 = signal [1,1,1,1,1,1,1]
 -- >>> let f [a,b,c] [d,e] = [a+d, c+e] 
--- >>> comb21 ((3,2),2,f) s1 s2
+-- >>> actor21 ((3,2),2,f) s1 s2
 -- {2,4,5,7,8,10}
 --
 -- Incorrect usage (not covered by @doctest@):
 --
--- > λ> comb21 ((3,2),3,f) s1 s2
+-- > λ> actor21 ((3,2),3,f) s1 s2
 -- > *** Exception: [MoC.SDF] Wrong production
 --
 -- <<fig/moc-sdf-pattern-comb.png>>
-comb22 :: ((Cons,Cons), (Prod,Prod),
+actor22 :: ((Cons,Cons), (Prod,Prod),
            [a1] -> [a2] -> ([b1], [b2]))
           -- ^ function on lists of values, tupled with consumption /
           -- production rates
        -> Signal a1              -- ^ first input signal
        -> Signal a2              -- ^ second input signal
        -> (Signal b1, Signal b2) -- ^ two output signals
-comb11 :: (Cons, Prod,
+actor11 :: (Cons, Prod,
            [a1] -> [b1])
        -> Signal a1
        -> Signal b1
-comb21 :: ((Cons,Cons), Prod,
+actor21 :: ((Cons,Cons), Prod,
            [a1] -> [a2] -> [b1])
        -> Signal a1 -> Signal a2
        -> Signal b1
-comb31 :: ((Cons,Cons,Cons), Prod,
+actor31 :: ((Cons,Cons,Cons), Prod,
            [a1] -> [a2] -> [a3] -> [b1])
        -> Signal a1 -> Signal a2 -> Signal a3
        -> Signal b1
-comb41 :: ((Cons,Cons,Cons,Cons), Prod,
+actor41 :: ((Cons,Cons,Cons,Cons), Prod,
            [a1] -> [a2] -> [a3] -> [a4] -> [b1])
        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
        -> Signal b1
-comb12 :: (Cons, (Prod,Prod),
+actor12 :: (Cons, (Prod,Prod),
            [a1] -> ([b1], [b2]))
        -> Signal a1
        -> (Signal b1, Signal b2)
-comb32 :: ((Cons,Cons,Cons), (Prod,Prod),
+actor32 :: ((Cons,Cons,Cons), (Prod,Prod),
            [a1] -> [a2] -> [a3] -> ([b1], [b2]))
        -> Signal a1 -> Signal a2 -> Signal a3
        -> (Signal b1, Signal b2)
-comb42 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
+actor42 :: ((Cons,Cons,Cons,Cons), (Prod,Prod),
            [a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2]))
        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
        -> (Signal b1, Signal b2)
-comb13 :: (Cons, (Prod,Prod,Prod),
+actor13 :: (Cons, (Prod,Prod,Prod),
            [a1] -> ([b1], [b2], [b3]))
        -> Signal a1
        -> (Signal b1, Signal b2, Signal b3)
-comb23 :: ((Cons,Cons), (Prod,Prod,Prod),
+actor23 :: ((Cons,Cons), (Prod,Prod,Prod),
            [a1] -> [a2] -> ([b1], [b2], [b3]))
        -> Signal a1 -> Signal a2
        -> (Signal b1, Signal b2, Signal b3)
-comb33 :: ((Cons,Cons,Cons), (Prod,Prod,Prod),
+actor33 :: ((Cons,Cons,Cons), (Prod,Prod,Prod),
            [a1] -> [a2] -> [a3] -> ([b1], [b2], [b3]))
        -> Signal a1 -> Signal a2 -> Signal a3
        -> (Signal b1, Signal b2, Signal b3)
-comb43 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod),
+actor43 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod),
            [a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2], [b3]))
        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
        -> (Signal b1, Signal b2, Signal b3)
-comb14 :: (Cons, (Prod,Prod,Prod,Prod),
+actor14 :: (Cons, (Prod,Prod,Prod,Prod),
            [a1] -> ([b1], [b2], [b3], [b4]))
        -> Signal a1 -> (Signal b1, Signal b2, Signal b3, Signal b4)
-comb24 :: ((Cons,Cons), (Prod,Prod,Prod,Prod),
+actor24 :: ((Cons,Cons), (Prod,Prod,Prod,Prod),
            [a1] -> [a2] -> ([b1], [b2], [b3], [b4]))
        -> Signal a1 -> Signal a2
        -> (Signal b1, Signal b2, Signal b3, Signal b4)
-comb34 :: ((Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
+actor34 :: ((Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
            [a1] -> [a2] -> [a3] -> ([b1], [b2], [b3], [b4]))
        -> Signal a1 -> Signal a2 -> Signal a3
        -> (Signal b1, Signal b2, Signal b3, Signal b4)
-comb44 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
+actor44 :: ((Cons,Cons,Cons,Cons), (Prod,Prod,Prod,Prod),
            [a1] -> [a2] -> [a3] ->  [a4] -> ([b1], [b2], [b3], [b4]))
        -> Signal a1 -> Signal a2 -> Signal a3 -> Signal a4
        -> (Signal b1, Signal b2, Signal b3, Signal b4)
        
-comb11 cpf s1          = MoC.comb11 (scen11 cpf) s1
-comb21 cpf s1 s2       = MoC.comb21 (scen21 cpf) s1 s2
-comb31 cpf s1 s2 s3    = MoC.comb31 (scen31 cpf) s1 s2 s3
-comb41 cpf s1 s2 s3 s4 = MoC.comb41 (scen41 cpf) s1 s2 s3 s4
-comb12 cpf s1          = MoC.comb12 (scen12 cpf) s1
-comb22 cpf s1 s2       = MoC.comb22 (scen22 cpf) s1 s2
-comb32 cpf s1 s2 s3    = MoC.comb32 (scen32 cpf) s1 s2 s3
-comb42 cpf s1 s2 s3 s4 = MoC.comb42 (scen42 cpf) s1 s2 s3 s4
-comb13 cpf s1          = MoC.comb13 (scen13 cpf) s1
-comb23 cpf s1 s2       = MoC.comb23 (scen23 cpf) s1 s2
-comb33 cpf s1 s2 s3    = MoC.comb33 (scen33 cpf) s1 s2 s3
-comb43 cpf s1 s2 s3 s4 = MoC.comb43 (scen43 cpf) s1 s2 s3 s4
-comb14 cpf s1          = MoC.comb14 (scen14 cpf) s1
-comb24 cpf s1 s2       = MoC.comb24 (scen24 cpf) s1 s2
-comb34 cpf s1 s2 s3    = MoC.comb34 (scen34 cpf) s1 s2 s3
-comb44 cpf s1 s2 s3 s4 = MoC.comb44 (scen44 cpf) s1 s2 s3 s4
+actor11 cpf s1          = MoC.comb11 (scen11 cpf) s1
+actor21 cpf s1 s2       = MoC.comb21 (scen21 cpf) s1 s2
+actor31 cpf s1 s2 s3    = MoC.comb31 (scen31 cpf) s1 s2 s3
+actor41 cpf s1 s2 s3 s4 = MoC.comb41 (scen41 cpf) s1 s2 s3 s4
+actor12 cpf s1          = MoC.comb12 (scen12 cpf) s1
+actor22 cpf s1 s2       = MoC.comb22 (scen22 cpf) s1 s2
+actor32 cpf s1 s2 s3    = MoC.comb32 (scen32 cpf) s1 s2 s3
+actor42 cpf s1 s2 s3 s4 = MoC.comb42 (scen42 cpf) s1 s2 s3 s4
+actor13 cpf s1          = MoC.comb13 (scen13 cpf) s1
+actor23 cpf s1 s2       = MoC.comb23 (scen23 cpf) s1 s2
+actor33 cpf s1 s2 s3    = MoC.comb33 (scen33 cpf) s1 s2 s3
+actor43 cpf s1 s2 s3 s4 = MoC.comb43 (scen43 cpf) s1 s2 s3 s4
+actor14 cpf s1          = MoC.comb14 (scen14 cpf) s1
+actor24 cpf s1 s2       = MoC.comb24 (scen24 cpf) s1 s2
+actor34 cpf s1 s2 s3    = MoC.comb34 (scen34 cpf) s1 s2 s3
+actor44 cpf s1 s2 s3 s4 = MoC.comb44 (scen44 cpf) s1 s2 s3 s4
 
 ------- RECONFIG -------
 

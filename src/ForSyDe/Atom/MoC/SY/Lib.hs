@@ -45,10 +45,9 @@ delay i = MoC.delay (unit i)
 
 ------- COMB -------
 
--- | @comb@ processes map combinatorial functions on signals and take
--- care of synchronization between input signals. It instantiates the
--- @comb@ pattern (see 'ForSyDe.Atom.MoC.comb22' defined in
--- "ForSyDe.Atom.MoC").
+-- | @comb@ processes map combinatorial functions on signals and take care of
+-- synchronization between input signals. It implements the @comb@ pattern (see
+-- 'ForSyDe.Atom.MoC.comb22').
 -- 
 -- Constructors: @comb[1-4][1-4]@.
 --
@@ -114,10 +113,9 @@ comb44 = MoC.comb44
 
 ------- RECONFIG -------
 
--- | @reconfig@ creates an synchronous adaptive process where the
--- first signal carries functions and the other carry the
--- arguments. It instantiates the @reconfig@ atom pattern (see
--- 'ForSyDe.Atom.MoC.reconfig22' defined in "ForSyDe.Atom.MoC").
+-- | @reconfig@ creates an synchronous adaptive process where the first signal carries
+-- functions and the other carry the arguments. It imlements the @reconfig@ pattern
+-- (see 'ForSyDe.Atom.MoC.reconfig22').
 --
 -- Constructors: @reconfig[1-4][1-4]@.
 --
@@ -184,9 +182,8 @@ reconfig44 = MoC.reconfig44
 
 ------- CONSTANT -------
 
--- | A signal generator which keeps a value constant. It
--- is actually an instantiation of the @stated0X@ constructor
--- (check 'ForSyDe.Atom.MoC.stated22').
+-- | A signal generator which keeps a value constant. It implements rgw @stated0X@
+-- pattern (see 'ForSyDe.Atom.MoC.stated22').
 --
 -- Constructors: @constant[1-4]@.
 --
@@ -211,9 +208,8 @@ constant4 i = MoC.stated04 (,,,) (unit4 i)
 
 ------- GENERATE -------
 
--- | A signal generator based on a function and a kernel value. It
--- is actually an instantiation of the @stated0X@ constructor
--- (check 'ForSyDe.Atom.MoC.stated22').
+-- | A signal generator based on a function and a kernel value. It implements the
+-- @stated0X@ pattern (check 'ForSyDe.Atom.MoC.stated22').
 --
 -- Constructors: @generate[1-4]@.
 --
@@ -244,9 +240,8 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 
 ------- STATED -------
 
--- | @stated@ is a state machine without an output decoder. It is an
--- instantiation of the @state@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.stated22' defined in "ForSyDe.Atom.MoC").
+-- | @stated@ is a state machine without an output decoder. It implements the @stated@
+-- pattern (see 'ForSyDe.Atom.MoC.stated22').
 --
 -- Constructors: @stated[1-4][1-4]@.
 --
@@ -315,9 +310,8 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 
 ------- STATE -------
                  
--- | @state@ is a state machine without an output decoder. It is an
--- instantiation of the @stated@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.state22' defined in "ForSyDe.Atom.MoC").
+-- | @state@ is a state machine without an output decoder. It implements the @stated@
+-- pattern (see 'ForSyDe.Atom.MoC.state22').
 --
 -- Constructors: @state[1-4][1-4]@.
 --
@@ -386,9 +380,8 @@ state44 ns i = MoC.state44 ns (unit4 i)
 
 ------- MOORE -------
 
--- | @moore@ processes model Moore state machines. It is an
--- instantiation of the @moore@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.moore22' defined in "ForSyDe.Atom.MoC").
+-- | @moore@ processes model Moore state machines. It implements the @moore@ patterns
+-- (see 'ForSyDe.Atom.MoC.moore22').
 --
 -- Constructors: @moore[1-4][1-4]@.
 --
@@ -455,9 +448,8 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 
 ------- MEALY -------
 
--- | @mealy@ processes model Mealy state machines. It is an
--- instantiation of the @mealy@ MoC constructor (see
--- 'ForSyDe.Atom.MoC.mealy22' defined in "ForSyDe.Atom.MoC").
+-- | @mealy@ processes model Mealy state machines. It implements the @mealy@ pattern
+-- (see 'ForSyDe.Atom.MoC.mealy22').
 --
 -- Constructors: @mealy[1-4][1-4]@.
 --
@@ -521,173 +513,5 @@ mealy42 ns od i = MoC.mealy42 ns od (unit i)
 mealy43 ns od i = MoC.mealy43 ns od (unit i)
 mealy44 ns od i = MoC.mealy44 ns od (unit i)
 
-
-------- WHEN, FILTER, FILL, HOLD -------
-
--- | This process predicates the existence of values in a signal based
--- on a signal of boolean values (conditions). It is similar to the
--- @when@ construct in the synchronous language Lustre
--- <ForSyDe-Atom.html#halbwachs91 [Halbwachs91]>, based on which clock
--- calculus can be performed.
---
--- __OBS:__ this process assumes that all signals carry
--- absent-extended values, which is appropriate in describing
--- multi-clock systems. For a version which inputs signals of
--- non-extended values, check 'when''.
---
--- >>> let s1   = (signal . map Prst) [1,2,3,4,5]
--- >>> let pred = (signal . map Prst) [False,False,False,True,True]
--- >>> when pred s1
--- {⟂,⟂,⟂,4,5}
---
--- <<fig/moc-sy-pattern-when.png>>
-when :: Signal (AbstExt Bool) -- ^ Signal of predicates
-     -> Signal (AbstExt a)    -- ^ Input signal
-     -> Signal (AbstExt a)    -- ^ Output signal
-when  = MoC.comb21 (B.filter)
-
--- | Same as 'when' but inputs signals of non-extended values.
---
--- >>> let s1   = signal [1,2,3,4,5]
--- >>> let pred = signal [False,False,False,True,True]
--- >>> when' pred s1
--- {⟂,⟂,⟂,4,5}
-when' :: Signal Bool       -- ^ Signal of predicates
-     -> Signal a           -- ^ Input signal
-     -> Signal (AbstExt a) -- ^ Output signal
-when' = MoC.comb21 (B.filter')
-
--- | Simple wrapper for applying a predicate function on a signal of
--- absent-extended events.
---
--- >>> let s1   = signal $ map Prst [1,2,3,4,5]
--- >>> s1 `is` (>3)
--- {False,False,False,True,True}
-is :: Signal (AbstExt a) -> (a -> Bool) -> Signal (AbstExt Bool)
-is s p = comb11 (B.res11 p) s
-
--- | Same as 'when' but triggering the output events merely based on
--- the presence of the first input rather than a predicate function.
---
--- >>> let s1   = signal $ map Prst [1,2,3,4,5]
--- >>> let sp   = signal [Prst 1, Prst 1, Abst, Prst 1, Abst]
--- >>> whenPresent sp s1
--- {1,2,⟂,4,⟂}
-whenPresent s = when (s `is` (\_ -> True))
-
--- | Filters out values to 'Abst' if they do not fulfill a predicate
--- function.
---
--- __OBS:__ this process assumes that all signals carry
--- absent-extended values, which is appropriate in describing
--- multi-clock systems. For a version which inputs signals of
--- non-extended values, check 'filter''.
---
--- >>> let s1   = (signal . map Prst) [1,2,3,4,5]
--- >>> filter (>3) s1
--- {⟂,⟂,⟂,4,5}
---
--- <<fig/moc-sy-pattern-filter.png>>
-filter :: (a -> Bool)      -- ^ Predicate function
-       -> Signal (AbstExt a) -- ^ Input signal
-       -> Signal (AbstExt a) -- ^ Output signal
-filter p s = MoC.comb21 B.filter ps s
-  where ps = comb11 (B.res11 p) s
-
-
--- | Same as 'filter' but inputs signals of non-extended values.
---
--- >>> let s1   = signal [1,2,3,4,5]
--- >>> filter' (>3) s1
--- {⟂,⟂,⟂,4,5}
-filter' :: (a -> Bool)        -- ^ Predicate function
-        -> Signal a           -- ^ Input signal
-        -> Signal (AbstExt a) -- ^ Output signal
-filter' p s = MoC.comb21 B.filter' ps s
-  where ps = comb11 p s
-
--- | Fills absent events with a pre-defined value.
---
--- >>> let s1   = signal [Abst, Abst, Prst 1, Prst 2, Abst, Prst 3]
--- >>> fill 0 s1
--- {0,0,1,2,0,3}
---
--- <<fig/moc-sy-pattern-fill.png>>
-fill :: a                  -- ^ Value to fill with
-     -> Signal (AbstExt a) -- ^ Input
-     -> Signal a           -- ^ Output
-fill x s = MoC.comb11 (B.degen x) s
-
--- | Similar to 'fill', but holds the last non-absent value if there
--- was one. It implements a @state@ pattern (see
--- 'ForSyDe.Atom.MoC.state22' defined in "ForSyDe.Atom.MoC").
---
--- >>> let s1   = signal [Abst, Abst, Prst 1, Prst 2, Abst, Prst 3]
--- >>> hold 0 s1
--- {0,0,1,2,2,3}
---
--- <<fig/moc-sy-pattern-hold.png>>
-hold :: a
-     -- ^ Value to fill with in case there was no previous value
-     -> Signal (AbstExt a) -- ^ Input
-     -> Signal a -- ^ Output
-hold init = MoC.state11 fillF (unit init)
-  where fillF st inp = (B.degen st) inp
-
-
-------- ABSENT EXTENDED WRAPPERS -------
-
--- | Creates a process wrapper which, from the outside it seems like a
--- combinatorial process which reacts to present events (i.e. simply
--- propagates absent events), but inside it allows, for example, the
--- degeneration of the absent extension in order to describe state
--- processes (e.g. state machines with 'ForSyDe.Atom.ExB.ignore22'
--- behavior).
---
--- Constructors: @reactPres[1-4]@.
---
--- >>> let s1 = readSignal "{1,1,1,_,1,_,1}" :: Signal (AbstExt Int)
--- >>> let proc = stated11 (B.ignore11 (+)) 0
--- >>> proc s1
--- {0,1,2,3,3,4,4,5}
--- >>> reactPres1 proc s1
--- {0,1,2,⟂,3,⟂,4} 
---
--- <<fig/moc-sy-pattern-reactAbst.png>>
-reactPres2 :: (Signal (AbstExt a1) -> Signal (AbstExt a2) -> Signal b)
-           -- ^ process which degenerates the absent extension,
-           -- e.g. holds present values
-           -> Signal (AbstExt a1)
-           -> Signal (AbstExt a2)
-           -> Signal (AbstExt b)
-           -- ^ absent-extended signal, properly reacting to the inputs
      
-reactPres1 p s1          = whenPresent s1 $ comb11 B.extend (p s1)
-reactPres2 p s1 s2       = whenPresent s1 $ comb11 B.extend (p s1 s2)
-reactPres3 p s1 s2 s3    = whenPresent s1 $ comb11 B.extend (p s1 s2 s3)
-reactPres4 p s1 s2 s3 s4 = whenPresent s1 $ comb11 B.extend (p s1 s2 s3 s4)
-
--- ----------------- DOCUMENTATION -----------------
-
--- -- | @buffer@ processes roughly implement a memory model which
--- -- stores all input present and known values. The atom pattern
--- -- instantiated is @state@ (see 'ForSyDe.Atom.MoC.state22' defined
--- -- in "ForSyDe.Atom.MoC"), while the behavior is @store@ (see
--- -- 'ForSyDe.Atom.Behavior.store2')
--- -- <<includes/figs/sy-buffer-graph.png>> -- buffer2 :: [a] ->
--- -- Signal a -> Signal a -> Signal [a]
-
-
-
--- buffer1 :: [a] -> Signal a -> Signal [a]
--- buffer3 :: [a] -> Signal a -> Signal a -> Signal a -> Signal [a]
--- buffer4 :: [a] -> Signal a -> Signal a -> Signal a -> Signal a -> Signal [a]
-
--- buffer1 i = MoC.state11 store1 (unit i)
--- buffer2 i = MoC.state21 store2 (unit i)
--- buffer3 i = MoC.state31 store3 (unit i)
--- buffer4 i = MoC.state41 store4 (unit i)
-
-
-     
--- --------------- END DOCUMENTATION ---------------
+--------------- END DOCUMENTATION ---------------

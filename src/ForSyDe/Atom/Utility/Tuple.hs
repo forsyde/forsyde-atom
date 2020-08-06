@@ -3,25 +3,22 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Core.Utility.Tuple
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2016
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015-2020
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- This module implements general purpose utility functions. It mainly
--- hosts functions dealing with tuples. Utility are provided for up
--- until 9-tuples. Follow the examples in the source code in case it
--- does not suffice.
+-- This module implements general purpose utility functions. It mainly hosts functions
+-- dealing with tuples. Utility are provided for up until 9-tuples. Follow the
+-- examples in the source code in case it does not suffice.
 --
--- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions
--- provided by the library API are named along the lines of
--- @functionMN@ where @M@ represents the number of __/curried/__
--- inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents the
--- number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid
--- repetition we shall only provide documentation for functions with 2
--- inputs and 2 outputs (i.e. @function22@).
+-- __IMPORTANT!!!__ Most of the multi-parameter higher-order functions provided by the
+-- library API are named along the lines of @functionMN@ where @M@ represents the
+-- number of __/curried/__ inputs (i.e. @a1 -> a2 -> ... -> aM@), while @N@ represents
+-- the number of __/tupled/__ outputs (i.e. @(b1,b2,...,bN)@). To avoid repetition we
+-- document only functions with 2 inputs and 2 outputs (i.e. @function22@).
 -----------------------------------------------------------------------------
 
 module ForSyDe.Atom.Utility.Tuple(
@@ -40,14 +37,14 @@ module ForSyDe.Atom.Utility.Tuple(
    (|||<),  (|||<<),  (|||<<<),  (|||<<<<),  (|||<<<<<),  (|||<<<<<<),  (|||<<<<<<<),  (|||<<<<<<<<),  
   (||||<), (||||<<), (||||<<<), (||||<<<<), (||||<<<<<), (||||<<<<<<), (||||<<<<<<<), (||||<<<<<<<<), 
 
-  (<>),
-  (<>>),
-  (<>>>),
-  (<>>>>),
-  (<>>>>>),
-  (<>>>>>>),
-  (<>>>>>>>),
-  (<>>>>>>>>),
+  (><),
+  (><<),
+  (><<<),
+  (><<<<),
+  (><<<<<),
+  (><<<<<<),
+  (><<<<<<<),
+  (><<<<<<<<),
 
   ($$),
   ($$$),
@@ -234,29 +231,29 @@ infixl 3 ||||<,  ||||<<, ||||<<<, ||||<<<<, ||||<<<<<, ||||<<<<<<, ||||<<<<<<<, 
 
 -- | Infix currying operators used for convenience. 
 --
--- The operator convention is @(<>+)@, where the number of @>@ + 1 is
+-- The operator convention is @(><+)@, where the number of @<@ + 1 is
 -- the order /n/ of the n-tuple.
 --
 -- "ForSyDe.Atom.Utility" exports the constructors below. Please
 -- follow the examples in the source code if they do not suffice:
 --
--- > <>, <>>, <>>>, <>>>>, <>>>>>, <>>>>>>, <>>>>>>>, <>>>>>>>>
+-- > ><, ><<, ><<<, ><<<<, ><<<<<, ><<<<<<, ><<<<<<<, ><<<<<<<<
 --
 -- Example:
 --
--- >>> (+) <> (1,2)
+-- >>> (+) >< (1,2)
 -- 3
-(<>) :: (a1 -> a2 -> b1) -> (a1, a2) -> b1
+(><) :: (a1 -> a2 -> b1) -> (a1, a2) -> b1
 
-infixl 6 <>,  <>>, <>>>, <>>>>, <>>>>>, <>>>>>>, <>>>>>>>, <>>>>>>>>
-f <>        (a1, a2)                             = f a1 a2
-f <>>       (a1, a2, a3)                         = f a1 a2 a3
-f <>>>      (a1, a2, a3, a4)                     = f a1 a2 a3 a4
-f <>>>>     (a1, a2, a3, a4, a5)                 = f a1 a2 a3 a4 a5
-f <>>>>>    (a1, a2, a3, a4, a5, a6)             = f a1 a2 a3 a4 a5 a6
-f <>>>>>>   (a1, a2, a3, a4, a5, a6, a7)         = f a1 a2 a3 a4 a5 a6 a7
-f <>>>>>>>  (a1, a2, a3, a4, a5, a6, a7, a8)     = f a1 a2 a3 a4 a5 a6 a7 a8
-f <>>>>>>>> (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f a1 a2 a3 a4 a5 a6 a7 a8 a9
+infixl 6 ><,  ><<, ><<<, ><<<<, ><<<<<, ><<<<<<, ><<<<<<<, ><<<<<<<<
+f ><        (a1, a2)                             = f a1 a2
+f ><<       (a1, a2, a3)                         = f a1 a2 a3
+f ><<<      (a1, a2, a3, a4)                     = f a1 a2 a3 a4
+f ><<<<     (a1, a2, a3, a4, a5)                 = f a1 a2 a3 a4 a5
+f ><<<<<    (a1, a2, a3, a4, a5, a6)             = f a1 a2 a3 a4 a5 a6
+f ><<<<<<   (a1, a2, a3, a4, a5, a6, a7)         = f a1 a2 a3 a4 a5 a6 a7
+f ><<<<<<<  (a1, a2, a3, a4, a5, a6, a7, a8)     = f a1 a2 a3 a4 a5 a6 a7 a8
+f ><<<<<<<< (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f a1 a2 a3 a4 a5 a6 a7 a8 a9
 
 
 -- | Infix function application operator for tuples. 

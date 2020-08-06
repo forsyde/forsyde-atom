@@ -49,7 +49,7 @@ module ForSyDe.Atom.ExB (
   ) where
 
 import Prelude hiding (filter)
-import ForSyDe.Atom.Utility
+import ForSyDe.Atom.Utility.Tuple
 
 infixl 4 /.\, /*\, /&\, /!\
 

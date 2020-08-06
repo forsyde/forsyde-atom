@@ -13,3 +13,4 @@ includes/forsyde-tikz
 .stack-work
 fig
 *.config
+stack.yaml.lock

@@ -1,171 +1,156 @@
-{-# OPTIONS_HADDOCK prune #-}
+{-# OPTIONS_HADDOCK prune, show-extensions #-}
 {-# LANGUAGE PostfixOperators #-}
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.CT
--- Copyright   :  (c) George Ungureanu, 2016-2017
+-- Copyright   :  (c) George Ungureanu, 2016-2018
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The @CT@ library implements the execution semantics for the atoms
--- operating according to the continuous time model of
--- computation. This module also provides a set of helpers for
--- instantiating the MoC layer patterns described in the
--- "ForSyDe.Atom.MoC" module as meaningful continuous time process
--- constructors.
+-- The @CT@ library implements a DSL of atoms that operate according to a plactical
+-- interpretation of the continuous time model of computation, along with helpers and
+-- associated patterns.
 --
--- For an overview about atoms, layers and patterns, please refer to
--- the "ForSyDe.Atom" module documentation, and for an overview of the
--- MoC layer entities refer to <ForSyDe-Atom.html#g:3 the MoC layer section>.
--- For working with time or timestamps please check the utilities
--- provided by the "ForSyDe.Atom.MoC.Time" and
--- "ForSyDe.Atom.MoC.TimeStamp" modules.
+-- This interpretation of the CT MoC is an /extension/ of the 'ForSyDe.Atom.MoC.DE.DE'
+-- MoC in the sense that it borrow its algebra of discrete interactions
+-- entirely. However, there is one major difference:
 --
--- __IMPORTANT!!!__
--- see the <ForSyDe-Atom.html#naming_conv naming convention> rules
--- on how to interpret, use and develop your own constructors.
+-- * in 'ForSyDe.Atom.MoC.DE.DE' signals carry values of an \(\alpha\) type, which is
+--   conveniently describing persistent values between two (consecutive) discrete
+--   events;
+--
+-- * in 'CT' signals instead carry functions of type \(\tau\rightarrow\alpha\) which
+--   evolve in time.
+--
+-- The type \(\tau\) is an arbitrary (yet appropriate) numerical representation for
+-- continuous time (e.g. see the in-built 'ForSyDe.Atom.MoC.Time.Time' alias). By
+-- abstracting the time away from signals and keeping it as an (arbitrary) argument, a
+-- ForSyDe-Atom CT process network is able to describe and manipulate symbolic (pure)
+-- continuous functions, the numerical representation becoming apparent only when the
+-- output is forced to be evaluated at discrete points in time, e.g. for the purpose
+-- of plotting. Hence this CT MoC DSL is describing "an algebra of discrete
+-- interactions between continuous sub-signals". For more information, please consult
+-- <ForSyDe-Atom.html#ungureanu18 [Ungureanu18]>.
+--
+-- Useful pointers:
+--
+-- * "ForSyDe.Atom" contains general guidelines for using the API
+--
+-- * "ForSyDe.Atom.MoC" documents details about the internals of the MoC layer, the
+--   atoms and the basic structure of all process constructors as MoC patterns.
+--
+-- * "ForSyDe.Atom.Utility.Plot" contains useful utilities for sampling and plotting
+--   CT signals.
+--
+-- * "ForSyDe.Atom.MoC.DE" is the "host" DSL for the CT MoC, inferring the semantics
+--  of discrete interactions.
+--
+-- * the <ForSyDe-Atom.html#naming_conv naming convention> rules on how to interpret
+--   the function names based on their number of inputs and outputs.
 ----------------------------------------------------------------------
 
 module ForSyDe.Atom.MoC.CT (
 
   -- * Continuous time (@CT@) event
 
-  -- | According to <ForSyDe-Atom.html#lee98 [Lee98]>, "[regarding
-  -- metric time] at a minimum, \(T\) is an Abelian group, in addition
-  -- to being totally ordered. A consequence is that \(t_2-t_1\) is
-  -- itself a tag \(\forall t_1,t_2 \in T\). In a slightly more
-  -- elaborate model of computation, \(T\) has a metric. (...) A
-  -- continuous-time system is a metric timed system \(Q\) where \(T\)
-  -- is a continuum (a closed connected set)."
+  -- | According to <ForSyDe-Atom.html#lee98 [Lee98]>, "[regarding metric time] at a
+  -- minimum, \(T\) is an Abelian group, in addition to being totally ordered. A
+  -- consequence is that \(t_2-t_1\) is itself a tag \(\forall t_1,t_2 \in T\). In a
+  -- slightly more elaborate model of computation, \(T\) has a metric. (...) A
+  -- continuous-time system is a metric timed system \(Q\) where \(T\) is a continuum
+  -- (a closed connected set)."
   --
-  -- The continuous time (@CT@) MoC defines the closest behavior to
-  -- what we could call "physical time", where signals cover the full
-  -- span of a simulation as "functions of time" rather than
-  -- "values". As such, we can state:
+  -- The continuous time (@CT@) MoC defines the closest behavior to what we could call
+  -- "physical time", where signals cover the full span of a simulation as functions
+  -- of time rather than values. As such, we can state:
   --
-  -- [The CT MoC] is abstracting the execution semantics and describes
-  --   a system where computation is performed continuously over a
-  --   (possibly infinite) span of time.
+  -- [The CT MoC] is describes a system where computation is performed continuously
+  --   over a (possibly infinite) span of time.
   --
-  -- For a detailed descrption of the ForSyDe-Atom CT execution model,
-  -- refer to <ForSyDe-Atom.html#ungureanu18 [Ungureanu18]>. Below is
-  -- an illustration of the behavior in time of the input and the
-  -- output signals of a CT process:
+  -- For a detailed descrption of the ForSyDe-Atom CT execution model, refer to
+  -- <ForSyDe-Atom.html#ungureanu18 [Ungureanu18]>. Below is an illustration of the
+  -- behavior in time of the input and the output signals of a CT process:
   --
   -- <<fig/moc-ct-example.png>>
   --
-  -- Our 'ForSyDe.MoC.CT.CT' MoC is implemented as a generalized
-  -- version of ForSyDe-Atom's 'ForSyDe.MoC.DE.DE' with respect to the
-  -- CT MoC definition, or rather the 'ForSyDe.MoC.DE.DE' MoC is a
+  -- Our 'ForSyDe.MoC.CT.CT' MoC is implemented as a generalized version of
+  -- ForSyDe-Atom's 'ForSyDe.MoC.DE.DE', or rather the 'ForSyDe.MoC.DE.DE' MoC is a
   -- special case of 'ForSyDe.MoC.CT.CT' in the sense that:
   --
-  -- 1. tags \(t\) are represented with 'ForSyDe.Atom.MoC.TimeStamp's
-  --    just like in 'ForSyDe.MoC.DE.DE'. As such, we can say that
-  --    changes in a CT signal happen, or rather are observed, at
-  --    discrete times (see below).
+  -- 1. tags \(t\) represent discrete timestamps when changes in a CT signal happen,
+  --    or rather are observed (see below).
   --
-  -- 1. values are represented as /functions/ over a continuous span
-  --    of time \(f(t)\) rather than, like most commercial simulators,
-  --    series of sampled values. The time domain is abstracted away,
-  --    and may be represented with rational numbers which, as
-  --    compared to floating point numbers, do not suffer from
-  --    inherent quantisation, and are the closest numerical
-  --    representation which can model continuity.
+  -- 1. "events" are represented as /functions/ over a continuous span of time
+  --    \(f(t)\) rather than, like in most simulators based on imperative programs,
+  --    series of sampled values. The time domain is abstracted away, and may be
+  --    represented with whatever data type the user deems appropriate or convenient.
   --
-  -- 1. for practical reasons, the 'CT' event constructor has also a
-  --    /phase/ component \(\phi\), which is taken into consideration
-  --    only when evaluating the event function,
-  --    i.e. \(f(t+\phi)\). This enables the modeling of "phase
-  --    dispacements" of delay lines without altering the function
-  --    itself, i.e. without increasing the complexity of the
-  --    un-evaluated functions (redexes). The phase is reset during
-  --    event synchronization.
-  --
-  -- Based on the these particularities we can say that the 'CT' MoC
-  -- is simply a 'ForSyDe.Atom.DE.DE' machine/observer operating on
-  -- continuous subdomains, and we can formulate the following
-  -- properties:
+  -- 1. for practical reasons, the 'CT' event constructor has also a /phase/ component
+  --    \(\phi\), which is taken into consideration only when evaluating a signal
+  --    function, i.e. \(f(t+\phi)\). This enables the modeling of "phase
+  --    dispacements" of delay lines without altering the function itself,
+  --    i.e. without increasing the complexity of the un-evaluated functions
+  --    (redexes). The phase is reset during event synchronization.
   --
   -- <<fig/misc-ct-model.png>>
   --
-  -- 1. 'CT' signals, due to their formation as streams of tagged
-  --    events, represent /discrete/ changes in a continuous function
-  --    over time (e.g. analog signal). While the functions carried by
-  --    events are infinite (have always happened and will always
-  --    happen), being carried by events in a tag system suggests that
-  --    changes occur at discrete times. A CT signal can be
-  --    represented by the analog circuit above, where the inputs are
-  --    continuous signals, but the switch is discrete. Like in the
-  --    'ForSyDe.MoC.DE.DE' MoC, the absolute time \(0\) represent the
-  --    time when the system started to be observed.
+  -- Based on the these particularities we can say that the 'CT' MoC is simply a
+  -- 'ForSyDe.Atom.DE.DE' machine/observer operating on continuous subdomains, and we
+  -- can formulate the following properties:
   --
-  -- 1. the previous property is also proven by the fact that the
-  --    evaluation engine of ForSyDe-Atom is inherently a discrete
-  --    machine, i.e. evaluation is performed whenever a new event
-  --    occurs, in a dataflow manner. Allowing infinitely small
-  --    distances between tags would not allow the advancement of
-  --    simulation time.
+  -- 1. 'CT' signals represent /discrete/ changes in a continuous function over time
+  --    (e.g. analog signal). While the functions carried by events are infinite (have
+  --    always happened and will always happen), they are interpreted as being
+  --    "active" e.g. during two consecutive discrete times. A CT signal can be
+  --    represented by the analog circuit above, where the inputs are continuous
+  --    signals, but the switch is discrete. Like in the 'ForSyDe.MoC.DE.DE' MoC, the
+  --    absolute time \(0\) represent the time when the system started to be observed.
   --
-  -- 1. events carry /functions/ and not /values/. In a lazy
-  --    evaluation system like Haskell's, functions are kept symbolic
-  --    until evaluation. This means that in a CT system computations
-  --    are propagated as function graphs until a result is needed,
-  --    e.g. a signal needs to be plotted for arbitrary positions in
-  --    time. This way intermediate quantization errors are
-  --    eliminated, and the cost of higher plot resolution is the cost
-  --    of evaluating the final results only.
+  -- 1. events carry /functions/ and not /values/. In a lazy evaluation system like
+  --    Haskell's, functions are kept symbolic until evaluation. This means that in a
+  --    CT system computations are propagated as function AST until a result is
+  --    needed, e.g. a signal needs to be plotted for arbitrary time instants. The
+  --    cost of higher plot resolution is the cost of evaluating the final
+  --    (reduced-form) output expression only, and not more intermediate computations.
   --
-  -- 1. needless to say, for each \(t \in T\), a signal is able to
-  --    return (e.g. plot) the exact value \(t\) for that particular
-  --    \(t\).
+  -- 1. since itself the 'ForSyDe.MoC.CT.CT' MoC is simply a 'ForSyDe.MoC.DE.DE'
+  --    system operating on continuous subdomains, all atom evaluation properties are
+  --    inherited from it: feedback loops need to advance time, atoms are forbidden to
+  --    clean signals, and the conservative approach makes it possible
+  --    parallelize/distribute the simulation.
   --
-  -- 1. since itself the 'ForSyDe.MoC.CT.CT' MoC is simply a
-  --    'ForSyDe.MoC.DE.DE' system operating on continuous subdomains,
-  --    all atom evaluation properties are inherited from it: feedback
-  --    loops need to advance time, atoms are forbidden to clean
-  --    signals, and the conservative approach makes it ideal for
-  --    parallel/distributed simulation.
-  --
-  -- 1. since /T/ is a total order, there is no need for an
-  --    <ForSyDe-Atom-MoC.html#context execution context> and we can
-  --    ignore the formatting of functions in "ForSyDe.Atom.MoC", thus
-  --    we can safely assume:
-  --
-  -- <<fig/eqs-moc-timed-context.png>>
-
+  -- 1. since \(T\) is a total order, there is no need for an
+  --    <ForSyDe-Atom-MoC.html#context execution context> and we can ignore the
+  --    formatting of functions in "ForSyDe.Atom.MoC", thus
+  --    \[ \Gamma\vdash\alpha\rightarrow\beta = \alpha\rightarrow\beta \]
+ 
   TimeStamp, Time, CT(..),
 
   -- * Aliases & utilities
 
-  -- | A set of type synonyms and utilities are provided for
-  -- convenience. The API type signatures will feature these aliases
-  -- to hide the cumbersome construction of atoms and patters as seen
-  -- in "ForSyDe.Atom.MoC".
+  -- | A set of type synonyms and utilities are provided for convenience. The API type
+  -- signatures will feature these aliases to hide the cumbersome construction of
+  -- atoms and patters as seen in "ForSyDe.Atom.MoC".
 
-  Signal, unit, unit2, unit3, unit4, infinite,
+  SignalBase, Signal, unit, unit2, unit3, unit4, infinite,
   signal, checkSignal, 
-
-  -- plot, plot2, plot3, plot4,
-  -- plotFloat, plotFloat2, plotFloat3, plotFloat4,
   
   -- * @CT@ process constuctors
 
-  -- | The CT process constructors are basically specific
-  -- instantiations of patterns defined in "ForSyDe.Atom.MoC". 
+  -- | The CT process constructors are specific instantiations of patterns defined in
+  -- "ForSyDe.Atom.MoC".
   --
-  -- In the examples below we have imported and instantiated the
-  -- functions such as @e'@ @pi'@, @sin'@ and @cos'@ from the
-  -- collection of utilities in "ForSyDe.Atom.MoC.Time" and
-  -- "ForSyDe.Atom.MoC.TimeStamp". Also, for the sake of documentation
-  -- the interactive examples are only dumping the CT signals in data
-  -- files using the 'dumpDat' utility defined in
-  -- "ForSyDe.Atom.Utility.Plot", according to the custom @cfg@
-  -- structure. These files can be further plotted by any tool of
-  -- choice, or using the plotting utilities provided in the
-  -- "ForSyDe.Atom.Utility.Plot" module.
+  -- In the examples below, we use our 'Signal' type, i.e. a 'SignalBase' with
+  -- "ForSyDe.Atom.MoC.TimeStamp" for tag type and "ForSyDe.Atom.MoC.Time" for time
+  -- type. Consequently we use functions such as @e'@ @pi'@, @sin'@ and @cos'@ from
+  -- their respective collection of utilities. Also, for the sake of documentation the
+  -- interactive examples are only dumping the CT signals in data files using the
+  -- 'dumpDat' utility defined in "ForSyDe.Atom.Utility.Plot", according to the custom
+  -- @cfg@ structure. These files can be further plotted by any tool of choice, or
+  -- using the plotting utilities provided in the "ForSyDe.Atom.Utility.Plot" module.
   --
   -- > import ForSyDe.Atom.Utility.Plot
   -- > import ForSyDe.Atom.MoC.Time as Time
