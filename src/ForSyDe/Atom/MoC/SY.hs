@@ -79,7 +79,7 @@ module ForSyDe.Atom.MoC.SY (
   -- | These are type synonyms and utilities provided for user convenience. They
   -- mainly concern the construction and usage of signals.
 
-  Signal, unit, unit2, unit3, unit4, signal, readSignal,
+  Signal, unit, unit2, unit3, unit4, signal, fromSignal, readSignal,
   
   -- * @SY@ process constuctors
 
@@ -123,17 +123,23 @@ module ForSyDe.Atom.MoC.SY (
   mealy21, mealy22, mealy23, mealy24,
   mealy31, mealy32, mealy33, mealy34,
   mealy41, mealy42, mealy43, mealy44,
+
+  -- ** Hybrid
+
+  -- | Processes that can wrap other MoCs inside a DE execution model.
+
+  interleave2, interleave3, interleave4,
   
-  -- * Interfaces
+  -- ** Interfaces
 
   toDE, toDE2, toDE3, toDE4,
   toSDF1, toSDF2, toSDF3, toSDF4,
   toSDF1', toSDF2', toSDF3', toSDF4',
   zipx, unzipx, unzipx'  
-  
   ) where
 
 import Prelude hiding (filter)
 import ForSyDe.Atom.MoC.SY.Core
 import ForSyDe.Atom.MoC.SY.Lib
 import ForSyDe.Atom.MoC.SY.Interface
+import ForSyDe.Atom.MoC.SY.Hybrid

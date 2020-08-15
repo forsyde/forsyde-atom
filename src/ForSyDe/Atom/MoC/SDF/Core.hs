@@ -101,6 +101,11 @@ signal2 (l1,l2)       = (signal l1, signal l2)
 signal3 (l1,l2,l3)    = (signal l1, signal l2, signal l3)
 signal4 (l1,l2,l3,l4) = (signal l1, signal l2, signal l3, signal l4)
 
+-- | Transforms a signal back to a list
+fromSignal :: Signal a -> [a]
+fromSignal = fromStream  . fmap (\(SDF a) -> a) 
+
+
 -- | Reads a signal from a string. Like with the @read@ function from
 -- @Prelude@, you must specify the tipe of the signal.
 --

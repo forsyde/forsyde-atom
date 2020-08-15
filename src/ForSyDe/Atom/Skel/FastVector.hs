@@ -38,7 +38,9 @@
 
 
 module ForSyDe.Atom.Skel.FastVector (
-  module ForSyDe.Atom.Skel.FastVector.Lib
+  module ForSyDe.Atom.Skel.FastVector.Lib,
+  module ForSyDe.Atom.Skel.FastVector.Interface
   ) where
 
 import ForSyDe.Atom.Skel.FastVector.Lib hiding (unsafeApply, unsafeLift, evensF, oddsF)
+import ForSyDe.Atom.Skel.FastVector.Interface

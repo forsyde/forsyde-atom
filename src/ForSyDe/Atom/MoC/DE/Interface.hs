@@ -10,6 +10,7 @@ import qualified ForSyDe.Atom.Skel.Vector as V (
 import           ForSyDe.Atom.Utility.Tuple
 
 import qualified ForSyDe.Atom.MoC.DE.Core as DE
+import qualified ForSyDe.Atom.MoC.DE.Lib as DE (comb11)
 import qualified ForSyDe.Atom.MoC.SY.Core as SY
 import qualified ForSyDe.Atom.MoC.CT.Core as CT
 
@@ -84,6 +85,25 @@ toCT1 s1          = eventToCT <$> s1
 toCT2 s1 s2       = (toCT1, toCT1) $$ (s1,s2)
 toCT3 s1 s2 s3    = (toCT1, toCT1, toCT1) $$$ (s1,s2,s3)
 toCT4 s1 s2 s3 s4 = (toCT1, toCT1, toCT1, toCT1) $$$$ (s1,s2,s3,s4)
+
+hold1 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+      => DE.SignalBase ts a -> CT.SignalBase ts tm a
+-- | Translates a DE signal into a CT signal of constant sub-signals.
+hold2 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+      => DE.SignalBase ts a -> DE.SignalBase ts b
+      -> (CT.SignalBase ts tm a, CT.SignalBase ts tm b)
+hold3 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+      => DE.SignalBase ts a -> DE.SignalBase ts b -> DE.SignalBase ts c
+      -> (CT.SignalBase ts tm a, CT.SignalBase ts tm b, CT.SignalBase ts tm c)
+hold4 :: (Num ts, Real ts, Ord ts, Eq ts, Num tm, Fractional tm, Ord tm) 
+      => DE.SignalBase ts a -> DE.SignalBase ts b -> DE.SignalBase ts c
+      -> DE.SignalBase ts d
+      -> (CT.SignalBase ts tm a, CT.SignalBase ts tm b, CT.SignalBase ts tm c, CT.SignalBase ts tm d)
+hold1 = toCT1 . DE.comb11 (\a _ -> a)
+hold2 s1 s2       = (hold1, hold1) $$ (s1,s2)
+hold3 s1 s2 s3    = (hold1, hold1, hold1) $$$ (s1,s2,s3)
+hold4 s1 s2 s3 s4 = (hold1, hold1, hold1, hold1) $$$$ (s1,s2,s3,s4)
+
 
 -- Towards skeleton layer
 

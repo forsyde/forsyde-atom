@@ -109,7 +109,7 @@ module ForSyDe.Atom.MoC.SDF (
   -- | These are type synonyms and utilities provided for user convenience. They
   -- mainly concern the construction and usage of signals.
 
-  Signal, Prod, Cons, signal, readSignal,
+  Signal, Prod, Cons, signal, fromSignal, readSignal,
 
   -- * Process constructors
   
