@@ -716,3 +716,17 @@ sync2 = comb22 (,)
 sync3 = comb33 (,,)
 sync4 = comb44 (,,,)
 
+
+------- PWM -------
+
+-- | Pulse width modulation signal
+pwm :: (Num t, Ord t, Eq t, Num a)
+    => t  -- ^ width
+    -> t  -- ^ period
+    -> SignalBase t a
+pwm width period = mealy11 ns od ini $ signal [(0,1),(width,0)]
+  where
+    ns (True, _) a = (False,a)
+    ns (False,s) _ = (False,s)
+    od s = snd . ns s
+    ini = (period, (True,0))

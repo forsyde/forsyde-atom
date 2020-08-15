@@ -77,6 +77,11 @@ unit4 = ($$$$) (unit, unit, unit, unit)
 signal   :: [a] -> Signal a
 signal l = stream (SY <$> l)
 
+-- | Transforms a signal back to a list
+fromSignal :: Signal a -> [a]
+fromSignal = fromStream  . fmap (\(SY a) -> a) 
+
+
 -- | Reads a signal from a string. Like with the 'Prelude.read' function from
 -- @Prelude@, you must specify the type of the signal.
 --

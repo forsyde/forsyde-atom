@@ -57,7 +57,7 @@ module ForSyDe.Atom.Prob (
   trans13, trans23, trans33, trans43, trans53, trans63, trans73, trans83,
   trans14, trans24, trans34, trans44, trans54, trans64, trans74, trans84,
   -- * Utilities
-  Histogram(..), histogram, getStdGen
+  Histogram(..), histogram, getStdGen, mkStdGens
   ) where
 
 import ForSyDe.Atom.Utility.Tuple
@@ -100,7 +100,7 @@ samples g (Dist r) = r g
 ------------ PATTERNS ------------
 
 -- | Samples a random variable by running /one/ experiment trial defined by a certain distribution.
-sample gen = head . samples gen
+sample gen = head . tail . samples gen
 
 -- | Samples a random variable by running /n/ experiment trials defined by a certain distribution. This is equivalent to running a Monte Calro experiment on /n/ samples.
 samplesn gen n = take n . samples gen
@@ -146,7 +146,9 @@ trans84 p v1 v2 v3 v4 v5 v6 v7 v8 = (p %. v1 %* v2 %* v3 %* v4 %* v5 %* v6 %* v7
 
 ------------ UTILITIES ------------
 
-
+-- | Returns a list of generators, to be used in various purposes
+mkStdGens :: StdGen -> [StdGen]
+mkStdGens = map mkStdGen . randoms
 
 -- | Histogram representation as a zipped list of bins, each bin paired with its
 -- center value.

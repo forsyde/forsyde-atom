@@ -165,7 +165,7 @@ module ForSyDe.Atom.MoC.DE (
   reconfig31, reconfig32, reconfig33, reconfig34,
   reconfig41, reconfig42, reconfig43, reconfig44,
 
-  sync2, sync3, sync4,
+  sync2, sync3, sync4, pwm,
   
   constant1, constant2, constant3, constant4,
 
@@ -204,6 +204,7 @@ module ForSyDe.Atom.MoC.DE (
 
   toSY1, toSY2, toSY3, toSY4,
   toCT1, toCT2, toCT3, toCT4,
+  hold1, hold2, hold3, hold4,
 
   zipx, unzipx, unzipx',
         

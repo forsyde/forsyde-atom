@@ -14,6 +14,7 @@
 module ForSyDe.Atom.Prob.Normal (
   -- * Recipes
   normal, normal',
+  normal1, samp1,
   
   -- * Layer
 
@@ -26,6 +27,9 @@ module ForSyDe.Atom.Prob.Normal (
 import System.Random
 import qualified Data.Random.Normal as N
 import ForSyDe.Atom.Prob
+
+
+import ForSyDe.Atom.Utility.Plot
 
 -- $setup
 -- >>> import qualified ForSyDe.Atom.Utility.Plot as Pl
@@ -50,9 +54,9 @@ normal' = Dist N.normals
 -- | Recipe for normally distributed variables.
 --
 -- >>> gen <- getStdGen 
--- >>> let x1 = normal 2 (0.2) :: Dist Float
--- >>> let x2 = normal 1 (0.5) :: Dist Float
--- >>> let x3 = normal 2 (0.6) :: Dist Float
+-- >>> x1  = normal 0.2 2 :: Dist Float
+-- >>> x2  = normal 0.5 1 :: Dist Float
+-- >>> x3  = normal 0.6 2 :: Dist Float
 -- >>> let hx = map (histogram 0 3 0.2 . samplesn gen 10000) [x1,x2,x3]
 -- >>> dumpDat $ prepareL defaultCfg hx
 -- Dumped hist1, hist2, hist3 in ./fig
@@ -65,3 +69,6 @@ normal :: (Random a, Floating a)
        -> Dist a
 normal dev m = Dist $ N.normals' (m,dev)
 
+
+normal1 dev m = fst . N.normal' (m,dev)
+samp1 g r = r g
