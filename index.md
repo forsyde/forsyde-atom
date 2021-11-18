@@ -32,13 +32,17 @@ Before you try anything, make sure you have [Haskell Platform](https://www.haske
 Installing the package is as simple as typing in the terminal:
 
     cd path/to/forsyde-atom
-	cabal install
+	stack install	
 	
 You need to be patient until the installation finishes. Afterwards you can start a new interpreter session
 
-    ghci
+    stack ghci
 
-and import the newly installed libraries and try them out
+Once all modules load, get rid of them from the prompt. You only need to keep `Prelude` and `ForSyDe.Atom` active, the others are used qualified one at a time, anyway.
+
+	*ForSyDe.Atom... > :m ForSyDe.Atom
+
+Finally, import the needed libraries and try them out
 
     Prelude> import ForSyDe.Atom
 	Prelude ForSyDe.Atom> import ForSyDe.Atom.MoC.SY as SY

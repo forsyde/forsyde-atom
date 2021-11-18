@@ -1,4 +1,3 @@
-## Jekyll files
 _site*
 *~
 #*
@@ -18,3 +17,6 @@ TAGS
 *.dat
 *.gnuplot
 .stack-work
+fig
+*.config
+stack.yaml.lock

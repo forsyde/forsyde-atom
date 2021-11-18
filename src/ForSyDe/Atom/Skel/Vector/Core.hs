@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  ForSyDe.Atom.Skeleton.Vector.Core
+-- Module      :  ForSyDe.Atom.Skel.Vector.Core
 -- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
 -- License     :  BSD-style (see the file LICENSE)
 -- 
@@ -11,9 +11,9 @@
 --
 -- The core implementation of the 'Vector' type
 -----------------------------------------------------------------------------
-module ForSyDe.Atom.Skeleton.Vector.Core where
+module ForSyDe.Atom.Skel.Vector.Core where
 
-import ForSyDe.Atom.Skeleton
+import ForSyDe.Atom.Skel
 
 import Prelude hiding (null)
 
@@ -21,39 +21,31 @@ infixr 3 :>
 infixl 5 <:
 infixr 5 <++>
 
--- | The  'Vector', or at least its interpretation, is the
--- exact equivalent of an infinite list, as defined in
--- <ForSyDe-Atom.html#bird97 [Bird97]>. Its name though is borrowed
--- from <ForSyDe-Atom.html#reekie95 [Reekie95]>, since it is more
--- suggestive in the context of process networks.
---
--- According to <ForSyDe-Atom.html#bird97 [Bird97]>, 'Vector'
+-- | Although the name 'Vector' is borrowed from <ForSyDe-Atom.html#reekie95
+-- [Reekie95]> since it is more suggestive in the context of process networks, the
+-- 'Vector' type is in fact modeling an infinite list defined as a category in
+-- <ForSyDe-Atom.html#skillicorn05 [Skillicorn05]>. According to this definition it
 -- should be implemented as following:
 --
 -- > data Vector a = Null                   -- null element
 -- >               | Unit a                 -- singleton vector
 -- >               | Vector a <++> Vector a -- concatenate two vectors
 --
--- This construction suggests the possibility of splitting a 'Vector'
--- into multiple parts and evaluating it in parallel. Due to reasons
--- of efficiency, and to ensure that the structure is flat and
--- homogeneous, 'Vector' is implemented using the same constructors as
--- an infinite list like in <ForSyDe-Atom.html#bird87 [Bird87]> (see
--- below). When defining skeletons of vectors we will not use the real
--- constructors though, but the theoretical ones defined above and
--- provided as <#g:2 functions> . This way we align ForSyDe-Atom's
--- 'Vector' type with the categorical type theory and its theorems.
+-- This construction suggests the possibility of splitting a 'Vector' into multiple
+-- parts and evaluating it in parallel. For simplicity and to ensure that the
+-- structure is flat and homogeneous, 'Vector' is implemented using the same
+-- constructors as a regular Haskell list (see below). When defining skeletons of
+-- vectors we will not use the real constructors though, but the theoretical ones
+-- defined above and provided as <#g:2 functions>. This way we align ForSyDe-Atom's
+-- 'Vector' type with the skeleton theory and its theorems.
 --
--- Another particularity of 'Vector' is that it instantiates the
--- reduction atom '=\=' as a /right fold/, as it is the most efficient
--- implementation in the context of lazy evaluation. As a consequence
--- reduction is performed __/from right to left/__. This is noticeable
--- especially in the case of pipeline-based skeletons (where 'pipe'
--- itself is a reduction with the right-associative composition
--- operator '.') is performed from right to left, which
--- comes in natural when considering the order of function
--- composition. Thus for 'reduce'-based skeletons (e.g. 'prefix',
--- 'suffix', 'recur', 'cascade', 'mesh') the result vectors shall be
+-- Another particularity of 'Vector' is that it instantiates the reduction atom '=\='
+-- as a /right fold/, as it is the most efficient lazy implementation of lists. As a
+-- consequence reduction is performed __/from right to left/__. This is noticed
+-- especially in the case of pipeline-based skeletons (see definition of
+-- 'ForSyDe.Atom.Skel.pipe' as a reduction with the right-associative composition
+-- operator '.') is performed from right to left. Thus for 'reduce'-based skeletons
+-- (e.g. 'prefix', 'suffix', 'recur', 'cascade', 'mesh') the result vectors shall be
 -- read from end to beginning.
 data Vector a = Null
               -- ^ Null element. Terminates a vector.
@@ -154,6 +146,7 @@ fromVector (x:>xs) = x : fromVector xs
 -- > <1,2,3,4,...>
 --
 -- Used mainly for operation on indexes.
+indexes :: Vector Int
 indexes = vector [1..]
 
 -- | Returns @True@ if the argument is a null vector.

@@ -16,7 +16,7 @@ These are required to acquire, install and use the base libraries:
  
  * [Git](https://git-scm.com/downloads) if you want to clone the whole repository, and not just download the sources. 
  
-Library dependencies are taken care of by the [Cabal](https://www.haskell.org/cabal/) package manager shipped with [Haskell Platform](https://www.haskell.org/platform/).
+Library dependencies are taken care of by the [Stack](https://docs.haskellstack.org/en/stable/README/) sandboxing tool shipped with [Haskell Platform](https://www.haskell.org/platform/).
 
 ### Plotting the signals
 
@@ -42,10 +42,54 @@ For an OS using the [X Window System](https://en.wikipedia.org/wiki/X_Window_Sys
 
 Before trying to install, check the list of [dependencies](#dependencies) above, to see that you meet the requirements based on how you are planning to use the library.
 
-### The ForSyDe-Atom libraries
+This package has been developped using Cabal, however at the time of updating this setup page, it has fallen behind the contemporary package management practices. As of now there are several ways to install a Haskell package using different tools, however we recommend you use the [Stack](https://docs.haskellstack.org/en/stable/README/) sandboxing tool, which reproduces the (by now old) development environment.
 
-This package is *cabal*ized, thus one shoud use `cabal` to install
-it. It is recommended to install and test inside a sandbox:
+### Using Stack (recommended)
+
+The following instructions assume you want to build a Haskell sandbox using the [Stack](https://docs.haskellstack.org/en/stable/README/) tool, shipped with the [Haskell Platform](https://www.haskell.org/platform/). Go to the `forsyde-atom` directory and type in
+
+	stack install
+	
+And be patient... This will install the package and its dependencies locally, including a working GHC compiler. 
+To open an interpreter session with the default ForSyDe-Atom libraries loaded, run the command:
+	
+    stack ghci
+	
+By default Stack loads *all* `forsyde-atom` modules. We do not want this, rather have only the root `ForSyDe.Atom` module loaded, the rest being used (qualified) as aliases. To unload all modules and keep `ForSyDe.Atom` type in
+
+	*ForSyDe.Atom... > :m ForSyDe.Atom
+
+For a quick test that everything works fine, you can try the following example inside the interpreter session. The example implements a Moore finite state machine that calculates the running sum and multiplies the output with 2.
+
+    *Prelude ForSyDe.Atom> import ForSyDe.Atom.MoC.SY as SY
+	*Prelude ForSyDe.Atom SY> let s = SY.signal [1..4]
+    *Prelude ForSyDe.Atom SY> SY.moore11 (+) (*2) 0 s
+	{0,2,6,12,20}
+
+For more examples, please check the [user manual](assets/manual.pdf) generated from the [`forsyde-atom-examples`](https://github.com/forsyde/forsyde-atom-examples) project.
+
+To uninstall the library and everything that was generated, simply delete the sandbox folder:
+
+    rm -rf .stack-work
+	
+To test the library using the provided test suites and doctests, type
+
+	stack test
+	
+To generate the [API documentation](api/) locally type in
+
+	stack haddock
+	
+The documentation will be found at the path pointed out after the line 
+
+	Updating Haddock index for local packages in
+	[path/to/index.html]
+
+Notice that all pictures are missing from the documentation, as compared to the [online version](api/). This is because the pictures are compiled and included from a [separate repo](https://github.com/ugeorge/forsyde-atom-docs).
+
+### Using Cabal-v1 (deprecated, not recommended)
+
+It is recommended to install and test inside a sandbox:
 
     cabal update                      # downloads the most recent list of packages from the Hackage repository
     cabal sandbox init                # initializes the sandbox
@@ -70,8 +114,6 @@ To uninstall the library and everything that was generated, you can type in:
 
     cabal sandbox delete              # deletes the sandbox and everything in it
 	
-### Testing the libraries
-
 The test suite and its dependencies can be installed and run by
 explicitly adding the flag `--enable-tests` to the previous
 installation commands, namely:
@@ -81,10 +123,6 @@ installation commands, namely:
     cabal configure --enable-tests                   # configures the package to run the test suite
     cabal test                                       # runs the test suite 
    
-   
-   
-# Generating the API documentation locally
-
 The API documentation for latest release is publicly available [here](api/) but if for some reason you need to generate it locally on your machine you need perform the following steps:
 
  1. install the [`hscolour`](https://hackage.haskell.org/package/hscolour) Haskell package
@@ -100,5 +138,3 @@ The API documentation for latest release is publicly available [here](api/) but 
  1. `cd` into the root of the project (the folder containing the `forsyde-atom.cabal` file) and type in:
      
 	    cabal haddock --hyperlink-source
-
-

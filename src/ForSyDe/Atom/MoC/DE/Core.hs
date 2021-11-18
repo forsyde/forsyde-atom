@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances, GADTs, StandaloneDeriving #-}
 {-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
@@ -17,24 +17,49 @@
 module ForSyDe.Atom.MoC.DE.Core where
 
 import ForSyDe.Atom.MoC
-import ForSyDe.Atom.MoC.Stream
 import ForSyDe.Atom.MoC.TimeStamp
-import ForSyDe.Atom.Utility (($$),($$$),($$$$))
+import ForSyDe.Atom.Utility.Tuple (($$),($$$),($$$$))
 
 import Prelude hiding (until)
 
--- | Type synonym for a SY signal, i.e. "a signal of SY events"
-type Signal a   = Stream (DE a)
 
--- | The DE event. It identifies a discrete event signal.
-data DE a  = DE { tag :: TimeStamp,  -- ^ timestamp
-                  val :: a           -- ^ the value
-                } deriving (Eq)
+-- | Type synonym for a base DE signal as a stream of 'DE' events, where the type of
+-- tags has not been determined yet. In designs, it is advised to define a type alias
+-- for signals, using an appropriate numerical type for tags, e.g.
+--
+-- > import ForSyDe.Atom.MoC.DE hiding (Signal) -- hide provided alias, to use your own
+-- >
+-- > type Signal a = SignalBase Int a
+type SignalBase t a = Stream (DE t a)
+
+-- | Convenience alias for a DE signal, where tags are represented using our exported
+-- 'TimeStamp' type.
+type Signal a = SignalBase TimeStamp a
+
+-- | The DE event. It identifies a discrete event signal. The type of the tag system
+-- needs to satisfy all of the three properties, as suggested by the type constraints
+-- imposed on it:
+--
+-- * it needs to be a numerical type, to express value 0 (global start) and every
+--   representable number needs to have an additive inverse.
+--
+-- * it needs to be unambiguously comparable (defines a total order).
+--
+-- * it needs to unambiguously define an equality operation.
+--
+-- Due to these properties not all numerical types can represent DE tags. A typical
+-- example of inappropriate representation is 'Float'.
+data DE t a where
+  DE :: (Num t, Ord t, Eq t)
+     => { tag :: t,  -- ^ timestamp
+          val :: a   -- ^ the value
+        } -> DE t a
+deriving instance (Num t, Ord t, Eq t, Eq t, Eq a) => Eq (DE t a)
 
 -- | Implenents the execution semantics for the DE MoC atoms.
-instance MoC DE where
-  type Fun DE a b = a -> b
-  type Ret DE b   = b 
+instance (Num t, Ord t, Eq t) => MoC (DE t) where
+  type Fun (DE t) a b = a -> b
+  type Ret (DE t) b   = b 
   ---------------------
   (-.-) = fmap . fmap
   ---------------------
@@ -58,52 +83,61 @@ instance MoC DE where
   ---------------------
 
 -- | Shows the event with tag @t@ and value @v@ as @v\@t@.
-instance Show a => Show (DE a) where
+instance (Show a, Show t) => Show (DE t a) where
   showsPrec _ (DE t x) = (++) ( show x ++ "@" ++ show t )
 
 -- | Reads the string of type @v\@t@ as an event @DE t v@.
-instance (Read a) => Read (DE a) where
+instance (Read a,Read t, Num t, Ord t, Eq t, Eq t) => Read (DE t a) where
   readsPrec _ x = [ (DE tg val, r2)
                   | (val,r1) <- reads $ takeWhile (/='@') x
                   , (tg, r2) <- reads $ tail $ dropWhile (/='@') x ]
 
 -- | Allows for mapping of functions on a DE event.
-instance Functor DE where
+instance (Num t, Ord t, Eq t) => Functor (DE t) where
   fmap f (DE t a) = DE t (f a)
 
 -- | Allows for lifting functions on a pair of DE events.
-instance Applicative DE where
+instance (Num t, Ord t, Eq t) => Applicative (DE t) where
   pure = DE 0
   (DE tf f) <*> (DE _ x) = DE tf (f x)
 
 -----------------------------------------------------------------------------
 
-unit  :: (TimeStamp, a) -> Signal a 
-unit (t,v) = (DE 0 v :- DE t v :- NullS)
-
+unit  :: (Num t, Ord t, Eq t) => (t, a) -> SignalBase t a 
 -- | Wraps a (tuple of) pair(s) @(tag, value)@ into the equivalent
 -- unit signal(s). A unit signal is a signal with one event with the
 -- period @tag@ carrying @value@.
 --
--- Helpers: @unit@ and @unit[2-4]@.
+-- Helpers: @unit|unit[2-4]@.
+unit2 :: (Num t, Ord t, Eq t)
+      => ((t,a1),(t, a2))
+      -> (SignalBase t a1, SignalBase t a2)
+unit3 :: (Num t, Ord t, Eq t)
+      => ((t,a1),(t, a2),(t, a3))
+      -> (SignalBase t a1, SignalBase t a2, SignalBase t a3)
+unit4 :: (Num t, Ord t, Eq t)
+      => ((t,a1),(t, a2),(t, a3),(t, a4))
+      -> (SignalBase t a1, SignalBase t a2, SignalBase t a3, SignalBase t a4)
+         
+unit (t,v) = (DE 0 v :- DE t v :- NullS)
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
 unit4 = ($$$$) (unit,unit,unit,unit)
 
 -- | Creates an infinite signal.
-infinite :: a -> Signal a
+infinite :: (Num t, Ord t, Eq t) => a -> SignalBase t a
 infinite v = DE 0 v :- NullS
 
 -- | Transforms a list of tuples @(tag, value)@ into a DE
 -- signal. Checks if it is well-formed.
-signal :: [(TimeStamp, a)] -> Signal a
+signal :: (Num t, Ord t, Eq t) => [(t, a)] -> SignalBase t a
 signal = checkSignal . stream . fmap (\(t, v) -> DE t v)
 
 -- | Takes the first part of the signal util a given timestamp. The
 -- last event of the resulting signal is at the given timestamp and
 -- carries the previous value. This utility is useful when plotting
 -- a signal, to specify the interval of plotting.
-until :: TimeStamp -> Signal a -> Signal a
+until :: (Num t, Ord t, Eq t) => t -> SignalBase t a -> SignalBase t a
 until _ NullS = NullS
 until u (DE t v:-NullS)
   | t < u     = DE t v :- DE u v :- NullS
@@ -125,7 +159,7 @@ until u (DE t v:-xs)
 -- > {1@0s,2@2s,3@5s*** Exception: [MoC.DE] malformed signal
 -- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- > *** Exception: [MoC.DE] signal does not start from global 0
-readSignal :: Read a => String -> Signal a
+readSignal :: (Num t, Ord t, Eq t, Read t, Read a) => String -> SignalBase t a
 readSignal s = checkSignal $ read s
 
 -- | Checks if a signal is well-formed or not, according to the DE MoC
@@ -146,5 +180,4 @@ checkSignal s@(x:-_)
 infixl 7 %>
 (DE t _) %> (DE _ x) = DE t x
 
--- end of testbench functions
 -----------------------------------------------------------------------------

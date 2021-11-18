@@ -40,19 +40,22 @@ module ForSyDe.Atom.Utility.Plot (
   
   ) where
 
+import Control.Arrow
 import Control.Exception
 import Control.Monad (unless, when)
 import Data.List (intercalate, intersperse, unwords)
 import System.Directory (createDirectoryIfMissing)
-import System.Process
 import System.Exit (ExitCode(..))
+import System.Process
 
 import qualified ForSyDe.Atom.ExB.Absent as AE (
   AbstExt(..))
 import qualified ForSyDe.Atom.MoC.SY.Core as SY (
   Signal, SY(..), signal )
 import qualified ForSyDe.Atom.MoC.DE.Core as DE (
-  Signal,DE(..), signal )
+  SignalBase, DE(..), signal )
+import qualified ForSyDe.Atom.MoC.DE.React.Core as RE (
+  SignalBase, RE(..), signal )
 import qualified ForSyDe.Atom.MoC.CT.Core as CT (
   Signal, CT(..), signal, evalTs, tag)
 import qualified ForSyDe.Atom.MoC.SDF.Core as SDF (
@@ -63,8 +66,11 @@ import qualified ForSyDe.Atom.MoC.Time as T (
   Time )
 import ForSyDe.Atom.MoC.Stream (
   Stream(..), fromStream, takeS)
-import qualified ForSyDe.Atom.Skeleton.Vector as V (
+import qualified ForSyDe.Atom.Skel.Vector as V (
   Vector(..), fromVector, take, vector)
+import qualified ForSyDe.Atom.Prob as P (
+  Histogram(..)
+  )
 
 -------------------------- TYPES --------------------------
 
@@ -188,7 +194,7 @@ instance (Plottable a) => Plottable (V.Vector a) where
 instance {-# OVERLAPPABLE #-} (Show a, Real a) => Plottable a where
   toCoord = show . realToFrac
 
--- | 'ForSyDe.Atom.MoC.SDF.SDF' signals.
+-- | For plotting 'ForSyDe.Atom.MoC.SDF.SDF' signals.
 instance Plottable a => Plot (SDF.Signal a) where
   sample' = zip (map show [0..]) . fromStream . fmap vToSamp
     where vToSamp (SDF.SDF a) = toCoord a
@@ -218,8 +224,9 @@ instance Plottable a => Plot (SY.Signal a) where
                    , sparse   = False
                    }
 
--- | 'ForSyDe.Atom.MoC.DE.DE' signals.
-instance Plottable a => Plot (DE.Signal a) where
+-- | For plotting 'ForSyDe.Atom.MoC.DE.DE' signals.
+instance (Plottable a, Show t, Real t, Fractional t, Num t, Ord t, Eq t) =>
+  Plot (DE.SignalBase t a) where
   sample' = map v2s . fromStream
     where v2s (DE.DE t v) = (toCoord t, toCoord v)
   -- sample' sig = concat $ zipWith v2s ((head lst):lst) lst 
@@ -244,7 +251,35 @@ instance Plottable a => Plot (DE.Signal a) where
                    , sparse   = True
                    }
 
--- | 'ForSyDe.Atom.MoC.CT.CT' signals.
+-- | For plotting 'ForSyDe.Atom.MoC.RE.React.RE' signals.
+instance (Plottable a, Show t, Real t, Fractional t, Num t, Ord t, Eq t) =>
+  Plot (RE.SignalBase t a) where
+  sample' = map v2s . fromStream
+    where v2s (RE.RE t v) = (toCoord t, toCoord v)
+  -- sample' sig = concat $ zipWith v2s ((head lst):lst) lst 
+  --   where lst = fromStream sig
+  --         v2s (RE.RE pt pv) (RE.RE t v)
+  --           = [(toCoord t, toCoord pv), (toCoord t, toCoord v)]
+  ------------------------
+  takeUntil n = until (realToFrac n)
+    where until _ NullS = NullS
+          until u (RE.RE t v:-NullS)
+            | t < u     = RE.RE t v :- RE.RE u v :- NullS
+            | otherwise = RE.RE u v :- NullS
+          until u (RE.RE t v:-xs)
+            | t < u     = RE.RE t v :- until u xs
+            | otherwise = RE.RE u v :- NullS
+  ------------------------
+  getInfo _ = Info { typeid   = "sig-de"
+                   , command  = "RE"
+                   , measure  = "timestamp"
+                   , style    = "lines lw 2"
+                   , stacking = False
+                   , sparse   = True
+                   }
+
+
+-- | For plotting 'ForSyDe.Atom.MoC.CT.CT' signals.
 instance (Plottable a) => Plot (CT.Signal a) where
   sample stepsize = evalSamples 0
     where evalSamples t s@(x:-y:-xs)
@@ -273,7 +308,7 @@ instance (Plottable a) => Plot (CT.Signal a) where
                    , sparse   = False
                    }
 
--- | vectors of coordinates
+-- | For plotting vectors of coordinates
 instance Plottable a => Plot (V.Vector a) where
   sample' = zip (map show [1..]) . V.fromVector . fmap toCoord
   ------------------------
@@ -283,6 +318,20 @@ instance Plottable a => Plot (V.Vector a) where
                    , command  = "NONE"
                    , measure  = "index"
                    , style    = "impulses lw 3"
+                   , stacking = True
+                   , sparse   = False
+                   }
+
+-- | For plotting vectors of coordinates
+instance Plot P.Histogram where
+  sample' = map (toCoord *** toCoord) . P.getBins
+  ------------------------
+  takeUntil n = P.Hist . take (truncate n) . P.getBins
+  ------------------------
+  getInfo _ = Info { typeid   = "hist"
+                   , command  = "HIST"
+                   , measure  = "bin"
+                   , style    = "boxes"
                    , stacking = True
                    , sparse   = False
                    }
@@ -430,7 +479,11 @@ alterForGnuHeatmap (cfg,info,lsamp) = (cfg, info, map alter lsamp)
 mkPlotScript :: Config -> PInfo -> [FilePath] -> String 
 mkPlotScript cfg info files =
   (if plotTitle == "plot" then "" else "set title \"" ++ plotTitle ++  "\"\n")
-  ++ "set xzeroaxis\nset xlabel \"" ++ unitOfMeasure ++ "\" \n"
+  ++ "set xlabel \"" ++ unitOfMeasure ++ "\" \n"
+  ++ (if command info == "HIST" then
+       "set style fill solid\nset boxwidth 0.5\n"
+     else "")
+  ++ "set xzeroaxis\n"
   ++ "plot " ++ plotCmds ++ "\n"
   ++ epsCmd ++ latexCmd ++ pdfCmd
   where
@@ -588,20 +641,31 @@ alterForLatex (cfg,info,lsamp) = (cfg, info, map alter lsamp)
 mkLatex :: PlotData -> String
 mkLatex = latexCmd . alterForLatex 
   where
-    latexCmd (cfg, info, lsamp) =
-      "  \\begin{signals" ++ mocStr ++ "}[]{"
-      ++ lastX ++ "}\n"
-      ++ concatMap toSignal lsamp
-      ++ "  \\end{signals" ++ mocStr ++ "}\n"
+    latexCmd (cfg, info, lsamp)
+      -- SIGNAL plots
+      | command info `elem` ["SY","DE","RE","CT"] =
+        "  \\begin{signals" ++ mocStr ++ "}[]{"
+        ++ lastX ++ "}\n"
+        ++ concatMap toSignal lsamp
+        ++ "  \\end{signals" ++ mocStr ++ "}\n"
+      -- HISTOGRAM plots
+      | command info `elem` ["HIST"] =
+        "  \\begin{axis}[ybar,ytick=\\empty,axis x line*=bottom,axis y line*=left]\n"
+        ++ concatMap toPlot lsamp
+        ++ "\n  \\end{axis}\n"
+      | otherwise = error "mkLatex: plot for this type not implemented."
       where
+        ------ SIGNAL helpers ------  
         toSignal (label,samp) =
           "    \\signal" ++ mocStr ++ "[name= " ++ label ++ "]{"
-          ++ intercalate "," (map toString samp) ++ "}\n"
-        toString (t,v) = v ++ ":" ++ t
-      -- extract settings
+          ++ intercalate "," (map showEvent samp) ++ "}\n"
+        showEvent (t,v) = v ++ ":" ++ t
         mocStr = command info
         lastX  = show $ xmax cfg
-
+        ------ HISTOGRAM helpers ------  
+        toPlot (_,sp) = "  \\addplot coordinates {" ++ concatMap showBin sp ++ "};"
+        showBin (t,v) = "(" ++ v ++ "," ++ t ++ ")"
+       
 mkLatexFile :: String -> String
 mkLatexFile cmd =
   "\\documentclass{standalone}\n"
