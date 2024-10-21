@@ -34,7 +34,8 @@ type SignalBase t a = Stream (DE t a)
 
 -- | Convenience alias for a DE signal, where tags are represented using our exported
 -- 'TimeStamp' type.
-type Signal a = SignalBase TimeStamp a
+--type Signal a = SignalBase TimeStamp a
+type Signal a = SignalBase Double a
 
 -- | The DE event. It identifies a discrete event signal. The type of the tag system
 -- needs to satisfy all of the three properties, as suggested by the type constraints
@@ -151,12 +152,12 @@ until u (DE t v:-xs)
 -- type of the signal.
 --
 -- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- {1@0s,2@2s,3@5s,4@7s,5@10s}
+-- {1@0.0,2@2.0,3@5.0,4@7.0,5@10.0}
 --
 -- Incorrect usage (not covered by @doctest@):
 --
 -- > λ> readSignal "{ 1@0, 2@2, 3@5, 4@10, 5@7 }" :: Signal Int
--- > {1@0s,2@2s,3@5s*** Exception: [MoC.DE] malformed signal
+-- > {1@0.0,2@2.0,3@5.0*** Exception: [MoC.DE] malformed signal
 -- > λ> readSignal "{ 1@1, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
 -- > *** Exception: [MoC.DE] signal does not start from global 0
 readSignal :: (Num t, Ord t, Eq t, Read t, Read a) => String -> SignalBase t a

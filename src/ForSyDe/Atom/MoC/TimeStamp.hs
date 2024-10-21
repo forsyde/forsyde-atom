@@ -74,8 +74,8 @@ pi  = realToFrac Prelude.pi
 
 -- | reads @[n]s@ as a fraction of a second, where @[n]@ is a floating
 -- point number.
-instance Read DiffTime where
-  readsPrec p x = [ (realToFrac tstamp,r)
-                  | (tstamp,r) <- readNum x ] 
-    where readNum ::[Char] -> [(Double, String)]
-          readNum = reads . takeWhile (/='s')
+-- instance Read DiffTime where
+--   readsPrec p x = [ (realToFrac tstamp,r)
+--                   | (tstamp,r) <- readNum x ] 
+--     where readNum ::[Char] -> [(Double, String)]
+--           readNum = reads . takeWhile (/='s')

@@ -35,7 +35,7 @@ import           ForSyDe.Atom.Utility.Tuple
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> delay 3 0 s
--- {0@0s,1@3s,2@5s,3@9s,4@11s,5@12s}
+-- {0@0.0,1@3.0,2@5.0,3@9.0,4@11.0,5@12.0}
 -- 
 -- <<fig/moc-de-pattern-delay.png>>
 delay :: (Num t, Ord t, Eq t) => t        -- ^ time delay
@@ -53,7 +53,7 @@ delay t v = MoC.delay (unit (t, v))
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> let s2 = readSignal "{3@0, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
 -- >>> delay' s1 s2
--- {1@0s,3@2s,4@6s,5@7s,6@10s,7@11s}
+-- {1@0.0,3@2.0,4@6.0,5@7.0,6@10.0,7@11.0}
 --
 -- <<fig/moc-de-pattern-delayp.png>>
 delay' :: (Num t, Ord t, Eq t) => SignalBase t a  -- ^ signal "borrowing" the initial event
@@ -74,9 +74,9 @@ delay' = MoC.delay
 -- >>> let s1 = infinite 1
 -- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
 -- >>> comb11 (+1) s2
--- {2@0s,3@2s,4@6s,5@8s,6@9s}
+-- {2@0.0,3@2.0,4@6.0,5@8.0,6@9.0}
 -- >>> comb22 (\a b-> (a+b,a-b)) s1 s2
--- ({2@0s,3@2s,4@6s,5@8s,6@9s},{0@0s,-1@2s,-2@6s,-3@8s,-4@9s})
+-- ({2@0.0,3@2.0,4@6.0,5@8.0,6@9.0},{0@0.0,-1@2.0,-2@6.0,-3@8.0,-4@9.0})
 --
 -- <<fig/moc-de-pattern-comb.png>>
 comb22 :: (Num t, Ord t, Eq t) => (a1 -> a2 -> (b1, b2)) -- ^ function on values
@@ -270,7 +270,7 @@ generate4 ns i = MoC.stated04 ns (unit4 i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ stated11 (+) (6,1) s
--- {1@0s,2@6s,3@8s,5@12s,7@14s,8@15s,10@18s}
+-- {1@0.0,2@6.0,3@8.0,5@12.0,7@14.0,8@15.0,10@18.0}
 --
 -- <<fig/moc-de-pattern-stated.png>>
 stated22 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -371,7 +371,7 @@ stated44 ns i = MoC.stated44 ns (unit4 i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ state11 (+) (6,1) s
--- {2@0s,3@2s,5@6s,7@8s,8@9s,10@12s,12@14s}
+-- {2@0.0,3@2.0,5@6.0,7@8.0,8@9.0,10@12.0,12@14.0}
 --
 -- <<fig/moc-de-pattern-state.png>>                   
 state22 :: (Num t, Ord t, Eq t) => (b1 -> b2 -> a1 -> a2 -> (b1, b2))
@@ -472,7 +472,7 @@ state44 ns i = MoC.state44 ns (unit4 i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ moore11 (+) (+1) (6,1) s
--- {2@0s,3@6s,4@8s,6@12s,8@14s,9@15s,11@18s}
+-- {2@0.0,3@6.0,4@8.0,6@12.0,8@14.0,9@15.0,11@18.0}
 --
 -- <<fig/moc-de-pattern-moore.png>>          
 moore22 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
@@ -585,7 +585,7 @@ moore44 ns od i = MoC.moore44 ns od (unit i)
 --
 -- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
 -- >>> takeS 7 $ mealy11 (+) (-) (6,1) s
--- {0@0s,-1@2s,-1@6s,-1@8s,-2@9s,0@12s,2@14s}
+-- {0@0.0,-1@2.0,-1@6.0,-1@8.0,-2@9.0,0@12.0,2@14.0}
 --
 -- <<fig/moc-de-pattern-mealy.png>>
 mealy22 :: (Num t, Ord t, Eq t) => (st -> a1 -> a2 -> st)
@@ -701,7 +701,7 @@ mealy44 ns od i = MoC.mealy44 ns od (unit i)
 -- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8,  5@9}"  :: Signal Int
 -- >>> let s2 = readSignal "{1@0, 2@5, 3@6, 4@10, 5@12}" :: Signal Int
 -- >>> sync2 s1 s2
--- ({1@0s,2@2s,2@5s,3@6s,4@8s,5@9s,5@10s,5@12s},{1@0s,1@2s,2@5s,3@6s,3@8s,3@9s,4@10s,5@12s})
+-- ({1@0.0,2@2.0,2@5.0,3@6.0,4@8.0,5@9.0,5@10.0,5@12.0},{1@0.0,1@2.0,2@5.0,3@6.0,3@8.0,3@9.0,4@10.0,5@12.0})
 --
 -- <<fig/moc-de-pattern-sync.png>>
 sync2 :: (Num t, Ord t, Eq t) => SignalBase t a1                    -- ^ first input signal

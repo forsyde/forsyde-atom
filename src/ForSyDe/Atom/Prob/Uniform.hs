@@ -23,8 +23,8 @@ module ForSyDe.Atom.Prob.Uniform (
   module ForSyDe.Atom.Prob
   ) where
 
-import System.Random
-import ForSyDe.Atom.Prob
+import System.Random hiding (uniform, uniformR)
+import ForSyDe.Atom.Prob 
 
 -- $setup
 -- >>> import qualified ForSyDe.Atom.Utility.Plot as Pl
