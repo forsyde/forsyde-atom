@@ -14,3 +14,4 @@ includes/forsyde-tikz
 fig
 *.config
 stack.yaml.lock
+.vscode/settings.json
