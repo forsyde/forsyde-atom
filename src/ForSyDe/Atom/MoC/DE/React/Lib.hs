@@ -45,7 +45,7 @@ import           ForSyDe.Atom.Utility.Tuple
 -- | The @delay@ process "delays" a signal with one event, (see the
 -- 'ForSyDe.Atom.MoC.delay' pattern). Any delayed signal starts from global 0.
 --
--- >>> let s = readSignal "{1@2, 2@3, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s = readSignal "{1@2s, 2@3s, 3@6s, 4@8s, 5@9s}" :: Signal Int
 -- >>> delay 3 0 s
 -- {0@0s,1@5s,2@6s,3@9s,4@11s,5@12s}
 -- 
@@ -62,8 +62,8 @@ delay t v = MoC.delay (unit (t, v))
 -- 'ForSyDe.Atom.MoC.delay' pattern from "ForSyDe.Atom.MoC". It "borrows" the first
 -- event from one signal and appends it at the head of another signal.
 --
--- >>> let s1 = readSignal "{1@(-1), 2@2, 3@6, 4@8, 5@9}" :: Signal Int
--- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let s1 = readSignal "{1@(-1)s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2s, 4@4s, 5@5s, 6@8s, 7@9s}" :: Signal Int
 -- >>> delay' s1 s2
 -- {1@-1s,3@5s,4@7s,5@8s,6@11s,7@12s}
 --
@@ -80,7 +80,7 @@ delay' = MoC.delay
 -- that it does not express prefix behavior ('ForSyDe.Atom.MoC.->-'), which means that
 -- in a feedback loop it will cause deadlock.
 --
--- >>> let s = readSignal "{1@(-1), 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s = readSignal "{1@(-1)s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int
 -- >>> unsafeDelay 3 s
 -- {1@2s,2@5s,3@9s,4@11s,5@12s}
 -- 
@@ -99,7 +99,7 @@ unsafeDelay t s@(RE _ x MoC.:- _) = unit (t,x) -&- s
 -- Constructors: @comb[1-4][1-4]@.
 --
 -- >>> let s1 = instant 1
--- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> let s2 = readSignal "{1@0s, 2@2s, 3@6s, 4@8s, 5@9s}" :: RE.Signal Int
 -- >>> comb11 (map (+1)) s2
 -- {2@0s,3@2s,4@6s,5@8s,6@9s}
 -- >>> let {f [a] [b] = ([a+b],[a-b]); f [a] []  = ([a],[a]); f [] [b]  = ([],[b]); f [] []  = ([],[])}
@@ -285,7 +285,7 @@ stated21 :: (Num t, Ord t)
 --
 -- Constructors: @stated[1-3][1-3]@.
 --
--- >>> let s = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int
 -- >>> stated11 (\s [a] -> s + a) 1 s
 -- {1@1s,2@2s,4@6s,7@8s,11@9s}
 --
@@ -361,7 +361,7 @@ state21 :: (Num t, Ord t)
 --
 -- Constructors: @state[1-3][1-3]@.
 --
--- >>> let s = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
+-- >>> let s = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int  
 -- >>> state11 (\s [a] -> s + a) 1 s
 -- {2@1s,4@2s,7@6s,11@8s,16@9s}
 --
@@ -417,8 +417,8 @@ state33 ns i s1 s2 s3 = embedSY33 (SYC.state33 ns i) ><< b4s3 s1 s2 s3
 --
 -- >>> let { ns s [a] [b] = s+a+b; ns s [] [b] = s; ns _ _ _ = 0 }
 -- >>> let od s = [s + 1]
--- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
--- >>> let s2 = readSignal "{1@2, 1@3, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s1 = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int  
+-- >>> let s2 = readSignal "{1@2s, 1@3s, 3@6s, 4@8s, 5@9s}" :: Signal Int
 -- >>> moore21 ns od 1 s1 s2
 -- {2@1s,1@2s,4@3s,4@6s,10@8s,18@9s}
 --
@@ -500,8 +500,8 @@ moore33 ns od i s1 s2 s3 = comb13 (li1 od) $ stated31 ns i s1 s2 s3
 --
 -- >>> let { ns s [a] [b] = s+a+b; ns s [] [b] = s; ns _ _ _ = 0 }
 -- >>> let { od s [a] [b] = [s+a-b]; od s _ _ = [s] }
--- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int  
--- >>> let s2 = readSignal "{1@2, 1@3, 3@6, 4@8, 5@9}" :: Signal Int
+-- >>> let s1 = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int  
+-- >>> let s2 = readSignal "{1@2s, 1@3s, 3@6s, 4@8s, 5@9s}" :: Signal Int
 -- >>> mealy21 ns od 1 s1 s2
 -- {1@1s,1@2s,3@3s,3@6s,9@8s,17@9s}
 --
@@ -581,8 +581,8 @@ mealy33 ns od i s1 s2 s3 = comb43 (li1 od) (stated31 ns i s1 s2 s3) s1 s2 s3
 --
 -- Constructors: @syncAndHold[2-4]@
 --
--- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
--- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let s1 = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2s, 4@4s, 5@5s, 6@8s, 7@9s}" :: Signal Int
 -- >>> let (o1,o2) = syncAndHold2 (0,0) s1 s2
 -- >>> o1
 -- {1@1s,2@2s,2@4s,2@5s,3@6s,4@8s,5@9s}
@@ -611,8 +611,8 @@ syncAndHold4 (i1,i2,i3,i4)
 --
 -- Constructors: @syncAndFill[2-4]@
 --
--- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
--- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let s1 = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2s, 4@4s, 5@5s, 6@8s, 7@9s}" :: Signal Int
 -- >>> let (o1,o2) = syncAndFill2 (0,0) s1 s2
 -- >>> o1
 -- {1@1s,2@2s,0@4s,0@5s,3@6s,4@8s,5@9s}
@@ -641,8 +641,8 @@ syncAndFill4 (i1,i2,i3,i4)
 --
 -- Constructors: @syncAndObs11@, @syncAndObs21@, @syncAndObs31@, @syncAndObs12@, @syncAndObs22@, @syncAndObs13@.
 --
--- >>> let s1 = readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: Signal Int
--- >>> let s2 = readSignal "{3@2, 4@4, 5@5, 6@8, 7@9}" :: Signal Int
+-- >>> let s1 = readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: Signal Int
+-- >>> let s2 = readSignal "{3@2s, 4@4s, 5@5s, 6@8s, 7@9s}" :: Signal Int
 -- >>> let (o1,o2) = syncAndObs11 0 s1 s2
 -- >>> o1
 -- {1@1s,2@2s,3@6s,4@8s,5@9s}
@@ -704,7 +704,7 @@ syncAndObs13 (i1,i2,i3)
 -- Constructors: @toSY[1-4]@
 --
 -- >>> let s1 = RE.instant 1
--- >>> let s2 = RE.readSignal "{1@1, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> let s2 = RE.readSignal "{1@1s, 2@2s, 3@6s, 4@8s, 5@9s}" :: RE.Signal Int
 -- >>> toSYC2 s1 s2
 -- ({0s,1s,2s,6s,8s,9s},{1,⟂,⟂,⟂,⟂,⟂},{⟂,1,2,3,4,5})
 --
@@ -801,8 +801,8 @@ toDE1 s1 = fmap reToDE s1
 --
 -- __OBS:__ all input signals need to start from global time 0.
 --
--- >>> let s1 = RE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
--- >>> let s2 = RE.readSignal "{1@0, 2@3, 3@4, 4@8, 5@10}" :: RE.Signal Int
+-- >>> let s1 = RE.readSignal "{1@0s, 2@2s, 3@6s, 4@8s, 5@9s}" :: RE.Signal Int
+-- >>> let s2 = RE.readSignal "{1@0s, 2@3s, 3@4s, 4@8s, 5@10s}" :: RE.Signal Int
 -- >>> toDE2 s1 s2
 -- ({1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@3s,3@4s,4@8s,5@10s})
 --
@@ -819,8 +819,8 @@ fromDE1 s1 = fmap deToRE s1
 --
 -- __OBS:__ all input signals will start at global time 0.
 --
--- >>> let s1 = DE.readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
--- >>> let s2 = DE.readSignal "{1@0, 2@3, 3@4, 4@8, 5@10}" :: DE.Signal Int
+-- >>> let s1 = DE.readSignal "{1@0s, 2@2s, 3@6s, 4@8s, 5@9s}" :: DE.Signal Int
+-- >>> let s2 = DE.readSignal "{1@0s, 2@3s, 3@4s, 4@8s, 5@10s}" :: DE.Signal Int
 -- >>> fromDE2 s1 s2
 -- ({1@0s,2@2s,3@6s,4@8s,5@9s},{1@0s,2@3s,3@4s,4@8s,5@10s})
 --
@@ -842,8 +842,8 @@ fromDE4 s1 s2 s3 s4 = (fromDE1 s1, fromDE1 s2, fromDE1 s3, fromDE1 s4)
 -- For the following example, see the difference between its output
 -- and the one of 'ForSyDe.Atom.MoC.DE.React.stated22'
 --
--- >>> let s1 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
--- >>> let s2 = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: RE.Signal Int
+-- >>> let s1 = readSignal "{1@0s, 2@2s, 3@6s, 4@8s, 5@9s}" :: RE.Signal Int
+-- >>> let s2 = readSignal "{1@0s, 2@2s, 3@6s, 4@8s, 5@9s}" :: RE.Signal Int
 -- >>> embedSY21 (SYC.stated21 (\s a b -> a + b - s) 1) s1 s2
 -- {1@0s,1@2s,3@6s,3@8s,5@9s}
 --

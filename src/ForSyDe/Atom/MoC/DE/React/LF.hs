@@ -45,8 +45,8 @@ states1inputs2 i s1 i1 i2    = syncAndObs21 i i1 i2 s1
 -- | Alias for 'syncAndObs11'. Denotes which actions come from states (with persistent
 -- values) and which come from other actions or inputs (instantaneous).
 --
--- >>> let sts = read "{1@0,2@3,3@6,4@10,5@13}" :: Signal Int
--- >>> let ins = read "{1@3,2@4,3@5,4@6,5@13}"  :: Signal Int
+-- >>> let sts = read "{1@0s,2@3s,3@6s,4@10s,5@13s}" :: Signal Int
+-- >>> let ins = read "{1@3s,2@4s,3@5s,4@6s,5@13s}"  :: Signal Int
 -- >>> states1inputs1 0 sts ins
 -- ({1@3s,2@4s,3@5s,4@6s,5@13s},{1@0s,2@3s,2@4s,2@5s,3@6s,4@10s,5@13s})
 states2inputs2 i s1 s2 i1 i2 = syncAndObs22 i i1 i2 s1 s2
@@ -62,8 +62,8 @@ reaction21 f = (><) (comb21 f)
 -- | Alias for 'comb22', tupled version, that can be chained directly from a
 -- @statesXinputsY@ "utility", see 'states2inputs2'.
 --
--- >>> let sts = read "{1@0,2@3,3@6,4@10,5@13}" :: Signal Int
--- >>> let ins = read "{1@3,2@4,3@5,4@6,5@13}"  :: Signal Int
+-- >>> let sts = read "{1@0s,2@3s,3@6s,4@10s,5@13s}" :: Signal Int
+-- >>> let ins = read "{1@3s,2@4s,3@5s,4@6s,5@13s}"  :: Signal Int
 -- >>> reaction21 (\a b -> [sum a + sum b]) $ states1inputs1 0 sts ins
 -- {1@0s,3@3s,4@4s,5@5s,7@6s,4@10s,10@13s}
 reaction22 f = (><) (comb22 f)

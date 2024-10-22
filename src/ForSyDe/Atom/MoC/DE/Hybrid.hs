@@ -33,9 +33,9 @@ import Prelude hiding ((<>))
 -- For the following example, see the difference between its output
 -- and the one of 'ForSyDe.Atom.MoC.DE.stated22'
 --
--- >>> let s = readSignal "{1@0, 2@2, 3@6, 4@8, 5@9}" :: DE.Signal Int
+-- >>> let s = readSignal "{1@0s, 2@2s, 3@6s, 4@8s, 5@9s}" :: DE.Signal Int
 -- >>> embedSY11 (SY.stated11 (+) 1) s
--- {1@0.0,2@2.0,4@6.0,7@8.0,11@9.0}
+-- {1@0s,2@2s,4@6s,7@8s,11@9s}
 --
 -- <<fig/moc-de-pattern-embedsy.png>>
 embedSY22 :: (SY.Signal a1 -> SY.Signal a2

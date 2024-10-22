@@ -34,8 +34,7 @@ type SignalBase t a = Stream (DE t a)
 
 -- | Convenience alias for a DE signal, where tags are represented using our exported
 -- 'TimeStamp' type.
---type Signal a = SignalBase TimeStamp a
-type Signal a = SignalBase Double a
+type Signal a = SignalBase TimeStamp a
 
 -- | The DE event. It identifies a discrete event signal. The type of the tag system
 -- needs to satisfy all of the three properties, as suggested by the type constraints
@@ -119,7 +118,8 @@ unit3 :: (Num t, Ord t, Eq t)
 unit4 :: (Num t, Ord t, Eq t)
       => ((t,a1),(t, a2),(t, a3),(t, a4))
       -> (SignalBase t a1, SignalBase t a2, SignalBase t a3, SignalBase t a4)
-         
+
+unit (0,v) = (DE 0 v :- NullS)         
 unit (t,v) = (DE 0 v :- DE t v :- NullS)
 unit2 = ($$) (unit,unit)
 unit3 = ($$$) (unit,unit,unit)
@@ -151,8 +151,8 @@ until u (DE t v:-xs)
 -- Like with the @read@ function from @Prelude@, you must specify the
 -- type of the signal.
 --
--- >>> readSignal "{ 1@0, 2@2, 3@5, 4@7, 5@10 }" :: Signal Int
--- {1@0.0,2@2.0,3@5.0,4@7.0,5@10.0}
+-- >>> readSignal "{ 1@0s, 2@2s, 3@5s, 4@7s, 5@10s }" :: Signal Int
+-- {1@0s,2@2s,3@5s,4@7s,5@10s}
 --
 -- Incorrect usage (not covered by @doctest@):
 --
