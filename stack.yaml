@@ -5,3 +5,5 @@ packages:
 
 extra-deps:
 - normaldistribution-1.1.0.3
+
+system-ghc: true

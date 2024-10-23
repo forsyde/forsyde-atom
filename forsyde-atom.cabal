@@ -1,4 +1,4 @@
-cabal-version:       3.8
+cabal-version:       3.6
 name:                forsyde-atom
 version:             0.3.2.0
 synopsis:            Shallow-embedded DSL for modeling cyber-physical systems 
