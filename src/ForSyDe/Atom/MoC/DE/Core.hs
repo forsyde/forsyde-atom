@@ -3,7 +3,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.DE.Core
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
+-- Copyright   :  (c) 2016, George Ungureanu, KTH/ICT/ESY 2016. 2024, Ingo Sander 
 -- License     :  BSD-style (see the file LICENSE)
 -- 
 -- Maintainer  :  ugeorge@kth.se

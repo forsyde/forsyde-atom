@@ -1,10 +1,10 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.MoC.TimeStamp
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016
+-- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2016. 2024, Ingo Sander
 -- License     :  BSD-style (see the file LICENSE)
 -- 
--- Maintainer  :  ugeorge@kth.se
+-- Maintainer  :  ugeorge@kth.se, ingo@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --

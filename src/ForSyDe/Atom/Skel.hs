@@ -3,10 +3,10 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Skel
--- Copyright   :  (c) George Ungureanu, KTH/ICT/ESY 2015
+-- Copyright   :  (c) 2015 George Ungureanu, KTH/ICT/ESY. 2024, Ingo Sander
 -- License     :  BSD-style (see the file LICENSE)
 -- 
--- Maintainer  :  ugeorge@kth.se
+-- Maintainer  :  ugeorge@kth.se, ingo@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --

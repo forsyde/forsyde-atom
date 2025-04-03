@@ -8,11 +8,13 @@ description:
   As of today ForSyDe-Atom is only implemented as a (set of) shallow-embedded DSL(s), meaning that it can only be used for the purpose of simulation, behavior tracing and validation.  Its associated formalism however, in theory, could be used a starting point for a formal or rigorous system design methodology, showing potential for other design activities, such as refinement or synthesis. For an overview presentation of the main concepts behind this framework, see @[1]@. For more resources, such as tutorials, user manual or publicatons, visit <https://forsyde.github.io/forsyde-atom/>.
   .
   @[1]@ Ungureanu, G., et. al. , ForSyDe-Atom: Taming complexity in cyber-physical system design with layers, ACM Trans. Des. Autom. Electron. Syst., 2021.
+  .
+  For version 0.3.2.0, Ingo Sander has updated the package to comply with ghc-9.6.6, fixed minor bugs, conducted some cleaning, and made minor changes to a few packages.
 license:             BSD-3-Clause
 license-file:        LICENSE
-author:              George Ungureanu
-maintainer:          https://github.com/ugeorge
-copyright:           Copyright (c) 2015-2024, George Ungureanu, KTH/EECS
+author:              George Ungureanu, Ingo Sander (since version 0.3.2.0)
+maintainer:          https://github.com/ugeorge, ingo@kth.se
+copyright:           Copyright (c) 2015-2024, George Ungureanu, KTH/EECS. 2025, Ingo Sander.
 homepage:            https://forsyde.github.io/forsyde-atom/
 category:            EDSL, modeling
 build-type:          Simple

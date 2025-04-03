@@ -1,10 +1,10 @@
 ----------------------------------------------------------------------
 -- |
 -- Module      :  ForSyDe.Atom.Prob.Uniform
--- Copyright   :  (c) George Ungureanu, 2020
+-- Copyright   :  (c) 2020, George Ungureanu. 2024, Ingo Sander
 -- License     :  BSD-style (see the file LICENSE)
 -- 
--- Maintainer  :  ugeorge@kth.se
+-- Maintainer  :  ugeorge@kth.se, ingo@kth.se
 -- Stability   :  experimental
 -- Portability :  portable
 --
