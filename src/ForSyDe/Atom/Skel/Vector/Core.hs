@@ -114,9 +114,9 @@ instance (Show a) => Show (Vector a) where
   showsPrec p = showParen (p>1) . showVector
     where
       showVector (x :> xs)  = showChar '<' . showEvent x . showVector' xs
-      showVector (Null)     = showChar '<' . showChar '>'
+      showVector Null       = showChar '<' . showChar '>'
       showVector' (x :> xs) = showChar ',' . showEvent x . showVector' xs
-      showVector' (Null)    = showChar '>'
+      showVector' Null      = showChar '>'
       showEvent x           = shows x
 
 -- | The vector 1 :> 2 :> Null is read using the string \"\<1,2\>\".
@@ -135,7 +135,7 @@ instance (Read a) => Read (Vector a) where
 
 -- | Converts a list to a vector.
 vector []     = Null
-vector (x:xs) = x :> (vector xs)
+vector (x:xs) = x :> vector xs
 
 -- | Converts a vector to a list.
 fromVector Null    = []

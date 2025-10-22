@@ -15,3 +15,5 @@ fig
 *.config
 stack.yaml.lock
 .vscode/*
+src/.vscode/tasks.json
+tests/.vscode/tasks.json
