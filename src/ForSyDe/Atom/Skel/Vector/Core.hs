@@ -74,7 +74,7 @@ unit a = a :> Null
 -- >>> unit 1 <++> unit 2
 -- <1,2>
 Null    <++> ys = ys
-(x:>xs) <++> ys = x :> (xs <++> ys)
+(x:>xs) <++> ys = x :> (xs <++> ys) 
 
 ---------------
 -- Instances --
@@ -103,8 +103,8 @@ instance Foldable Vector where
 instance Skeleton Vector where
   (=.=) = (<$>)
   (=*=) = (<*>)
-  _ =\= Null   = error "[Skel.Vector] cannot reduce empty vector"
-  f =\= v      = foldl1 f v
+  _ =\= Null   = error "[Skel.Vector] cannot reduce empty vector" 
+  f =\= v      = foldr1 f v
   Null =<<= s = s
   ps   =<<= s = (.) =\= ps $ s
   first (x:>_) = x
@@ -117,13 +117,13 @@ instance (Show a) => Show (Vector a) where
       showVector Null       = showChar '<' . showChar '>'
       showVector' (x :> xs) = showChar ',' . showEvent x . showVector' xs
       showVector' Null      = showChar '>'
-      showEvent             = shows
+      showEvent x           = shows x
 
 -- | The vector 1 :> 2 :> Null is read using the string \"\<1,2\>\".
 instance (Read a) => Read (Vector a) where
   readsPrec d = readParen (d>1) readVecSigtart
     where
-      readVecSigtart a = [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b]
+      readVecSigtart = (\ a -> [(xs,c) | ("<",b) <- lex a , (xs,c) <- readVector (',' : b) ++ readNull b])
       readVector r   = readEvent r ++ readNull r
       readEvent a    = [(x :> xs,d) | (",",b) <- lex a , (x,c) <- reads b , (xs,d) <- readVector c]
       readNull a     = [(Null,b) | (">",b) <- lex a]
@@ -134,11 +134,10 @@ instance (Read a) => Read (Vector a) where
 ---------------
 
 -- | Converts a list to a vector.
-vector :: [a] -> Vector a
-vector = foldr (:>) Null
+vector []     = Null
+vector (x:xs) = x :> vector xs
 
 -- | Converts a vector to a list.
-fromVector :: Vector a -> [a]
 fromVector Null    = []
 fromVector (x:>xs) = x : fromVector xs
 
@@ -155,4 +154,4 @@ isNull Null = True
 isNull _    = False
 
 -- | Appends an element at the end of a vector.
-xs <: x = xs <++> unit x
+xs <: x = xs <++> unit x         

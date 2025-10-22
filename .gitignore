@@ -17,3 +17,4 @@ stack.yaml.lock
 .vscode/*
 src/.vscode/tasks.json
 tests/.vscode/tasks.json
+src/ForSyDe/Atom/Skel/Vector/.vscode/tasks.json
