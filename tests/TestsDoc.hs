@@ -24,7 +24,7 @@ main = doctest
   , "src/ForSyDe/Atom/MoC/SDF/SADF.hs"
   , "src/ForSyDe/Atom/MoC/SDF/CSDF.hs"
   , "src/ForSyDe/Atom/MoC/SDF/BDF.hs"  
---  , "src/ForSyDe/Atom/MoC/SDF/Interface.hs" -- Breaks: Testsuite hangs!  
+  , "src/ForSyDe/Atom/MoC/SDF/Interface.hs" -- Breaks: Testsuite hangs! unzipx is the problem! 
   , "src/ForSyDe/Atom/Skel/Vector/Core.hs"
   , "src/ForSyDe/Atom/Skel/Vector/Lib.hs"
   , "src/ForSyDe/Atom/Prob.hs"

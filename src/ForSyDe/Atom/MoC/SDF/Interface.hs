@@ -114,8 +114,9 @@ zipx rates = V.zipx (V.farm11 transpose rates)
 -- <{1,2,3,4,5},{1,2,3,4,5},{11,12,13,14,15},{11,12,13,14,15}>
 -- >>> sz
 -- {<1,2,1,11,12,11>,<3,4,2,13,14,12>}
--- >>> unzipx (V.reverse r) sz
--- <{1,2,3,4},{1,2},{11,12,13,14},{11,12}>
+
+-- - >>> unzipx (V.reverse r) sz
+-- - <{1,2,3,4},{1,2},{11,12,13,14},{11,12}>
 --
 -- <<fig/moc-sdf-unzipx.png>>
 unzipx :: V.Vector SDF.Prod  -- ^ production rates (in reverse order)
