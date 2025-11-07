@@ -14,8 +14,8 @@ main = doctest
   , "src/ForSyDe/Atom/MoC/DE/Interface.hs"
   , "src/ForSyDe/Atom/MoC/DE/Hybrid.hs"
   , "src/ForSyDe/Atom/MoC/DE/React/Core.hs"
---  , "src/ForSyDe/Atom/MoC/DE/React/Lib.hs" -- Breaks: Testsuite hangs!
---  , "src/ForSyDe/Atom/MoC/DE/React/LF.hs"  -- Breaks: Testsuite hangs!
+  , "src/ForSyDe/Atom/MoC/DE/React/Lib.hs"
+  , "src/ForSyDe/Atom/MoC/DE/React/LF.hs" 
   , "src/ForSyDe/Atom/MoC/CT/Core.hs"
   , "src/ForSyDe/Atom/MoC/CT/Lib.hs"
   , "src/ForSyDe/Atom/MoC/CT/Interface.hs"
@@ -24,7 +24,7 @@ main = doctest
   , "src/ForSyDe/Atom/MoC/SDF/SADF.hs"
   , "src/ForSyDe/Atom/MoC/SDF/CSDF.hs"
   , "src/ForSyDe/Atom/MoC/SDF/BDF.hs"  
-  , "src/ForSyDe/Atom/MoC/SDF/Interface.hs" -- Breaks: Testsuite hangs! unzipx is the problem! 
+  , "src/ForSyDe/Atom/MoC/SDF/Interface.hs"
   , "src/ForSyDe/Atom/Skel/Vector/Core.hs"
   , "src/ForSyDe/Atom/Skel/Vector/Lib.hs"
   , "src/ForSyDe/Atom/Prob.hs"
