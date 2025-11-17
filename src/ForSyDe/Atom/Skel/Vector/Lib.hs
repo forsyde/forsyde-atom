@@ -141,12 +141,16 @@ farm44 = S.farm44
 -- {3,6,9,12,15}
 -- >>> S.reducei (comb21 (+)) s2 v2
 -- {13,16,19,22,25}
+-- >>> S.reduce' (comb21 (-)) v2
+-- {-1,-2,-3,-4,-5}
 --
 -- <<fig/skel-vector-func-reducei.png>>
 -- <<fig/skel-vector-func-reducei-net.png>>
 reduce  :: (a -> a -> a) -> Vector a -> a
+reduce'  :: (a -> a -> a) -> Vector a -> a
 reducei :: (a -> a -> a) -> a -> Vector a -> a
 reduce  = S.reduce
+reduce' = S.reduce'
 reducei = S.reducei
 
 reduce1  p   v1 vs       = S.farm21 p v1 (init vs) =<<= S.last vs

@@ -105,6 +105,8 @@ instance Skeleton Vector where
   (=*=) = (<*>)
   _ =\= Null   = error "[Skel.Vector] cannot reduce empty vector" 
   f =\= v      = foldr1 f v
+  _ =\\= Null  = error "[Skel.Vector] cannot reduce empty vector"   
+  f =\\= v     = foldl1 f v
   Null =<<= s = s
   ps   =<<= s = (.) =\= ps $ s
   first (x:>_) = x

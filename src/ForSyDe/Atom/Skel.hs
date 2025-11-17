@@ -71,7 +71,7 @@ module ForSyDe.Atom.Skel (
   farm71, farm72, farm73, farm74,
   farm81, farm82, farm83, farm84,
 
-  reduce, reducei, pipe,
+  reduce, reduce', reducei, pipe,
   
   pipe1, pipe2, pipe3, pipe4,
   pipe5, pipe6, pipe7, pipe8,
@@ -81,7 +81,7 @@ module ForSyDe.Atom.Skel (
 import ForSyDe.Atom.Utility.Tuple
 
 infixl 4 =.=, =*=
-infixl 2 =\=, =<<=
+infixl 2 =\=, =<<=, =\\=
 
 -- | Class containing all the Skeleton layer atoms.
 --
@@ -118,6 +118,11 @@ class Functor c => Skeleton c where
   --
   -- <<fig/eqs-skel-atom-red.png>>
   (=\=)  :: (a -> a -> a) -> c a -> a
+
+  -- | Atom which reduces a structure to an element based on a /non-associative/
+  -- function, defined as:
+  --
+  (=\\=)  :: (a -> a -> a) -> c a -> a
 
   -- | Skeleton which /pipes/ an element through all the functions contained by a
   -- structure. This is not an atom. It has an implicit definition which might be
@@ -208,6 +213,14 @@ reduce :: Skeleton c
        -> c a           -- ^ structure
        -> a             -- ^ reduced element
 reduce = (=\=)
+
+-- | Infix name for the '=\\=' atom operator. The operation can be non-associative
+-- and is expected to be executed in order.
+reduce' :: Skeleton c
+       => (a -> a -> a) -- ^ non-associative function
+       -> c a           -- ^ structure
+       -> a             -- ^ reduced element
+reduce' = (=\\=)
 
 -- | 'reducei' is special case of 'reduce' where an initial element is
 -- specified outside the reduced vector. It is implemented as a
