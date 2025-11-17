@@ -87,7 +87,7 @@ module ForSyDe.Atom.Skel.Vector (
   farm31, farm32, farm33, farm34,
   farm41, farm42, farm43, farm44,
   
-  reduce, reducei,
+  reduce, reducei, reduce',
   prefix, prefixi,
   suffix, suffixi,
 
